@@ -39,6 +39,30 @@ Route::get('/accounting/cash-journal/pdf', [AccountingWebController::class, 'cas
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('accounting.cash-journal.pdf');
 
+Route::get('/accounting/expenses', [AccountingWebController::class, 'expenses'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.expenses.index');
+
+Route::get('/accounting/expenses/create', [AccountingWebController::class, 'createExpense'])
+    ->middleware(['auth', 'permission:payments.create'])
+    ->name('accounting.expenses.create');
+
+Route::post('/accounting/expenses', [AccountingWebController::class, 'storeExpense'])
+    ->middleware(['auth', 'permission:payments.create'])
+    ->name('accounting.expenses.store');
+
+Route::get('/accounting/expenses/pdf', [AccountingWebController::class, 'expensesPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.expenses.pdf');
+
+Route::get('/accounting/expenses/{expense}', [AccountingWebController::class, 'showExpense'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.expenses.show');
+
+Route::put('/accounting/expenses/{expense}/cancel', [AccountingWebController::class, 'cancelExpense'])
+    ->middleware(['auth', 'permission:payments.cancel'])
+    ->name('accounting.expenses.cancel');
+
 Route::get('/reports/class-list', [ReportWebController::class, 'classList'])
     ->middleware(['auth', 'permission:students.export'])
     ->name('reports.class-list');

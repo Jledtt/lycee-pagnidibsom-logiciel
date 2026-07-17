@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Expense;
 use App\Models\Payment;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AccountingWebController extends Controller
@@ -60,6 +63,113 @@ class AccountingWebController extends Controller
             ->stream($filename);
     }
 
+    public function expenses(Request $request): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->expenseFilters($request);
+        $expenses = $this->expenseQuery($filters, $academicYear)
+            ->latest('spent_at')
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $allRows = $this->expenseQuery($filters, $academicYear)->get();
+
+        return view('accounting.expenses.index', [
+            'academicYear' => $academicYear,
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expenses' => $expenses,
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'summary' => $this->expenseSummary($allRows),
+        ]);
+    }
+
+    public function createExpense(): View
+    {
+        return view('accounting.expenses.create', [
+            'academicYear' => $this->activeAcademicYear(),
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expense' => new Expense([
+                'spent_at' => now()->toDateString(),
+                'payment_method' => 'cash',
+                'status' => 'valid',
+            ]),
+            'methodLabels' => $this->methodLabels(),
+        ]);
+    }
+
+    public function storeExpense(Request $request): RedirectResponse
+    {
+        $academicYear = $this->activeAcademicYear();
+        $data = $this->validateExpense($request);
+
+        $expense = Expense::create($data + [
+            'academic_year_id' => $academicYear?->id,
+            'created_by' => $request->user()->id,
+            'status' => 'valid',
+        ]);
+
+        return redirect()
+            ->route('accounting.expenses.show', $expense)
+            ->with('success', 'Depense enregistree avec succes.');
+    }
+
+    public function showExpense(Expense $expense): View
+    {
+        $expense->load(['academicYear', 'creator', 'canceller']);
+
+        return view('accounting.expenses.show', [
+            'academicYear' => $this->activeAcademicYear(),
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expense' => $expense,
+            'methodLabels' => $this->methodLabels(),
+        ]);
+    }
+
+    public function cancelExpense(Request $request, Expense $expense): RedirectResponse
+    {
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:5'],
+        ]);
+
+        if ($expense->status !== 'cancelled') {
+            $expense->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancelled_by' => $request->user()->id,
+                'cancellation_reason' => $data['reason'],
+            ]);
+        }
+
+        return redirect()
+            ->route('accounting.expenses.show', $expense)
+            ->with('success', 'Depense annulee.');
+    }
+
+    public function expensesPdf(Request $request)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->expenseFilters($request);
+        $expenses = $this->expenseQuery($filters, $academicYear)
+            ->latest('spent_at')
+            ->latest()
+            ->get();
+        $filename = 'depenses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+
+        return Pdf::loadView('accounting.expenses.pdf', [
+            'academicYear' => $academicYear,
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expenses' => $expenses,
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'school' => SchoolSetting::query()->first(),
+            'summary' => $this->expenseSummary($expenses),
+        ])
+            ->setPaper('a4', 'landscape')
+            ->stream($filename);
+    }
+
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
@@ -80,6 +190,18 @@ class AccountingWebController extends Controller
             });
     }
 
+    private function expenseQuery(array $filters, ?AcademicYear $academicYear): Builder
+    {
+        return Expense::query()
+            ->with(['creator', 'canceller'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereDate('spent_at', '>=', $filters['date_from'])
+            ->whereDate('spent_at', '<=', $filters['date_to'])
+            ->when($filters['category'], fn ($query, string $category) => $query->where('category', $category))
+            ->when($filters['payment_method'], fn ($query, string $method) => $query->where('payment_method', $method))
+            ->when($filters['status'], fn ($query, string $status) => $query->where('status', $status));
+    }
+
     private function filters(Request $request): array
     {
         $today = now()->toDateString();
@@ -90,6 +212,19 @@ class AccountingWebController extends Controller
             'payment_method' => $request->string('payment_method')->toString() ?: null,
             'received_by' => $request->integer('received_by') ?: null,
             'school_class_id' => $request->integer('school_class_id') ?: null,
+            'status' => $request->string('status')->toString() ?: 'valid',
+        ];
+    }
+
+    private function expenseFilters(Request $request): array
+    {
+        $today = now()->toDateString();
+
+        return [
+            'date_from' => $request->date('date_from')?->toDateString() ?? $today,
+            'date_to' => $request->date('date_to')?->toDateString() ?? $today,
+            'category' => $request->string('category')->toString() ?: null,
+            'payment_method' => $request->string('payment_method')->toString() ?: null,
             'status' => $request->string('status')->toString() ?: 'valid',
         ];
     }
@@ -118,6 +253,40 @@ class AccountingWebController extends Controller
         ];
     }
 
+    private function expenseSummary(Collection $expenses): array
+    {
+        $validExpenses = $expenses->where('status', 'valid');
+        $cancelledExpenses = $expenses->where('status', 'cancelled');
+
+        return [
+            'valid_count' => $validExpenses->count(),
+            'cancelled_count' => $cancelledExpenses->count(),
+            'total_valid' => (float) $validExpenses->sum('amount'),
+            'total_cancelled' => (float) $cancelledExpenses->sum('amount'),
+            'by_category' => $validExpenses
+                ->groupBy('category')
+                ->map(fn (Collection $rows) => (float) $rows->sum('amount'))
+                ->sortKeys(),
+            'by_method' => $validExpenses
+                ->groupBy('payment_method')
+                ->map(fn (Collection $rows) => (float) $rows->sum('amount'))
+                ->sortKeys(),
+        ];
+    }
+
+    private function validateExpense(Request $request): array
+    {
+        return $request->validate([
+            'spent_at' => ['required', 'date'],
+            'category' => ['required', Rule::in(array_keys($this->expenseCategoryLabels()))],
+            'beneficiary' => ['nullable', 'string', 'max:255'],
+            'payment_method' => ['required', Rule::in(array_keys($this->methodLabels()))],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'proof_reference' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string'],
+        ]);
+    }
+
     private function cashiers(): Collection
     {
         return User::query()
@@ -142,6 +311,19 @@ class AccountingWebController extends Controller
             'cash' => 'Especes',
             'mobile_money' => 'Mobile money',
             'bank_transfer' => 'Virement',
+            'other' => 'Autre',
+        ];
+    }
+
+    private function expenseCategoryLabels(): array
+    {
+        return [
+            'supplies' => 'Fournitures',
+            'salaries' => 'Salaires',
+            'maintenance' => 'Entretien',
+            'transport' => 'Transport',
+            'utilities' => 'Eau / electricite',
+            'administration' => 'Administration',
             'other' => 'Autre',
         ];
     }
