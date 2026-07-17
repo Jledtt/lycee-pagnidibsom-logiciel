@@ -71,8 +71,12 @@
 
             <div class="grid" style="grid-template-columns:1fr">
                 <a class="btn btn-subtle" href="{{ route('students.show', $enrollment->student) }}">Ouvrir le dossier eleve</a>
-                <a class="btn btn-subtle" href="{{ route('classes.show', $enrollment->schoolClass) }}">Ouvrir la classe</a>
-                <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">Telecharger la fiche PDF</a>
+                @can('classes.manage')
+                    <a class="btn btn-subtle" href="{{ route('classes.show', $enrollment->schoolClass) }}">Ouvrir la classe</a>
+                @endcan
+                @can('students.export')
+                    <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">Telecharger la fiche PDF</a>
+                @endcan
             </div>
 
             @if ($enrollment->notes)

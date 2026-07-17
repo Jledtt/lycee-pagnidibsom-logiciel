@@ -7,6 +7,7 @@ use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
+use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\TariffWebController;
@@ -28,68 +29,157 @@ Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
 
+Route::get('/staff/roles', [StaffRoleWebController::class, 'index'])
+    ->middleware(['auth', 'permission:roles.manage'])
+    ->name('staff.roles.index');
+
+Route::get('/staff/roles/{role}/edit', [StaffRoleWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:roles.manage'])
+    ->name('staff.roles.edit');
+
+Route::put('/staff/roles/{role}', [StaffRoleWebController::class, 'update'])
+    ->middleware(['auth', 'permission:roles.manage'])
+    ->name('staff.roles.update');
+
 Route::resource('staff', StaffUserWebController::class)
     ->middleware(['auth', 'permission:users.manage'])
     ->parameters(['staff' => 'user']);
 
 Route::get('/students/{student}/registration-sheet', [StudentWebController::class, 'registrationSheet'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:students.export'])
     ->name('students.registration-sheet');
 
 Route::get('/students/{student}/registration-sheet/pdf', [StudentWebController::class, 'registrationSheetPdf'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:students.export'])
     ->name('students.registration-sheet.pdf');
 
 Route::post('/classes/{schoolClass}/students', [SchoolClassWebController::class, 'attachStudent'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:classes.manage'])
     ->name('classes.students.attach');
 
 Route::delete('/classes/{schoolClass}/students/{enrollment}', [SchoolClassWebController::class, 'detachStudent'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:classes.manage'])
     ->name('classes.students.detach');
 
-Route::resource('classes', SchoolClassWebController::class)
-    ->middleware('auth')
-    ->parameters(['classes' => 'schoolClass']);
+Route::get('/classes', [SchoolClassWebController::class, 'index'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.index');
+Route::get('/classes/create', [SchoolClassWebController::class, 'create'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.create');
+Route::post('/classes', [SchoolClassWebController::class, 'store'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.store');
+Route::get('/classes/{schoolClass}', [SchoolClassWebController::class, 'show'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.show');
+Route::get('/classes/{schoolClass}/edit', [SchoolClassWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.edit');
+Route::put('/classes/{schoolClass}', [SchoolClassWebController::class, 'update'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.update');
+Route::delete('/classes/{schoolClass}', [SchoolClassWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:classes.manage'])
+    ->name('classes.destroy');
 
-Route::resource('enrollments', EnrollmentWebController::class)
-    ->middleware('auth');
+Route::get('/enrollments', [EnrollmentWebController::class, 'index'])
+    ->middleware(['auth', 'permission:enrollments.view'])
+    ->name('enrollments.index');
+Route::get('/enrollments/create', [EnrollmentWebController::class, 'create'])
+    ->middleware(['auth', 'permission:enrollments.create'])
+    ->name('enrollments.create');
+Route::post('/enrollments', [EnrollmentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:enrollments.create'])
+    ->name('enrollments.store');
+Route::get('/enrollments/{enrollment}', [EnrollmentWebController::class, 'show'])
+    ->middleware(['auth', 'permission:enrollments.view'])
+    ->name('enrollments.show');
+Route::get('/enrollments/{enrollment}/edit', [EnrollmentWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:enrollments.update'])
+    ->name('enrollments.edit');
+Route::put('/enrollments/{enrollment}', [EnrollmentWebController::class, 'update'])
+    ->middleware(['auth', 'permission:enrollments.update'])
+    ->name('enrollments.update');
+Route::delete('/enrollments/{enrollment}', [EnrollmentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:enrollments.cancel'])
+    ->name('enrollments.destroy');
 
 Route::get('/payments/unpaid', [PaymentWebController::class, 'unpaid'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:payments.reports'])
     ->name('payments.unpaid');
 
 Route::get('/payments/{payment}/receipt', [PaymentWebController::class, 'receipt'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:payments.print_receipt'])
     ->name('payments.receipt');
 
-Route::resource('payments', PaymentWebController::class)
-    ->middleware('auth')
-    ->only(['index', 'create', 'store', 'show', 'destroy']);
+Route::get('/payments', [PaymentWebController::class, 'index'])
+    ->middleware(['auth', 'permission:payments.view'])
+    ->name('payments.index');
+Route::get('/payments/create', [PaymentWebController::class, 'create'])
+    ->middleware(['auth', 'permission:payments.create'])
+    ->name('payments.create');
+Route::post('/payments', [PaymentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:payments.create'])
+    ->name('payments.store');
+Route::get('/payments/{payment}', [PaymentWebController::class, 'show'])
+    ->middleware(['auth', 'permission:payments.view'])
+    ->name('payments.show');
+Route::delete('/payments/{payment}', [PaymentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:payments.cancel'])
+    ->name('payments.destroy');
 
 Route::get('/tariffs', [TariffWebController::class, 'index'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.index');
 
 Route::post('/tariffs/defaults', [TariffWebController::class, 'applyDefaults'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.defaults');
 
 Route::get('/tariffs/classes/{schoolClass}/edit', [TariffWebController::class, 'edit'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.edit');
 
 Route::put('/tariffs/classes/{schoolClass}', [TariffWebController::class, 'update'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.update');
 
 Route::get('/certificates/{certificate}/pdf', [CertificateWebController::class, 'pdf'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:students.export'])
     ->name('certificates.pdf');
 
-Route::resource('certificates', CertificateWebController::class)
-    ->middleware('auth')
-    ->only(['index', 'create', 'store', 'show']);
+Route::get('/certificates', [CertificateWebController::class, 'index'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('certificates.index');
+Route::get('/certificates/create', [CertificateWebController::class, 'create'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('certificates.create');
+Route::post('/certificates', [CertificateWebController::class, 'store'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('certificates.store');
+Route::get('/certificates/{certificate}', [CertificateWebController::class, 'show'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('certificates.show');
 
-Route::resource('students', StudentWebController::class)
-    ->middleware('auth');
+Route::get('/students', [StudentWebController::class, 'index'])
+    ->middleware(['auth', 'permission:students.view'])
+    ->name('students.index');
+Route::get('/students/create', [StudentWebController::class, 'create'])
+    ->middleware(['auth', 'permission:students.create'])
+    ->name('students.create');
+Route::post('/students', [StudentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:students.create'])
+    ->name('students.store');
+Route::get('/students/{student}', [StudentWebController::class, 'show'])
+    ->middleware(['auth', 'permission:students.view'])
+    ->name('students.show');
+Route::get('/students/{student}/edit', [StudentWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:students.update'])
+    ->name('students.edit');
+Route::put('/students/{student}', [StudentWebController::class, 'update'])
+    ->middleware(['auth', 'permission:students.update'])
+    ->name('students.update');
+Route::delete('/students/{student}', [StudentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:students.delete'])
+    ->name('students.destroy');

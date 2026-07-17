@@ -7,6 +7,9 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('staff.index') }}">Retour</a>
+    @can('roles.manage')
+        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Roles et acces</a>
+    @endcan
     <a class="btn btn-primary" href="{{ route('staff.edit', $user) }}">Modifier</a>
 @endsection
 

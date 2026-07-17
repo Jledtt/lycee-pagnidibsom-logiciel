@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('roles.manage')
+        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Roles et acces</a>
+    @endcan
     <a class="btn btn-primary" href="{{ route('staff.create') }}">Nouvel utilisateur</a>
 @endsection
 
