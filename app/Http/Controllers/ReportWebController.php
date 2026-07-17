@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\FeeSchedule;
+use App\Models\Payment;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -47,6 +50,51 @@ class ReportWebController extends Controller
             'school' => SchoolSetting::query()->first(),
             'schoolClass' => $schoolClass,
             'summary' => $this->classSummary($schoolClass),
+        ])
+            ->setPaper('a4', 'landscape')
+            ->stream($filename);
+    }
+
+    public function paymentSituation(Request $request): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        if ($schoolClass) {
+            $schoolClass = $this->loadClassList($schoolClass);
+        }
+
+        $rows = $this->paymentRows($schoolClass, $academicYear);
+
+        return view('reports.payment-situation', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'filters' => $request->only(['school_class_id']),
+            'rows' => $rows,
+            'schoolClass' => $schoolClass,
+            'summary' => $this->paymentSummary($rows),
+        ]);
+    }
+
+    public function paymentSituationPdf(Request $request)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        abort_if(! $schoolClass, 404, 'Classe introuvable.');
+
+        $schoolClass = $this->loadClassList($schoolClass);
+        $rows = $this->paymentRows($schoolClass, $academicYear);
+        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+
+        return Pdf::loadView('reports.payment-situation-pdf', [
+            'academicYear' => $academicYear,
+            'rows' => $rows,
+            'school' => SchoolSetting::query()->first(),
+            'schoolClass' => $schoolClass,
+            'summary' => $this->paymentSummary($rows),
         ])
             ->setPaper('a4', 'landscape')
             ->stream($filename);
@@ -110,6 +158,85 @@ class ReportWebController extends Controller
             'total' => $students->count(),
             'girls' => $students->where('gender', 'female')->count(),
             'boys' => $students->where('gender', 'male')->count(),
+        ];
+    }
+
+    private function paymentRows(?SchoolClass $schoolClass, ?AcademicYear $academicYear): Collection
+    {
+        if (! $schoolClass) {
+            return collect();
+        }
+
+        $expected = $this->expectedAmount($schoolClass, $academicYear);
+        $studentIds = $schoolClass->enrollments->pluck('student_id')->all();
+
+        $paidByStudent = Payment::query()
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'valid')
+            ->selectRaw('student_id, sum(amount) as total_paid')
+            ->groupBy('student_id')
+            ->pluck('total_paid', 'student_id');
+
+        return $schoolClass->enrollments
+            ->map(function ($enrollment) use ($expected, $paidByStudent) {
+                $paid = (float) ($paidByStudent[$enrollment->student_id] ?? 0);
+                $balance = is_null($expected) ? null : max($expected - $paid, 0);
+
+                return [
+                    'enrollment' => $enrollment,
+                    'student' => $enrollment->student,
+                    'expected' => $expected,
+                    'paid' => $paid,
+                    'balance' => $balance,
+                    'status' => $this->paymentStatus($expected, $paid),
+                ];
+            })
+            ->values();
+    }
+
+    private function expectedAmount(SchoolClass $schoolClass, ?AcademicYear $academicYear): ?float
+    {
+        $amount = FeeSchedule::query()
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('school_class_id', $schoolClass->id)
+            ->sum('amount');
+
+        return $amount > 0 ? (float) $amount : null;
+    }
+
+    private function paymentStatus(?float $expected, float $paid): array
+    {
+        if (is_null($expected)) {
+            return ['label' => 'Tarif a configurer', 'class' => 'badge-warning'];
+        }
+
+        if ($paid <= 0) {
+            return ['label' => 'Impaye', 'class' => 'badge-warning'];
+        }
+
+        if ($paid < $expected) {
+            return ['label' => 'Partiel', 'class' => 'badge-warning'];
+        }
+
+        return ['label' => 'A jour', 'class' => ''];
+    }
+
+    private function paymentSummary(Collection $rows): array
+    {
+        $expectedTotal = $rows->contains(fn (array $row) => is_null($row['expected']))
+            ? null
+            : $rows->sum('expected');
+
+        $paidTotal = $rows->sum('paid');
+
+        return [
+            'expected' => $expectedTotal,
+            'paid' => $paidTotal,
+            'balance' => is_null($expectedTotal) ? null : max($expectedTotal - $paidTotal, 0),
+            'up_to_date' => $rows->filter(fn (array $row) => $row['status']['label'] === 'A jour')->count(),
+            'partial' => $rows->filter(fn (array $row) => $row['status']['label'] === 'Partiel')->count(),
+            'unpaid' => $rows->filter(fn (array $row) => $row['status']['label'] === 'Impaye')->count(),
         ];
     }
 }

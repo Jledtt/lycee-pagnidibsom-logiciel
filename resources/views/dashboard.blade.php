@@ -71,11 +71,13 @@
                                 <strong>Documents</strong>
                                 <span>Certificats, attestations et documents administratifs.</span>
                             </a>
-                            <a class="module" href="{{ route('reports.class-list') }}">
+                        @endcan
+                        @canany(['students.export', 'payments.reports'])
+                            <a class="module" href="{{ auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation') }}">
                                 <strong>Rapports</strong>
                                 <span>Listes imprimables par classe et exports administratifs.</span>
                             </a>
-                        @endcan
+                        @endcanany
                         @can('users.manage')
                             <a class="module" href="{{ route('staff.index') }}">
                                 <strong>Personnel</strong>

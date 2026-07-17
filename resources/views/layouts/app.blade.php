@@ -30,8 +30,10 @@
                 @endcan
                 @can('students.export')
                     <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
-                    <a class="{{ ($active ?? '') === 'reports' ? 'active' : '' }}" href="{{ route('reports.class-list') }}"><span class="nav-dot"></span>Rapports</a>
                 @endcan
+                @canany(['students.export', 'payments.reports'])
+                    <a class="{{ ($active ?? '') === 'reports' ? 'active' : '' }}" href="{{ auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation') }}"><span class="nav-dot"></span>Rapports</a>
+                @endcanany
                 @can('grades.view')
                     <a href="#"><span class="nav-dot"></span>Notes</a>
                     <a href="#"><span class="nav-dot"></span>Bulletins</a>

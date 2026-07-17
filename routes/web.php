@@ -38,6 +38,14 @@ Route::get('/reports/class-list/pdf', [ReportWebController::class, 'classListPdf
     ->middleware(['auth', 'permission:students.export'])
     ->name('reports.class-list.pdf');
 
+Route::get('/reports/payment-situation', [ReportWebController::class, 'paymentSituation'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('reports.payment-situation');
+
+Route::get('/reports/payment-situation/pdf', [ReportWebController::class, 'paymentSituationPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('reports.payment-situation.pdf');
+
 Route::get('/staff/roles', [StaffRoleWebController::class, 'index'])
     ->middleware(['auth', 'permission:roles.manage'])
     ->name('staff.roles.index');

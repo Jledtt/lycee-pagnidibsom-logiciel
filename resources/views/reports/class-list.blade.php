@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('payments.reports')
+        <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation paiements</a>
+    @endcan
     @if ($schoolClass)
         <a class="btn btn-primary" href="{{ route('reports.class-list.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
