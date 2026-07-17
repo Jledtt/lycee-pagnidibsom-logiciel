@@ -60,6 +60,12 @@
                                 <span>Scolarite, recus, impayes et rapports de caisse.</span>
                             </a>
                         @endcan
+                        @can('attendance.view')
+                            <a class="module" href="{{ route('attendance.index') }}">
+                                <strong>Absences</strong>
+                                <span>Appel par classe, retards, justificatifs et suivi quotidien.</span>
+                            </a>
+                        @endcan
                         @can('payments.reports')
                             <a class="module" href="{{ route('accounting.cash-journal') }}">
                                 <strong>Comptabilite</strong>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountingWebController;
+use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\PaymentWebController;
@@ -22,6 +23,22 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::get('/dashboard', SchoolDashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
+
+Route::get('/attendance', [AttendanceWebController::class, 'index'])
+    ->middleware(['auth', 'permission:attendance.view'])
+    ->name('attendance.index');
+
+Route::post('/attendance/sessions', [AttendanceWebController::class, 'storeSession'])
+    ->middleware(['auth', 'permission:attendance.create'])
+    ->name('attendance.sessions.store');
+
+Route::get('/attendance/sessions/{attendanceSession}/edit', [AttendanceWebController::class, 'editSession'])
+    ->middleware(['auth', 'permission:attendance.view'])
+    ->name('attendance.sessions.edit');
+
+Route::put('/attendance/sessions/{attendanceSession}', [AttendanceWebController::class, 'updateSession'])
+    ->middleware(['auth', 'permission:attendance.create'])
+    ->name('attendance.sessions.update');
 
 Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
     ->middleware(['auth', 'permission:settings.manage'])

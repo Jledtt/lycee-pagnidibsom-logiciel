@@ -42,7 +42,7 @@
                     <a href="#"><span class="nav-dot"></span>Bulletins</a>
                 @endcan
                 @can('attendance.view')
-                    <a href="#"><span class="nav-dot"></span>Absences</a>
+                    <a class="{{ ($active ?? '') === 'attendance' ? 'active' : '' }}" href="{{ route('attendance.index') }}"><span class="nav-dot"></span>Absences</a>
                 @endcan
                 @can('users.manage')
                     <a class="{{ ($active ?? '') === 'staff' ? 'active' : '' }}" href="{{ route('staff.index') }}"><span class="nav-dot"></span>Personnel</a>

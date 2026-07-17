@@ -1,0 +1,129 @@
+@extends('layouts.app', [
+    'title' => 'Absences - Lycee Prive Pagnidibsom',
+    'active' => 'attendance',
+    'pageTitle' => 'Absences',
+    'pageSubtitle' => 'Pointage par classe, absences et retards',
+])
+
+@section('content')
+    @php($statusLabels = ['present' => 'Present', 'absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifie'])
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Appel du jour</h2>
+        </div>
+
+        <form class="searchbar" method="GET" action="{{ route('attendance.index') }}">
+            <select name="school_class_id" required>
+                @foreach ($classes as $class)
+                    <option value="{{ $class->id }}" @selected($schoolClass?->id === $class->id)>
+                        {{ $class->name }}{{ $class->level ? ' - ' . $class->level->name : '' }}
+                    </option>
+                @endforeach
+            </select>
+            <input name="date" type="date" value="{{ $date->toDateString() }}">
+            <button class="btn btn-subtle" type="submit">Afficher</button>
+        </form>
+
+        @if ($schoolClass)
+            <form method="POST" action="{{ route('attendance.sessions.store') }}" style="margin-top:12px">
+                @csrf
+                <input type="hidden" name="school_class_id" value="{{ $schoolClass->id }}">
+                <input type="hidden" name="session_date" value="{{ $date->toDateString() }}">
+                <button class="btn btn-primary" type="submit">
+                    {{ $selectedSession ? 'Continuer le pointage' : 'Faire l appel' }}
+                </button>
+            </form>
+        @endif
+    </section>
+
+    <section class="summary-row" style="margin-top:16px">
+        <div class="stat">
+            <span>Absents</span>
+            <strong>{{ $summary['absent'] }}</strong>
+        </div>
+        <div class="stat">
+            <span>Retards</span>
+            <strong>{{ $summary['late'] }}</strong>
+        </div>
+        <div class="stat">
+            <span>Justifies</span>
+            <strong>{{ $summary['excused'] }}</strong>
+        </div>
+    </section>
+
+    <section class="grid two-col" style="margin-top:16px">
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Pointages du {{ $date->format('d/m/Y') }}</h2>
+                <span class="badge">{{ $sessions->count() }} classe(s)</span>
+            </div>
+
+            @if ($sessions->isEmpty())
+                <div class="empty">Aucun pointage cree pour cette date.</div>
+            @else
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Classe</th>
+                            <th>Presents</th>
+                            <th>Absents</th>
+                            <th>Retards</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($sessions as $session)
+                            <tr>
+                                <td><strong>{{ $session->schoolClass?->name }}</strong></td>
+                                <td>{{ $session->records->where('status', 'present')->count() }}</td>
+                                <td>{{ $session->records->where('status', 'absent')->count() }}</td>
+                                <td>{{ $session->records->where('status', 'late')->count() }}</td>
+                                <td><a class="btn btn-subtle" href="{{ route('attendance.sessions.edit', $session) }}">Voir</a></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Derniers incidents</h2>
+                <span class="badge">{{ $recentRecords->count() }} ligne(s)</span>
+            </div>
+
+            @if ($recentRecords->isEmpty())
+                <div class="empty">Aucune absence ou retard enregistre pour le moment.</div>
+            @else
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Eleve</th>
+                            <th>Classe</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($recentRecords as $record)
+                            <tr>
+                                <td>
+                                    <strong>{{ $record->student?->full_name }}</strong><br>
+                                    <span class="badge">{{ $record->student?->matricule }}</span>
+                                </td>
+                                <td>{{ $record->session?->schoolClass?->name ?? '-' }}</td>
+                                <td>{{ $record->session?->session_date?->format('d/m/Y') ?? '-' }}</td>
+                                <td>
+                                    <span class="badge {{ $record->status === 'present' ? '' : 'badge-warning' }}">
+                                        {{ $statusLabels[$record->status] ?? $record->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    </section>
+@endsection
