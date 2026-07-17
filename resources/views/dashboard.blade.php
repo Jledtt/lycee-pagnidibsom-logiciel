@@ -63,7 +63,7 @@
                         @can('payments.reports')
                             <a class="module" href="{{ route('accounting.cash-journal') }}">
                                 <strong>Comptabilite</strong>
-                                <span>Journal de caisse, controles et etats financiers.</span>
+                                <span>Journal de caisse, depenses, bilan et controles.</span>
                             </a>
                         @endcan
                         @can('settings.manage')

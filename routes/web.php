@@ -39,6 +39,14 @@ Route::get('/accounting/cash-journal/pdf', [AccountingWebController::class, 'cas
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('accounting.cash-journal.pdf');
 
+Route::get('/accounting/balance-sheet', [AccountingWebController::class, 'balanceSheet'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.balance-sheet');
+
+Route::get('/accounting/balance-sheet/pdf', [AccountingWebController::class, 'balanceSheetPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.balance-sheet.pdf');
+
 Route::get('/accounting/expenses', [AccountingWebController::class, 'expenses'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('accounting.expenses.index');

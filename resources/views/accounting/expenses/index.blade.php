@@ -6,6 +6,7 @@
 ])
 
 @section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('accounting.balance-sheet') }}">Bilan</a>
     <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
     <a class="btn btn-subtle" href="{{ route('accounting.expenses.pdf', $filters) }}">PDF</a>
     @can('payments.create')

@@ -63,6 +63,46 @@ class AccountingWebController extends Controller
             ->stream($filename);
     }
 
+    public function balanceSheet(Request $request): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->balanceFilters($request);
+        $payments = $this->balancePaymentQuery($filters, $academicYear)->get();
+        $expenses = $this->balanceExpenseQuery($filters, $academicYear)->get();
+
+        return view('accounting.balance-sheet', [
+            'academicYear' => $academicYear,
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expenseSummary' => $this->expenseSummary($expenses),
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'paymentSummary' => $this->cashSummary($payments),
+            'summary' => $this->balanceSummary($payments, $expenses),
+        ]);
+    }
+
+    public function balanceSheetPdf(Request $request)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->balanceFilters($request);
+        $payments = $this->balancePaymentQuery($filters, $academicYear)->get();
+        $expenses = $this->balanceExpenseQuery($filters, $academicYear)->get();
+        $filename = 'bilan-caisse-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+
+        return Pdf::loadView('accounting.balance-sheet-pdf', [
+            'academicYear' => $academicYear,
+            'categoryLabels' => $this->expenseCategoryLabels(),
+            'expenseSummary' => $this->expenseSummary($expenses),
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'paymentSummary' => $this->cashSummary($payments),
+            'school' => SchoolSetting::query()->first(),
+            'summary' => $this->balanceSummary($payments, $expenses),
+        ])
+            ->setPaper('a4', 'portrait')
+            ->stream($filename);
+    }
+
     public function expenses(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
@@ -202,6 +242,25 @@ class AccountingWebController extends Controller
             ->when($filters['status'], fn ($query, string $status) => $query->where('status', $status));
     }
 
+    private function balancePaymentQuery(array $filters, ?AcademicYear $academicYear): Builder
+    {
+        return Payment::query()
+            ->with(['lines.feeType'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereDate('paid_at', '>=', $filters['date_from'])
+            ->whereDate('paid_at', '<=', $filters['date_to'])
+            ->where('status', 'valid');
+    }
+
+    private function balanceExpenseQuery(array $filters, ?AcademicYear $academicYear): Builder
+    {
+        return Expense::query()
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereDate('spent_at', '>=', $filters['date_from'])
+            ->whereDate('spent_at', '<=', $filters['date_to'])
+            ->where('status', 'valid');
+    }
+
     private function filters(Request $request): array
     {
         $today = now()->toDateString();
@@ -226,6 +285,16 @@ class AccountingWebController extends Controller
             'category' => $request->string('category')->toString() ?: null,
             'payment_method' => $request->string('payment_method')->toString() ?: null,
             'status' => $request->string('status')->toString() ?: 'valid',
+        ];
+    }
+
+    private function balanceFilters(Request $request): array
+    {
+        $today = now()->toDateString();
+
+        return [
+            'date_from' => $request->date('date_from')?->toDateString() ?? $today,
+            'date_to' => $request->date('date_to')?->toDateString() ?? $today,
         ];
     }
 
@@ -271,6 +340,20 @@ class AccountingWebController extends Controller
                 ->groupBy('payment_method')
                 ->map(fn (Collection $rows) => (float) $rows->sum('amount'))
                 ->sortKeys(),
+        ];
+    }
+
+    private function balanceSummary(Collection $payments, Collection $expenses): array
+    {
+        $income = (float) $payments->sum('amount');
+        $expenseTotal = (float) $expenses->sum('amount');
+
+        return [
+            'income' => $income,
+            'expenses' => $expenseTotal,
+            'balance' => $income - $expenseTotal,
+            'payment_count' => $payments->count(),
+            'expense_count' => $expenses->count(),
         ];
     }
 
