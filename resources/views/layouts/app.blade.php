@@ -25,6 +25,9 @@
                 @can('payments.view')
                     <a class="{{ ($active ?? '') === 'payments' ? 'active' : '' }}" href="{{ route('payments.index') }}"><span class="nav-dot"></span>Paiements</a>
                 @endcan
+                @can('payments.reports')
+                    <a class="{{ ($active ?? '') === 'accounting' ? 'active' : '' }}" href="{{ route('accounting.cash-journal') }}"><span class="nav-dot"></span>Comptabilite</a>
+                @endcan
                 @can('settings.manage')
                     <a class="{{ ($active ?? '') === 'tariffs' ? 'active' : '' }}" href="{{ route('tariffs.index') }}"><span class="nav-dot"></span>Tarifs</a>
                 @endcan

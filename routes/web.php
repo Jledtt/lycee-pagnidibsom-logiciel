@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\PaymentWebController;
@@ -29,6 +30,14 @@ Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::get('/accounting/cash-journal', [AccountingWebController::class, 'cashJournal'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.cash-journal');
+
+Route::get('/accounting/cash-journal/pdf', [AccountingWebController::class, 'cashJournalPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('accounting.cash-journal.pdf');
 
 Route::get('/reports/class-list', [ReportWebController::class, 'classList'])
     ->middleware(['auth', 'permission:students.export'])

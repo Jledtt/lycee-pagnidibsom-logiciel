@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AcademicYear;
+use App\Models\Payment;
+use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class AccountingWebController extends Controller
+{
+    public function cashJournal(Request $request): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->filters($request);
+        $payments = $this->cashJournalQuery($filters, $academicYear)
+            ->latest('paid_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        $allRows = $this->cashJournalQuery($filters, $academicYear)->get();
+
+        return view('accounting.cash-journal', [
+            'academicYear' => $academicYear,
+            'cashiers' => $this->cashiers(),
+            'classes' => $this->classes($academicYear),
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'payments' => $payments,
+            'summary' => $this->cashSummary($allRows),
+        ]);
+    }
+
+    public function cashJournalPdf(Request $request)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filters = $this->filters($request);
+        $payments = $this->cashJournalQuery($filters, $academicYear)
+            ->latest('paid_at')
+            ->get();
+
+        $filename = 'journal-caisse-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+
+        return Pdf::loadView('accounting.cash-journal-pdf', [
+            'academicYear' => $academicYear,
+            'filters' => $filters,
+            'methodLabels' => $this->methodLabels(),
+            'payments' => $payments,
+            'school' => SchoolSetting::query()->first(),
+            'summary' => $this->cashSummary($payments),
+        ])
+            ->setPaper('a4', 'landscape')
+            ->stream($filename);
+    }
+
+    private function activeAcademicYear(): ?AcademicYear
+    {
+        return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function cashJournalQuery(array $filters, ?AcademicYear $academicYear): Builder
+    {
+        return Payment::query()
+            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'receiver'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereDate('paid_at', '>=', $filters['date_from'])
+            ->whereDate('paid_at', '<=', $filters['date_to'])
+            ->when($filters['status'], fn ($query, string $status) => $query->where('status', $status))
+            ->when($filters['payment_method'], fn ($query, string $method) => $query->where('payment_method', $method))
+            ->when($filters['received_by'], fn ($query, int $userId) => $query->where('received_by', $userId))
+            ->when($filters['school_class_id'], function ($query, int $classId) {
+                $query->whereHas('enrollment', fn ($enrollmentQuery) => $enrollmentQuery->where('school_class_id', $classId));
+            });
+    }
+
+    private function filters(Request $request): array
+    {
+        $today = now()->toDateString();
+
+        return [
+            'date_from' => $request->date('date_from')?->toDateString() ?? $today,
+            'date_to' => $request->date('date_to')?->toDateString() ?? $today,
+            'payment_method' => $request->string('payment_method')->toString() ?: null,
+            'received_by' => $request->integer('received_by') ?: null,
+            'school_class_id' => $request->integer('school_class_id') ?: null,
+            'status' => $request->string('status')->toString() ?: 'valid',
+        ];
+    }
+
+    private function cashSummary(Collection $payments): array
+    {
+        $validPayments = $payments->where('status', 'valid');
+        $cancelledPayments = $payments->where('status', 'cancelled');
+        $byMethod = $validPayments
+            ->groupBy('payment_method')
+            ->map(fn (Collection $rows) => (float) $rows->sum('amount'));
+
+        $byFeeType = $validPayments
+            ->flatMap(fn (Payment $payment) => $payment->lines)
+            ->groupBy(fn ($line) => $line->feeType?->name ?? 'Frais non precise')
+            ->map(fn (Collection $lines) => (float) $lines->sum('amount'))
+            ->sortKeys();
+
+        return [
+            'valid_count' => $validPayments->count(),
+            'cancelled_count' => $cancelledPayments->count(),
+            'total_valid' => (float) $validPayments->sum('amount'),
+            'total_cancelled' => (float) $cancelledPayments->sum('amount'),
+            'by_method' => $byMethod,
+            'by_fee_type' => $byFeeType,
+        ];
+    }
+
+    private function cashiers(): Collection
+    {
+        return User::query()
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'comptable']))
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function classes(?AcademicYear $academicYear): Collection
+    {
+        return SchoolClass::query()
+            ->with('level')
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function methodLabels(): array
+    {
+        return [
+            'cash' => 'Especes',
+            'mobile_money' => 'Mobile money',
+            'bank_transfer' => 'Virement',
+            'other' => 'Autre',
+        ];
+    }
+}

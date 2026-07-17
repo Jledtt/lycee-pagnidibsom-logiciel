@@ -60,6 +60,12 @@
                                 <span>Scolarite, recus, impayes et rapports de caisse.</span>
                             </a>
                         @endcan
+                        @can('payments.reports')
+                            <a class="module" href="{{ route('accounting.cash-journal') }}">
+                                <strong>Comptabilite</strong>
+                                <span>Journal de caisse, controles et etats financiers.</span>
+                            </a>
+                        @endcan
                         @can('settings.manage')
                             <a class="module" href="{{ route('tariffs.index') }}">
                                 <strong>Tarifs</strong>
