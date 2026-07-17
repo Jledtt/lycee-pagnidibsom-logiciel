@@ -71,6 +71,10 @@
                                 <strong>Documents</strong>
                                 <span>Certificats, attestations et documents administratifs.</span>
                             </a>
+                            <a class="module" href="{{ route('reports.class-list') }}">
+                                <strong>Rapports</strong>
+                                <span>Listes imprimables par classe et exports administratifs.</span>
+                            </a>
                         @endcan
                         @can('users.manage')
                             <a class="module" href="{{ route('staff.index') }}">
@@ -128,7 +132,13 @@
                         <tbody>
                             @foreach ($classes as $class)
                                 <tr>
-                                    <td><a href="{{ route('classes.show', $class) }}"><strong>{{ $class->name }}</strong></a></td>
+                                    <td>
+                                        @can('classes.manage')
+                                            <a href="{{ route('classes.show', $class) }}"><strong>{{ $class->name }}</strong></a>
+                                        @else
+                                            <strong>{{ $class->name }}</strong>
+                                        @endcan
+                                    </td>
                                     <td>{{ $class->enrollments_count }}</td>
                                     <td>{{ $class->capacity ?? '-' }}</td>
                                 </tr>

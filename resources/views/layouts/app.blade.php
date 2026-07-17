@@ -30,6 +30,7 @@
                 @endcan
                 @can('students.export')
                     <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
+                    <a class="{{ ($active ?? '') === 'reports' ? 'active' : '' }}" href="{{ route('reports.class-list') }}"><span class="nav-dot"></span>Rapports</a>
                 @endcan
                 @can('grades.view')
                     <a href="#"><span class="nav-dot"></span>Notes</a>

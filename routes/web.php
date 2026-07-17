@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\PaymentWebController;
+use App\Http\Controllers\ReportWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
@@ -28,6 +29,14 @@ Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::get('/reports/class-list', [ReportWebController::class, 'classList'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.class-list');
+
+Route::get('/reports/class-list/pdf', [ReportWebController::class, 'classListPdf'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.class-list.pdf');
 
 Route::get('/staff/roles', [StaffRoleWebController::class, 'index'])
     ->middleware(['auth', 'permission:roles.manage'])
