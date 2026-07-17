@@ -146,17 +146,19 @@
     </style>
 </head>
 <body>
+    @php($school = $school ?? $schoolSettings)
+    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     <table class="header">
         <tr>
             <td style="width: 170px">
-                <img class="logo" src="{{ public_path('images/logo-pagnidibsom.png') }}" alt="Logo">
-                <div class="motto">"Batir l'excellence"</div>
+                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
+                <div class="motto">{{ $school?->motto ?? '"Batir l\'excellence"' }}</div>
             </td>
             <td class="school">
-                <h1>Lycee Prive Pagnidibsom</h1>
-                <p>04 OUAGADOUGOU 04 BP 8825</p>
-                <p>Tel : (+226) 72 81 61 59 / 78 42 62 06</p>
-                <p>E-mail : infoslyceepagnidibsom@gmail.com</p>
+                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <p>{{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}</p>
+                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
+                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td style="width: 125px">
                 <div class="photo">PHOTO</div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
+use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\TariffWebController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::get('/dashboard', SchoolDashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
+
+Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
+    ->middleware('auth')
+    ->name('settings.edit');
+
+Route::put('/settings', [SchoolSettingWebController::class, 'update'])
+    ->middleware('auth')
+    ->name('settings.update');
 
 Route::get('/students/{student}/registration-sheet', [StudentWebController::class, 'registrationSheet'])
     ->middleware('auth')

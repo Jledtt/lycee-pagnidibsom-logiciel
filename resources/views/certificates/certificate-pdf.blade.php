@@ -39,22 +39,24 @@
     </style>
 </head>
 <body>
+    @php($school = $school ?? $schoolSettings)
+    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     <table class="header">
         <tr>
             <td style="width:100px">
-                <img class="logo" src="{{ public_path('images/logo-pagnidibsom.png') }}" alt="Logo">
-                <div class="motto">"Batir l'excellence"</div>
+                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
+                <div class="motto">{{ $school?->motto ?? '"Batir l\'excellence"' }}</div>
             </td>
             <td class="school">
-                <h1>Lycee Prive Pagnidibsom</h1>
-                <p>04 Ouagadougou 04 BP 8825</p>
-                <p>Tel : (+226) 72 81 61 59 / 78 42 62 06</p>
-                <p>E-mail : infoslyceepagnidibsom@gmail.com</p>
+                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
+                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
+                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="year">
                 Annee scolaire: {{ $certificate->academicYear?->name ?? '-' }}<br>
-                Burkina Faso<br>
-                La Patrie ou la Mort Nous Vaincrons
+                {{ $school?->country ?? 'Burkina Faso' }}<br>
+                {{ $school?->national_motto ?? 'La Patrie ou la Mort Nous Vaincrons' }}
             </td>
         </tr>
     </table>
@@ -64,7 +66,7 @@
     <div class="content">
         @if ($certificate->document_type === 'school_certificate')
             <p class="line">
-                Le Proviseur du <span class="strong">LYCEE PRIVE PAGNIDIBSOM</span> certifie que :
+                {{ $school?->principal_title ?? 'Le Proviseur' }} du <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span> certifie que :
             </p>
             <p class="line">
                 <span class="strong">{{ $student->full_name }}</span>, ne(e) le
@@ -80,8 +82,8 @@
             </p>
         @elseif ($certificate->document_type === 'enrollment_certificate')
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, Proviseur du
-                <span class="strong">LYCEE PRIVE PAGNIDIBSOM</span>, certifie que
+                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Proviseur' }} du
+                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>, certifie que
                 <span class="strong">{{ $student->full_name }}</span>, ne(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
                 a <span class="strong">{{ $student->birth_place ?? '-' }}</span>, est eleve de son etablissement.
@@ -96,8 +98,8 @@
             </p>
         @else
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, Proviseur du/de
-                <span class="strong">LYCEE PRIVE PAGNIDIBSOM</span>, certifie que
+                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Proviseur' }} du/de
+                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>, certifie que
                 <span class="strong">{{ $student->full_name }}</span>, ne(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
                 a <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
@@ -116,8 +118,8 @@
         <tr>
             <td></td>
             <td class="right">
-                Ouagadougou, le {{ $certificate->received_at?->format('d/m/Y') ?? now()->format('d/m/Y') }}<br>
-                <span class="strong">Le Proviseur</span>
+                {{ $school?->city ?? 'Ouagadougou' }}, le {{ $certificate->received_at?->format('d/m/Y') ?? now()->format('d/m/Y') }}<br>
+                <span class="strong">{{ $school?->principal_title ?? 'Le Proviseur' }}</span>
                 <div class="principal">{{ $principalName }}</div>
             </td>
         </tr>

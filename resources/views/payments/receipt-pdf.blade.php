@@ -26,16 +26,18 @@
     </style>
 </head>
 <body>
+    @php($school = $school ?? $schoolSettings)
+    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     <table class="header">
         <tr>
             <td style="width:80px">
-                <img class="logo" src="{{ public_path('images/logo-pagnidibsom.png') }}" alt="Logo">
+                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>Lycee Prive Pagnidibsom</h1>
-                <p>04 Ouagadougou 04 BP 8825</p>
-                <p>Tel : (+226) 72 81 61 59 / 78 42 62 06</p>
-                <p>E-mail : infoslyceepagnidibsom@gmail.com</p>
+                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
+                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
+                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td style="width:160px; text-align:right">
                 <strong>No {{ $payment->receipt_number }}</strong><br>
@@ -72,20 +74,20 @@
             @foreach ($payment->lines as $line)
                 <tr>
                     <td>{{ $line->feeType?->name ?? '-' }}</td>
-                    <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} FCFA</td>
+                    <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
                 </tr>
             @endforeach
             <tr>
                 <td class="total">Total paye</td>
-                <td class="right total">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</td>
+                <td class="right total">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
             </tr>
             <tr>
                 <td>Total deja paye par l'eleve</td>
-                <td class="right">{{ number_format($summary['paid'], 0, ',', ' ') }} FCFA</td>
+                <td class="right">{{ number_format($summary['paid'], 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
             </tr>
             <tr>
                 <td>Reste a payer</td>
-                <td class="right">{{ is_null($summary['balance']) ? 'Frais a configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</td>
+                <td class="right">{{ is_null($summary['balance']) ? 'Frais a configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . ($school?->currency ?? 'FCFA') }}</td>
             </tr>
         </tbody>
     </table>

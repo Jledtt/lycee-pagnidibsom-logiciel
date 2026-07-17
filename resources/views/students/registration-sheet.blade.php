@@ -156,16 +156,18 @@
     </div>
 
     <main class="sheet">
+        @php($school = $school ?? $schoolSettings)
+        @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
         <header class="header">
             <div>
-                <img class="logo" src="{{ asset('images/logo-pagnidibsom.png') }}" alt="Logo Lycee Prive Pagnidibsom">
-                <div class="motto">"Batir l'excellence"</div>
+                <img class="logo" src="{{ asset($logoPath) }}" alt="Logo {{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}">
+                <div class="motto">{{ $school?->motto ?? '"Batir l\'excellence"' }}</div>
             </div>
             <div class="school">
-                <h1>Lycee Prive Pagnidibsom</h1>
-                <p>04 OUAGADOUGOU 04 BP 8825</p>
-                <p>Tel : (+226) 72 81 61 59 / 78 42 62 06</p>
-                <p>E-mail : infoslyceepagnidibsom@gmail.com</p>
+                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <p>{{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}</p>
+                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
+                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </div>
             <div class="photo">PHOTO</div>
         </header>

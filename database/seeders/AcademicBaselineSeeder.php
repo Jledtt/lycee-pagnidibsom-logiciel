@@ -17,8 +17,19 @@ class AcademicBaselineSeeder extends Seeder
         SchoolSetting::firstOrCreate(
             ['school_name' => 'Lycee Prive Pagnidibsom'],
             [
+                'short_name' => 'LPP',
                 'currency' => 'FCFA',
-                'address' => 'Burkina Faso',
+                'address' => '04 Ouagadougou 04 BP 8825',
+                'phone' => '(+226) 72 81 61 59 / 78 42 62 06',
+                'email' => 'infoslyceepagnidibsom@gmail.com',
+                'logo_path' => 'images/logo-pagnidibsom.png',
+                'motto' => '"Batir l\'excellence"',
+                'country' => 'Burkina Faso',
+                'national_motto' => 'La Patrie ou la Mort Nous Vaincrons',
+                'city' => 'Ouagadougou',
+                'postal_box' => '04 BP 8825',
+                'principal_name' => 'Yamdaogo TINTILA',
+                'principal_title' => 'Le Proviseur',
             ]
         );
 

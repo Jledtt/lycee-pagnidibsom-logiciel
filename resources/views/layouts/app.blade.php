@@ -4,9 +4,9 @@
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <div class="brand-mark">LPP</div>
+                <div class="brand-mark">{{ $schoolSettings?->short_name ?? 'LPP' }}</div>
                 <div>
-                    <strong>Lycee Prive<br>Pagnidibsom</strong>
+                    <strong>{{ $schoolSettings?->school_name ?? 'Lycee Prive Pagnidibsom' }}</strong>
                     <span>{{ $academicYear?->name ?? 'Annee non configuree' }}</span>
                 </div>
             </div>
@@ -22,7 +22,7 @@
                 <a href="#"><span class="nav-dot"></span>Notes</a>
                 <a href="#"><span class="nav-dot"></span>Bulletins</a>
                 <a href="#"><span class="nav-dot"></span>Absences</a>
-                <a href="#"><span class="nav-dot"></span>Parametres</a>
+                <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
             </nav>
         </aside>
 
