@@ -85,7 +85,7 @@ class ReportWebController extends Controller
             'academicYear',
             'enrollments' => fn ($query) => $query
                 ->with(['student.guardians'])
-                ->where('status', 'active')
+                ->where('enrollments.status', 'active')
                 ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active'))
                 ->join('students', 'students.id', '=', 'enrollments.student_id')
                 ->orderBy('students.last_name')
