@@ -56,6 +56,7 @@ class PaymentWebController extends Controller
     public function create(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
+        $students = $this->enrolledStudents($academicYear);
 
         return view('payments.create', [
             'academicYear' => $academicYear,
@@ -64,8 +65,9 @@ class PaymentWebController extends Controller
                 'paid_at' => now(),
                 'status' => 'valid',
             ]),
-            'students' => $this->enrolledStudents($academicYear),
+            'students' => $students,
             'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
+            'paymentProfiles' => $this->paymentProfiles($students, $academicYear),
             'selectedStudentId' => $request->integer('student_id'),
         ]);
     }
@@ -81,6 +83,7 @@ class PaymentWebController extends Controller
             'notes' => ['nullable', 'string'],
             'lines' => ['required', 'array'],
             'lines.*.fee_type_id' => ['nullable', 'exists:fee_types,id'],
+            'lines.*.fee_schedule_id' => ['nullable', 'exists:fee_schedules,id'],
             'lines.*.amount' => ['nullable', 'numeric', 'min:1'],
         ]);
 
@@ -107,7 +110,7 @@ class PaymentWebController extends Controller
 
     public function show(Payment $payment): View
     {
-        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'receiver']);
+        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
 
         return view('payments.show', [
             'academicYear' => $this->activeAcademicYear(),
@@ -118,7 +121,7 @@ class PaymentWebController extends Controller
 
     public function receipt(Payment $payment)
     {
-        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'receiver']);
+        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
         $filename = 'recu-' . Str::slug($payment->receipt_number . '-' . $payment->student->full_name) . '.pdf';
 
         return Pdf::loadView('payments.receipt-pdf', [
@@ -197,12 +200,76 @@ class PaymentWebController extends Controller
     private function paymentLines(array $lines): Collection
     {
         return collect($lines)
-            ->filter(fn (array $line) => filled($line['fee_type_id'] ?? null) && filled($line['amount'] ?? null))
-            ->map(fn (array $line) => [
-                'fee_type_id' => (int) $line['fee_type_id'],
-                'amount' => (float) $line['amount'],
-            ])
+            ->filter(fn (array $line) => (filled($line['fee_schedule_id'] ?? null) || filled($line['fee_type_id'] ?? null)) && filled($line['amount'] ?? null))
+            ->map(function (array $line) {
+                $schedule = filled($line['fee_schedule_id'] ?? null)
+                    ? FeeSchedule::query()->find((int) $line['fee_schedule_id'])
+                    : null;
+
+                return [
+                    'fee_type_id' => $schedule?->fee_type_id ?? (int) ($line['fee_type_id'] ?? 0),
+                    'fee_schedule_id' => $schedule?->id,
+                    'amount' => (float) $line['amount'],
+                ];
+            })
             ->values();
+    }
+
+    private function paymentProfiles($students, ?AcademicYear $academicYear): array
+    {
+        $studentIds = $students->pluck('id')->all();
+        $paidByStudentAndSchedule = Payment::query()
+            ->whereIn('student_id', $studentIds)
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('status', 'valid')
+            ->with('lines')
+            ->get()
+            ->flatMap(fn (Payment $payment) => $payment->lines
+                ->filter(fn ($line) => filled($line->fee_schedule_id))
+                ->map(fn ($line) => [
+                    'student_id' => $payment->student_id,
+                    'fee_schedule_id' => $line->fee_schedule_id,
+                    'amount' => (float) $line->amount,
+                ]))
+            ->groupBy(fn (array $row) => $row['student_id'] . ':' . $row['fee_schedule_id'])
+            ->map(fn ($rows) => (float) $rows->sum('amount'));
+
+        $classIds = $students
+            ->flatMap(fn (Student $student) => $student->enrollments->pluck('school_class_id'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $schedulesByClass = FeeSchedule::query()
+            ->with(['feeType', 'schoolClass'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->whereIn('school_class_id', $classIds)
+            ->orderBy('period')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('school_class_id');
+
+        return $students->mapWithKeys(function (Student $student) use ($paidByStudentAndSchedule, $schedulesByClass) {
+            $enrollment = $student->enrollments->sortByDesc('id')->first();
+            $schedules = $enrollment
+                ? ($schedulesByClass[$enrollment->school_class_id] ?? collect())
+                : collect();
+
+            return [
+                $student->id => $schedules->map(function (FeeSchedule $schedule) use ($student, $paidByStudentAndSchedule) {
+                    $paid = (float) ($paidByStudentAndSchedule[$student->id . ':' . $schedule->id] ?? 0);
+                    $amount = (float) $schedule->amount;
+
+                    return [
+                        'id' => $schedule->id,
+                        'label' => trim(($schedule->period ?: 'Sans periode') . ' - ' . ($schedule->feeType?->name ?? 'Frais')),
+                        'amount' => $amount,
+                        'paid' => $paid,
+                        'remaining' => max($amount - $paid, 0),
+                    ];
+                })->values()->all(),
+            ];
+        })->all();
     }
 
     private function studentPaymentSummary(Student $student, ?AcademicYear $academicYear): array

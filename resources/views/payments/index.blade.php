@@ -9,6 +9,7 @@
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
         <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Depenses</a>
+        <a class="btn btn-subtle" href="{{ route('reports.installments') }}">Tranches</a>
         <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
     @endcan
     @can('payments.create')

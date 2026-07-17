@@ -61,18 +61,15 @@
                     @for ($i = 0; $i < 3; $i++)
                         <div class="form-grid">
                             <div class="field">
-                                <label for="lines_{{ $i }}_fee_type_id">Type de frais</label>
-                                <select id="lines_{{ $i }}_fee_type_id" name="lines[{{ $i }}][fee_type_id]">
-                                    <option value="">Choisir</option>
-                                    @foreach ($feeTypes as $feeType)
-                                        <option value="{{ $feeType->id }}" @selected(old("lines.$i.fee_type_id") == $feeType->id)>{{ $feeType->name }}</option>
-                                    @endforeach
+                                <label for="lines_{{ $i }}_fee_schedule_id">Tranche / frais</label>
+                                <select id="lines_{{ $i }}_fee_schedule_id" name="lines[{{ $i }}][fee_schedule_id]" data-schedule-select data-old-value="{{ old("lines.$i.fee_schedule_id") }}">
+                                    <option value="">Choisir d'abord un eleve</option>
                                 </select>
                             </div>
 
                             <div class="field">
                                 <label for="lines_{{ $i }}_amount">Montant FCFA</label>
-                                <input id="lines_{{ $i }}_amount" name="lines[{{ $i }}][amount]" type="number" min="1" step="1" value="{{ old("lines.$i.amount") }}" placeholder="Ex: 25000">
+                                <input id="lines_{{ $i }}_amount" name="lines[{{ $i }}][amount]" type="number" min="1" step="1" value="{{ old("lines.$i.amount") }}" placeholder="Choisir une tranche" data-amount-input>
                             </div>
                         </div>
                     @endfor
@@ -91,4 +88,67 @@
             </section>
         </form>
     @endif
+
+    <script>
+        const paymentProfiles = @json($paymentProfiles);
+        const studentSelect = document.getElementById('student_id');
+        const scheduleSelects = Array.from(document.querySelectorAll('[data-schedule-select]'));
+
+        function formatMoney(value) {
+            return new Intl.NumberFormat('fr-FR').format(value) + ' FCFA';
+        }
+
+        function fillSchedules() {
+            const schedules = paymentProfiles[studentSelect.value] || [];
+
+            scheduleSelects.forEach((select) => {
+                const oldValue = select.dataset.oldValue || '';
+                select.innerHTML = '';
+
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = schedules.length ? 'Choisir une tranche' : 'Aucune tranche configuree';
+                select.appendChild(emptyOption);
+
+                schedules.forEach((schedule) => {
+                    const option = document.createElement('option');
+                    option.value = schedule.id;
+                    option.dataset.remaining = schedule.remaining;
+                    option.textContent = `${schedule.label} - reste ${formatMoney(schedule.remaining)} / ${formatMoney(schedule.amount)}`;
+                    option.disabled = schedule.remaining <= 0;
+                    if (String(schedule.id) === oldValue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+
+                updateAmount(select);
+            });
+        }
+
+        function updateAmount(select) {
+            const input = select.closest('.form-grid').querySelector('[data-amount-input]');
+            const selected = select.options[select.selectedIndex];
+
+            if (! input || ! selected || ! selected.dataset.remaining) {
+                return;
+            }
+
+            if (! input.value) {
+                input.value = Math.max(Number(selected.dataset.remaining || 0), 0);
+            }
+        }
+
+        studentSelect?.addEventListener('change', fillSchedules);
+        scheduleSelects.forEach((select) => {
+            select.addEventListener('change', () => {
+                const input = select.closest('.form-grid').querySelector('[data-amount-input]');
+                if (input) {
+                    input.value = '';
+                }
+                updateAmount(select);
+            });
+        });
+        fillSchedules();
+    </script>
 @endsection

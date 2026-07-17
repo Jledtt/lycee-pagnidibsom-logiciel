@@ -1,17 +1,14 @@
 @extends('layouts.app', [
-    'title' => 'Situation des paiements par classe - Lycee Prive Pagnidibsom',
+    'title' => 'Tranches de paiement - Lycee Prive Pagnidibsom',
     'active' => 'reports',
-    'pageTitle' => 'Situation des paiements',
-    'pageSubtitle' => 'Suivi financier par classe pour ' . ($academicYear?->name ?? 'l annee active'),
+    'pageTitle' => 'Tranches de paiement',
+    'pageSubtitle' => 'Suivi des tranches payees et restantes par classe',
 ])
 
 @section('page_actions')
-    @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste eleves</a>
-    @endcan
-    <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Tranches</a>
+    <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation globale</a>
     @if ($schoolClass)
-        <a class="btn btn-primary" href="{{ route('reports.payment-situation.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
+        <a class="btn btn-primary" href="{{ route('reports.installments.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
 @endsection
 
@@ -23,7 +20,7 @@
             <h2>Selection</h2>
         </div>
 
-        <form class="searchbar" method="GET" action="{{ route('reports.payment-situation') }}">
+        <form class="searchbar" method="GET" action="{{ route('reports.installments') }}">
             <select name="school_class_id" required>
                 @foreach ($classes as $class)
                     <option value="{{ $class->id }}" @selected($schoolClass?->id === $class->id)>
@@ -43,48 +40,48 @@
         <section class="summary-row" style="margin-top:16px">
             <div class="stat">
                 <span>Total attendu</span>
-                <strong class="money">{{ is_null($summary['expected']) ? 'A configurer' : number_format($summary['expected'], 0, ',', ' ') . ' ' . $currency }}</strong>
+                <strong class="money">{{ number_format($summary['expected'], 0, ',', ' ') }} {{ $currency }}</strong>
             </div>
             <div class="stat">
                 <span>Total paye</span>
                 <strong class="money">{{ number_format($summary['paid'], 0, ',', ' ') }} {{ $currency }}</strong>
             </div>
             <div class="stat">
-                <span>Reste a payer</span>
-                <strong class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . $currency }}</strong>
+                <span>Reste</span>
+                <strong class="money">{{ number_format($summary['balance'], 0, ',', ' ') }} {{ $currency }}</strong>
             </div>
         </section>
 
         <section class="grid modules" style="margin-top:16px">
             <div class="module">
                 <strong>{{ $summary['up_to_date'] }}</strong>
-                <span>Eleves a jour</span>
+                <span>Tranches a jour</span>
             </div>
             <div class="module">
                 <strong>{{ $summary['partial'] }}</strong>
-                <span>Paiements partiels</span>
+                <span>Tranches partielles</span>
             </div>
             <div class="module">
                 <strong>{{ $summary['unpaid'] }}</strong>
-                <span>Eleves impayes</span>
+                <span>Tranches impayees</span>
             </div>
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $schoolClass->name }}</h2>
-                <span class="badge">{{ $rows->count() }} eleve(s)</span>
+                <span class="badge">{{ $rows->count() }} ligne(s)</span>
             </div>
 
             @if ($rows->isEmpty())
-                <div class="empty">Aucun eleve actif inscrit dans cette classe.</div>
+                <div class="empty">Aucune tranche configuree pour cette classe.</div>
             @else
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Matricule</th>
                             <th>Eleve</th>
+                            <th>Tranche</th>
+                            <th>Frais</th>
                             <th>Attendu</th>
                             <th>Paye</th>
                             <th>Reste</th>
@@ -94,12 +91,15 @@
                     <tbody>
                         @foreach ($rows as $row)
                             <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $row['student']?->matricule }}</td>
-                                <td><strong>{{ $row['student']?->full_name }}</strong></td>
-                                <td class="money">{{ is_null($row['expected']) ? '-' : number_format($row['expected'], 0, ',', ' ') . ' ' . $currency }}</td>
+                                <td>
+                                    <strong>{{ $row['student']?->full_name }}</strong><br>
+                                    <span class="badge">{{ $row['student']?->matricule }}</span>
+                                </td>
+                                <td>{{ $row['schedule']->period ?: '-' }}</td>
+                                <td>{{ $row['schedule']->feeType?->name ?? '-' }}</td>
+                                <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} {{ $currency }}</td>
                                 <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} {{ $currency }}</td>
-                                <td class="money">{{ is_null($row['balance']) ? '-' : number_format($row['balance'], 0, ',', ' ') . ' ' . $currency }}</td>
+                                <td class="money">{{ number_format($row['balance'], 0, ',', ' ') }} {{ $currency }}</td>
                                 <td><span class="badge {{ $row['status']['class'] }}">{{ $row['status']['label'] }}</span></td>
                             </tr>
                         @endforeach

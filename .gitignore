@@ -4,6 +4,7 @@
 .env.backup
 .env.production
 database/database.sqlite
+tmp/
 work/
 .phpactor.json
 .phpunit.result.cache

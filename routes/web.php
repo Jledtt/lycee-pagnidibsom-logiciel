@@ -87,6 +87,14 @@ Route::get('/reports/payment-situation/pdf', [ReportWebController::class, 'payme
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('reports.payment-situation.pdf');
 
+Route::get('/reports/installments', [ReportWebController::class, 'installmentSituation'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('reports.installments');
+
+Route::get('/reports/installments/pdf', [ReportWebController::class, 'installmentSituationPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('reports.installments.pdf');
+
 Route::get('/staff/roles', [StaffRoleWebController::class, 'index'])
     ->middleware(['auth', 'permission:roles.manage'])
     ->name('staff.roles.index');

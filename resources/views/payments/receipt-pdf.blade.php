@@ -73,7 +73,12 @@
         <tbody>
             @foreach ($payment->lines as $line)
                 <tr>
-                    <td>{{ $line->feeType?->name ?? '-' }}</td>
+                    <td>
+                        {{ $line->feeSchedule?->period ?: ($line->feeType?->name ?? '-') }}
+                        @if ($line->feeSchedule?->period && $line->feeType?->name)
+                            - {{ $line->feeType->name }}
+                        @endif
+                    </td>
                     <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
                 </tr>
             @endforeach
