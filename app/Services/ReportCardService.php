@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\ReportCard;
+use App\Models\SchoolClass;
+use App\Models\Term;
+
+class ReportCardService
+{
+    public function __construct(
+        private readonly GradeCalculationService $gradeCalculationService
+    ) {
+    }
+
+    public function generateForClass(SchoolClass $schoolClass, Term $term): array
+    {
+        $enrollments = $schoolClass->enrollments()
+            ->with('student')
+            ->where('status', 'active')
+            ->get();
+
+        $rows = [];
+
+        foreach ($enrollments as $enrollment) {
+            $average = $this->gradeCalculationService->generalAverage(
+                $enrollment->student,
+                $schoolClass,
+                $term
+            );
+
+            $rows[] = [
+                'student' => $enrollment->student,
+                'average' => $average,
+            ];
+        }
+
+        usort($rows, fn (array $a, array $b) => ($b['average'] ?? -1) <=> ($a['average'] ?? -1));
+
+        foreach ($rows as $index => $row) {
+            ReportCard::updateOrCreate(
+                [
+                    'academic_year_id' => $schoolClass->academic_year_id,
+                    'term_id' => $term->id,
+                    'student_id' => $row['student']->id,
+                ],
+                [
+                    'school_class_id' => $schoolClass->id,
+                    'general_average' => $row['average'],
+                    'rank' => $row['average'] === null ? null : $index + 1,
+                    'class_size' => count($rows),
+                    'status' => 'draft',
+                ]
+            );
+        }
+
+        return $rows;
+    }
+}
