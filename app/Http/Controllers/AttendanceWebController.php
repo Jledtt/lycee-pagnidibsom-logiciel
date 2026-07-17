@@ -6,9 +6,12 @@ use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AttendanceWebController extends Controller
@@ -60,6 +63,44 @@ class AttendanceWebController extends Controller
         return redirect()
             ->route('attendance.sessions.edit', $session)
             ->with('success', 'Seance d appel prete.');
+    }
+
+    public function pdf(Request $request)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $date = $request->date('date') ?? today();
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        abort_if(! $schoolClass, 404, 'Classe introuvable.');
+
+        $session = AttendanceSession::query()
+            ->with(['schoolClass.level', 'records.student', 'academicYear'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('school_class_id', $schoolClass->id)
+            ->whereDate('session_date', $date)
+            ->first();
+
+        $records = $session
+            ? $session->records
+                ->filter(fn (AttendanceRecord $record) => in_array($record->status, ['absent', 'late', 'excused'], true))
+                ->sortBy(fn (AttendanceRecord $record) => Str::lower($record->student?->full_name ?? ''))
+                ->values()
+            : collect();
+
+        $filename = 'absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.pdf';
+
+        return Pdf::loadView('attendance.pdf', [
+            'academicYear' => $academicYear,
+            'date' => $date,
+            'records' => $records,
+            'school' => SchoolSetting::query()->first(),
+            'schoolClass' => $schoolClass,
+            'session' => $session,
+            'summary' => $this->recordSummary($session?->records ?? collect()),
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
     }
 
     public function editSession(AttendanceSession $attendanceSession): View

@@ -5,6 +5,14 @@
     'pageSubtitle' => 'Pointage par classe, absences et retards',
 ])
 
+@section('page_actions')
+    @if ($schoolClass)
+        @can('attendance.reports')
+            <a class="btn btn-subtle" href="{{ route('attendance.pdf', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">PDF</a>
+        @endcan
+    @endif
+@endsection
+
 @section('content')
     @php($statusLabels = ['present' => 'Present', 'absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifie'])
 

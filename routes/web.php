@@ -28,6 +28,10 @@ Route::get('/attendance', [AttendanceWebController::class, 'index'])
     ->middleware(['auth', 'permission:attendance.view'])
     ->name('attendance.index');
 
+Route::get('/attendance/pdf', [AttendanceWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:attendance.reports'])
+    ->name('attendance.pdf');
+
 Route::post('/attendance/sessions', [AttendanceWebController::class, 'storeSession'])
     ->middleware(['auth', 'permission:attendance.create'])
     ->name('attendance.sessions.store');
