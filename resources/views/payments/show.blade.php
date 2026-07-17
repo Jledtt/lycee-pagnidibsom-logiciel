@@ -7,8 +7,12 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Retour</a>
-    <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Recu PDF</a>
-    <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @can('payments.print_receipt')
+        <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Recu PDF</a>
+    @endcan
+    @can('payments.create')
+        <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @endcan
 @endsection
 
 @section('content')

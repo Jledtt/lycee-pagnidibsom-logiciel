@@ -6,7 +6,9 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel eleve</a>
+    @can('students.create')
+        <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel eleve</a>
+    @endcan
 @endsection
 
 @section('content')

@@ -6,7 +6,9 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-primary" href="{{ route('certificates.create') }}">Generer un certificat</a>
+    @can('students.export')
+        <a class="btn btn-primary" href="{{ route('certificates.create') }}">Generer un certificat</a>
+    @endcan
 @endsection
 
 @section('content')

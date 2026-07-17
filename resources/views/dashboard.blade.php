@@ -36,30 +36,48 @@
                     </div>
 
                     <div class="grid modules">
-                        <a class="module" href="{{ route('students.index') }}">
-                            <strong>Eleves</strong>
-                            <span>Dossiers, parents, documents et historique.</span>
-                        </a>
-                        <a class="module" href="{{ route('classes.index') }}">
-                            <strong>Classes</strong>
-                            <span>Niveaux, capacites, effectifs et affectation des eleves.</span>
-                        </a>
-                        <a class="module" href="{{ route('enrollments.index') }}">
-                            <strong>Inscriptions</strong>
-                            <span>Nouvelle inscription, reinscription et affectation.</span>
-                        </a>
-                        <a class="module" href="{{ route('payments.index') }}">
-                            <strong>Paiements</strong>
-                            <span>Scolarite, recus, impayes et rapports de caisse.</span>
-                        </a>
-                        <a class="module" href="{{ route('tariffs.index') }}">
-                            <strong>Tarifs</strong>
-                            <span>Montants par classe, tranches et frais annexes.</span>
-                        </a>
-                        <a class="module" href="{{ route('certificates.index') }}">
-                            <strong>Documents</strong>
-                            <span>Certificats, attestations et documents administratifs.</span>
-                        </a>
+                        @can('students.view')
+                            <a class="module" href="{{ route('students.index') }}">
+                                <strong>Eleves</strong>
+                                <span>Dossiers, parents, documents et historique.</span>
+                            </a>
+                        @endcan
+                        @can('classes.manage')
+                            <a class="module" href="{{ route('classes.index') }}">
+                                <strong>Classes</strong>
+                                <span>Niveaux, capacites, effectifs et affectation des eleves.</span>
+                            </a>
+                        @endcan
+                        @can('enrollments.view')
+                            <a class="module" href="{{ route('enrollments.index') }}">
+                                <strong>Inscriptions</strong>
+                                <span>Nouvelle inscription, reinscription et affectation.</span>
+                            </a>
+                        @endcan
+                        @can('payments.view')
+                            <a class="module" href="{{ route('payments.index') }}">
+                                <strong>Paiements</strong>
+                                <span>Scolarite, recus, impayes et rapports de caisse.</span>
+                            </a>
+                        @endcan
+                        @can('settings.manage')
+                            <a class="module" href="{{ route('tariffs.index') }}">
+                                <strong>Tarifs</strong>
+                                <span>Montants par classe, tranches et frais annexes.</span>
+                            </a>
+                        @endcan
+                        @can('students.export')
+                            <a class="module" href="{{ route('certificates.index') }}">
+                                <strong>Documents</strong>
+                                <span>Certificats, attestations et documents administratifs.</span>
+                            </a>
+                        @endcan
+                        @can('users.manage')
+                            <a class="module" href="{{ route('staff.index') }}">
+                                <strong>Personnel</strong>
+                                <span>Comptes utilisateurs, roles et acces internes.</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
 

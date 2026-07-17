@@ -7,6 +7,7 @@ use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
+use App\Http\Controllers\StaffUserWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\TariffWebController;
 use Illuminate\Support\Facades\Route;
@@ -20,12 +21,16 @@ Route::get('/dashboard', SchoolDashboardController::class)
     ->name('dashboard');
 
 Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.edit');
 
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
-    ->middleware('auth')
+    ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::resource('staff', StaffUserWebController::class)
+    ->middleware(['auth', 'permission:users.manage'])
+    ->parameters(['staff' => 'user']);
 
 Route::get('/students/{student}/registration-sheet', [StudentWebController::class, 'registrationSheet'])
     ->middleware('auth')

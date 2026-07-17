@@ -6,7 +6,9 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-primary" href="{{ route('enrollments.create') }}">Nouvelle inscription</a>
+    @can('enrollments.create')
+        <a class="btn btn-primary" href="{{ route('enrollments.create') }}">Nouvelle inscription</a>
+    @endcan
 @endsection
 
 @section('content')

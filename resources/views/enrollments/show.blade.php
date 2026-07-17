@@ -7,9 +7,13 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('enrollments.index') }}">Retour</a>
-    <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $enrollment->student) }}">Fiche</a>
-    <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">PDF</a>
-    <a class="btn btn-primary" href="{{ route('enrollments.edit', $enrollment) }}">Modifier</a>
+    @can('students.export')
+        <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $enrollment->student) }}">Fiche</a>
+        <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">PDF</a>
+    @endcan
+    @can('enrollments.update')
+        <a class="btn btn-primary" href="{{ route('enrollments.edit', $enrollment) }}">Modifier</a>
+    @endcan
 @endsection
 
 @section('content')

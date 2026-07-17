@@ -13,16 +13,37 @@
 
             <nav class="nav">
                 <a class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
-                <a class="{{ ($active ?? '') === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Eleves</a>
-                <a class="{{ ($active ?? '') === 'classes' ? 'active' : '' }}" href="{{ route('classes.index') }}"><span class="nav-dot"></span>Classes</a>
-                <a class="{{ ($active ?? '') === 'enrollments' ? 'active' : '' }}" href="{{ route('enrollments.index') }}"><span class="nav-dot"></span>Inscriptions</a>
-                <a class="{{ ($active ?? '') === 'payments' ? 'active' : '' }}" href="{{ route('payments.index') }}"><span class="nav-dot"></span>Paiements</a>
-                <a class="{{ ($active ?? '') === 'tariffs' ? 'active' : '' }}" href="{{ route('tariffs.index') }}"><span class="nav-dot"></span>Tarifs</a>
-                <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
-                <a href="#"><span class="nav-dot"></span>Notes</a>
-                <a href="#"><span class="nav-dot"></span>Bulletins</a>
-                <a href="#"><span class="nav-dot"></span>Absences</a>
-                <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
+                @can('students.view')
+                    <a class="{{ ($active ?? '') === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Eleves</a>
+                @endcan
+                @can('classes.manage')
+                    <a class="{{ ($active ?? '') === 'classes' ? 'active' : '' }}" href="{{ route('classes.index') }}"><span class="nav-dot"></span>Classes</a>
+                @endcan
+                @can('enrollments.view')
+                    <a class="{{ ($active ?? '') === 'enrollments' ? 'active' : '' }}" href="{{ route('enrollments.index') }}"><span class="nav-dot"></span>Inscriptions</a>
+                @endcan
+                @can('payments.view')
+                    <a class="{{ ($active ?? '') === 'payments' ? 'active' : '' }}" href="{{ route('payments.index') }}"><span class="nav-dot"></span>Paiements</a>
+                @endcan
+                @can('settings.manage')
+                    <a class="{{ ($active ?? '') === 'tariffs' ? 'active' : '' }}" href="{{ route('tariffs.index') }}"><span class="nav-dot"></span>Tarifs</a>
+                @endcan
+                @can('students.export')
+                    <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
+                @endcan
+                @can('grades.view')
+                    <a href="#"><span class="nav-dot"></span>Notes</a>
+                    <a href="#"><span class="nav-dot"></span>Bulletins</a>
+                @endcan
+                @can('attendance.view')
+                    <a href="#"><span class="nav-dot"></span>Absences</a>
+                @endcan
+                @can('users.manage')
+                    <a class="{{ ($active ?? '') === 'staff' ? 'active' : '' }}" href="{{ route('staff.index') }}"><span class="nav-dot"></span>Personnel</a>
+                @endcan
+                @can('settings.manage')
+                    <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
+                @endcan
             </nav>
         </aside>
 

@@ -6,7 +6,9 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-primary" href="{{ route('classes.create') }}">Nouvelle classe</a>
+    @can('classes.manage')
+        <a class="btn btn-primary" href="{{ route('classes.create') }}">Nouvelle classe</a>
+    @endcan
 @endsection
 
 @section('content')

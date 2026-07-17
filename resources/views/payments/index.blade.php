@@ -6,8 +6,12 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
-    <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @can('payments.reports')
+        <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
+    @endcan
+    @can('payments.create')
+        <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @endcan
 @endsection
 
 @section('content')
