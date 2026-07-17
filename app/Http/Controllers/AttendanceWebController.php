@@ -235,7 +235,11 @@ class AttendanceWebController extends Controller
             ->with(['schoolClass.level', 'records'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->whereDate('session_date', $date)
-            ->get();
+            ->latest('updated_at')
+            ->latest('id')
+            ->get()
+            ->unique('school_class_id')
+            ->values();
     }
 
     private function studentsForClass(SchoolClass $schoolClass): Collection
