@@ -112,14 +112,17 @@ class ReportWebController extends Controller
         }
 
         $rows = $this->installmentRows($schoolClass, $academicYear);
+        $studentRows = $this->installmentStudentRows($rows);
 
         return view('reports.installments', [
             'academicYear' => $academicYear,
             'classes' => $classes,
-            'filters' => $request->only(['school_class_id']),
+            'filters' => $request->only(['school_class_id', 'search', 'status']),
             'rows' => $rows,
             'schoolClass' => $schoolClass,
             'summary' => $this->installmentSummary($rows),
+            'studentRows' => $this->filterInstallmentStudentRows($studentRows, $request),
+            'studentSummary' => $this->installmentStudentSummary($studentRows),
         ]);
     }
 
@@ -342,5 +345,85 @@ class ReportWebController extends Controller
             'partial' => $rows->filter(fn (array $row) => $row['status']['label'] === 'Partiel')->count(),
             'unpaid' => $rows->filter(fn (array $row) => $row['status']['label'] === 'Impaye')->count(),
         ];
+    }
+
+    private function installmentStudentRows(Collection $rows): Collection
+    {
+        return $rows
+            ->filter(fn (array $row) => filled($row['student']?->id))
+            ->groupBy(fn (array $row) => $row['student']->id)
+            ->map(function (Collection $studentInstallments) {
+                $student = $studentInstallments->first()['student'];
+                $expected = (float) $studentInstallments->sum('expected');
+                $paid = (float) $studentInstallments->sum('paid');
+                $balance = (float) $studentInstallments->sum('balance');
+                $unpaidRows = $studentInstallments
+                    ->filter(fn (array $row) => (float) $row['balance'] > 0)
+                    ->values();
+                $status = $this->studentInstallmentStatus($expected, $paid, $balance);
+
+                return [
+                    'student' => $student,
+                    'expected' => $expected,
+                    'paid' => $paid,
+                    'balance' => $balance,
+                    'progress' => $expected > 0 ? min(round(($paid / $expected) * 100), 100) : 0,
+                    'status' => $status,
+                    'rows' => $studentInstallments->values(),
+                    'unpaid_rows' => $unpaidRows,
+                    'unpaid_count' => $unpaidRows->count(),
+                ];
+            })
+            ->sortBy(function (array $row) {
+                $order = ['unpaid' => 0, 'partial' => 1, 'paid' => 2];
+
+                return ($order[$row['status']['key']] ?? 9) . '|' . Str::lower($row['student']->full_name);
+            })
+            ->values();
+    }
+
+    private function filterInstallmentStudentRows(Collection $studentRows, Request $request): Collection
+    {
+        $search = Str::lower(trim($request->string('search')->toString()));
+        $status = $request->string('status')->toString();
+
+        return $studentRows
+            ->when($status, fn (Collection $rows) => $rows->filter(fn (array $row) => $row['status']['key'] === $status))
+            ->when($search, function (Collection $rows) use ($search) {
+                return $rows->filter(function (array $row) use ($search) {
+                    $student = $row['student'];
+
+                    return Str::contains(Str::lower($student->full_name), $search)
+                        || Str::contains(Str::lower($student->matricule ?? ''), $search);
+                });
+            })
+            ->values();
+    }
+
+    private function installmentStudentSummary(Collection $studentRows): array
+    {
+        return [
+            'total' => $studentRows->count(),
+            'paid' => $studentRows->filter(fn (array $row) => $row['status']['key'] === 'paid')->count(),
+            'partial' => $studentRows->filter(fn (array $row) => $row['status']['key'] === 'partial')->count(),
+            'unpaid' => $studentRows->filter(fn (array $row) => $row['status']['key'] === 'unpaid')->count(),
+        ];
+    }
+
+    private function studentInstallmentStatus(float $expected, float $paid, float $balance): array
+    {
+        if ($expected <= 0) {
+            return ['key' => 'unpaid', 'label' => 'Tarif a configurer', 'class' => 'badge-warning'];
+        }
+
+        if ($balance <= 0) {
+            return ['key' => 'paid', 'label' => 'A jour', 'class' => ''];
+        }
+
+        if ($paid > 0) {
+            return ['key' => 'partial', 'label' => 'Partiel', 'class' => 'badge-warning'];
+        }
+
+        return ['key' => 'unpaid', 'label' => 'Impaye', 'class' => 'badge-danger'];
     }
 }

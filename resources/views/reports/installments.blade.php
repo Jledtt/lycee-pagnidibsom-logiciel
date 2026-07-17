@@ -28,7 +28,15 @@
                     </option>
                 @endforeach
             </select>
-            <button class="btn btn-subtle" type="submit">Afficher</button>
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom ou matricule">
+            <select name="status">
+                <option value="">Tous les statuts</option>
+                <option value="unpaid" @selected(($filters['status'] ?? '') === 'unpaid')>Impayes</option>
+                <option value="partial" @selected(($filters['status'] ?? '') === 'partial')>Partiels</option>
+                <option value="paid" @selected(($filters['status'] ?? '') === 'paid')>A jour</option>
+            </select>
+            <button class="btn btn-subtle" type="submit">Filtrer</button>
+            <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Reinitialiser</a>
         </form>
     </section>
 
@@ -54,57 +62,103 @@
 
         <section class="grid modules" style="margin-top:16px">
             <div class="module">
-                <strong>{{ $summary['up_to_date'] }}</strong>
-                <span>Tranches a jour</span>
+                <strong>{{ $studentSummary['total'] }}</strong>
+                <span>Eleves suivis</span>
             </div>
             <div class="module">
-                <strong>{{ $summary['partial'] }}</strong>
-                <span>Tranches partielles</span>
+                <strong>{{ $studentSummary['partial'] }}</strong>
+                <span>Eleves avec paiement partiel</span>
             </div>
             <div class="module">
-                <strong>{{ $summary['unpaid'] }}</strong>
-                <span>Tranches impayees</span>
+                <strong>{{ $studentSummary['unpaid'] }}</strong>
+                <span>Eleves impayes</span>
             </div>
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $schoolClass->name }}</h2>
-                <span class="badge">{{ $rows->count() }} ligne(s)</span>
+                <span class="badge">{{ $studentRows->count() }} eleve(s) affiche(s)</span>
             </div>
 
             @if ($rows->isEmpty())
                 <div class="empty">Aucune tranche configuree pour cette classe.</div>
+            @elseif ($studentRows->isEmpty())
+                <div class="empty">Aucun eleve ne correspond aux filtres choisis.</div>
             @else
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Eleve</th>
-                            <th>Tranche</th>
-                            <th>Frais</th>
-                            <th>Attendu</th>
-                            <th>Paye</th>
-                            <th>Reste</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $row)
-                            <tr>
-                                <td>
-                                    <strong>{{ $row['student']?->full_name }}</strong><br>
-                                    <span class="badge">{{ $row['student']?->matricule }}</span>
-                                </td>
-                                <td>{{ $row['schedule']->period ?: '-' }}</td>
-                                <td>{{ $row['schedule']->feeType?->name ?? '-' }}</td>
-                                <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} {{ $currency }}</td>
-                                <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} {{ $currency }}</td>
-                                <td class="money">{{ number_format($row['balance'], 0, ',', ' ') }} {{ $currency }}</td>
-                                <td><span class="badge {{ $row['status']['class'] }}">{{ $row['status']['label'] }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="ledger-list">
+                    @foreach ($studentRows as $studentRow)
+                        @php($student = $studentRow['student'])
+                        @php($detailRows = $studentRow['unpaid_rows']->isEmpty() ? $studentRow['rows'] : $studentRow['unpaid_rows'])
+
+                        <details class="ledger-item">
+                            <summary class="ledger-summary">
+                                <span class="ledger-person">
+                                    <strong>{{ $student->full_name }}</strong>
+                                    <span>{{ $student->matricule }}</span>
+                                </span>
+
+                                <span class="ledger-metric">
+                                    <strong class="money">{{ number_format($studentRow['balance'], 0, ',', ' ') }} {{ $currency }}</strong>
+                                    <span>Reste a payer</span>
+                                </span>
+
+                                <span class="ledger-metric">
+                                    <strong class="money">{{ number_format($studentRow['paid'], 0, ',', ' ') }} {{ $currency }}</strong>
+                                    <span>Deja paye</span>
+                                </span>
+
+                                <span class="ledger-progress">
+                                    <span class="meter" style="--value: {{ $studentRow['progress'] }}%">
+                                        <span></span>
+                                    </span>
+                                    <span class="badge">{{ $studentRow['progress'] }}%</span>
+                                </span>
+
+                                <span class="badge {{ $studentRow['status']['class'] }}">{{ $studentRow['status']['label'] }}</span>
+
+                                <span class="btn btn-subtle ledger-toggle">Voir les tranches</span>
+                            </summary>
+
+                            <div class="ledger-detail">
+                                <div class="ledger-detail-head">
+                                    <div>
+                                        <h3>{{ $studentRow['unpaid_rows']->isEmpty() ? 'Toutes les tranches' : 'Tranches a regler' }}</h3>
+                                        <span class="badge">{{ $studentRow['unpaid_count'] }} impaye(s)</span>
+                                    </div>
+                                    @can('payments.create')
+                                        <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Enregistrer un paiement</a>
+                                    @endcan
+                                </div>
+
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tranche</th>
+                                            <th>Frais</th>
+                                            <th>Attendu</th>
+                                            <th>Paye</th>
+                                            <th>Reste</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($detailRows as $row)
+                                            <tr>
+                                                <td>{{ $row['schedule']->period ?: '-' }}</td>
+                                                <td>{{ $row['schedule']->feeType?->name ?? '-' }}</td>
+                                                <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} {{ $currency }}</td>
+                                                <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} {{ $currency }}</td>
+                                                <td class="money">{{ number_format($row['balance'], 0, ',', ' ') }} {{ $currency }}</td>
+                                                <td><span class="badge {{ $row['status']['class'] }}">{{ $row['status']['label'] }}</span></td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    @endforeach
+                </div>
             @endif
         </section>
     @endif

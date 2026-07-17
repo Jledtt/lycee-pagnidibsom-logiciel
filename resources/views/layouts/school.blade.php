@@ -424,6 +424,11 @@
             color: #83580f;
         }
 
+        .badge-danger {
+            background: rgba(161,54,42,.13);
+            color: #8f241b;
+        }
+
         .inline-form {
             display: flex;
             align-items: flex-end;
@@ -546,6 +551,94 @@
             background: #fff;
         }
 
+        .ledger-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .ledger-item {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .ledger-item[open] {
+            border-color: rgba(14,75,54,.24);
+            box-shadow: 0 14px 35px rgba(17, 47, 37, .06);
+        }
+
+        .ledger-summary {
+            display: grid;
+            grid-template-columns: minmax(210px, 1.5fr) repeat(4, minmax(120px, .8fr)) minmax(140px, .9fr);
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .ledger-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .ledger-person strong,
+        .ledger-metric strong {
+            display: block;
+        }
+
+        .ledger-person span,
+        .ledger-metric span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .ledger-metric strong {
+            font-size: 14px;
+        }
+
+        .ledger-progress {
+            display: grid;
+            gap: 7px;
+        }
+
+        .ledger-progress .meter {
+            width: 100%;
+        }
+
+        .ledger-toggle {
+            justify-self: end;
+        }
+
+        .ledger-detail {
+            padding: 0 16px 16px;
+            border-top: 1px solid var(--line);
+            background: #fbfcfa;
+            overflow-x: auto;
+        }
+
+        .ledger-detail-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 0 10px;
+            flex-wrap: wrap;
+        }
+
+        .ledger-detail-head h3 {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .ledger-detail table {
+            background: #fff;
+            min-width: 760px;
+        }
+
         .empty {
             padding: 18px;
             border: 1px dashed var(--line);
@@ -580,6 +673,10 @@
             .modules {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
+
+            .ledger-summary {
+                grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(120px, 1fr));
+            }
         }
 
         @media (max-width: 620px) {
@@ -602,6 +699,15 @@
             .detail-grid,
             .summary-row {
                 grid-template-columns: 1fr;
+            }
+
+            .ledger-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .ledger-toggle {
+                justify-self: stretch;
+                justify-content: center;
             }
         }
     </style>
