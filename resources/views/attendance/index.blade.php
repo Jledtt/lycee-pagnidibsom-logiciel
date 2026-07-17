@@ -8,7 +8,7 @@
 @section('page_actions')
     @if ($schoolClass)
         @can('attendance.reports')
-            <a class="btn btn-subtle" href="{{ route('attendance.pdf', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">PDF</a>
+            <a class="btn btn-subtle" href="{{ $selectedSession ? route('attendance.sessions.pdf', $selectedSession) : route('attendance.pdf', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">PDF</a>
         @endcan
     @endif
 @endsection
@@ -77,7 +77,7 @@
                             <th>Presents</th>
                             <th>Absents</th>
                             <th>Retards</th>
-                            <th></th>
+                                <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,7 +87,14 @@
                                 <td>{{ $session->records->where('status', 'present')->count() }}</td>
                                 <td>{{ $session->records->where('status', 'absent')->count() }}</td>
                                 <td>{{ $session->records->where('status', 'late')->count() }}</td>
-                                <td><a class="btn btn-subtle" href="{{ route('attendance.sessions.edit', $session) }}">Voir</a></td>
+                                <td>
+                                    <div class="searchbar">
+                                        <a class="btn btn-subtle" href="{{ route('attendance.sessions.edit', $session) }}">Voir</a>
+                                        @can('attendance.reports')
+                                            <a class="btn btn-subtle" href="{{ route('attendance.sessions.pdf', $session) }}">PDF</a>
+                                        @endcan
+                                    </div>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -111,6 +118,7 @@
                             <th>Classe</th>
                             <th>Date</th>
                             <th>Statut</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,6 +134,15 @@
                                     <span class="badge {{ $record->status === 'present' ? '' : 'badge-warning' }}">
                                         {{ $statusLabels[$record->status] ?? $record->status }}
                                     </span>
+                                </td>
+                                <td>
+                                    @can('attendance.update')
+                                        <form method="POST" action="{{ route('attendance.records.clear', $record) }}" onsubmit="return confirm('Supprimer cette absence ou ce retard ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger" type="submit">Supprimer</button>
+                                        </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

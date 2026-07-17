@@ -7,6 +7,9 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('attendance.index', ['school_class_id' => $session->school_class_id, 'date' => $session->session_date->toDateString()]) }}">Retour</a>
+    @can('attendance.reports')
+        <a class="btn btn-subtle" href="{{ route('attendance.sessions.pdf', $session) }}">PDF</a>
+    @endcan
 @endsection
 
 @section('content')

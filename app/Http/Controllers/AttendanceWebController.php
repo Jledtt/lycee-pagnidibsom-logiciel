@@ -24,7 +24,7 @@ class AttendanceWebController extends Controller
         $schoolClass = $this->selectedClass($request, $classes);
         $sessions = $this->sessionsForDate($academicYear, $date);
         $selectedSession = $schoolClass
-            ? $sessions->firstWhere('school_class_id', $schoolClass->id)
+            ? $sessions->where('school_class_id', $schoolClass->id)->sortByDesc('updated_at')->first()
             : null;
 
         return view('attendance.index', [
@@ -79,8 +79,42 @@ class AttendanceWebController extends Controller
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->where('school_class_id', $schoolClass->id)
             ->whereDate('session_date', $date)
+            ->latest('updated_at')
+            ->latest('id')
             ->first();
 
+        return $this->attendancePdfResponse($session, $schoolClass, $academicYear, $date);
+    }
+
+    public function sessionPdf(AttendanceSession $attendanceSession)
+    {
+        $attendanceSession->load(['schoolClass.level', 'records.student', 'academicYear']);
+
+        return $this->attendancePdfResponse(
+            $attendanceSession,
+            $attendanceSession->schoolClass,
+            $attendanceSession->academicYear,
+            $attendanceSession->session_date,
+        );
+    }
+
+    public function clearRecord(AttendanceRecord $attendanceRecord): RedirectResponse
+    {
+        $attendanceRecord->forceFill([
+            'status' => 'present',
+            'minutes_late' => null,
+            'reason' => null,
+            'justified_at' => null,
+            'justified_by' => null,
+        ])->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Absence supprimee. L eleve est marque present.');
+    }
+
+    private function attendancePdfResponse(?AttendanceSession $session, SchoolClass $schoolClass, ?AcademicYear $academicYear, $date)
+    {
         $records = $session
             ? $session->records
                 ->filter(fn (AttendanceRecord $record) => in_array($record->status, ['absent', 'late', 'excused'], true))

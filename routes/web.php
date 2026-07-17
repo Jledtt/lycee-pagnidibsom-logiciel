@@ -32,6 +32,10 @@ Route::get('/attendance/pdf', [AttendanceWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:attendance.reports'])
     ->name('attendance.pdf');
 
+Route::get('/attendance/sessions/{attendanceSession}/pdf', [AttendanceWebController::class, 'sessionPdf'])
+    ->middleware(['auth', 'permission:attendance.reports'])
+    ->name('attendance.sessions.pdf');
+
 Route::post('/attendance/sessions', [AttendanceWebController::class, 'storeSession'])
     ->middleware(['auth', 'permission:attendance.create'])
     ->name('attendance.sessions.store');
@@ -43,6 +47,10 @@ Route::get('/attendance/sessions/{attendanceSession}/edit', [AttendanceWebContro
 Route::put('/attendance/sessions/{attendanceSession}', [AttendanceWebController::class, 'updateSession'])
     ->middleware(['auth', 'permission:attendance.create'])
     ->name('attendance.sessions.update');
+
+Route::delete('/attendance/records/{attendanceRecord}', [AttendanceWebController::class, 'clearRecord'])
+    ->middleware(['auth', 'permission:attendance.update'])
+    ->name('attendance.records.clear');
 
 Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
     ->middleware(['auth', 'permission:settings.manage'])
