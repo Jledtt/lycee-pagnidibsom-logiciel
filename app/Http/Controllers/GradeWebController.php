@@ -9,10 +9,14 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -65,18 +69,7 @@ class GradeWebController extends Controller
 
             $selectedAssessment = $assessments->firstWhere('id', $request->integer('assessment_id')) ?? $assessments->first();
 
-            $students = Enrollment::query()
-                ->with('student')
-                ->where('academic_year_id', $academicYear->id)
-                ->where('school_class_id', $selectedClass->id)
-                ->where('enrollments.status', 'active')
-                ->join('students', 'students.id', '=', 'enrollments.student_id')
-                ->orderBy('students.last_name')
-                ->orderBy('students.first_name')
-                ->select('enrollments.*')
-                ->get()
-                ->pluck('student')
-                ->filter();
+            $students = $this->studentsForClass($academicYear->id, $selectedClass->id);
 
             if ($selectedAssessment) {
                 $gradesByStudent = Grade::query()
@@ -181,6 +174,36 @@ class GradeWebController extends Controller
             ->with('success', 'Notes enregistrees.');
     }
 
+    public function assessmentPdf(Assessment $assessment)
+    {
+        $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
+
+        $students = $this->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
+        $gradesByStudent = $assessment->grades->keyBy('student_id');
+        $validGrades = $assessment->grades
+            ->filter(fn (Grade $grade) => ! $grade->is_absent && $grade->score !== null);
+        $absentCount = $assessment->grades->where('is_absent', true)->count();
+        $enteredCount = $validGrades->count();
+
+        $average = $validGrades->isEmpty()
+            ? null
+            : round($validGrades->avg(fn (Grade $grade) => ((float) $grade->score / (float) $assessment->max_score) * 20), 2);
+
+        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.pdf';
+
+        return Pdf::loadView('grades.assessment-pdf', [
+            'assessment' => $assessment,
+            'absentCount' => $absentCount,
+            'average' => $average,
+            'enteredCount' => $enteredCount,
+            'gradesByStudent' => $gradesByStudent,
+            'school' => SchoolSetting::query()->first(),
+            'students' => $students,
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
+    }
+
     public function destroyAssessment(Assessment $assessment): RedirectResponse
     {
         abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
@@ -213,5 +236,23 @@ class GradeWebController extends Controller
             ->where('subject_id', $subjectId)
             ->where('is_active', true)
             ->exists();
+    }
+
+    private function studentsForClass(int $academicYearId, int $schoolClassId): Collection
+    {
+        return Enrollment::query()
+            ->with('student')
+            ->where('academic_year_id', $academicYearId)
+            ->where('school_class_id', $schoolClassId)
+            ->where('enrollments.status', 'active')
+            ->whereHas('student', fn ($query) => $query->where('students.status', 'active'))
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('enrollments.*')
+            ->get()
+            ->pluck('student')
+            ->filter()
+            ->values();
     }
 }

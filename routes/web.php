@@ -98,6 +98,10 @@ Route::post('/grades/assessments', [GradeWebController::class, 'storeAssessment'
     ->middleware(['auth', 'permission:grades.create'])
     ->name('grades.assessments.store');
 
+Route::get('/grades/assessments/{assessment}/pdf', [GradeWebController::class, 'assessmentPdf'])
+    ->middleware(['auth', 'permission:grades.view'])
+    ->name('grades.assessments.pdf');
+
 Route::put('/grades/assessments/{assessment}', [GradeWebController::class, 'updateGrades'])
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.assessments.grades.update');

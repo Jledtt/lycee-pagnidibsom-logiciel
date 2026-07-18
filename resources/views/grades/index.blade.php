@@ -131,33 +131,36 @@
                     @if ($assessments->isEmpty())
                         <div class="empty">Aucune evaluation pour cette classe et ce trimestre.</div>
                     @else
-                        <div class="ledger-list">
-                            @foreach ($assessments as $assessment)
-                                <div class="ledger-item">
-                                    <div class="ledger-summary" style="grid-template-columns:minmax(220px,1.3fr) minmax(120px,.6fr) minmax(130px,.6fr) minmax(180px,.8fr)">
-                                        <div class="ledger-person">
-                                            <strong>{{ $assessment->title }}</strong>
-                                            <span>{{ $assessment->subject->name }} - {{ $assessment->assessmentType->name }}</span>
+                        <div class="subject-list-scroll">
+                            <div class="subject-list-inner ledger-list">
+                                @foreach ($assessments as $assessment)
+                                    <div class="ledger-item">
+                                        <div class="ledger-summary" style="grid-template-columns:minmax(220px,1.3fr) minmax(120px,.6fr) minmax(130px,.6fr) minmax(260px,1fr)">
+                                            <div class="ledger-person">
+                                                <strong>{{ $assessment->title }}</strong>
+                                                <span>{{ $assessment->subject->name }} - {{ $assessment->assessmentType->name }}</span>
+                                            </div>
+                                            <div class="ledger-metric">
+                                                <strong>{{ number_format($assessment->max_score, 0, ',', ' ') }}</strong>
+                                                <span>Note sur</span>
+                                            </div>
+                                            <div class="ledger-metric">
+                                                <strong>{{ $assessment->grades_count }}</strong>
+                                                <span>Notes</span>
+                                            </div>
+                                            <div class="page-actions" style="justify-content:flex-end">
+                                                <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
+                                                <a class="btn btn-primary" href="{{ route('grades.assessments.pdf', $assessment) }}">PDF</a>
+                                                <button class="btn btn-danger" type="submit" form="delete-assessment-{{ $assessment->id }}">Supprimer</button>
+                                            </div>
                                         </div>
-                                        <div class="ledger-metric">
-                                            <strong>{{ number_format($assessment->max_score, 0, ',', ' ') }}</strong>
-                                            <span>Note sur</span>
-                                        </div>
-                                        <div class="ledger-metric">
-                                            <strong>{{ $assessment->grades_count }}</strong>
-                                            <span>Notes</span>
-                                        </div>
-                                        <div class="page-actions" style="justify-content:flex-end">
-                                            <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
-                                            <button class="btn btn-danger" type="submit" form="delete-assessment-{{ $assessment->id }}">Supprimer</button>
-                                        </div>
+                                        <form id="delete-assessment-{{ $assessment->id }}" method="POST" action="{{ route('grades.assessments.destroy', $assessment) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
                                     </div>
-                                    <form id="delete-assessment-{{ $assessment->id }}" method="POST" action="{{ route('grades.assessments.destroy', $assessment) }}">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 </div>
