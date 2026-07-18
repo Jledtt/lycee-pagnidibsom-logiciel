@@ -10,6 +10,9 @@
     @can('payments.print_receipt')
         <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Recu PDF</a>
     @endcan
+    @can('payments.view')
+        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $payment->student) }}">Situation eleve</a>
+    @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
     @endcan

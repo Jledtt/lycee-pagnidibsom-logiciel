@@ -12,6 +12,9 @@
         <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $student) }}">Fiche d'inscription</a>
         <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $student) }}">PDF</a>
     @endcan
+    @can('payments.view')
+        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}">Situation financiere</a>
+    @endcan
     @can('students.update')
         <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
     @endcan

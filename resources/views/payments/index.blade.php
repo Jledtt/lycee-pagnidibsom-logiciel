@@ -76,7 +76,10 @@
                         <tr>
                             <td><strong>{{ $payment->receipt_number }}</strong></td>
                             <td>{{ $payment->paid_at?->format('d/m/Y H:i') }}</td>
-                            <td>{{ $payment->student->full_name }}</td>
+                            <td>
+                                {{ $payment->student->full_name }}<br>
+                                <a class="badge" href="{{ route('payments.students.statement', $payment->student) }}">Situation</a>
+                            </td>
                             <td>{{ $payment->enrollment?->schoolClass?->name ?? '-' }}</td>
                             <td class="money">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</td>
                             <td><span class="badge {{ $payment->status === 'valid' ? '' : 'badge-warning' }}">{{ $payment->status }}</span></td>

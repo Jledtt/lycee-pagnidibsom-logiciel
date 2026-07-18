@@ -7,6 +7,8 @@ use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\FeeType;
 use App\Models\Payment;
+use App\Models\PaymentLine;
+use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Services\PaymentService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -129,6 +131,32 @@ class PaymentWebController extends Controller
             'summary' => $this->studentPaymentSummary($payment->student, $payment->academicYear),
         ])
             ->setPaper('a5', 'landscape')
+            ->stream($filename);
+    }
+
+    public function studentStatement(Student $student): View
+    {
+        $academicYear = $this->activeAcademicYear();
+
+        return view('payments.student-statement', [
+            'academicYear' => $academicYear,
+            'profile' => $this->studentFinancialProfile($student, $academicYear),
+            'student' => $student->load('guardians'),
+        ]);
+    }
+
+    public function studentStatementPdf(Student $student)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $filename = 'situation-financiere-' . Str::slug($student->matricule . '-' . $student->full_name) . '.pdf';
+
+        return Pdf::loadView('payments.student-statement-pdf', [
+            'academicYear' => $academicYear,
+            'profile' => $this->studentFinancialProfile($student, $academicYear),
+            'school' => SchoolSetting::query()->first(),
+            'student' => $student->load('guardians'),
+        ])
+            ->setPaper('a4')
             ->stream($filename);
     }
 
@@ -304,6 +332,73 @@ class PaymentWebController extends Controller
             'expected' => $expected,
             'paid' => (float) $paid,
             'balance' => is_null($expected) ? null : max($expected - (float) $paid, 0),
+        ];
+    }
+
+    private function studentFinancialProfile(Student $student, ?AcademicYear $academicYear): array
+    {
+        $summary = $this->studentPaymentSummary($student, $academicYear);
+        $enrollment = $summary['enrollment'];
+
+        $scheduledRows = collect();
+
+        if ($enrollment) {
+            $paidBySchedule = PaymentLine::query()
+                ->selectRaw('fee_schedule_id, SUM(payment_lines.amount) as paid')
+                ->join('payments', 'payments.id', '=', 'payment_lines.payment_id')
+                ->where('payments.student_id', $student->id)
+                ->when($academicYear, fn ($query) => $query->where('payments.academic_year_id', $academicYear->id))
+                ->where('payments.status', 'valid')
+                ->whereNotNull('payment_lines.fee_schedule_id')
+                ->groupBy('fee_schedule_id')
+                ->pluck('paid', 'fee_schedule_id');
+
+            $scheduledRows = FeeSchedule::query()
+                ->with('feeType')
+                ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+                ->where('school_class_id', $enrollment->school_class_id)
+                ->orderBy('due_date')
+                ->orderBy('period')
+                ->orderBy('id')
+                ->get()
+                ->map(function (FeeSchedule $schedule) use ($paidBySchedule) {
+                    $expected = (float) $schedule->amount;
+                    $paid = (float) ($paidBySchedule[$schedule->id] ?? 0);
+                    $remaining = max($expected - $paid, 0);
+
+                    return [
+                        'schedule' => $schedule,
+                        'expected' => $expected,
+                        'paid' => $paid,
+                        'remaining' => $remaining,
+                        'status' => $remaining <= 0 ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
+                    ];
+                });
+        }
+
+        $otherLines = PaymentLine::query()
+            ->with(['feeType', 'payment'])
+            ->join('payments', 'payments.id', '=', 'payment_lines.payment_id')
+            ->where('payments.student_id', $student->id)
+            ->when($academicYear, fn ($query) => $query->where('payments.academic_year_id', $academicYear->id))
+            ->where('payments.status', 'valid')
+            ->whereNull('payment_lines.fee_schedule_id')
+            ->select('payment_lines.*')
+            ->latest('payments.paid_at')
+            ->get();
+
+        $payments = Payment::query()
+            ->with(['lines.feeType', 'lines.feeSchedule', 'receiver'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('student_id', $student->id)
+            ->latest('paid_at')
+            ->get();
+
+        return [
+            ...$summary,
+            'other_lines' => $otherLines,
+            'payments' => $payments,
+            'scheduled_rows' => $scheduledRows,
         ];
     }
 }

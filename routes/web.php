@@ -308,6 +308,14 @@ Route::get('/payments/unpaid', [PaymentWebController::class, 'unpaid'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('payments.unpaid');
 
+Route::get('/payments/students/{student}/statement', [PaymentWebController::class, 'studentStatement'])
+    ->middleware(['auth', 'permission:payments.view'])
+    ->name('payments.students.statement');
+
+Route::get('/payments/students/{student}/statement/pdf', [PaymentWebController::class, 'studentStatementPdf'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('payments.students.statement.pdf');
+
 Route::get('/payments/{payment}/receipt', [PaymentWebController::class, 'receipt'])
     ->middleware(['auth', 'permission:payments.print_receipt'])
     ->name('payments.receipt');
