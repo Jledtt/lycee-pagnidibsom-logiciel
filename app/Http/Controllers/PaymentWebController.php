@@ -70,6 +70,8 @@ class PaymentWebController extends Controller
             'students' => $students,
             'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
             'paymentProfiles' => $this->paymentProfiles($students, $academicYear),
+            'prefillAmount' => $request->integer('amount') > 0 ? $request->integer('amount') : null,
+            'prefillFeeScheduleId' => $request->integer('fee_schedule_id') ?: null,
             'selectedStudentId' => $request->integer('student_id'),
         ]);
     }

@@ -62,14 +62,14 @@
                         <div class="form-grid">
                             <div class="field">
                                 <label for="lines_{{ $i }}_fee_schedule_id">Tranche / frais</label>
-                                <select id="lines_{{ $i }}_fee_schedule_id" name="lines[{{ $i }}][fee_schedule_id]" data-schedule-select data-old-value="{{ old("lines.$i.fee_schedule_id") }}">
+                                <select id="lines_{{ $i }}_fee_schedule_id" name="lines[{{ $i }}][fee_schedule_id]" data-schedule-select data-old-value="{{ old("lines.$i.fee_schedule_id", $i === 0 ? $prefillFeeScheduleId : null) }}">
                                     <option value="">Choisir d'abord un eleve</option>
                                 </select>
                             </div>
 
                             <div class="field">
                                 <label for="lines_{{ $i }}_amount">Montant FCFA</label>
-                                <input id="lines_{{ $i }}_amount" name="lines[{{ $i }}][amount]" type="number" min="1" step="1" value="{{ old("lines.$i.amount") }}" placeholder="Choisir une tranche" data-amount-input>
+                                <input id="lines_{{ $i }}_amount" name="lines[{{ $i }}][amount]" type="number" min="1" step="1" value="{{ old("lines.$i.amount", $i === 0 ? $prefillAmount : null) }}" placeholder="Choisir une tranche" data-amount-input>
                             </div>
                         </div>
                     @endfor
