@@ -19,6 +19,7 @@ use App\Models\StudentDocument;
 use App\Models\Subject;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -38,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('reset-staff-password', fn (User $actor, User $target) => $actor->can('users.manage') && ! $actor->is($target));
+        Gate::define('deactivate-staff-user', fn (User $actor, User $target) => $actor->can('users.manage') && ! $actor->is($target));
+
         foreach ($this->auditedModels() as $model) {
             $model::observe(ActivityLogObserver::class);
         }

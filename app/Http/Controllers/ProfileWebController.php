@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Profile\UpdatePasswordRequest;
+use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Models\AcademicYear;
-use App\Models\ActivityLog;
+use App\Services\UserAuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProfileWebController extends Controller
@@ -22,44 +22,24 @@ class ProfileWebController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateProfileRequest $request): RedirectResponse
     {
-        $user = $request->user();
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
-            'phone' => ['nullable', 'string', 'max:40'],
-        ]);
-
-        $user->update($data);
+        $request->user()->update($request->validated());
 
         return redirect()
             ->route('profile.show')
             ->with('success', 'Profil mis a jour.');
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(UpdatePasswordRequest $request, UserAuditService $userAuditService): RedirectResponse
     {
-        $data = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+        $data = $request->validated();
 
         $request->user()->update([
             'password' => $data['password'],
         ]);
 
-        ActivityLog::query()->create([
-            'user_id' => $request->user()->id,
-            'action' => 'password_changed',
-            'auditable_type' => $request->user()::class,
-            'auditable_id' => (string) $request->user()->id,
-            'auditable_label' => $request->user()->name,
-            'description' => 'Changement du mot de passe personnel - User - ' . $request->user()->name,
-            'ip_address' => $request->ip(),
-            'user_agent' => Str::limit((string) $request->userAgent(), 500, ''),
-        ]);
+        $userAuditService->recordPasswordChanged($request, $request->user());
 
         return redirect()
             ->route('profile.show')

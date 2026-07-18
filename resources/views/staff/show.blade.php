@@ -82,17 +82,17 @@
                 <div class="empty">Acces limite aux modules pedagogiques prevus pour ce role.</div>
             @endif
 
-            @if (! $user->is(auth()->user()))
+            @can('deactivate-staff-user', $user)
                 <form method="POST" action="{{ route('staff.destroy', $user) }}" style="margin-top:16px">
                     @csrf
                     @method('DELETE')
                     <button class="btn btn-danger" type="submit">Desactiver le compte</button>
                 </form>
-            @endif
+            @endcan
         </div>
     </section>
 
-    @if (! $user->is(auth()->user()))
+    @can('reset-staff-password', $user)
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Reinitialisation du mot de passe</h2>
@@ -119,5 +119,5 @@
                 </div>
             </form>
         </section>
-    @endif
+    @endcan
 @endsection

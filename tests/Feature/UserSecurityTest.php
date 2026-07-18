@@ -149,6 +149,28 @@ class UserSecurityTest extends TestCase
         ]);
     }
 
+    public function test_user_cannot_reset_own_password_from_staff_screen(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', [
+            'password' => 'old-admin-password',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('staff.show', $admin))
+            ->assertOk()
+            ->assertDontSee('Reinitialisation du mot de passe');
+
+        $this->actingAs($admin)
+            ->put(route('staff.reset-password', $admin), [
+                'password' => 'new-admin-password',
+                'password_confirmation' => 'new-admin-password',
+            ])
+            ->assertForbidden();
+
+        $this->assertTrue(Hash::check('old-admin-password', $admin->refresh()->password));
+    }
+
     private function userWithRole(string $role, array $attributes = []): User
     {
         $user = User::factory()->create(array_merge([
