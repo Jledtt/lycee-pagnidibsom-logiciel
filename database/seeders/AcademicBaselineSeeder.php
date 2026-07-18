@@ -72,12 +72,26 @@ class AcademicBaselineSeeder extends Seeder
         foreach ([
             ['name' => 'Francais', 'code' => 'FR'],
             ['name' => 'Mathematiques', 'code' => 'MATH'],
+            ['name' => 'Mathematiques appliquees', 'code' => 'MATH_APP'],
             ['name' => 'Anglais', 'code' => 'ANG'],
             ['name' => 'Histoire-Geographie', 'code' => 'HG'],
             ['name' => 'SVT', 'code' => 'SVT'],
             ['name' => 'Physique-Chimie', 'code' => 'PC'],
+            ['name' => 'Sciences physiques', 'code' => 'SP'],
             ['name' => 'Philosophie', 'code' => 'PHILO'],
             ['name' => 'EPS', 'code' => 'EPS'],
+            ['name' => 'Education civique et morale', 'code' => 'ECM'],
+            ['name' => 'Technologie', 'code' => 'TECH'],
+            ['name' => 'Allemand', 'code' => 'ALL'],
+            ['name' => 'Espagnol', 'code' => 'ESP'],
+            ['name' => 'Arabe', 'code' => 'ARB'],
+            ['name' => 'TIC', 'code' => 'TIC'],
+            ['name' => 'Art et culture', 'code' => 'ART'],
+            ['name' => 'Musique et chant', 'code' => 'MUS'],
+            ['name' => 'Theatre', 'code' => 'THEATRE'],
+            ['name' => 'Art menager', 'code' => 'ART_MEN'],
+            ['name' => 'Production', 'code' => 'PROD'],
+            ['name' => 'Dessin technique', 'code' => 'DESS_TECH'],
         ] as $subject) {
             Subject::firstOrCreate(['name' => $subject['name']], $subject);
         }

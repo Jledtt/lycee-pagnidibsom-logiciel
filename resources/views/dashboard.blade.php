@@ -77,6 +77,10 @@
                                 <strong>Tarifs</strong>
                                 <span>Montants par classe, tranches et frais annexes.</span>
                             </a>
+                            <a class="module" href="{{ route('subjects.index') }}">
+                                <strong>Matieres</strong>
+                                <span>Matieres enseignees, coefficients et activation par classe.</span>
+                            </a>
                         @endcan
                         @can('students.export')
                             <a class="module" href="{{ route('certificates.index') }}">

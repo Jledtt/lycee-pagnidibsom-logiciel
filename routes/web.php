@@ -13,6 +13,7 @@ use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
 use App\Http\Controllers\StudentWebController;
+use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +60,34 @@ Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::get('/subjects', [SubjectWebController::class, 'index'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.index');
+
+Route::post('/subjects', [SubjectWebController::class, 'storeSubject'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.store');
+
+Route::put('/subjects/{subject}', [SubjectWebController::class, 'updateSubject'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.update');
+
+Route::post('/subjects/class-subjects', [SubjectWebController::class, 'storeClassSubject'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.class-subjects.store');
+
+Route::put('/subjects/class-subjects/{classSubject}', [SubjectWebController::class, 'updateClassSubject'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.class-subjects.update');
+
+Route::delete('/subjects/class-subjects/{classSubject}', [SubjectWebController::class, 'destroyClassSubject'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.class-subjects.destroy');
+
+Route::post('/subjects/defaults', [SubjectWebController::class, 'applyDefaults'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.defaults');
 
 Route::get('/accounting/cash-journal', [AccountingWebController::class, 'cashJournal'])
     ->middleware(['auth', 'permission:payments.reports'])
