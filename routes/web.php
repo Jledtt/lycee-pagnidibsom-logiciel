@@ -7,6 +7,7 @@ use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\PaymentWebController;
+use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
@@ -109,6 +110,18 @@ Route::put('/grades/assessments/{assessment}', [GradeWebController::class, 'upda
 Route::delete('/grades/assessments/{assessment}', [GradeWebController::class, 'destroyAssessment'])
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.assessments.destroy');
+
+Route::get('/report-cards', [ReportCardWebController::class, 'index'])
+    ->middleware(['auth', 'permission:report_cards.view'])
+    ->name('report-cards.index');
+
+Route::post('/report-cards/generate', [ReportCardWebController::class, 'generate'])
+    ->middleware(['auth', 'permission:report_cards.generate'])
+    ->name('report-cards.generate');
+
+Route::get('/report-cards/{reportCard}/pdf', [ReportCardWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:report_cards.print'])
+    ->name('report-cards.pdf');
 
 Route::get('/accounting/cash-journal', [AccountingWebController::class, 'cashJournal'])
     ->middleware(['auth', 'permission:payments.reports'])

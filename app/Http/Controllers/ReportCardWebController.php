@@ -1,0 +1,187 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AcademicYear;
+use App\Models\ClassSubject;
+use App\Models\Enrollment;
+use App\Models\ReportCard;
+use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
+use App\Models\Term;
+use App\Services\GradeCalculationService;
+use App\Services\ReportCardService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+
+class ReportCardWebController extends Controller
+{
+    public function __construct(
+        private readonly GradeCalculationService $gradeCalculationService,
+        private readonly ReportCardService $reportCardService,
+    ) {
+    }
+
+    public function index(Request $request): View
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        $classes = SchoolClass::query()
+            ->with('level')
+            ->where('academic_year_id', $academicYear->id)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $terms = Term::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->orderBy('position')
+            ->get();
+
+        $selectedClass = $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
+        $selectedTerm = $terms->firstWhere('id', $request->integer('term_id')) ?? $terms->first();
+        $students = collect();
+        $reportCards = collect();
+
+        if ($selectedClass && $selectedTerm) {
+            $students = $this->studentsForClass($academicYear->id, $selectedClass->id);
+            $reportCards = ReportCard::query()
+                ->with('student')
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_class_id', $selectedClass->id)
+                ->where('term_id', $selectedTerm->id)
+                ->get()
+                ->keyBy('student_id');
+        }
+
+        return view('report-cards.index', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'reportCards' => $reportCards,
+            'selectedClass' => $selectedClass,
+            'selectedTerm' => $selectedTerm,
+            'students' => $students,
+            'terms' => $terms,
+        ]);
+    }
+
+    public function generate(Request $request): RedirectResponse
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        $data = $request->validate([
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id),
+            ],
+            'term_id' => [
+                'required',
+                Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id),
+            ],
+        ]);
+
+        $schoolClass = SchoolClass::query()->findOrFail($data['school_class_id']);
+        $term = Term::query()->findOrFail($data['term_id']);
+        $rows = $this->reportCardService->generateForClass($schoolClass, $term);
+
+        return redirect()
+            ->route('report-cards.index', [
+                'school_class_id' => $schoolClass->id,
+                'term_id' => $term->id,
+            ])
+            ->with('success', count($rows) . ' bulletin(s) genere(s).');
+    }
+
+    public function pdf(ReportCard $reportCard)
+    {
+        $reportCard->load(['academicYear', 'term', 'student', 'schoolClass.level']);
+
+        $subjectRows = $this->subjectRows($reportCard);
+        $filename = 'bulletin-' . Str::slug($reportCard->student->matricule . '-' . $reportCard->term->name) . '.pdf';
+
+        return Pdf::loadView('report-cards.pdf', [
+            'reportCard' => $reportCard,
+            'school' => SchoolSetting::query()->first(),
+            'subjectRows' => $subjectRows,
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
+    }
+
+    private function subjectRows(ReportCard $reportCard): Collection
+    {
+        return ClassSubject::query()
+            ->with('subject')
+            ->where('school_class_id', $reportCard->school_class_id)
+            ->where('is_active', true)
+            ->join('subjects', 'subjects.id', '=', 'class_subjects.subject_id')
+            ->orderBy('subjects.name')
+            ->select('class_subjects.*')
+            ->get()
+            ->map(function (ClassSubject $classSubject) use ($reportCard) {
+                $average = $this->gradeCalculationService->subjectAverage(
+                    $reportCard->student,
+                    $reportCard->term,
+                    $classSubject->subject_id,
+                );
+
+                $coefficient = (float) $classSubject->coefficient;
+
+                return [
+                    'subject' => $classSubject->subject,
+                    'coefficient' => $coefficient,
+                    'average' => $average,
+                    'points' => $average === null ? null : round($average * $coefficient, 2),
+                    'appreciation' => $this->appreciation($average),
+                ];
+            });
+    }
+
+    private function appreciation(?float $average): string
+    {
+        if ($average === null) {
+            return 'Non note';
+        }
+
+        return match (true) {
+            $average >= 16 => 'Excellent',
+            $average >= 14 => 'Tres bien',
+            $average >= 12 => 'Bien',
+            $average >= 10 => 'Passable',
+            $average >= 8 => 'Insuffisant',
+            default => 'Tres insuffisant',
+        };
+    }
+
+    private function requireActiveAcademicYear(): AcademicYear
+    {
+        $academicYear = AcademicYear::query()->where('is_active', true)->first();
+
+        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+
+        return $academicYear;
+    }
+
+    private function studentsForClass(int $academicYearId, int $schoolClassId): Collection
+    {
+        return Enrollment::query()
+            ->with('student')
+            ->where('academic_year_id', $academicYearId)
+            ->where('school_class_id', $schoolClassId)
+            ->where('enrollments.status', 'active')
+            ->whereHas('student', fn ($query) => $query->where('students.status', 'active'))
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('enrollments.*')
+            ->get()
+            ->pluck('student')
+            ->filter()
+            ->values();
+    }
+}

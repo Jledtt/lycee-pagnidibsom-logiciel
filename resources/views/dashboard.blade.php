@@ -72,6 +72,12 @@
                                 <span>Evaluations, saisie des notes et suivi par trimestre.</span>
                             </a>
                         @endcan
+                        @can('report_cards.view')
+                            <a class="module" href="{{ route('report-cards.index') }}">
+                                <strong>Bulletins</strong>
+                                <span>Moyennes, rangs et bulletins imprimables par eleve.</span>
+                            </a>
+                        @endcan
                         @can('payments.reports')
                             <a class="module" href="{{ route('accounting.cash-journal') }}">
                                 <strong>Comptabilite</strong>

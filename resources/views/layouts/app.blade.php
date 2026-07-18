@@ -40,7 +40,9 @@
                 @endcanany
                 @can('grades.view')
                     <a class="{{ ($active ?? '') === 'grades' ? 'active' : '' }}" href="{{ route('grades.index') }}"><span class="nav-dot"></span>Notes</a>
-                    <a href="#"><span class="nav-dot"></span>Bulletins</a>
+                @endcan
+                @can('report_cards.view')
+                    <a class="{{ ($active ?? '') === 'report-cards' ? 'active' : '' }}" href="{{ route('report-cards.index') }}"><span class="nav-dot"></span>Bulletins</a>
                 @endcan
                 @can('attendance.view')
                     <a class="{{ ($active ?? '') === 'attendance' ? 'active' : '' }}" href="{{ route('attendance.index') }}"><span class="nav-dot"></span>Absences</a>
