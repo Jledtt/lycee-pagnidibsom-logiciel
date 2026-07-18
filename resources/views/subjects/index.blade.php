@@ -78,42 +78,44 @@
                 @if ($classSubjects->isEmpty())
                     <div class="empty">Aucune matiere affectee a cette classe.</div>
                 @else
-                    <div class="ledger-list">
-                        @foreach ($classSubjects as $classSubject)
-                            <div class="ledger-item">
-                                <form method="POST" action="{{ route('subjects.class-subjects.update', $classSubject) }}" class="ledger-summary" style="grid-template-columns:minmax(220px,1.5fr) minmax(120px,.6fr) minmax(140px,.8fr) minmax(210px,1fr)">
-                                    @csrf
-                                    @method('PUT')
+                    <div class="subject-list-scroll">
+                        <div class="subject-list-inner ledger-list">
+                            @foreach ($classSubjects as $classSubject)
+                                <div class="ledger-item">
+                                    <form method="POST" action="{{ route('subjects.class-subjects.update', $classSubject) }}" class="ledger-summary" style="grid-template-columns:minmax(220px,1.5fr) minmax(150px,.6fr) minmax(180px,.8fr) minmax(240px,1fr)">
+                                        @csrf
+                                        @method('PUT')
 
-                                    <div class="ledger-person">
-                                        <strong>{{ $classSubject->subject->name }}</strong>
-                                        <span>{{ $classSubject->subject->code ?? 'Sans code' }}</span>
-                                    </div>
+                                        <div class="ledger-person">
+                                            <strong>{{ $classSubject->subject->name }}</strong>
+                                            <span>{{ $classSubject->subject->code ?? 'Sans code' }}</span>
+                                        </div>
 
-                                    <div class="field" style="margin-bottom:0">
-                                        <label>Coefficient</label>
-                                        <input type="number" name="coefficient" min="0" max="99.99" step="0.25" value="{{ old('coefficient', $classSubject->coefficient) }}">
-                                    </div>
+                                        <div class="field" style="margin-bottom:0">
+                                            <label>Coefficient</label>
+                                            <input type="number" name="coefficient" min="0" max="99.99" step="0.25" value="{{ old('coefficient', $classSubject->coefficient) }}">
+                                        </div>
 
-                                    <div class="field" style="margin-bottom:0">
-                                        <label>Statut</label>
-                                        <select name="is_active">
-                                            <option value="1" @selected($classSubject->is_active)>Active</option>
-                                            <option value="0" @selected(! $classSubject->is_active)>Inactive</option>
-                                        </select>
-                                    </div>
+                                        <div class="field" style="margin-bottom:0">
+                                            <label>Statut</label>
+                                            <select name="is_active">
+                                                <option value="1" @selected($classSubject->is_active)>Active</option>
+                                                <option value="0" @selected(! $classSubject->is_active)>Inactive</option>
+                                            </select>
+                                        </div>
 
-                                    <div class="page-actions" style="justify-content:flex-end">
-                                        <button class="btn btn-primary" type="submit">Enregistrer</button>
-                                        <button class="btn btn-danger" type="submit" form="delete-class-subject-{{ $classSubject->id }}">Retirer</button>
-                                    </div>
-                                </form>
-                                <form id="delete-class-subject-{{ $classSubject->id }}" method="POST" action="{{ route('subjects.class-subjects.destroy', $classSubject) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
-                        @endforeach
+                                        <div class="page-actions" style="justify-content:flex-end">
+                                            <button class="btn btn-primary" type="submit">Enregistrer</button>
+                                            <button class="btn btn-danger" type="submit" form="delete-class-subject-{{ $classSubject->id }}">Retirer</button>
+                                        </div>
+                                    </form>
+                                    <form id="delete-class-subject-{{ $classSubject->id }}" method="POST" action="{{ route('subjects.class-subjects.destroy', $classSubject) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @endif
 

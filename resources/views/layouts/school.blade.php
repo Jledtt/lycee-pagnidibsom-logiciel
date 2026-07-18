@@ -639,6 +639,15 @@
             min-width: 760px;
         }
 
+        .subject-list-scroll {
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .subject-list-inner {
+            min-width: 900px;
+        }
+
         .empty {
             padding: 18px;
             border: 1px dashed var(--line);
