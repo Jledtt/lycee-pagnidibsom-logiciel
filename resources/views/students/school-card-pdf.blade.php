@@ -70,8 +70,8 @@
         }
         .content {
             position: relative;
-            padding: 22px 28px 0;
-            min-height: 250px;
+            padding: 16px 28px 48px;
+            height: 214px;
         }
         .watermark {
             position: absolute;
@@ -82,23 +82,23 @@
             opacity: .08;
         }
         .info {
-            width: 470px;
-            font-size: 24px;
-            line-height: 1.68;
+            width: 500px;
+            font-size: 21px;
+            line-height: 1.45;
             font-weight: 900;
         }
-        .info .label { display: inline-block; min-width: 175px; }
+        .info .label { display: inline-block; min-width: 160px; }
         .photo-box {
             position: absolute;
             right: 24px;
-            top: 30px;
-            width: 156px;
-            height: 202px;
+            top: 18px;
+            width: 142px;
+            height: 172px;
             border: 2px solid #111;
             text-align: center;
             font-size: 18px;
             font-weight: bold;
-            line-height: 202px;
+            line-height: 172px;
         }
         .photo-box img {
             width: 100%;
@@ -108,7 +108,7 @@
         .signature {
             position: absolute;
             right: 185px;
-            bottom: 52px;
+            bottom: 48px;
             width: 190px;
             text-align: center;
             font-size: 17px;
@@ -131,12 +131,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            min-height: 38px;
-            padding: 8px 24px 5px;
+            height: 36px;
+            padding: 0 24px;
             background: #f28c1d;
             border-top: 2px solid #e07910;
-            font-size: 20px;
+            font-size: 18px;
+            line-height: 36px;
             font-weight: 900;
+            white-space: nowrap;
         }
     </style>
 </head>
