@@ -136,6 +136,12 @@
                                     </span>
                                 </td>
                                 <td>
+                                    <div class="searchbar">
+                                        @if ($record->student)
+                                            @can('attendance.view')
+                                                <a class="btn btn-subtle" href="{{ route('attendance.students.history', $record->student) }}">Historique</a>
+                                            @endcan
+                                        @endif
                                     @can('attendance.update')
                                         <form method="POST" action="{{ route('attendance.records.clear', $record) }}" onsubmit="return confirm('Supprimer cette absence ou ce retard ?')">
                                             @csrf
@@ -143,6 +149,7 @@
                                             <button class="btn btn-danger" type="submit">Supprimer</button>
                                         </form>
                                     @endcan
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

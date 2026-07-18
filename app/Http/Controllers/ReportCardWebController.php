@@ -161,6 +161,8 @@ class ReportCardWebController extends Controller
     public function update(Request $request, ReportCard $reportCard): RedirectResponse
     {
         $data = $request->validate([
+            'decision' => ['nullable', 'string', 'max:255'],
+            'principal_observation' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['draft', 'validated', 'published'])],
         ]);
 
@@ -168,6 +170,10 @@ class ReportCardWebController extends Controller
             'appreciation' => $this->reportCardService->appreciationForAverage(
                 $reportCard->general_average === null ? null : (float) $reportCard->general_average,
             ),
+            'decision' => $data['decision'] ?: $this->reportCardService->decisionForAverage(
+                $reportCard->general_average === null ? null : (float) $reportCard->general_average,
+            ),
+            'principal_observation' => $data['principal_observation'] ?? null,
             'status' => $data['status'],
         ];
 

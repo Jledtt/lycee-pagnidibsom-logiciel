@@ -60,6 +60,9 @@
             <td>Rang : {{ $reportCard->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}</td>
             <td>Statut : {{ $statusLabels[$reportCard->status] ?? ucfirst($reportCard->status) }}</td>
         </tr>
+        <tr>
+            <td colspan="3">Decision du conseil : <strong>{{ $reportCard->decision ?: '-' }}</strong></td>
+        </tr>
     </table>
 
     <table class="list">
@@ -94,6 +97,10 @@
             <td style="width:50%">
                 <strong>Appreciation generale</strong><br>
                 {{ $reportCard->appreciation ?: '-' }}
+                @if ($reportCard->principal_observation)
+                    <br><br><strong>Observation</strong><br>
+                    {{ $reportCard->principal_observation }}
+                @endif
             </td>
             <td>
                 <strong>Visa de l'administration</strong><br>

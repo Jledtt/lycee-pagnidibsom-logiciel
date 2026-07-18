@@ -38,21 +38,21 @@ class ReportCardService
         usort($rows, fn (array $a, array $b) => ($b['average'] ?? -1) <=> ($a['average'] ?? -1));
 
         foreach ($rows as $index => $row) {
-            ReportCard::updateOrCreate(
-                [
-                    'academic_year_id' => $schoolClass->academic_year_id,
-                    'term_id' => $term->id,
-                    'student_id' => $row['student']->id,
-                ],
-                [
-                    'school_class_id' => $schoolClass->id,
-                    'general_average' => $row['average'],
-                    'rank' => $row['average'] === null ? null : $index + 1,
-                    'class_size' => count($rows),
-                    'appreciation' => $this->appreciationForAverage($row['average']),
-                    'status' => 'draft',
-                ]
-            );
+            $reportCard = ReportCard::query()->firstOrNew([
+                'academic_year_id' => $schoolClass->academic_year_id,
+                'term_id' => $term->id,
+                'student_id' => $row['student']->id,
+            ]);
+
+            $reportCard->fill([
+                'school_class_id' => $schoolClass->id,
+                'general_average' => $row['average'],
+                'rank' => $row['average'] === null ? null : $index + 1,
+                'class_size' => count($rows),
+                'appreciation' => $this->appreciationForAverage($row['average']),
+                'decision' => $reportCard->decision ?: $this->decisionForAverage($row['average']),
+                'status' => $reportCard->exists ? $reportCard->status : 'draft',
+            ])->save();
         }
 
         return $rows;
@@ -72,5 +72,14 @@ class ReportCardService
             $average >= 8 => 'Insuffisant',
             default => 'Tres insuffisant',
         };
+    }
+
+    public function decisionForAverage(?float $average): string
+    {
+        if ($average === null) {
+            return 'A completer';
+        }
+
+        return $average >= 10 ? 'Admis' : 'A deliberer';
     }
 }

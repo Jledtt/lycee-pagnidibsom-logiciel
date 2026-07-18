@@ -15,6 +15,9 @@
     @can('payments.view')
         <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}">Situation financiere</a>
     @endcan
+    @can('attendance.view')
+        <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Assiduite</a>
+    @endcan
     @can('students.update')
         <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
     @endcan

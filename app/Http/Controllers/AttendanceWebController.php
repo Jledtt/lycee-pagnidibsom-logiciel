@@ -7,7 +7,9 @@ use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -96,6 +98,40 @@ class AttendanceWebController extends Controller
             $attendanceSession->academicYear,
             $attendanceSession->session_date,
         );
+    }
+
+    public function studentHistory(Request $request, Student $student): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        [$month, $start, $end] = $this->monthPeriod($request);
+        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end);
+
+        return view('attendance.student-history', [
+            'academicYear' => $academicYear,
+            'month' => $month,
+            'records' => $records,
+            'student' => $student,
+            'summary' => $this->recordSummary($records),
+        ]);
+    }
+
+    public function studentHistoryPdf(Request $request, Student $student)
+    {
+        $academicYear = $this->activeAcademicYear();
+        [$month, $start, $end] = $this->monthPeriod($request);
+        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end);
+        $filename = 'assiduite-' . Str::slug($student->matricule . '-' . $month) . '.pdf';
+
+        return Pdf::loadView('attendance.student-history-pdf', [
+            'academicYear' => $academicYear,
+            'month' => $month,
+            'records' => $records,
+            'school' => SchoolSetting::query()->first(),
+            'student' => $student,
+            'summary' => $this->recordSummary($records),
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
     }
 
     public function clearRecord(AttendanceRecord $attendanceRecord): RedirectResponse
@@ -278,6 +314,34 @@ class AttendanceWebController extends Controller
             'late' => $records->where('status', 'late')->count(),
             'excused' => $records->where('status', 'excused')->count(),
         ];
+    }
+
+    private function monthPeriod(Request $request): array
+    {
+        $month = $request->input('month') ?: now()->format('Y-m');
+        $month = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) ? $month : now()->format('Y-m');
+        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+
+        return [$month, $start, $end];
+    }
+
+    private function studentAttendanceRecords(Student $student, ?AcademicYear $academicYear, Carbon $start, Carbon $end): Collection
+    {
+        return AttendanceRecord::query()
+            ->with(['session.schoolClass.level', 'justifiedBy'])
+            ->where('student_id', $student->id)
+            ->whereIn('attendance_records.status', ['absent', 'late', 'excused'])
+            ->whereHas('session', function ($query) use ($academicYear, $start, $end) {
+                $query
+                    ->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id))
+                    ->whereBetween('session_date', [$start->toDateString(), $end->toDateString()]);
+            })
+            ->join('attendance_sessions', 'attendance_sessions.id', '=', 'attendance_records.attendance_session_id')
+            ->orderByDesc('attendance_sessions.session_date')
+            ->orderByDesc('attendance_records.id')
+            ->select('attendance_records.*')
+            ->get();
     }
 
     private function recentRecords(?AcademicYear $academicYear): Collection

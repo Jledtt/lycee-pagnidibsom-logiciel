@@ -40,6 +40,14 @@ Route::get('/attendance/sessions/{attendanceSession}/pdf', [AttendanceWebControl
     ->middleware(['auth', 'permission:attendance.reports'])
     ->name('attendance.sessions.pdf');
 
+Route::get('/attendance/students/{student}', [AttendanceWebController::class, 'studentHistory'])
+    ->middleware(['auth', 'permission:attendance.view'])
+    ->name('attendance.students.history');
+
+Route::get('/attendance/students/{student}/pdf', [AttendanceWebController::class, 'studentHistoryPdf'])
+    ->middleware(['auth', 'permission:attendance.reports'])
+    ->name('attendance.students.history.pdf');
+
 Route::post('/attendance/sessions', [AttendanceWebController::class, 'storeSession'])
     ->middleware(['auth', 'permission:attendance.create'])
     ->name('attendance.sessions.store');

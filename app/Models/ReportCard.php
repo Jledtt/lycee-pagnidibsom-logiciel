@@ -16,6 +16,8 @@ class ReportCard extends Model
         'rank',
         'class_size',
         'appreciation',
+        'decision',
+        'principal_observation',
         'pdf_path',
         'status',
         'validated_by',

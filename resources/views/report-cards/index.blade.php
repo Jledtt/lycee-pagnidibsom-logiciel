@@ -99,6 +99,7 @@
                                 <th>Rang</th>
                                 <th>Statut</th>
                                 <th>Appreciation generale</th>
+                                <th>Decision</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -138,20 +139,38 @@
                                     </td>
                                     <td>
                                         @if ($reportCard)
+                                            @can('report_cards.validate')
+                                                <form id="update-report-card-{{ $reportCard->id }}" method="POST" action="{{ route('report-cards.update', $reportCard) }}">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <select name="decision">
+                                                        @foreach (['Admis', 'Tableau d honneur', 'Encouragements', 'A deliberer', 'Redoublement propose', 'Exclu'] as $decision)
+                                                            <option value="{{ $decision }}" @selected(($reportCard->decision ?: 'A deliberer') === $decision)>{{ $decision }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <textarea name="principal_observation" rows="2" placeholder="Observation administrative" style="margin-top:8px">{{ $reportCard->principal_observation }}</textarea>
+                                                </form>
+                                            @else
+                                                <strong>{{ $reportCard->decision ?: '-' }}</strong>
+                                            @endcan
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($reportCard)
                                             <div class="page-actions">
                                                 @can('report_cards.validate')
-                                                    <form id="update-report-card-{{ $reportCard->id }}" method="POST" action="{{ route('report-cards.update', $reportCard) }}" class="inline-form">
-                                                        @csrf
-                                                        @method('PUT')
+                                                    <div class="inline-form">
                                                         <div class="field">
                                                             <label>Statut</label>
-                                                            <select name="status">
+                                                            <select name="status" form="update-report-card-{{ $reportCard->id }}">
                                                                 <option value="draft" @selected($reportCard->status === 'draft')>Brouillon</option>
                                                                 <option value="validated" @selected($reportCard->status === 'validated')>Valide</option>
                                                                 <option value="published" @selected($reportCard->status === 'published')>Publie</option>
                                                             </select>
                                                         </div>
-                                                    </form>
+                                                    </div>
                                                     <button class="btn btn-subtle" type="submit" form="update-report-card-{{ $reportCard->id }}">Sauvegarder</button>
                                                 @endcan
                                             @can('report_cards.print')
