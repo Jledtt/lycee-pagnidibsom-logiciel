@@ -195,7 +195,7 @@ class ClassCouncilWebController extends Controller
             ->where('academic_year_id', $academicYear->id)
             ->where('school_class_id', $schoolClass->id)
             ->where('term_id', $term->id)
-            ->orderByRaw('case when rank is null then 999999 else rank end')
+            ->orderByRaw('case when report_cards.rank is null then 999999 else report_cards.rank end')
             ->join('students', 'students.id', '=', 'report_cards.student_id')
             ->orderBy('students.last_name')
             ->orderBy('students.first_name')
