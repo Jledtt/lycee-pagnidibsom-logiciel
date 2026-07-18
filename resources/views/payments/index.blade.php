@@ -11,6 +11,7 @@
         <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Depenses</a>
         <a class="btn btn-subtle" href="{{ route('reports.installments') }}">Tranches</a>
         <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
+        <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}">Excel</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>

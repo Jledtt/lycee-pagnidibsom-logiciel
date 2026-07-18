@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('students.export')
+        <a class="btn btn-subtle" href="{{ route('students.export', request()->query()) }}">Excel</a>
+    @endcan
     @can('students.create')
         <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel eleve</a>
     @endcan

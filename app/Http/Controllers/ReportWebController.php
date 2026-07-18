@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Services\CsvExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
@@ -56,6 +57,43 @@ class ReportWebController extends Controller
             ->stream($filename);
     }
 
+    public function classListExport(Request $request, CsvExportService $csvExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        abort_if(! $schoolClass, 404, 'Classe introuvable.');
+
+        $schoolClass = $this->loadClassList($schoolClass);
+        $filename = 'liste-eleves-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.csv';
+
+        return $csvExport->download($filename, [
+            'No',
+            'Matricule',
+            'Nom et prenom',
+            'Sexe',
+            'Date naissance',
+            'Tuteur',
+            'Contact',
+            'Classe',
+        ], $schoolClass->enrollments->values()->map(function ($enrollment, int $index) use ($schoolClass) {
+            $student = $enrollment->student;
+            $guardian = $student?->guardians->first();
+
+            return [
+                $index + 1,
+                $student?->matricule,
+                $student?->full_name,
+                $student?->gender === 'female' ? 'Fille' : 'Garcon',
+                $student?->birth_date?->format('d/m/Y'),
+                $guardian?->full_name,
+                $guardian?->phone_primary ?? $student?->home_phone,
+                $schoolClass->name,
+            ];
+        }));
+    }
+
     public function paymentSituation(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
@@ -99,6 +137,37 @@ class ReportWebController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->stream($filename);
+    }
+
+    public function paymentSituationExport(Request $request, CsvExportService $csvExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        abort_if(! $schoolClass, 404, 'Classe introuvable.');
+
+        $schoolClass = $this->loadClassList($schoolClass);
+        $rows = $this->paymentRows($schoolClass, $academicYear);
+        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.csv';
+
+        return $csvExport->download($filename, [
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Attendu',
+            'Paye',
+            'Reste',
+            'Statut',
+        ], $rows->map(fn (array $row) => [
+            $row['student']?->matricule,
+            $row['student']?->full_name,
+            $row['class'] ?? $schoolClass->name,
+            $row['expected'] ?? 'A configurer',
+            $row['paid'],
+            $row['balance'] ?? 'A configurer',
+            $row['status']['label'],
+        ]));
     }
 
     public function installmentSituation(Request $request): View

@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolSetting;
 use App\Models\Student;
+use App\Services\CsvExportService;
 use App\Services\PaymentService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -74,6 +75,38 @@ class PaymentWebController extends Controller
             'prefillFeeScheduleId' => $request->integer('fee_schedule_id') ?: null,
             'selectedStudentId' => $request->integer('student_id'),
         ]);
+    }
+
+    public function export(Request $request, CsvExportService $csvExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $payments = $this->paymentQuery($request, $academicYear)
+            ->orderByDesc('paid_at')
+            ->get();
+
+        return $csvExport->download('paiements-' . now()->format('Ymd-His') . '.csv', [
+            'Recu',
+            'Date',
+            'Eleve',
+            'Matricule',
+            'Classe',
+            'Montant',
+            'Mode',
+            'Statut',
+            'Encaisse par',
+            'Notes',
+        ], $payments->map(fn (Payment $payment) => [
+            $payment->receipt_number,
+            $payment->paid_at?->format('d/m/Y H:i'),
+            $payment->student?->full_name,
+            $payment->student?->matricule,
+            $payment->enrollment?->schoolClass?->name,
+            (float) $payment->amount,
+            $payment->payment_method,
+            $payment->status,
+            $payment->receiver?->name,
+            $payment->notes,
+        ]));
     }
 
     public function store(Request $request, PaymentService $paymentService): RedirectResponse
@@ -186,6 +219,36 @@ class PaymentWebController extends Controller
         ]);
     }
 
+    public function unpaidExport(CsvExportService $csvExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $rows = $this->unpaidRows($academicYear);
+
+        return $csvExport->download('impayes-' . now()->format('Ymd-His') . '.csv', [
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Attendu',
+            'Paye',
+            'Reste',
+            'Contact',
+        ], $rows->map(function (array $row) {
+            $student = $row['enrollment']->student;
+            $guardian = $student->guardians->first();
+            $summary = $row['summary'];
+
+            return [
+                $student->matricule,
+                $student->full_name,
+                $row['enrollment']->schoolClass?->name,
+                $summary['expected'] ?? 'A configurer',
+                $summary['paid'],
+                $summary['balance'] ?? 'A configurer',
+                $guardian?->phone_primary ?? $student->home_phone,
+            ];
+        }));
+    }
+
     public function destroy(Request $request, Payment $payment, PaymentService $paymentService): RedirectResponse
     {
         $data = $request->validate([
@@ -202,6 +265,41 @@ class PaymentWebController extends Controller
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function paymentQuery(Request $request, ?AcademicYear $academicYear)
+    {
+        return Payment::query()
+            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'receiver'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
+            ->when($request->string('search')->toString(), function ($query, string $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('receipt_number', 'like', "%{$search}%")
+                        ->orWhereHas('student', function ($studentQuery) use ($search) {
+                            $studentQuery->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhere('matricule', 'like', "%{$search}%");
+                        });
+                });
+            });
+    }
+
+    private function unpaidRows(?AcademicYear $academicYear): Collection
+    {
+        return Enrollment::query()
+            ->with(['student.guardians', 'schoolClass.level'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('status', 'active')
+            ->get()
+            ->map(function (Enrollment $enrollment) use ($academicYear) {
+                return [
+                    'enrollment' => $enrollment,
+                    'summary' => $this->studentPaymentSummary($enrollment->student, $academicYear),
+                ];
+            })
+            ->filter(fn (array $row) => is_null($row['summary']['balance']) || $row['summary']['balance'] > 0)
+            ->values();
     }
 
     private function requireActiveAcademicYear(): AcademicYear

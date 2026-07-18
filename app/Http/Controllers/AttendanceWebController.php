@@ -8,6 +8,7 @@ use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
+use App\Services\CsvExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -86,6 +87,50 @@ class AttendanceWebController extends Controller
             ->first();
 
         return $this->attendancePdfResponse($session, $schoolClass, $academicYear, $date);
+    }
+
+    public function export(Request $request, CsvExportService $csvExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $date = $request->date('date') ?? today();
+        $schoolClass = $this->selectedClass($request, $classes);
+
+        abort_if(! $schoolClass, 404, 'Classe introuvable.');
+
+        $session = AttendanceSession::query()
+            ->with(['schoolClass.level', 'records.student', 'academicYear'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('school_class_id', $schoolClass->id)
+            ->whereDate('session_date', $date)
+            ->latest('updated_at')
+            ->latest('id')
+            ->first();
+
+        $records = $session
+            ? $session->records
+                ->filter(fn (AttendanceRecord $record) => in_array($record->status, ['absent', 'late', 'excused'], true))
+                ->sortBy(fn (AttendanceRecord $record) => Str::lower($record->student?->full_name ?? ''))
+                ->values()
+            : collect();
+
+        return $csvExport->download('absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.csv', [
+            'Date',
+            'Classe',
+            'Matricule',
+            'Eleve',
+            'Statut',
+            'Minutes retard',
+            'Motif',
+        ], $records->map(fn (AttendanceRecord $record) => [
+            $date->format('d/m/Y'),
+            $schoolClass->name,
+            $record->student?->matricule,
+            $record->student?->full_name,
+            $record->status,
+            $record->status === 'late' ? ($record->minutes_late ?? 0) : '',
+            $record->reason,
+        ]));
     }
 
     public function sessionPdf(AttendanceSession $attendanceSession)

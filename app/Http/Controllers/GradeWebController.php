@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
+use App\Services\CsvExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -202,6 +203,45 @@ class GradeWebController extends Controller
         ])
             ->setPaper('a4')
             ->stream($filename);
+    }
+
+    public function assessmentExport(Assessment $assessment, CsvExportService $csvExport)
+    {
+        $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
+
+        $students = $this->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
+        $gradesByStudent = $assessment->grades->keyBy('student_id');
+        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.csv';
+
+        return $csvExport->download($filename, [
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Matiere',
+            'Evaluation',
+            'Note',
+            'Note sur',
+            'Note / 20',
+            'Absent',
+            'Commentaire',
+        ], $students->map(function (Student $student) use ($assessment, $gradesByStudent) {
+            $grade = $gradesByStudent->get($student->id);
+            $score = $grade?->score;
+            $scoreOnTwenty = $score === null ? null : round(((float) $score / (float) $assessment->max_score) * 20, 2);
+
+            return [
+                $student->matricule,
+                $student->full_name,
+                $assessment->schoolClass->name,
+                $assessment->subject->name,
+                $assessment->title,
+                $score,
+                $assessment->max_score,
+                $scoreOnTwenty,
+                (bool) $grade?->is_absent,
+                $grade?->comment,
+            ];
+        }));
     }
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Services\CsvExportService;
 use App\Services\MatriculeGeneratorService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -46,6 +47,46 @@ class StudentWebController extends Controller
             'fatherGuardian' => null,
             'motherGuardian' => null,
         ]);
+    }
+
+    public function export(Request $request, CsvExportService $csvExport)
+    {
+        $students = $this->studentQuery($request)
+            ->with(['guardians', 'enrollments.schoolClass'])
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        return $csvExport->download('eleves-' . now()->format('Ymd-His') . '.csv', [
+            'Matricule',
+            'Nom',
+            'Prenom',
+            'Sexe',
+            'Classe',
+            'Date naissance',
+            'Lieu naissance',
+            'Telephone domicile',
+            'Tuteur',
+            'Contact tuteur',
+            'Statut',
+        ], $students->map(function (Student $student) {
+            $enrollment = $student->enrollments->sortByDesc('id')->first();
+            $guardian = $student->guardians->first();
+
+            return [
+                $student->matricule,
+                $student->last_name,
+                $student->first_name,
+                $student->gender === 'female' ? 'Fille' : 'Garcon',
+                $student->desired_class ?: ($enrollment?->schoolClass?->name ?? ''),
+                $student->birth_date?->format('d/m/Y'),
+                $student->birth_place,
+                $student->home_phone,
+                $guardian?->full_name,
+                $guardian?->phone_primary,
+                $student->status,
+            ];
+        }));
     }
 
     public function store(Request $request, MatriculeGeneratorService $matriculeGenerator): RedirectResponse
@@ -143,6 +184,19 @@ class StudentWebController extends Controller
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function studentQuery(Request $request)
+    {
+        return Student::query()
+            ->when($request->string('search')->toString(), function ($query, string $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('matricule', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status));
     }
 
     private function registrationSheetData(Student $student): array

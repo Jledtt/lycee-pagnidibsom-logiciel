@@ -7,7 +7,12 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Paiements</a>
-    <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @can('payments.reports')
+        <a class="btn btn-subtle" href="{{ route('payments.unpaid.export') }}">Excel</a>
+    @endcan
+    @can('payments.create')
+        <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+    @endcan
 @endsection
 
 @section('content')
@@ -44,7 +49,11 @@
                             <td class="money">{{ is_null($summary['expected']) ? 'A configurer' : number_format($summary['expected'], 0, ',', ' ') . ' FCFA' }}</td>
                             <td class="money">{{ number_format($summary['paid'], 0, ',', ' ') }} FCFA</td>
                             <td class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</td>
-                            <td><a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $enrollment->student_id]) }}">Payer</a></td>
+                            <td>
+                                @can('payments.create')
+                                    <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $enrollment->student_id]) }}">Payer</a>
+                                @endcan
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

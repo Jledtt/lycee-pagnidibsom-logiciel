@@ -45,6 +45,10 @@ Route::get('/attendance/pdf', [AttendanceWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:attendance.reports'])
     ->name('attendance.pdf');
 
+Route::get('/attendance/export', [AttendanceWebController::class, 'export'])
+    ->middleware(['auth', 'permission:attendance.reports'])
+    ->name('attendance.export');
+
 Route::get('/attendance/sessions/{attendanceSession}/pdf', [AttendanceWebController::class, 'sessionPdf'])
     ->middleware(['auth', 'permission:attendance.reports'])
     ->name('attendance.sessions.pdf');
@@ -145,6 +149,10 @@ Route::get('/grades/assessments/{assessment}/pdf', [GradeWebController::class, '
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.assessments.pdf');
 
+Route::get('/grades/assessments/{assessment}/export', [GradeWebController::class, 'assessmentExport'])
+    ->middleware(['auth', 'permission:grades.view'])
+    ->name('grades.assessments.export');
+
 Route::put('/grades/assessments/{assessment}', [GradeWebController::class, 'updateGrades'])
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.assessments.grades.update');
@@ -229,6 +237,10 @@ Route::get('/reports/class-list/pdf', [ReportWebController::class, 'classListPdf
     ->middleware(['auth', 'permission:students.export'])
     ->name('reports.class-list.pdf');
 
+Route::get('/reports/class-list/export', [ReportWebController::class, 'classListExport'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.class-list.export');
+
 Route::get('/reports/payment-situation', [ReportWebController::class, 'paymentSituation'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('reports.payment-situation');
@@ -236,6 +248,10 @@ Route::get('/reports/payment-situation', [ReportWebController::class, 'paymentSi
 Route::get('/reports/payment-situation/pdf', [ReportWebController::class, 'paymentSituationPdf'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('reports.payment-situation.pdf');
+
+Route::get('/reports/payment-situation/export', [ReportWebController::class, 'paymentSituationExport'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('reports.payment-situation.export');
 
 Route::get('/reports/installments', [ReportWebController::class, 'installmentSituation'])
     ->middleware(['auth', 'permission:payments.reports'])
@@ -325,6 +341,10 @@ Route::get('/payments/unpaid', [PaymentWebController::class, 'unpaid'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('payments.unpaid');
 
+Route::get('/payments/unpaid/export', [PaymentWebController::class, 'unpaidExport'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('payments.unpaid.export');
+
 Route::get('/payments/students/{student}/statement', [PaymentWebController::class, 'studentStatement'])
     ->middleware(['auth', 'permission:payments.view'])
     ->name('payments.students.statement');
@@ -343,6 +363,11 @@ Route::get('/payments', [PaymentWebController::class, 'index'])
 Route::get('/payments/create', [PaymentWebController::class, 'create'])
     ->middleware(['auth', 'permission:payments.create'])
     ->name('payments.create');
+
+Route::get('/payments/export', [PaymentWebController::class, 'export'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('payments.export');
+
 Route::post('/payments', [PaymentWebController::class, 'store'])
     ->middleware(['auth', 'permission:payments.create'])
     ->name('payments.store');
@@ -392,6 +417,11 @@ Route::get('/students', [StudentWebController::class, 'index'])
 Route::get('/students/create', [StudentWebController::class, 'create'])
     ->middleware(['auth', 'permission:students.create'])
     ->name('students.create');
+
+Route::get('/students/export', [StudentWebController::class, 'export'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('students.export');
+
 Route::post('/students', [StudentWebController::class, 'store'])
     ->middleware(['auth', 'permission:students.create'])
     ->name('students.store');
