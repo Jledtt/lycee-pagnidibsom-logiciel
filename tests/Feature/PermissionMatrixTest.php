@@ -5,11 +5,24 @@ namespace Tests\Feature;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PermissionMatrixTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_can_access_sensitive_management_areas(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('admin');
+
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertOk();
+        $this->actingAs($user)->get(route('settings.edit'))->assertOk();
+        $this->actingAs($user)->get(route('payments.create'))->assertOk();
+        $this->actingAs($user)->get(route('grades.index'))->assertOk();
+        $this->actingAs($user)->get(route('attendance.index'))->assertOk();
+    }
 
     public function test_secretariat_access_is_limited_to_student_and_enrollment_work(): void
     {
@@ -57,6 +70,21 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
+    public function test_enseignant_access_is_limited_to_pedagogical_work(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('enseignant');
+
+        $this->actingAs($user)->get(route('students.index'))->assertOk();
+        $this->actingAs($user)->get(route('grades.index'))->assertOk();
+        $this->actingAs($user)->get(route('attendance.index'))->assertOk();
+
+        $this->actingAs($user)->get(route('payments.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('accounting.cash-journal'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.edit'))->assertForbidden();
+    }
+
     public function test_direction_can_consult_reports_without_operational_mutations(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -71,6 +99,57 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('grades.index'))->assertOk();
         $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
         $this->actingAs($user)->get(route('settings.edit'))->assertForbidden();
+    }
+
+    public function test_roles_screen_explains_what_roles_can_view_modify_and_print(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('admin');
+        $secretariat = Role::query()->where('name', 'secretariat')->firstOrFail();
+
+        $this->actingAs($user)
+            ->get(route('staff.roles.index'))
+            ->assertOk()
+            ->assertSee('Ce role peut')
+            ->assertSee('Voir')
+            ->assertSee('Modifier')
+            ->assertSee('Imprimer')
+            ->assertSee('Administrer')
+            ->assertSee('Gestion quotidienne des dossiers eleves');
+
+        $this->actingAs($user)
+            ->get(route('staff.roles.edit', $secretariat))
+            ->assertOk()
+            ->assertSee('Secretariat')
+            ->assertSee('Voir')
+            ->assertSee('Modifier')
+            ->assertSee('Imprimer')
+            ->assertSee('students.view');
+    }
+
+    public function test_admin_can_change_role_permissions_from_role_screen(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('admin');
+        $secretariat = Role::query()->where('name', 'secretariat')->firstOrFail();
+
+        $this->actingAs($user)
+            ->put(route('staff.roles.update', $secretariat), [
+                'permissions' => [
+                    'students.view',
+                    'students.export',
+                    'enrollments.view',
+                ],
+            ])
+            ->assertRedirect(route('staff.roles.index'));
+
+        $secretariat->refresh();
+
+        $this->assertTrue($secretariat->hasPermissionTo('students.view'));
+        $this->assertTrue($secretariat->hasPermissionTo('students.export'));
+        $this->assertTrue($secretariat->hasPermissionTo('enrollments.view'));
+        $this->assertFalse($secretariat->hasPermissionTo('students.create'));
+        $this->assertFalse($secretariat->hasPermissionTo('classes.manage'));
     }
 
     private function userWithRole(string $role): User

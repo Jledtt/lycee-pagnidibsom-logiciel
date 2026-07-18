@@ -17,8 +17,11 @@ class StaffRoleWebController extends Controller
         $this->ensurePermissionsExist();
 
         return view('staff.roles.index', [
+            'actionLabels' => $this->actionLabels(),
             'academicYear' => $this->activeAcademicYear(),
+            'permissionActions' => $this->permissionActions(),
             'permissionGroups' => $this->permissionGroups(),
+            'roleDescriptions' => $this->roleDescriptions(),
             'roleLabels' => $this->roleLabels(),
             'roles' => Role::query()
                 ->with('permissions')
@@ -36,9 +39,12 @@ class StaffRoleWebController extends Controller
         $role->load('permissions');
 
         return view('staff.roles.edit', [
+            'actionLabels' => $this->actionLabels(),
             'academicYear' => $this->activeAcademicYear(),
+            'permissionActions' => $this->permissionActions(),
             'permissionGroups' => $this->permissionGroups(),
             'role' => $role,
+            'roleDescriptions' => $this->roleDescriptions(),
             'roleLabels' => $this->roleLabels(),
             'selectedPermissions' => $role->permissions->pluck('name')->all(),
         ]);
@@ -135,6 +141,60 @@ class StaffRoleWebController extends Controller
             ->all();
     }
 
+    private function permissionActions(): array
+    {
+        return [
+            'students.view' => 'view',
+            'students.create' => 'modify',
+            'students.update' => 'modify',
+            'students.delete' => 'modify',
+            'students.export' => 'print',
+            'students.import' => 'modify',
+            'enrollments.view' => 'view',
+            'enrollments.create' => 'modify',
+            'enrollments.update' => 'modify',
+            'enrollments.cancel' => 'modify',
+            'payments.view' => 'view',
+            'payments.create' => 'modify',
+            'payments.cancel' => 'modify',
+            'payments.print_receipt' => 'print',
+            'payments.reports' => 'report',
+            'grades.view' => 'view',
+            'grades.create' => 'modify',
+            'grades.update' => 'modify',
+            'grades.lock' => 'manage',
+            'grades.unlock' => 'manage',
+            'report_cards.view' => 'view',
+            'report_cards.generate' => 'modify',
+            'report_cards.validate' => 'manage',
+            'report_cards.publish' => 'manage',
+            'report_cards.print' => 'print',
+            'attendance.view' => 'view',
+            'attendance.create' => 'modify',
+            'attendance.update' => 'modify',
+            'attendance.justify' => 'modify',
+            'attendance.reports' => 'report',
+            'users.manage' => 'manage',
+            'roles.manage' => 'manage',
+            'activity_logs.view' => 'view',
+            'settings.manage' => 'manage',
+            'academic_years.manage' => 'manage',
+            'classes.manage' => 'manage',
+            'subjects.manage' => 'manage',
+        ];
+    }
+
+    private function actionLabels(): array
+    {
+        return [
+            'view' => 'Voir',
+            'modify' => 'Modifier',
+            'print' => 'Imprimer',
+            'report' => 'Rapports',
+            'manage' => 'Administrer',
+        ];
+    }
+
     private function ensurePermissionsExist(): void
     {
         foreach ($this->permissionNames() as $permission) {
@@ -155,6 +215,18 @@ class StaffRoleWebController extends Controller
             'comptable' => 'Comptabilite',
             'enseignant' => 'Enseignant',
             'surveillant' => 'Surveillant',
+        ];
+    }
+
+    private function roleDescriptions(): array
+    {
+        return [
+            'admin' => 'Controle complet du logiciel, des utilisateurs, des parametres et des corrections.',
+            'direction' => 'Suivi global de l etablissement, rapports, bulletins et controles sans saisie financiere.',
+            'secretariat' => 'Gestion quotidienne des dossiers eleves, inscriptions, imports et documents administratifs.',
+            'comptable' => 'Paiements, recus, impayes et rapports financiers, sans acces aux notes ni aux parametres.',
+            'enseignant' => 'Saisie pedagogique: notes, absences et consultation des dossiers utiles.',
+            'surveillant' => 'Suivi de presence: absences, retards, justificatifs et rapports d assiduite.',
         ];
     }
 
