@@ -66,6 +66,12 @@
                                 <span>Appel par classe, retards, justificatifs et suivi quotidien.</span>
                             </a>
                         @endcan
+                        @can('grades.view')
+                            <a class="module" href="{{ route('grades.index') }}">
+                                <strong>Notes</strong>
+                                <span>Evaluations, saisie des notes et suivi par trimestre.</span>
+                            </a>
+                        @endcan
                         @can('payments.reports')
                             <a class="module" href="{{ route('accounting.cash-journal') }}">
                                 <strong>Comptabilite</strong>

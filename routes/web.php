@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
+use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\ReportWebController;
 use App\Http\Controllers\SchoolDashboardController;
@@ -88,6 +89,22 @@ Route::delete('/subjects/class-subjects/{classSubject}', [SubjectWebController::
 Route::post('/subjects/defaults', [SubjectWebController::class, 'applyDefaults'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('subjects.defaults');
+
+Route::get('/grades', [GradeWebController::class, 'index'])
+    ->middleware(['auth', 'permission:grades.view'])
+    ->name('grades.index');
+
+Route::post('/grades/assessments', [GradeWebController::class, 'storeAssessment'])
+    ->middleware(['auth', 'permission:grades.create'])
+    ->name('grades.assessments.store');
+
+Route::put('/grades/assessments/{assessment}', [GradeWebController::class, 'updateGrades'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.assessments.grades.update');
+
+Route::delete('/grades/assessments/{assessment}', [GradeWebController::class, 'destroyAssessment'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.assessments.destroy');
 
 Route::get('/accounting/cash-journal', [AccountingWebController::class, 'cashJournal'])
     ->middleware(['auth', 'permission:payments.reports'])
