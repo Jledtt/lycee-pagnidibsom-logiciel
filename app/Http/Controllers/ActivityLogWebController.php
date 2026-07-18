@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class ActivityLogWebController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function index(Request $request): View
     {
         $filters = $request->only(['action', 'model', 'user_id', 'search']);
 
@@ -36,6 +36,16 @@ class ActivityLogWebController extends Controller
             'logs' => $logs,
             'models' => ActivityLog::query()->select('auditable_type')->distinct()->orderBy('auditable_type')->pluck('auditable_type'),
             'users' => User::query()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function show(ActivityLog $activityLog): View
+    {
+        $activityLog->load('user');
+
+        return view('activity-logs.show', [
+            'academicYear' => AcademicYear::query()->where('is_active', true)->first(),
+            'log' => $activityLog,
         ]);
     }
 }

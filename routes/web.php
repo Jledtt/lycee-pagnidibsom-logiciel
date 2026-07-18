@@ -42,9 +42,13 @@ Route::view('/help', 'help.index')
     ->middleware('auth')
     ->name('help.index');
 
-Route::get('/activity-logs', ActivityLogWebController::class)
+Route::get('/activity-logs', [ActivityLogWebController::class, 'index'])
     ->middleware(['auth', 'permission:activity_logs.view'])
     ->name('activity-logs.index');
+
+Route::get('/activity-logs/{activityLog}', [ActivityLogWebController::class, 'show'])
+    ->middleware(['auth', 'permission:activity_logs.view'])
+    ->name('activity-logs.show');
 
 Route::get('/login-histories', LoginHistoryWebController::class)
     ->middleware(['auth', 'permission:activity_logs.view'])

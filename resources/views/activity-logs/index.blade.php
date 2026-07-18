@@ -91,20 +91,7 @@
                                     <span style="color:var(--muted)">ID {{ $log->auditable_id ?: '-' }}</span>
                                 </td>
                                 <td>
-                                    <details>
-                                        <summary class="btn btn-subtle">Voir</summary>
-                                        <div style="margin-top:10px">
-                                            <strong>{{ $log->description }}</strong>
-                                            @if ($log->old_values)
-                                                <p style="color:var(--muted); margin-bottom:6px">Avant</p>
-                                                <pre style="white-space:pre-wrap">{{ json_encode($log->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                                            @endif
-                                            @if ($log->new_values)
-                                                <p style="color:var(--muted); margin-bottom:6px">Apres</p>
-                                                <pre style="white-space:pre-wrap">{{ json_encode($log->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                                            @endif
-                                        </div>
-                                    </details>
+                                    <a class="btn btn-subtle" href="{{ route('activity-logs.show', $log) }}">Voir</a>
                                 </td>
                             </tr>
                         @endforeach
