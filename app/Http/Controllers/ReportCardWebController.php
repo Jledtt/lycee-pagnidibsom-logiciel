@@ -212,6 +212,7 @@ class ReportCardWebController extends Controller
                     $reportCard->student,
                     $reportCard->term,
                     $classSubject->subject_id,
+                    $reportCard->school_class_id,
                 );
 
                 $coefficient = (float) $classSubject->coefficient;

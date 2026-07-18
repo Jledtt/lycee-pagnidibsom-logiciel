@@ -113,6 +113,11 @@ class GradeWebController extends Controller
         ]);
 
         abort_unless($this->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matiere non affectee a cette classe.');
+        abort_if(
+            $this->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
+            403,
+            'Le conseil de classe est verrouille pour ce trimestre.'
+        );
 
         $assessment = Assessment::create([
             ...$data,
@@ -131,7 +136,7 @@ class GradeWebController extends Controller
 
     public function updateGrades(Request $request, Assessment $assessment): RedirectResponse
     {
-        abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked && ! $request->user()?->can('grades.unlock'), 403, 'Cette evaluation est verrouillee.');
 
         $data = $request->validate([
             'grades' => ['nullable', 'array'],
@@ -246,7 +251,7 @@ class GradeWebController extends Controller
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse
     {
-        abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked && ! request()->user()?->can('grades.unlock'), 403, 'Cette evaluation est verrouillee.');
 
         $schoolClassId = $assessment->school_class_id;
         $termId = $assessment->term_id;
@@ -292,6 +297,24 @@ class GradeWebController extends Controller
             ->where('subject_id', $subjectId)
             ->where('is_active', true)
             ->exists();
+    }
+
+    private function classTermIsLocked(int $schoolClassId, int $termId): bool
+    {
+        $total = Assessment::query()
+            ->where('school_class_id', $schoolClassId)
+            ->where('term_id', $termId)
+            ->count();
+
+        if ($total <= 0) {
+            return false;
+        }
+
+        return Assessment::query()
+            ->where('school_class_id', $schoolClassId)
+            ->where('term_id', $termId)
+            ->where('is_locked', true)
+            ->count() === $total;
     }
 
     private function studentsForClass(int $academicYearId, int $schoolClassId): Collection

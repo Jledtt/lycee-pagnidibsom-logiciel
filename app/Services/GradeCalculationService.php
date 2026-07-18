@@ -10,12 +10,13 @@ use App\Models\Term;
 
 class GradeCalculationService
 {
-    public function subjectAverage(Student $student, Term $term, int $subjectId): ?float
+    public function subjectAverage(Student $student, Term $term, int $subjectId, ?int $schoolClassId = null): ?float
     {
         $assessments = Assessment::query()
             ->with(['assessmentType', 'grades' => fn ($query) => $query->where('student_id', $student->id)])
             ->where('term_id', $term->id)
             ->where('subject_id', $subjectId)
+            ->when($schoolClassId, fn ($query) => $query->where('school_class_id', $schoolClassId))
             ->get();
 
         $weightedTotal = 0.0;
@@ -52,7 +53,7 @@ class GradeCalculationService
         $coefficients = 0.0;
 
         foreach ($classSubjects as $classSubject) {
-            $average = $this->subjectAverage($student, $term, $classSubject->subject_id);
+            $average = $this->subjectAverage($student, $term, $classSubject->subject_id, $schoolClass->id);
 
             if ($average === null) {
                 continue;

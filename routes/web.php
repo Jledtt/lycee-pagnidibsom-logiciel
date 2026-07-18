@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
+use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
@@ -214,6 +215,22 @@ Route::get('/report-cards', [ReportCardWebController::class, 'index'])
     ->middleware(['auth', 'permission:report_cards.view'])
     ->name('report-cards.index');
 
+Route::get('/class-council', [ClassCouncilWebController::class, 'index'])
+    ->middleware(['auth', 'permission:report_cards.view'])
+    ->name('class-council.index');
+
+Route::get('/class-council/pv/pdf', [ClassCouncilWebController::class, 'pvPdf'])
+    ->middleware(['auth', 'permission:report_cards.print'])
+    ->name('class-council.pv-pdf');
+
+Route::post('/class-council/lock', [ClassCouncilWebController::class, 'lock'])
+    ->middleware(['auth', 'permission:report_cards.validate'])
+    ->name('class-council.lock');
+
+Route::post('/class-council/unlock', [ClassCouncilWebController::class, 'unlock'])
+    ->middleware(['auth', 'permission:grades.unlock'])
+    ->name('class-council.unlock');
+
 Route::post('/report-cards/generate', [ReportCardWebController::class, 'generate'])
     ->middleware(['auth', 'permission:report_cards.generate'])
     ->name('report-cards.generate');
@@ -229,6 +246,10 @@ Route::get('/report-cards/class/pdf', [ReportCardWebController::class, 'classPdf
 Route::get('/report-cards/{reportCard}/pdf', [ReportCardWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:report_cards.print'])
     ->name('report-cards.pdf');
+
+Route::get('/report-cards/{reportCard}/transcript/pdf', [ClassCouncilWebController::class, 'transcriptPdf'])
+    ->middleware(['auth', 'permission:report_cards.print'])
+    ->name('report-cards.transcript-pdf');
 
 Route::get('/accounting/cash-journal', [AccountingWebController::class, 'cashJournal'])
     ->middleware(['auth', 'permission:payments.reports'])

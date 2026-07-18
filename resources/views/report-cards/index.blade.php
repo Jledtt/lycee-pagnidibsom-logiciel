@@ -6,6 +6,7 @@
 ])
 
 @section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('class-council.index', ['school_class_id' => $selectedClass?->id, 'term_id' => $selectedTerm?->id]) }}">Conseil de classe</a>
     <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass?->id, 'term_id' => $selectedTerm?->id]) }}">Notes</a>
 @endsection
 
