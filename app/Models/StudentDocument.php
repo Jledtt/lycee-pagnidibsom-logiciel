@@ -12,6 +12,7 @@ class StudentDocument extends Model
         'academic_year_id',
         'name',
         'document_type',
+        'document_number',
         'file_path',
         'status',
         'received_at',

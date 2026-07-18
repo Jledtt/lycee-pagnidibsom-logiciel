@@ -6,6 +6,7 @@
 ])
 
 @section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('settings.numbering.index') }}">Numerotation</a>
     <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pieces obligatoires</a>
 @endsection
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
+use App\Http\Controllers\NumberingSettingWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
@@ -106,6 +107,14 @@ Route::put('/settings/required-documents/{requiredDocument}', [RequiredStudentDo
 Route::delete('/settings/required-documents/{requiredDocument}', [RequiredStudentDocumentWebController::class, 'destroy'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.required-documents.destroy');
+
+Route::get('/settings/numbering', [NumberingSettingWebController::class, 'index'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.numbering.index');
+
+Route::put('/settings/numbering', [NumberingSettingWebController::class, 'update'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.numbering.update');
 
 Route::get('/academic-years', [AcademicYearWebController::class, 'index'])
     ->middleware(['auth', 'permission:academic_years.manage'])

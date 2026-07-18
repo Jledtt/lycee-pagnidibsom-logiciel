@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentDocument;
+use App\Services\OfficialNumberService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,7 @@ class CertificateWebController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, OfficialNumberService $officialNumberService): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
 
@@ -95,6 +96,11 @@ class CertificateWebController extends Controller
             'academic_year_id' => $academicYear->id,
             'name' => self::TYPES[$data['document_type']] . ' - ' . $student->full_name,
             'document_type' => $data['document_type'],
+            'document_number' => $officialNumberService->generate(
+                OfficialNumberService::STUDENT_CERTIFICATE,
+                fn (string $number) => StudentDocument::query()->where('document_number', $number)->exists(),
+                $academicYear,
+            ),
             'status' => 'received',
             'received_at' => $data['received_at'] ?? now()->toDateString(),
         ]);

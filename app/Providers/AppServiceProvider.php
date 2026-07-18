@@ -8,6 +8,7 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Grade;
+use App\Models\NumberingSetting;
 use App\Models\Payment;
 use App\Models\RequiredStudentDocument;
 use App\Models\ReportCard;
@@ -65,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
             Enrollment::class,
             FeeSchedule::class,
             Grade::class,
+            NumberingSetting::class,
             Payment::class,
             RequiredStudentDocument::class,
             ReportCard::class,

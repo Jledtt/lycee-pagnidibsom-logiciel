@@ -29,6 +29,10 @@
                     <strong>{{ $certificate->received_at?->format('d/m/Y') ?? $certificate->created_at->format('d/m/Y') }}</strong>
                 </div>
                 <div class="detail-item">
+                    <span>No certificat</span>
+                    <strong>{{ $certificate->document_number ?? '-' }}</strong>
+                </div>
+                <div class="detail-item">
                     <span>Classe</span>
                     <strong>{{ $enrollment?->schoolClass?->name ?? '-' }}</strong>
                 </div>

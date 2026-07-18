@@ -55,6 +55,7 @@
             </td>
             <td class="year">
                 Annee scolaire: {{ $certificate->academicYear?->name ?? '-' }}<br>
+                No certificat: {{ $certificate->document_number ?? '-' }}<br>
                 {{ $school?->country ?? 'Burkina Faso' }}<br>
                 {{ $school?->national_motto ?? 'La Patrie ou la Mort Nous Vaincrons' }}
             </td>
