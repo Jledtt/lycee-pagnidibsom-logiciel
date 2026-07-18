@@ -60,7 +60,8 @@
         @if ($payments->isEmpty())
             <div class="empty">Aucun paiement enregistre pour le moment.</div>
         @else
-            <table class="table">
+            <div class="subject-list-scroll">
+            <table class="table" style="min-width:980px">
                 <thead>
                     <tr>
                         <th>Recu</th>
@@ -89,6 +90,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
 
             <div class="pagination">
                 {{ $payments->links() }}

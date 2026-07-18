@@ -67,6 +67,22 @@ class ClassCouncilTest extends TestCase
         $this->assertStringStartsWith('%PDF', $transcriptResponse->getContent());
     }
 
+    public function test_admin_can_export_report_cards_to_xlsx(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('admin');
+        [$class, $term] = $this->classWithGrades();
+
+        app(ReportCardService::class)->generateForClass($class, $term);
+
+        $response = $this->actingAs($user)
+            ->get(route('report-cards.class-export', ['school_class_id' => $class->id, 'term_id' => $term->id]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('Awa Ouedraogo', $this->sheetXml($response->getContent()));
+    }
+
     public function test_council_lock_blocks_teacher_grade_updates_but_admin_can_correct(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -188,5 +204,19 @@ class ClassCouncilTest extends TestCase
         $user->assignRole($role);
 
         return $user;
+    }
+
+    private function sheetXml(string $content): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
+        file_put_contents($path, $content);
+
+        $zip = new \ZipArchive();
+        $zip->open($path);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
+        $zip->close();
+        @unlink($path);
+
+        return $xml;
     }
 }

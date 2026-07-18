@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Attendance\StoreAttendanceSessionRequest;
+use App\Http\Requests\Attendance\UpdateAttendanceSessionRequest;
 use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
+use App\Services\AttendanceSessionService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
@@ -19,6 +22,11 @@ use Illuminate\View\View;
 
 class AttendanceWebController extends Controller
 {
+    public function __construct(
+        private readonly AttendanceSessionService $attendanceSessionService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
@@ -43,24 +51,16 @@ class AttendanceWebController extends Controller
         ]);
     }
 
-    public function storeSession(Request $request): RedirectResponse
+    public function storeSession(StoreAttendanceSessionRequest $request): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
+        $data = $request->validated();
 
-        $data = $request->validate([
-            'school_class_id' => ['required', 'exists:school_classes,id'],
-            'session_date' => ['required', 'date'],
-        ]);
-
-        $session = AttendanceSession::query()->firstOrCreate(
-            [
-                'academic_year_id' => $academicYear->id,
-                'school_class_id' => $data['school_class_id'],
-                'session_date' => $data['session_date'],
-            ],
-            [
-                'created_by' => $request->user()->id,
-            ],
+        $session = $this->attendanceSessionService->firstOrCreateSession(
+            $academicYear,
+            (int) $data['school_class_id'],
+            $data['session_date'],
+            $request->user(),
         );
 
         return redirect()
@@ -181,13 +181,7 @@ class AttendanceWebController extends Controller
 
     public function clearRecord(AttendanceRecord $attendanceRecord): RedirectResponse
     {
-        $attendanceRecord->forceFill([
-            'status' => 'present',
-            'minutes_late' => null,
-            'reason' => null,
-            'justified_at' => null,
-            'justified_by' => null,
-        ])->save();
+        $this->attendanceSessionService->clearRecord($attendanceRecord);
 
         return redirect()
             ->back()
@@ -241,34 +235,9 @@ class AttendanceWebController extends Controller
         ]);
     }
 
-    public function updateSession(Request $request, AttendanceSession $attendanceSession): RedirectResponse
+    public function updateSession(UpdateAttendanceSessionRequest $request, AttendanceSession $attendanceSession): RedirectResponse
     {
-        $data = $request->validate([
-            'records' => ['required', 'array'],
-            'records.*.student_id' => ['required', 'exists:students,id'],
-            'records.*.status' => ['required', 'in:present,absent,late,excused'],
-            'records.*.minutes_late' => ['nullable', 'integer', 'min:0', 'max:600'],
-            'records.*.reason' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        foreach ($data['records'] as $row) {
-            $status = $row['status'];
-            $isExcused = $status === 'excused';
-
-            AttendanceRecord::query()->updateOrCreate(
-                [
-                    'attendance_session_id' => $attendanceSession->id,
-                    'student_id' => $row['student_id'],
-                ],
-                [
-                    'status' => $status,
-                    'minutes_late' => $status === 'late' ? ($row['minutes_late'] ?? null) : null,
-                    'reason' => $row['reason'] ?? null,
-                    'justified_at' => $isExcused ? now() : null,
-                    'justified_by' => $isExcused ? $request->user()->id : null,
-                ],
-            );
-        }
+        $this->attendanceSessionService->updateRecords($attendanceSession, $request->validated('records'), $request->user());
 
         return redirect()
             ->route('attendance.sessions.edit', $attendanceSession)

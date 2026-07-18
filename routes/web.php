@@ -274,6 +274,10 @@ Route::get('/report-cards/class/pdf', [ReportCardWebController::class, 'classPdf
     ->middleware(['auth', 'permission:report_cards.print'])
     ->name('report-cards.class-pdf');
 
+Route::get('/report-cards/class/export', [ReportCardWebController::class, 'classExport'])
+    ->middleware(['auth', 'permission:report_cards.print'])
+    ->name('report-cards.class-export');
+
 Route::get('/report-cards/{reportCard}/pdf', [ReportCardWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:report_cards.print'])
     ->name('report-cards.pdf');

@@ -2,27 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Grade\StoreAssessmentRequest;
+use App\Http\Requests\Grade\UpdateGradesRequest;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\AssessmentType;
 use App\Models\ClassSubject;
-use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
+use App\Services\GradeEntryService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class GradeWebController extends Controller
 {
+    public function __construct(
+        private readonly GradeEntryService $gradeEntryService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $academicYear = $this->requireActiveAcademicYear();
@@ -70,7 +75,7 @@ class GradeWebController extends Controller
 
             $selectedAssessment = $assessments->firstWhere('id', $request->integer('assessment_id')) ?? $assessments->first();
 
-            $students = $this->studentsForClass($academicYear->id, $selectedClass->id);
+            $students = $this->gradeEntryService->studentsForClass($academicYear->id, $selectedClass->id);
 
             if ($selectedAssessment) {
                 $gradesByStudent = Grade::query()
@@ -95,35 +100,19 @@ class GradeWebController extends Controller
         ]);
     }
 
-    public function storeAssessment(Request $request): RedirectResponse
+    public function storeAssessment(StoreAssessmentRequest $request): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
+        $data = $request->validated();
 
-        $data = $request->validate([
-            'school_class_id' => ['required', 'exists:school_classes,id'],
-            'term_id' => [
-                'required',
-                Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id),
-            ],
-            'subject_id' => ['required', 'exists:subjects,id'],
-            'assessment_type_id' => ['required', 'exists:assessment_types,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'max_score' => ['required', 'numeric', 'min:1', 'max:100'],
-            'assessment_date' => ['nullable', 'date'],
-        ]);
-
-        abort_unless($this->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matiere non affectee a cette classe.');
+        abort_unless($this->gradeEntryService->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matiere non affectee a cette classe.');
         abort_if(
-            $this->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
+            $this->gradeEntryService->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
             403,
             'Le conseil de classe est verrouille pour ce trimestre.'
         );
 
-        $assessment = Assessment::create([
-            ...$data,
-            'academic_year_id' => $academicYear->id,
-            'teacher_id' => auth()->id(),
-        ]);
+        $assessment = $this->gradeEntryService->createAssessment($academicYear, $data, $request->user());
 
         return redirect()
             ->route('grades.index', [
@@ -134,42 +123,11 @@ class GradeWebController extends Controller
             ->with('success', 'Evaluation creee. Tu peux saisir les notes.');
     }
 
-    public function updateGrades(Request $request, Assessment $assessment): RedirectResponse
+    public function updateGrades(UpdateGradesRequest $request, Assessment $assessment): RedirectResponse
     {
         abort_if($assessment->is_locked && ! $request->user()?->can('grades.unlock'), 403, 'Cette evaluation est verrouillee.');
 
-        $data = $request->validate([
-            'grades' => ['nullable', 'array'],
-            'grades.*.score' => ['nullable', 'numeric', 'min:0', 'max:' . (float) $assessment->max_score],
-            'grades.*.is_absent' => ['nullable', 'boolean'],
-            'grades.*.comment' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $studentIds = Enrollment::query()
-            ->where('academic_year_id', $assessment->academic_year_id)
-            ->where('school_class_id', $assessment->school_class_id)
-            ->where('status', 'active')
-            ->pluck('student_id')
-            ->all();
-
-        foreach ($studentIds as $studentId) {
-            $line = $data['grades'][$studentId] ?? [];
-            $isAbsent = (bool) ($line['is_absent'] ?? false);
-            $score = $isAbsent ? null : ($line['score'] ?? null);
-
-            Grade::updateOrCreate(
-                [
-                    'assessment_id' => $assessment->id,
-                    'student_id' => $studentId,
-                ],
-                [
-                    'score' => $score,
-                    'is_absent' => $isAbsent,
-                    'comment' => $line['comment'] ?? null,
-                    'entered_by' => auth()->id(),
-                ],
-            );
-        }
+        $this->gradeEntryService->updateGrades($assessment, $request->validated('grades') ?? [], $request->user());
 
         return redirect()
             ->route('grades.index', [
@@ -184,7 +142,7 @@ class GradeWebController extends Controller
     {
         $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
-        $students = $this->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
+        $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
         $validGrades = $assessment->grades
             ->filter(fn (Grade $grade) => ! $grade->is_absent && $grade->score !== null);
@@ -214,7 +172,7 @@ class GradeWebController extends Controller
     {
         $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
-        $students = $this->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
+        $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
         $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.xlsx';
 
@@ -288,51 +246,6 @@ class GradeWebController extends Controller
         abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
 
         return $academicYear;
-    }
-
-    private function subjectBelongsToClass(int $schoolClassId, int $subjectId): bool
-    {
-        return ClassSubject::query()
-            ->where('school_class_id', $schoolClassId)
-            ->where('subject_id', $subjectId)
-            ->where('is_active', true)
-            ->exists();
-    }
-
-    private function classTermIsLocked(int $schoolClassId, int $termId): bool
-    {
-        $total = Assessment::query()
-            ->where('school_class_id', $schoolClassId)
-            ->where('term_id', $termId)
-            ->count();
-
-        if ($total <= 0) {
-            return false;
-        }
-
-        return Assessment::query()
-            ->where('school_class_id', $schoolClassId)
-            ->where('term_id', $termId)
-            ->where('is_locked', true)
-            ->count() === $total;
-    }
-
-    private function studentsForClass(int $academicYearId, int $schoolClassId): Collection
-    {
-        return Enrollment::query()
-            ->with('student')
-            ->where('academic_year_id', $academicYearId)
-            ->where('school_class_id', $schoolClassId)
-            ->where('enrollments.status', 'active')
-            ->whereHas('student', fn ($query) => $query->where('students.status', 'active'))
-            ->join('students', 'students.id', '=', 'enrollments.student_id')
-            ->orderBy('students.last_name')
-            ->orderBy('students.first_name')
-            ->select('enrollments.*')
-            ->get()
-            ->pluck('student')
-            ->filter()
-            ->values();
     }
 
     private function backToAssessment(Assessment $assessment): RedirectResponse

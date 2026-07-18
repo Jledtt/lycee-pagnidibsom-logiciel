@@ -46,7 +46,8 @@
                     <button class="btn btn-primary" type="submit">Enregistrer le pointage</button>
                 </div>
 
-                <table class="table">
+                <div class="subject-list-scroll">
+                <table class="table" style="min-width:980px">
                     <thead>
                         <tr>
                             <th>Eleve</th>
@@ -84,6 +85,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
 
                 <div class="form-actions" style="margin-top:14px">
                     <a class="btn btn-subtle" href="{{ route('attendance.index', ['school_class_id' => $session->school_class_id, 'date' => $session->session_date->toDateString()]) }}">Annuler</a>

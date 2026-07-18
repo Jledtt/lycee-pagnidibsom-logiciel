@@ -74,7 +74,8 @@
                 <h2>Lignes</h2>
             </div>
 
-            <table class="table">
+            <div class="subject-list-scroll">
+            <table class="table" style="min-width:760px">
                 <thead>
                     <tr>
                         <th>Frais</th>
@@ -93,6 +94,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
 
             @if ($payment->notes)
                 <div class="detail-item" style="margin-top:16px">

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReportCard\ReportCardSelectionRequest;
+use App\Http\Requests\ReportCard\UpdateReportCardRequest;
 use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\Enrollment;
@@ -11,12 +13,12 @@ use App\Models\SchoolSetting;
 use App\Models\Term;
 use App\Services\GradeCalculationService;
 use App\Services\ReportCardService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ReportCardWebController extends Controller
@@ -70,20 +72,10 @@ class ReportCardWebController extends Controller
         ]);
     }
 
-    public function generate(Request $request): RedirectResponse
+    public function generate(ReportCardSelectionRequest $request): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
-
-        $data = $request->validate([
-            'school_class_id' => [
-                'required',
-                Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id),
-            ],
-            'term_id' => [
-                'required',
-                Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id),
-            ],
-        ]);
+        $data = $request->validated();
 
         $schoolClass = SchoolClass::query()->findOrFail($data['school_class_id']);
         $term = Term::query()->findOrFail($data['term_id']);
@@ -113,20 +105,10 @@ class ReportCardWebController extends Controller
             ->stream($filename);
     }
 
-    public function classPdf(Request $request)
+    public function classPdf(ReportCardSelectionRequest $request)
     {
         $academicYear = $this->requireActiveAcademicYear();
-
-        $data = $request->validate([
-            'school_class_id' => [
-                'required',
-                Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id),
-            ],
-            'term_id' => [
-                'required',
-                Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id),
-            ],
-        ]);
+        $data = $request->validated();
 
         $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
         $term = Term::query()->findOrFail($data['term_id']);
@@ -158,13 +140,53 @@ class ReportCardWebController extends Controller
             ->stream($filename);
     }
 
-    public function update(Request $request, ReportCard $reportCard): RedirectResponse
+    public function classExport(ReportCardSelectionRequest $request, XlsxExportService $xlsxExport)
     {
-        $data = $request->validate([
-            'decision' => ['nullable', 'string', 'max:255'],
-            'principal_observation' => ['nullable', 'string', 'max:1000'],
-            'status' => ['required', Rule::in(['draft', 'validated', 'published'])],
-        ]);
+        $academicYear = $this->requireActiveAcademicYear();
+        $data = $request->validated();
+        $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
+        $term = Term::query()->findOrFail($data['term_id']);
+
+        $this->reportCardService->generateForClass($schoolClass, $term);
+
+        $reportCards = ReportCard::query()
+            ->with(['student', 'schoolClass', 'term'])
+            ->where('academic_year_id', $academicYear->id)
+            ->where('school_class_id', $schoolClass->id)
+            ->where('term_id', $term->id)
+            ->join('students', 'students.id', '=', 'report_cards.student_id')
+            ->orderBy('report_cards.rank')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('report_cards.*')
+            ->get();
+
+        return $xlsxExport->download('bulletins-' . Str::slug($schoolClass->name . '-' . $term->name) . '.xlsx', [
+            'Rang',
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Trimestre',
+            'Moyenne',
+            'Appreciation',
+            'Decision',
+            'Statut',
+        ], $reportCards->map(fn (ReportCard $reportCard) => [
+            $reportCard->rank,
+            $reportCard->student?->matricule,
+            $reportCard->student?->full_name,
+            $schoolClass->name,
+            $term->name,
+            $reportCard->general_average,
+            $reportCard->appreciation,
+            $reportCard->decision,
+            $reportCard->status,
+        ]));
+    }
+
+    public function update(UpdateReportCardRequest $request, ReportCard $reportCard): RedirectResponse
+    {
+        $data = $request->validated();
 
         $payload = [
             'appreciation' => $this->reportCardService->appreciationForAverage(

@@ -121,7 +121,8 @@
             <div class="panel-head">
                 <h2>Paiements hors tranches</h2>
             </div>
-            <table class="table">
+            <div class="subject-list-scroll">
+            <table class="table" style="min-width:720px">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -141,6 +142,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </section>
     @endif
 @endsection

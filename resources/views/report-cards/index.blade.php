@@ -84,6 +84,7 @@
                     @endcan
                     @can('report_cards.print')
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}">PDF classe</a>
+                        <a class="btn btn-subtle" href="{{ route('report-cards.class-export', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}" data-download-feedback="Telechargement Excel des bulletins lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
                     @endcan
                 </div>
             </div>

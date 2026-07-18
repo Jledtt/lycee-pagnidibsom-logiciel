@@ -71,7 +71,8 @@
             @if ($sessions->isEmpty())
                 <div class="empty">Aucun pointage cree pour cette date.</div>
             @else
-                <table class="table">
+                <div class="subject-list-scroll">
+                <table class="table" style="min-width:680px">
                     <thead>
                         <tr>
                             <th>Classe</th>
@@ -100,6 +101,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         </div>
 
@@ -112,7 +114,8 @@
             @if ($recentRecords->isEmpty())
                 <div class="empty">Aucune absence ou retard enregistre pour le moment.</div>
             @else
-                <table class="table">
+                <div class="subject-list-scroll">
+                <table class="table" style="min-width:760px">
                     <thead>
                         <tr>
                             <th>Eleve</th>
@@ -156,6 +159,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         </div>
     </section>

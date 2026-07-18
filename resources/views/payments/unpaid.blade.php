@@ -25,7 +25,8 @@
         @if ($rows->isEmpty())
             <div class="empty">Aucun impaye detecte pour les frais configures.</div>
         @else
-            <table class="table">
+            <div class="subject-list-scroll">
+            <table class="table" style="min-width:920px">
                 <thead>
                     <tr>
                         <th>Eleve</th>
@@ -58,6 +59,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </section>
 @endsection
