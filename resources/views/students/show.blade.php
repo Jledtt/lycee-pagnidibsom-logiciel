@@ -24,6 +24,12 @@
 @endsection
 
 @section('content')
+    @if ($errors->any())
+        <div class="error">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
     <section class="panel">
         <div class="panel-head">
             <h2>Fiche eleve</h2>
@@ -91,6 +97,142 @@
                 <span>Tel domicile</span>
                 <strong>{{ $student->home_phone ?? '-' }}</strong>
             </div>
+        </div>
+    </section>
+
+    <section class="grid two-col" style="margin-top:16px">
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Ajouter un document</h2>
+            </div>
+
+            @can('students.update')
+                <form method="POST" action="{{ route('students.documents.store', $student) }}" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Nom du document</label>
+                            <input name="name" value="{{ old('name') }}" placeholder="Ex: Acte de naissance" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Type</label>
+                            <select name="document_type" required>
+                                <option value="birth_certificate" @selected(old('document_type') === 'birth_certificate')>Acte de naissance</option>
+                                <option value="photo" @selected(old('document_type') === 'photo')>Photo</option>
+                                <option value="previous_report_card" @selected(old('document_type') === 'previous_report_card')>Ancien bulletin</option>
+                                <option value="certificate" @selected(old('document_type') === 'certificate')>Certificat</option>
+                                <option value="receipt" @selected(old('document_type') === 'receipt')>Recu</option>
+                                <option value="parent_authorization" @selected(old('document_type') === 'parent_authorization')>Autorisation parentale</option>
+                                <option value="identity" @selected(old('document_type') === 'identity')>Piece d'identite</option>
+                                <option value="other" @selected(old('document_type') === 'other')>Autre document</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Statut</label>
+                            <select name="status" required>
+                                <option value="received" @selected(old('status', 'received') === 'received')>Recu</option>
+                                <option value="missing" @selected(old('status') === 'missing')>Manquant</option>
+                                <option value="expired" @selected(old('status') === 'expired')>Expire</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Date de reception</label>
+                            <input type="date" name="received_at" value="{{ old('received_at', now()->toDateString()) }}">
+                        </div>
+
+                        <div class="field wide">
+                            <label>Fichier PDF ou image</label>
+                            <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">Ajouter au dossier</button>
+                    </div>
+                </form>
+            @else
+                <div class="empty">Tu peux consulter les documents, mais ton role ne permet pas d en ajouter.</div>
+            @endcan
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Documents</h2>
+                <span class="badge">{{ $student->documents->count() }} piece(s)</span>
+            </div>
+
+            @php($documentTypeLabels = [
+                'birth_certificate' => 'Acte de naissance',
+                'photo' => 'Photo',
+                'previous_report_card' => 'Ancien bulletin',
+                'certificate' => 'Certificat',
+                'receipt' => 'Recu',
+                'parent_authorization' => 'Autorisation parentale',
+                'identity' => 'Piece d identite',
+                'other' => 'Autre document',
+                'school_certificate' => 'Certificat de scolarite',
+                'enrollment_certificate' => 'Certificat d inscription',
+                'no_debt_certificate' => 'Certificat de non redevance',
+            ])
+            @php($statusLabels = ['received' => 'Recu', 'missing' => 'Manquant', 'expired' => 'Expire'])
+            @php($certificateTypes = ['school_certificate', 'enrollment_certificate', 'no_debt_certificate'])
+
+            @if ($student->documents->isEmpty())
+                <div class="empty">Aucun document rattache a ce dossier.</div>
+            @else
+                <div class="subject-list-scroll">
+                    <table class="table" style="min-width:720px">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($student->documents->sortByDesc('created_at') as $document)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $document->name }}</strong><br>
+                                        <span>{{ $document->academicYear?->name ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ $documentTypeLabels[$document->document_type] ?? $document->document_type }}</td>
+                                    <td>
+                                        <span class="badge {{ $document->status === 'received' ? '' : 'badge-warning' }}">
+                                            {{ $statusLabels[$document->status] ?? $document->status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $document->received_at?->format('d/m/Y') ?? '-' }}</td>
+                                    <td>
+                                        <div class="page-actions" style="justify-content:flex-end">
+                                            @if ($document->file_path)
+                                                <a class="btn btn-subtle" href="{{ route('student-documents.show', $document) }}" target="_blank" rel="noopener">Voir</a>
+                                                <a class="btn btn-subtle" href="{{ route('student-documents.download', $document) }}">Telecharger</a>
+                                            @elseif (in_array($document->document_type, $certificateTypes, true))
+                                                <a class="btn btn-subtle" href="{{ route('certificates.show', $document) }}">Voir</a>
+                                                <a class="btn btn-subtle" href="{{ route('certificates.pdf', $document) }}">PDF</a>
+                                            @endif
+                                            @can('students.update')
+                                                <form method="POST" action="{{ route('students.documents.destroy', [$student, $document]) }}" onsubmit="return confirm('Supprimer ce document ?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-danger" type="submit">Supprimer</button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     </section>
 

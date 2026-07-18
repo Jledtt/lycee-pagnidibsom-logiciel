@@ -119,6 +119,7 @@ class StudentWebController extends Controller
             'enrollments.schoolClass.level',
             'payments.lines.feeType',
             'attendanceRecords.session',
+            'documents.academicYear',
         ]);
 
         return view('students.show', [

@@ -13,6 +13,7 @@ use App\Models\ReportCard;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
+use App\Models\StudentDocument;
 use App\Models\Subject;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
@@ -67,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
             ReportCard::class,
             SchoolClass::class,
             Student::class,
+            StudentDocument::class,
             Subject::class,
             User::class,
         ];

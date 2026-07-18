@@ -17,6 +17,7 @@ use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
+use App\Http\Controllers\StudentDocumentWebController;
 use App\Http\Controllers\StudentImportWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
@@ -306,6 +307,22 @@ Route::get('/students/{student}/registration-sheet', [StudentWebController::clas
 Route::get('/students/{student}/registration-sheet/pdf', [StudentWebController::class, 'registrationSheetPdf'])
     ->middleware(['auth', 'permission:students.export'])
     ->name('students.registration-sheet.pdf');
+
+Route::post('/students/{student}/documents', [StudentDocumentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:students.update'])
+    ->name('students.documents.store');
+
+Route::delete('/students/{student}/documents/{studentDocument}', [StudentDocumentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:students.update'])
+    ->name('students.documents.destroy');
+
+Route::get('/student-documents/{studentDocument}', [StudentDocumentWebController::class, 'show'])
+    ->middleware(['auth', 'permission:students.view'])
+    ->name('student-documents.show');
+
+Route::get('/student-documents/{studentDocument}/download', [StudentDocumentWebController::class, 'download'])
+    ->middleware(['auth', 'permission:students.view'])
+    ->name('student-documents.download');
 
 Route::post('/classes/{schoolClass}/students', [SchoolClassWebController::class, 'attachStudent'])
     ->middleware(['auth', 'permission:classes.manage'])
