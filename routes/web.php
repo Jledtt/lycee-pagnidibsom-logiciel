@@ -119,6 +119,10 @@ Route::post('/report-cards/generate', [ReportCardWebController::class, 'generate
     ->middleware(['auth', 'permission:report_cards.generate'])
     ->name('report-cards.generate');
 
+Route::put('/report-cards/{reportCard}', [ReportCardWebController::class, 'update'])
+    ->middleware(['auth', 'permission:report_cards.validate'])
+    ->name('report-cards.update');
+
 Route::get('/report-cards/{reportCard}/pdf', [ReportCardWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:report_cards.print'])
     ->name('report-cards.pdf');

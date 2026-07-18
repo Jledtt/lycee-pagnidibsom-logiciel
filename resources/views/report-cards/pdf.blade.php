@@ -26,6 +26,7 @@
 </head>
 <body>
     @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    @php($statusLabels = ['draft' => 'Brouillon', 'validated' => 'Valide', 'published' => 'Publie'])
 
     <table class="header">
         <tr>
@@ -57,7 +58,7 @@
         <tr>
             <td>Moyenne generale : {{ $reportCard->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') . ' / 20' }}</td>
             <td>Rang : {{ $reportCard->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}</td>
-            <td>Statut : {{ ucfirst($reportCard->status) }}</td>
+            <td>Statut : {{ $statusLabels[$reportCard->status] ?? ucfirst($reportCard->status) }}</td>
         </tr>
     </table>
 
@@ -96,6 +97,9 @@
             </td>
             <td>
                 <strong>Visa de l'administration</strong><br>
+                @if ($reportCard->validated_at)
+                    Valide le {{ $reportCard->validated_at->format('d/m/Y') }}
+                @endif
             </td>
         </tr>
     </table>

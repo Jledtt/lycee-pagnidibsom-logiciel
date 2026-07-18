@@ -113,6 +113,38 @@ class ReportCardWebController extends Controller
             ->stream($filename);
     }
 
+    public function update(Request $request, ReportCard $reportCard): RedirectResponse
+    {
+        $data = $request->validate([
+            'appreciation' => ['nullable', 'string', 'max:1000'],
+            'status' => ['required', Rule::in(['draft', 'validated', 'published'])],
+        ]);
+
+        $payload = [
+            'appreciation' => $data['appreciation'] ?? null,
+            'status' => $data['status'],
+        ];
+
+        if (in_array($data['status'], ['validated', 'published'], true)) {
+            $payload['validated_by'] = $reportCard->validated_by ?: $request->user()->id;
+            $payload['validated_at'] = $reportCard->validated_at ?: now();
+        }
+
+        if ($data['status'] === 'draft') {
+            $payload['validated_by'] = null;
+            $payload['validated_at'] = null;
+        }
+
+        $reportCard->update($payload);
+
+        return redirect()
+            ->route('report-cards.index', [
+                'school_class_id' => $reportCard->school_class_id,
+                'term_id' => $reportCard->term_id,
+            ])
+            ->with('success', 'Bulletin mis a jour.');
+    }
+
     private function subjectRows(ReportCard $reportCard): Collection
     {
         return ClassSubject::query()

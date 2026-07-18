@@ -86,13 +86,14 @@
                 <div class="empty">Aucun eleve actif dans cette classe.</div>
             @else
                 <div class="subject-list-scroll">
-                    <table class="table" style="min-width:820px">
+                    <table class="table" style="min-width:1120px">
                         <thead>
                             <tr>
                                 <th>Eleve</th>
                                 <th>Moyenne</th>
                                 <th>Rang</th>
                                 <th>Statut</th>
+                                <th>Appreciation generale</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -115,15 +116,44 @@
                                             <span class="badge badge-warning">A generer</span>
                                         @elseif ($reportCard->general_average === null)
                                             <span class="badge badge-warning">Non note</span>
+                                        @elseif ($reportCard->status === 'validated')
+                                            <span class="badge">Valide</span>
+                                        @elseif ($reportCard->status === 'published')
+                                            <span class="badge">Publie</span>
                                         @else
-                                            <span class="badge">Pret</span>
+                                            <span class="badge">Brouillon</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if ($reportCard)
+                                            @can('report_cards.validate')
+                                                <form id="update-report-card-{{ $reportCard->id }}" method="POST" action="{{ route('report-cards.update', $reportCard) }}">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <textarea name="appreciation" rows="2" placeholder="Appreciation generale">{{ $reportCard->appreciation }}</textarea>
+                                                    <select name="status" style="margin-top:8px">
+                                                        <option value="draft" @selected($reportCard->status === 'draft')>Brouillon</option>
+                                                        <option value="validated" @selected($reportCard->status === 'validated')>Valide</option>
+                                                        <option value="published" @selected($reportCard->status === 'published')>Publie</option>
+                                                    </select>
+                                                </form>
+                                            @else
+                                                {{ $reportCard->appreciation ?: '-' }}
+                                            @endcan
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($reportCard)
+                                            <div class="page-actions">
+                                                @can('report_cards.validate')
+                                                    <button class="btn btn-subtle" type="submit" form="update-report-card-{{ $reportCard->id }}">Sauvegarder</button>
+                                                @endcan
                                             @can('report_cards.print')
                                                 <a class="btn btn-primary" href="{{ route('report-cards.pdf', $reportCard) }}">PDF</a>
                                             @endcan
+                                            </div>
                                         @else
                                             -
                                         @endif
