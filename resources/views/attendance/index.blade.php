@@ -8,7 +8,7 @@
 @section('page_actions')
     @if ($schoolClass)
         @can('attendance.reports')
-            <a class="btn btn-subtle" href="{{ route('attendance.export', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">Excel</a>
+            <a class="btn btn-subtle" href="{{ route('attendance.export', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}" data-download-feedback="Telechargement Excel des absences lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
             <a class="btn btn-subtle" href="{{ $selectedSession ? route('attendance.sessions.pdf', $selectedSession) : route('attendance.pdf', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">PDF</a>
         @endcan
     @endif

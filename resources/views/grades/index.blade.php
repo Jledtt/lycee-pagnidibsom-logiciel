@@ -153,7 +153,7 @@
                                             </div>
                                             <div class="page-actions" style="justify-content:flex-end">
                                                 <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
-                                                <a class="btn btn-subtle" href="{{ route('grades.assessments.export', $assessment) }}">Excel</a>
+                                                <a class="btn btn-subtle" href="{{ route('grades.assessments.export', $assessment) }}" data-download-feedback="Telechargement Excel des notes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
                                                 <a class="btn btn-primary" href="{{ route('grades.assessments.pdf', $assessment) }}">PDF</a>
                                                 @if ($assessment->is_locked)
                                                     @can('grades.unlock')

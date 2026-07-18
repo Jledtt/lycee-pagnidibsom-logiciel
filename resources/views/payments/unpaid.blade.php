@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Paiements</a>
     @can('payments.reports')
-        <a class="btn btn-subtle" href="{{ route('payments.unpaid.export') }}">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('payments.unpaid.export') }}" data-download-feedback="Telechargement Excel des impayes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>

@@ -374,6 +374,30 @@
             font-weight: 650;
         }
 
+        .download-toast {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 50;
+            max-width: min(360px, calc(100vw - 32px));
+            padding: 13px 16px;
+            border: 1px solid rgba(32,98,74,.24);
+            border-radius: 8px;
+            background: var(--forest);
+            color: #fff;
+            box-shadow: 0 16px 40px rgba(22,32,25,.18);
+            font-weight: 750;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: opacity .18s ease, transform .18s ease;
+        }
+
+        .download-toast.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -723,5 +747,28 @@
 </head>
 <body>
     @yield('body')
+    <div class="download-toast" id="download-toast" role="status" aria-live="polite"></div>
+    <script>
+        (() => {
+            const toast = document.getElementById('download-toast');
+            let toastTimer = null;
+
+            document.addEventListener('click', (event) => {
+                const trigger = event.target.closest('[data-download-feedback]');
+
+                if (! trigger || ! toast) {
+                    return;
+                }
+
+                toast.textContent = trigger.dataset.downloadFeedback || 'Telechargement lance.';
+                toast.classList.add('is-visible');
+
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('is-visible');
+                }, 3200);
+            });
+        })();
+    </script>
 </body>
 </html>

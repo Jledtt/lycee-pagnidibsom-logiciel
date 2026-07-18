@@ -11,7 +11,7 @@
         <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Tranches</a>
     @endcan
     @if ($schoolClass)
-        <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Telechargement Excel de la liste de classe lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
         <a class="btn btn-primary" href="{{ route('reports.class-list.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
 @endsection
