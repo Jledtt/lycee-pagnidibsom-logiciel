@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ActivityLogWebController;
 use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AttendanceWebController;
@@ -31,6 +32,10 @@ Route::get('/dashboard', SchoolDashboardController::class)
 Route::view('/help', 'help.index')
     ->middleware('auth')
     ->name('help.index');
+
+Route::get('/activity-logs', ActivityLogWebController::class)
+    ->middleware(['auth', 'permission:activity_logs.view'])
+    ->name('activity-logs.index');
 
 Route::get('/attendance', [AttendanceWebController::class, 'index'])
     ->middleware(['auth', 'permission:attendance.view'])

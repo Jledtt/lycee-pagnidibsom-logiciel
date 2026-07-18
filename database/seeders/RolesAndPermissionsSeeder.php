@@ -42,6 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'attendance.reports',
             'users.manage',
             'roles.manage',
+            'activity_logs.view',
             'settings.manage',
             'academic_years.manage',
             'classes.manage',
@@ -66,6 +67,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'report_cards.print',
                 'attendance.view',
                 'attendance.reports',
+                'activity_logs.view',
             ],
             'secretariat' => [
                 'students.view',

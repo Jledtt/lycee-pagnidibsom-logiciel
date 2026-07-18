@@ -2,7 +2,20 @@
 
 namespace App\Providers;
 
+use App\Models\Assessment;
+use App\Models\AttendanceRecord;
+use App\Models\ClassSubject;
+use App\Models\Enrollment;
+use App\Models\FeeSchedule;
+use App\Models\Grade;
+use App\Models\Payment;
+use App\Models\ReportCard;
+use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Models\Student;
+use App\Models\Subject;
+use App\Models\User;
+use App\Observers\ActivityLogObserver;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach ($this->auditedModels() as $model) {
+            $model::observe(ActivityLogObserver::class);
+        }
+
         View::composer('*', function ($view) {
             $settings = null;
 
@@ -35,5 +52,23 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('schoolSettings', $settings);
         });
+    }
+
+    private function auditedModels(): array
+    {
+        return [
+            Assessment::class,
+            AttendanceRecord::class,
+            ClassSubject::class,
+            Enrollment::class,
+            FeeSchedule::class,
+            Grade::class,
+            Payment::class,
+            ReportCard::class,
+            SchoolClass::class,
+            Student::class,
+            Subject::class,
+            User::class,
+        ];
     }
 }

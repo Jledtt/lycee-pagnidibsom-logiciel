@@ -117,6 +117,7 @@ class StaffRoleWebController extends Controller
             'Administration' => [
                 'users.manage' => 'Gerer les comptes du personnel',
                 'roles.manage' => 'Modifier les roles et acces',
+                'activity_logs.view' => 'Consulter le journal d activite',
                 'settings.manage' => 'Modifier les parametres et tarifs',
                 'academic_years.manage' => 'Gerer les annees scolaires',
                 'classes.manage' => 'Gerer les classes',

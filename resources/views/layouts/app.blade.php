@@ -51,6 +51,9 @@
                 @can('users.manage')
                     <a class="{{ ($active ?? '') === 'staff' ? 'active' : '' }}" href="{{ route('staff.index') }}"><span class="nav-dot"></span>Personnel</a>
                 @endcan
+                @can('activity_logs.view')
+                    <a class="{{ ($active ?? '') === 'activity-logs' ? 'active' : '' }}" href="{{ route('activity-logs.index') }}"><span class="nav-dot"></span>Journal</a>
+                @endcan
                 @can('settings.manage')
                     <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
                 @endcan
