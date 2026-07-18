@@ -16,6 +16,7 @@ use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
+use App\Http\Controllers\StudentImportWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
@@ -417,6 +418,26 @@ Route::get('/students', [StudentWebController::class, 'index'])
 Route::get('/students/create', [StudentWebController::class, 'create'])
     ->middleware(['auth', 'permission:students.create'])
     ->name('students.create');
+
+Route::get('/students/import', [StudentImportWebController::class, 'create'])
+    ->middleware(['auth', 'permission:students.import'])
+    ->name('students.import');
+
+Route::get('/students/import/template', [StudentImportWebController::class, 'template'])
+    ->middleware(['auth', 'permission:students.import'])
+    ->name('students.import.template');
+
+Route::post('/students/import/preview', [StudentImportWebController::class, 'preview'])
+    ->middleware(['auth', 'permission:students.import'])
+    ->name('students.import.preview');
+
+Route::post('/students/import', [StudentImportWebController::class, 'store'])
+    ->middleware(['auth', 'permission:students.import'])
+    ->name('students.import.store');
+
+Route::delete('/students/import', [StudentImportWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:students.import'])
+    ->name('students.import.destroy');
 
 Route::get('/students/export', [StudentWebController::class, 'export'])
     ->middleware(['auth', 'permission:students.export'])

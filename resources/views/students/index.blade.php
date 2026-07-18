@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('students.import')
+        <a class="btn btn-subtle" href="{{ route('students.import') }}">Importer</a>
+    @endcan
     @can('students.export')
         <a class="btn btn-subtle" href="{{ route('students.export', request()->query()) }}" data-download-feedback="Telechargement Excel des eleves lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
     @endcan

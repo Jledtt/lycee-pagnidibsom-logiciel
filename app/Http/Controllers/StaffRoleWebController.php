@@ -81,6 +81,7 @@ class StaffRoleWebController extends Controller
                 'students.update' => 'Modifier un eleve',
                 'students.delete' => 'Archiver un eleve',
                 'students.export' => 'Imprimer fiches et certificats',
+                'students.import' => 'Importer des eleves en masse',
             ],
             'Inscriptions' => [
                 'enrollments.view' => 'Voir les inscriptions',
