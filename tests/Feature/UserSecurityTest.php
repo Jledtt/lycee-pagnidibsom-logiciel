@@ -13,6 +13,13 @@ class UserSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_login_page_is_available_from_login_url(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Connexion');
+    }
+
     public function test_login_history_records_success_failure_and_logout(): void
     {
         $this->seed(DatabaseSeeder::class);
