@@ -72,7 +72,7 @@
 
                 <div class="top-actions">
                     @yield('page_actions')
-                    <span class="user-pill">{{ auth()->user()->name }}</span>
+                    <a class="user-pill" href="{{ route('profile.show') }}">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="btn btn-subtle" type="submit">Deconnexion</button>

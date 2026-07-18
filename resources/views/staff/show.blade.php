@@ -91,4 +91,33 @@
             @endif
         </div>
     </section>
+
+    @if (! $user->is(auth()->user()))
+        <section class="panel" style="margin-top:16px">
+            <div class="panel-head">
+                <h2>Reinitialisation du mot de passe</h2>
+                <span class="badge">Admin</span>
+            </div>
+
+            <form method="POST" action="{{ route('staff.reset-password', $user) }}">
+                @csrf
+                @method('PUT')
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="password">Nouveau mot de passe</label>
+                        <input id="password" name="password" type="password" placeholder="Laisse vide pour generer automatiquement">
+                    </div>
+                    <div class="field">
+                        <label for="password_confirmation">Confirmation</label>
+                        <input id="password_confirmation" name="password_confirmation" type="password">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Reinitialiser le mot de passe</button>
+                </div>
+            </form>
+        </section>
+    @endif
 @endsection

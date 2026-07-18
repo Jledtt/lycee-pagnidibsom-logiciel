@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
@@ -132,6 +134,38 @@ class StaffUserWebController extends Controller
         return redirect()
             ->route('staff.index')
             ->with('success', 'Compte personnel desactive.');
+    }
+
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        if ($user->is($request->user())) {
+            return back()->withErrors(['user' => 'Utilise ton profil pour changer ton propre mot de passe.']);
+        }
+
+        $data = $request->validate([
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $password = $data['password'] ?? Str::password(10, true, true, false, false);
+
+        $user->update([
+            'password' => $password,
+        ]);
+
+        ActivityLog::query()->create([
+            'user_id' => $request->user()->id,
+            'action' => 'password_reset',
+            'auditable_type' => User::class,
+            'auditable_id' => (string) $user->id,
+            'auditable_label' => $user->name,
+            'description' => 'Reinitialisation du mot de passe - User - ' . $user->name,
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 500, ''),
+        ]);
+
+        return redirect()
+            ->route('staff.show', $user)
+            ->with('success', 'Mot de passe reinitialise. Nouveau mot de passe temporaire : ' . $password);
     }
 
     private function validateUser(Request $request, ?User $user = null): array

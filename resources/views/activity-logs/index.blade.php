@@ -5,8 +5,18 @@
     'pageSubtitle' => 'Controle des modifications effectuees dans le logiciel',
 ])
 
+@section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('login-histories.index') }}">Historique connexions</a>
+@endsection
+
 @section('content')
-    @php($actionLabels = ['created' => 'Creation', 'updated' => 'Modification', 'deleted' => 'Suppression'])
+    @php($actionLabels = [
+        'created' => 'Creation',
+        'updated' => 'Modification',
+        'deleted' => 'Suppression',
+        'password_changed' => 'Mot de passe change',
+        'password_reset' => 'Mot de passe reinitialise',
+    ])
 
     <section class="panel">
         <div class="panel-head">

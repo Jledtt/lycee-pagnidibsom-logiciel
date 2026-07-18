@@ -10,8 +10,10 @@ use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
+use App\Http\Controllers\LoginHistoryWebController;
 use App\Http\Controllers\NumberingSettingWebController;
 use App\Http\Controllers\PaymentWebController;
+use App\Http\Controllers\ProfileWebController;
 use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
 use App\Http\Controllers\RequiredStudentDocumentWebController;
@@ -43,6 +45,22 @@ Route::view('/help', 'help.index')
 Route::get('/activity-logs', ActivityLogWebController::class)
     ->middleware(['auth', 'permission:activity_logs.view'])
     ->name('activity-logs.index');
+
+Route::get('/login-histories', LoginHistoryWebController::class)
+    ->middleware(['auth', 'permission:activity_logs.view'])
+    ->name('login-histories.index');
+
+Route::get('/profile', [ProfileWebController::class, 'show'])
+    ->middleware('auth')
+    ->name('profile.show');
+
+Route::put('/profile', [ProfileWebController::class, 'update'])
+    ->middleware('auth')
+    ->name('profile.update');
+
+Route::put('/profile/password', [ProfileWebController::class, 'updatePassword'])
+    ->middleware('auth')
+    ->name('profile.password.update');
 
 Route::get('/attendance', [AttendanceWebController::class, 'index'])
     ->middleware(['auth', 'permission:attendance.view'])
@@ -355,6 +373,10 @@ Route::get('/staff/roles/{role}/edit', [StaffRoleWebController::class, 'edit'])
 Route::put('/staff/roles/{role}', [StaffRoleWebController::class, 'update'])
     ->middleware(['auth', 'permission:roles.manage'])
     ->name('staff.roles.update');
+
+Route::put('/staff/{user}/reset-password', [StaffUserWebController::class, 'resetPassword'])
+    ->middleware(['auth', 'permission:users.manage'])
+    ->name('staff.reset-password');
 
 Route::resource('staff', StaffUserWebController::class)
     ->middleware(['auth', 'permission:users.manage'])
