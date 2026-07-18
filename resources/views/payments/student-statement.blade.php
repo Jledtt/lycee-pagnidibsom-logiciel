@@ -41,45 +41,47 @@
             @if ($profile['scheduled_rows']->isEmpty())
                 <div class="empty">Aucun tarif configure pour la classe actuelle.</div>
             @else
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Frais</th>
-                            <th>Attendu</th>
-                            <th>Paye</th>
-                            <th>Reste</th>
-                            <th>Statut</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($profile['scheduled_rows'] as $row)
+                <div class="subject-list-scroll">
+                    <table class="table" style="min-width:900px">
+                        <thead>
                             <tr>
-                                <td>
-                                    <strong>{{ $row['schedule']->period ?: 'Sans periode' }}</strong><br>
-                                    <span style="color:var(--muted)">{{ $row['schedule']->feeType?->name ?? '-' }}</span>
-                                </td>
-                                <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} FCFA</td>
-                                <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} FCFA</td>
-                                <td class="money">{{ number_format($row['remaining'], 0, ',', ' ') }} FCFA</td>
-                                <td>
-                                    <span class="badge {{ $row['status'] === 'paid' ? '' : 'badge-warning' }}">
-                                        {{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impaye') }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @can('payments.create')
-                                        @if ($row['remaining'] > 0)
-                                            <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id, 'fee_schedule_id' => $row['schedule']->id, 'amount' => (int) $row['remaining']]) }}">Solder</a>
-                                        @else
-                                            <span class="badge">Solde</span>
-                                        @endif
-                                    @endcan
-                                </td>
+                                <th>Frais</th>
+                                <th>Attendu</th>
+                                <th>Paye</th>
+                                <th>Reste</th>
+                                <th>Statut</th>
+                                <th>Action</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($profile['scheduled_rows'] as $row)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $row['schedule']->period ?: 'Sans periode' }}</strong><br>
+                                        <span style="color:var(--muted)">{{ $row['schedule']->feeType?->name ?? '-' }}</span>
+                                    </td>
+                                    <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} FCFA</td>
+                                    <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} FCFA</td>
+                                    <td class="money">{{ number_format($row['remaining'], 0, ',', ' ') }} FCFA</td>
+                                    <td>
+                                        <span class="badge {{ $row['status'] === 'paid' ? '' : 'badge-warning' }}">
+                                            {{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impaye') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @can('payments.create')
+                                            @if ($row['remaining'] > 0)
+                                                <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id, 'fee_schedule_id' => $row['schedule']->id, 'amount' => (int) $row['remaining']]) }}">Solder</a>
+                                            @else
+                                                <span class="badge">Solde</span>
+                                            @endif
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         </div>
 
