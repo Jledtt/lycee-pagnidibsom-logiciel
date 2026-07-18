@@ -93,7 +93,7 @@ class StaffRoleWebController extends Controller
                 'payments.create' => 'Enregistrer un paiement',
                 'payments.cancel' => 'Annuler un paiement',
                 'payments.print_receipt' => 'Imprimer les recus',
-                'payments.reports' => 'Voir les impayes et rapports',
+                'payments.reports' => 'Voir encaissements, impayes et rapports financiers',
             ],
             'Notes et bulletins' => [
                 'grades.view' => 'Voir les notes',

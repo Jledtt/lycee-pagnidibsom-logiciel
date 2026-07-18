@@ -7,26 +7,36 @@
 
 @section('content')
             <section class="grid stats">
-                <div class="stat">
-                    <span>Eleves actifs</span>
-                    <strong>{{ number_format($stats['students'], 0, ',', ' ') }}</strong>
-                </div>
-                <div class="stat">
-                    <span>Classes</span>
-                    <strong>{{ number_format($stats['classes'], 0, ',', ' ') }}</strong>
-                </div>
-                <div class="stat">
-                    <span>Inscriptions</span>
-                    <strong>{{ number_format($stats['enrollments'], 0, ',', ' ') }}</strong>
-                </div>
-                <div class="stat">
-                    <span>Encaissements</span>
-                    <strong>{{ number_format($stats['payments'], 0, ',', ' ') }} FCFA</strong>
-                </div>
-                <div class="stat">
-                    <span>Absences du jour</span>
-                    <strong>{{ number_format($stats['absences_today'], 0, ',', ' ') }}</strong>
-                </div>
+                @can('students.view')
+                    <div class="stat">
+                        <span>Eleves actifs</span>
+                        <strong>{{ number_format($stats['students'], 0, ',', ' ') }}</strong>
+                    </div>
+                @endcan
+                @can('classes.manage')
+                    <div class="stat">
+                        <span>Classes</span>
+                        <strong>{{ number_format($stats['classes'], 0, ',', ' ') }}</strong>
+                    </div>
+                @endcan
+                @can('enrollments.view')
+                    <div class="stat">
+                        <span>Inscriptions</span>
+                        <strong>{{ number_format($stats['enrollments'], 0, ',', ' ') }}</strong>
+                    </div>
+                @endcan
+                @can('payments.reports')
+                    <div class="stat">
+                        <span>Encaissements</span>
+                        <strong>{{ number_format($stats['payments'], 0, ',', ' ') }} FCFA</strong>
+                    </div>
+                @endcan
+                @can('attendance.view')
+                    <div class="stat">
+                        <span>Absences du jour</span>
+                        <strong>{{ number_format($stats['absences_today'], 0, ',', ' ') }}</strong>
+                    </div>
+                @endcan
             </section>
 
             @canany(['payments.reports', 'attendance.view', 'report_cards.view'])
