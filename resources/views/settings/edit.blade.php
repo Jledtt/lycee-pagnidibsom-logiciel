@@ -5,6 +5,10 @@
     'pageSubtitle' => 'Informations officielles utilisees dans les fiches, recus et certificats',
 ])
 
+@section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pieces obligatoires</a>
+@endsection
+
 @section('content')
     <form method="POST" action="{{ route('settings.update') }}" enctype="multipart/form-data">
         @csrf

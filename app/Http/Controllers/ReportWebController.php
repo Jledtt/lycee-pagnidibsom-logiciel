@@ -234,7 +234,7 @@ class ReportWebController extends Controller
             'academicYear' => $academicYear,
             'classes' => $classes,
             'filters' => $request->only(['school_class_id', 'search', 'status']),
-            'requiredDocuments' => $requiredDocuments->requiredTypes(),
+            'requiredDocuments' => $this->requiredDocumentLabelsForReport($schoolClass, $requiredDocuments),
             'rows' => $rows,
             'schoolClass' => $schoolClass,
             'summary' => $requiredDocuments->summary($rows),
@@ -255,7 +255,7 @@ class ReportWebController extends Controller
 
         return Pdf::loadView('reports.missing-documents-pdf', [
             'academicYear' => $academicYear,
-            'requiredDocuments' => $requiredDocuments->requiredTypes(),
+            'requiredDocuments' => $this->requiredDocumentLabelsForReport($schoolClass, $requiredDocuments),
             'rows' => $rows,
             'school' => SchoolSetting::query()->first(),
             'schoolClass' => $schoolClass,
@@ -499,7 +499,7 @@ class ReportWebController extends Controller
 
         $classIds = $schoolClass ? [$schoolClass->id] : $classes->pluck('id')->all();
         $enrollments = Enrollment::query()
-            ->with(['schoolClass', 'student.documents'])
+            ->with(['schoolClass.level', 'student.documents'])
             ->where('academic_year_id', $academicYear->id)
             ->whereIn('school_class_id', $classIds)
             ->where('enrollments.status', 'active')
@@ -528,6 +528,15 @@ class ReportWebController extends Controller
                 });
             })
             ->values();
+    }
+
+    private function requiredDocumentLabelsForReport(?SchoolClass $schoolClass, RequiredStudentDocumentService $requiredDocuments): array
+    {
+        if (! $schoolClass) {
+            return ['Variable selon la classe selectionnee'];
+        }
+
+        return array_values($requiredDocuments->requiredTypesForClass($schoolClass));
     }
 
     private function installmentSummary(Collection $rows): array

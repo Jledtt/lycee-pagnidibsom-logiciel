@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Grade;
 use App\Models\Payment;
+use App\Models\RequiredStudentDocument;
 use App\Models\ReportCard;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
@@ -65,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
             FeeSchedule::class,
             Grade::class,
             Payment::class,
+            RequiredStudentDocument::class,
             ReportCard::class,
             SchoolClass::class,
             Student::class,

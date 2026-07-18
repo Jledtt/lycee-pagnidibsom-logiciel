@@ -123,12 +123,16 @@ class StudentWebController extends Controller
             'documents.academicYear',
         ]);
 
+        $currentEnrollment = $student->enrollments->sortByDesc('id')->first();
+        $currentClass = $currentEnrollment?->schoolClass;
+
         return view('students.show', [
             'academicYear' => $this->activeAcademicYear(),
             'student' => $student,
-            'currentEnrollment' => $student->enrollments->sortByDesc('id')->first(),
-            'requiredDocumentStatuses' => $requiredDocuments->statusForStudent($student),
-            'missingRequiredDocuments' => $requiredDocuments->missingForStudent($student),
+            'currentEnrollment' => $currentEnrollment,
+            'documentTypeLabels' => $requiredDocuments->availableDocumentTypes(),
+            'requiredDocumentStatuses' => $requiredDocuments->statusForStudent($student, $currentClass),
+            'missingRequiredDocuments' => $requiredDocuments->missingForStudent($student, $currentClass),
         ]);
     }
 

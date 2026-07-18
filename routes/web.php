@@ -12,6 +12,7 @@ use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
+use App\Http\Controllers\RequiredStudentDocumentWebController;
 use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
@@ -87,6 +88,22 @@ Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::get('/settings/required-documents', [RequiredStudentDocumentWebController::class, 'index'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.required-documents.index');
+
+Route::post('/settings/required-documents', [RequiredStudentDocumentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.required-documents.store');
+
+Route::put('/settings/required-documents/{requiredDocument}', [RequiredStudentDocumentWebController::class, 'update'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.required-documents.update');
+
+Route::delete('/settings/required-documents/{requiredDocument}', [RequiredStudentDocumentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.required-documents.destroy');
 
 Route::get('/academic-years', [AcademicYearWebController::class, 'index'])
     ->middleware(['auth', 'permission:academic_years.manage'])

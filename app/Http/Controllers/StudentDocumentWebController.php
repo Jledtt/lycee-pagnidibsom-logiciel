@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\StudentDocument;
+use App\Services\RequiredStudentDocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +15,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StudentDocumentWebController extends Controller
 {
-    public function store(Request $request, Student $student): RedirectResponse
+    public function store(Request $request, Student $student, RequiredStudentDocumentService $requiredDocuments): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'document_type' => ['required', 'string', Rule::in(array_keys($this->documentTypes()))],
+            'document_type' => ['required', 'string', Rule::in(array_keys($requiredDocuments->availableDocumentTypes()))],
             'status' => ['required', 'in:received,missing,expired'],
             'received_at' => ['nullable', 'date'],
             'document_file' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp'],
@@ -87,20 +88,6 @@ class StudentDocumentWebController extends Controller
         return redirect()
             ->route('students.show', $student)
             ->with('success', 'Document supprime du dossier eleve.');
-    }
-
-    private function documentTypes(): array
-    {
-        return [
-            'birth_certificate' => 'Acte de naissance',
-            'photo' => 'Photo',
-            'previous_report_card' => 'Ancien bulletin',
-            'certificate' => 'Certificat',
-            'receipt' => 'Recu',
-            'parent_authorization' => 'Autorisation parentale',
-            'identity' => 'Piece d identite',
-            'other' => 'Autre document',
-        ];
     }
 
     private function activeAcademicYear(): ?AcademicYear

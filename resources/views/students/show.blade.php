@@ -146,14 +146,9 @@
                         <div class="field">
                             <label>Type</label>
                             <select name="document_type" required>
-                                <option value="birth_certificate" @selected(old('document_type') === 'birth_certificate')>Acte de naissance</option>
-                                <option value="photo" @selected(old('document_type') === 'photo')>Photo</option>
-                                <option value="previous_report_card" @selected(old('document_type') === 'previous_report_card')>Ancien bulletin</option>
-                                <option value="certificate" @selected(old('document_type') === 'certificate')>Certificat</option>
-                                <option value="receipt" @selected(old('document_type') === 'receipt')>Recu</option>
-                                <option value="parent_authorization" @selected(old('document_type') === 'parent_authorization')>Autorisation parentale</option>
-                                <option value="identity" @selected(old('document_type') === 'identity')>Piece d'identite</option>
-                                <option value="other" @selected(old('document_type') === 'other')>Autre document</option>
+                                @foreach ($documentTypeLabels as $type => $label)
+                                    <option value="{{ $type }}" @selected(old('document_type') === $type)>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -192,15 +187,7 @@
                 <span class="badge">{{ $student->documents->count() }} piece(s)</span>
             </div>
 
-            @php($documentTypeLabels = [
-                'birth_certificate' => 'Acte de naissance',
-                'photo' => 'Photo',
-                'previous_report_card' => 'Ancien bulletin',
-                'certificate' => 'Certificat',
-                'receipt' => 'Recu',
-                'parent_authorization' => 'Autorisation parentale',
-                'identity' => 'Piece d identite',
-                'other' => 'Autre document',
+            @php($documentTypeLabels = $documentTypeLabels + [
                 'school_certificate' => 'Certificat de scolarite',
                 'enrollment_certificate' => 'Certificat d inscription',
                 'no_debt_certificate' => 'Certificat de non redevance',
