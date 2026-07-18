@@ -33,7 +33,7 @@ class StudentImportWebController extends Controller
     public function preview(Request $request, StudentImportService $studentImport): RedirectResponse
     {
         $data = $request->validate([
-            'students_file' => ['required', 'file', 'max:5120', 'mimes:csv,txt,xlsx'],
+            'students_file' => ['required', 'file', 'max:5120', 'mimes:csv,txt,xlsx,pdf'],
         ]);
 
         $preview = $studentImport->preview($data['students_file'], $this->activeAcademicYear());

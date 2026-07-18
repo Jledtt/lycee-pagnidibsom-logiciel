@@ -1,8 +1,8 @@
 @extends('layouts.app', [
     'title' => 'Import eleves - Lycee Prive Pagnidibsom',
     'active' => 'students',
-    'pageTitle' => 'Import Excel des eleves',
-    'pageSubtitle' => 'Ajouter plusieurs dossiers eleves a partir d un fichier CSV ou XLSX',
+    'pageTitle' => 'Import Excel/PDF des eleves',
+    'pageSubtitle' => 'Ajouter plusieurs dossiers eleves a partir d un fichier CSV, XLSX ou PDF texte',
 ])
 
 @section('page_actions')
@@ -26,7 +26,7 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <span>Format</span>
-                    <strong>CSV Excel ou XLSX</strong>
+                    <strong>CSV, XLSX ou PDF texte</strong>
                 </div>
                 <div class="detail-item">
                     <span>Colonnes obligatoires</span>
@@ -39,7 +39,7 @@
             </div>
 
             <p class="notice" style="margin-top:16px">
-                Utilise le modele pour garder les bons titres de colonnes. Si la classe du fichier existe deja, l eleve sera inscrit automatiquement dans cette classe.
+                Les PDF scannes ou pris en photo demandent une etape OCR. Pour l instant, l import PDF fonctionne avec les PDF texte exportes depuis Excel, Word ou un logiciel scolaire.
             </p>
         </div>
 
@@ -52,7 +52,7 @@
                 @csrf
                 <div class="field">
                     <label>Fichier des eleves</label>
-                    <input type="file" name="students_file" accept=".csv,.txt,.xlsx" required>
+                    <input type="file" name="students_file" accept=".csv,.txt,.xlsx,.pdf" required>
                 </div>
 
                 <div class="form-actions">

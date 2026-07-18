@@ -9,6 +9,7 @@ use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -126,6 +127,51 @@ class StudentImportTest extends TestCase
             ->assertRedirect(route('students.index'));
 
         $this->assertSame(1, Student::query()->where('first_name', 'Awa')->where('last_name', 'Ouedraogo')->count());
+    }
+
+    public function test_secretariat_can_preview_and_import_text_pdf_students(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $level = Level::query()->firstOrFail();
+
+        SchoolClass::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'level_id' => $level->id,
+            'name' => '6e A',
+            'code' => '6A',
+            'status' => 'active',
+        ]);
+
+        $pdfContent = Pdf::loadHTML(
+            '<pre>Nom;Prenom;Sexe;Date naissance;Lieu naissance;Classe souhaitee
+Kabre;Issa;Garcon;20/05/2011;Ouagadougou;6e A</pre>'
+        )->output();
+
+        $file = UploadedFile::fake()->createWithContent('eleves.pdf', $pdfContent);
+
+        $this->actingAs($user)
+            ->post(route('students.import.preview'), ['students_file' => $file])
+            ->assertRedirect(route('students.import'));
+
+        $this->followingRedirects()
+            ->actingAs($user)
+            ->get(route('students.import'))
+            ->assertOk()
+            ->assertSee('Issa Kabre')
+            ->assertSee('Valide');
+
+        $this->actingAs($user)
+            ->post(route('students.import.store'))
+            ->assertRedirect(route('students.index'));
+
+        $this->assertDatabaseHas('students', [
+            'first_name' => 'Issa',
+            'last_name' => 'Kabre',
+            'gender' => 'male',
+            'desired_class' => '6e A',
+        ]);
     }
 
     public function test_comptable_cannot_import_students(): void

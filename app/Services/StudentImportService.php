@@ -11,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Smalot\PdfParser\Parser as PdfTextParser;
 use ZipArchive;
 
 class StudentImportService
@@ -351,6 +352,10 @@ class StudentImportService
             return $this->readXlsxRows($file->getRealPath());
         }
 
+        if ($extension === 'pdf') {
+            return $this->readPdfRows($file->getRealPath());
+        }
+
         return $this->readCsvRows($file->getRealPath());
     }
 
@@ -412,6 +417,51 @@ class StudentImportService
         }
 
         return $rows;
+    }
+
+    private function readPdfRows(string $path): array
+    {
+        try {
+            $text = (new PdfTextParser())->parseFile($path)->getText();
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return $this->parseDelimitedTextRows($text);
+    }
+
+    private function parseDelimitedTextRows(string $text): array
+    {
+        $lines = preg_split('/\R/u', str_replace("\xC2\xA0", ' ', $text)) ?: [];
+
+        return collect($lines)
+            ->map(fn (string $line) => trim(preg_replace('/^\xEF\xBB\xBF/', '', $line) ?? $line))
+            ->filter()
+            ->map(fn (string $line) => $this->splitTextLine($line))
+            ->filter(fn (array $row) => count($row) > 1)
+            ->values()
+            ->all();
+    }
+
+    private function splitTextLine(string $line): array
+    {
+        if (str_contains($line, ';')) {
+            return str_getcsv($line, ';');
+        }
+
+        if (str_contains($line, "\t")) {
+            return str_getcsv($line, "\t");
+        }
+
+        if (preg_match('/\s{2,}/', $line)) {
+            return preg_split('/\s{2,}/', $line) ?: [];
+        }
+
+        if (substr_count($line, ',') >= 3) {
+            return str_getcsv($line, ',');
+        }
+
+        return [$line];
     }
 
     private function readSharedStrings(ZipArchive $zip): array
