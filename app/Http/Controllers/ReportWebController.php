@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
@@ -218,6 +220,80 @@ class ReportWebController extends Controller
             ->stream($filename);
     }
 
+    public function missingDocuments(Request $request, RequiredStudentDocumentService $requiredDocuments): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedOptionalClass($request, $classes);
+        $rows = $this->filterMissingDocumentRows(
+            $this->missingDocumentRows($schoolClass, $classes, $academicYear, $requiredDocuments),
+            $request
+        );
+
+        return view('reports.missing-documents', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'filters' => $request->only(['school_class_id', 'search', 'status']),
+            'requiredDocuments' => $requiredDocuments->requiredTypes(),
+            'rows' => $rows,
+            'schoolClass' => $schoolClass,
+            'summary' => $requiredDocuments->summary($rows),
+        ]);
+    }
+
+    public function missingDocumentsPdf(Request $request, RequiredStudentDocumentService $requiredDocuments)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedOptionalClass($request, $classes);
+        $rows = $this->filterMissingDocumentRows(
+            $this->missingDocumentRows($schoolClass, $classes, $academicYear, $requiredDocuments),
+            $request
+        );
+        $scope = $schoolClass?->name ?? 'toutes-classes';
+        $filename = 'pieces-manquantes-' . Str::slug($scope . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+
+        return Pdf::loadView('reports.missing-documents-pdf', [
+            'academicYear' => $academicYear,
+            'requiredDocuments' => $requiredDocuments->requiredTypes(),
+            'rows' => $rows,
+            'school' => SchoolSetting::query()->first(),
+            'schoolClass' => $schoolClass,
+            'summary' => $requiredDocuments->summary($rows),
+        ])
+            ->setPaper('a4', 'landscape')
+            ->stream($filename);
+    }
+
+    public function missingDocumentsExport(Request $request, RequiredStudentDocumentService $requiredDocuments, XlsxExportService $xlsxExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedOptionalClass($request, $classes);
+        $rows = $this->filterMissingDocumentRows(
+            $this->missingDocumentRows($schoolClass, $classes, $academicYear, $requiredDocuments),
+            $request
+        );
+        $scope = $schoolClass?->name ?? 'toutes-classes';
+        $filename = 'pieces-manquantes-' . Str::slug($scope . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
+
+        return $xlsxExport->download($filename, [
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Statut dossier',
+            'Nombre manquant',
+            'Pieces manquantes',
+        ], $rows->map(fn (array $row) => [
+            $row['student']?->matricule,
+            $row['student']?->full_name,
+            $row['class']?->name,
+            $row['is_complete'] ? 'Complet' : 'Incomplet',
+            $row['missing_count'],
+            collect($row['missing_documents'])->pluck('label')->implode(', '),
+        ]), 'Pieces manquantes');
+    }
+
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
@@ -242,6 +318,17 @@ class ReportWebController extends Controller
         }
 
         return $classes->first();
+    }
+
+    private function selectedOptionalClass(Request $request, $classes): ?SchoolClass
+    {
+        $selectedId = $request->integer('school_class_id');
+
+        if ($selectedId > 0) {
+            return $classes->firstWhere('id', $selectedId);
+        }
+
+        return null;
     }
 
     private function loadClassList(SchoolClass $schoolClass): SchoolClass
@@ -399,6 +486,45 @@ class ReportWebController extends Controller
                         'balance' => $balance,
                         'status' => $this->paymentStatus($expected, $paid),
                     ];
+                });
+            })
+            ->values();
+    }
+
+    private function missingDocumentRows(?SchoolClass $schoolClass, Collection $classes, ?AcademicYear $academicYear, RequiredStudentDocumentService $requiredDocuments): Collection
+    {
+        if (! $academicYear || $classes->isEmpty()) {
+            return collect();
+        }
+
+        $classIds = $schoolClass ? [$schoolClass->id] : $classes->pluck('id')->all();
+        $enrollments = Enrollment::query()
+            ->with(['schoolClass', 'student.documents'])
+            ->where('academic_year_id', $academicYear->id)
+            ->whereIn('school_class_id', $classIds)
+            ->where('enrollments.status', 'active')
+            ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active'))
+            ->get();
+
+        return $requiredDocuments->reportRows($enrollments)
+            ->sortBy(fn (array $row) => ($row['class']?->name ?? '') . '|' . Str::lower($row['student']?->full_name ?? ''))
+            ->values();
+    }
+
+    private function filterMissingDocumentRows(Collection $rows, Request $request): Collection
+    {
+        $search = Str::lower(trim($request->string('search')->toString()));
+        $status = $request->string('status')->toString();
+
+        return $rows
+            ->when($status === 'complete', fn (Collection $items) => $items->where('is_complete', true))
+            ->when($status === 'incomplete', fn (Collection $items) => $items->where('is_complete', false))
+            ->when($search, function (Collection $items) use ($search) {
+                return $items->filter(function (array $row) use ($search) {
+                    $student = $row['student'];
+
+                    return Str::contains(Str::lower($student?->full_name ?? ''), $search)
+                        || Str::contains(Str::lower($student?->matricule ?? ''), $search);
                 });
             })
             ->values();

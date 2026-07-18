@@ -100,6 +100,33 @@
         </div>
     </section>
 
+    <section class="panel" style="margin-top:16px">
+        <div class="panel-head">
+            <div>
+                <h2>Pieces obligatoires</h2>
+                <p style="margin:4px 0 0;color:var(--muted)">
+                    {{ count($missingRequiredDocuments) === 0 ? 'Dossier administratif complet.' : count($missingRequiredDocuments) . ' piece(s) encore manquante(s).' }}
+                </p>
+            </div>
+            <span class="badge {{ count($missingRequiredDocuments) === 0 ? '' : 'badge-warning' }}">
+                {{ count($missingRequiredDocuments) === 0 ? 'Complet' : 'Incomplet' }}
+            </span>
+        </div>
+
+        <div class="grid modules" style="margin-top:14px">
+            @foreach ($requiredDocumentStatuses as $requiredDocument)
+                <div class="module">
+                    <strong>{{ $requiredDocument['label'] }}</strong>
+                    <span>
+                        <span class="badge {{ $requiredDocument['is_received'] ? '' : 'badge-warning' }}">
+                            {{ $requiredDocument['is_received'] ? 'Recu' : 'Manquant' }}
+                        </span>
+                    </span>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     <section class="grid two-col" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">

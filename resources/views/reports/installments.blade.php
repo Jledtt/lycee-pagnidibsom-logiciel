@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('students.export')
+        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pieces manquantes</a>
+    @endcan
     <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation globale</a>
     @if ($schoolClass)
         <a class="btn btn-primary" href="{{ route('reports.installments.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>

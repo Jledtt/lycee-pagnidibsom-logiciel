@@ -264,6 +264,18 @@ Route::get('/reports/class-list/export', [ReportWebController::class, 'classList
     ->middleware(['auth', 'permission:students.export'])
     ->name('reports.class-list.export');
 
+Route::get('/reports/missing-documents', [ReportWebController::class, 'missingDocuments'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.missing-documents');
+
+Route::get('/reports/missing-documents/pdf', [ReportWebController::class, 'missingDocumentsPdf'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.missing-documents.pdf');
+
+Route::get('/reports/missing-documents/export', [ReportWebController::class, 'missingDocumentsExport'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.missing-documents.export');
+
 Route::get('/reports/payment-situation', [ReportWebController::class, 'paymentSituation'])
     ->middleware(['auth', 'permission:payments.reports'])
     ->name('reports.payment-situation');

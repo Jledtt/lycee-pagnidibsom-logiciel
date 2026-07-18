@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\Student;
 use App\Services\MatriculeGeneratorService;
+use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -112,7 +113,7 @@ class StudentWebController extends Controller
             ->with('success', 'Eleve ajoute avec succes.');
     }
 
-    public function show(Student $student): View
+    public function show(Student $student, RequiredStudentDocumentService $requiredDocuments): View
     {
         $student->load([
             'guardians',
@@ -126,6 +127,8 @@ class StudentWebController extends Controller
             'academicYear' => $this->activeAcademicYear(),
             'student' => $student,
             'currentEnrollment' => $student->enrollments->sortByDesc('id')->first(),
+            'requiredDocumentStatuses' => $requiredDocuments->statusForStudent($student),
+            'missingRequiredDocuments' => $requiredDocuments->missingForStudent($student),
         ]);
     }
 
