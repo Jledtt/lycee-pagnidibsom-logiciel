@@ -69,7 +69,7 @@ class GradeWebController extends Controller
                 ->with('student')
                 ->where('academic_year_id', $academicYear->id)
                 ->where('school_class_id', $selectedClass->id)
-                ->where('status', 'active')
+                ->where('enrollments.status', 'active')
                 ->join('students', 'students.id', '=', 'enrollments.student_id')
                 ->orderBy('students.last_name')
                 ->orderBy('students.first_name')
