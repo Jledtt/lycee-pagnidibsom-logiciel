@@ -220,6 +220,22 @@ class GradeWebController extends Controller
             ->with('success', 'Evaluation supprimee.');
     }
 
+    public function lockAssessment(Assessment $assessment): RedirectResponse
+    {
+        $assessment->update(['is_locked' => true]);
+
+        return $this->backToAssessment($assessment)
+            ->with('success', 'Evaluation verrouillee.');
+    }
+
+    public function unlockAssessment(Assessment $assessment): RedirectResponse
+    {
+        $assessment->update(['is_locked' => false]);
+
+        return $this->backToAssessment($assessment)
+            ->with('success', 'Evaluation deverrouillee.');
+    }
+
     private function requireActiveAcademicYear(): AcademicYear
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
@@ -254,5 +270,14 @@ class GradeWebController extends Controller
             ->pluck('student')
             ->filter()
             ->values();
+    }
+
+    private function backToAssessment(Assessment $assessment): RedirectResponse
+    {
+        return redirect()->route('grades.index', [
+            'school_class_id' => $assessment->school_class_id,
+            'term_id' => $assessment->term_id,
+            'assessment_id' => $assessment->id,
+        ]);
     }
 }

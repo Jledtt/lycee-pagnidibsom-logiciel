@@ -139,6 +139,9 @@
                                             <div class="ledger-person">
                                                 <strong>{{ $assessment->title }}</strong>
                                                 <span>{{ $assessment->subject->name }} - {{ $assessment->assessmentType->name }}</span>
+                                                <span class="badge {{ $assessment->is_locked ? 'badge-warning' : '' }}" style="margin-top:6px">
+                                                    {{ $assessment->is_locked ? 'Verrouillee' : 'Ouverte' }}
+                                                </span>
                                             </div>
                                             <div class="ledger-metric">
                                                 <strong>{{ number_format($assessment->max_score, 0, ',', ' ') }}</strong>
@@ -151,9 +154,26 @@
                                             <div class="page-actions" style="justify-content:flex-end">
                                                 <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
                                                 <a class="btn btn-primary" href="{{ route('grades.assessments.pdf', $assessment) }}">PDF</a>
-                                                <button class="btn btn-danger" type="submit" form="delete-assessment-{{ $assessment->id }}">Supprimer</button>
+                                                @if ($assessment->is_locked)
+                                                    @can('grades.unlock')
+                                                        <button class="btn btn-subtle" type="submit" form="unlock-assessment-{{ $assessment->id }}">Deverrouiller</button>
+                                                    @endcan
+                                                @else
+                                                    @can('grades.lock')
+                                                        <button class="btn btn-subtle" type="submit" form="lock-assessment-{{ $assessment->id }}">Verrouiller</button>
+                                                    @endcan
+                                                    <button class="btn btn-danger" type="submit" form="delete-assessment-{{ $assessment->id }}">Supprimer</button>
+                                                @endif
                                             </div>
                                         </div>
+                                        <form id="lock-assessment-{{ $assessment->id }}" method="POST" action="{{ route('grades.assessments.lock', $assessment) }}">
+                                            @csrf
+                                            @method('PUT')
+                                        </form>
+                                        <form id="unlock-assessment-{{ $assessment->id }}" method="POST" action="{{ route('grades.assessments.unlock', $assessment) }}">
+                                            @csrf
+                                            @method('PUT')
+                                        </form>
                                         <form id="delete-assessment-{{ $assessment->id }}" method="POST" action="{{ route('grades.assessments.destroy', $assessment) }}">
                                             @csrf
                                             @method('DELETE')
@@ -179,6 +199,10 @@
                 @elseif ($students->isEmpty())
                     <div class="empty">Aucun eleve actif dans cette classe.</div>
                 @else
+                    @if ($selectedAssessment->is_locked)
+                        <p class="notice">Cette evaluation est verrouillee. Les notes sont en lecture seule.</p>
+                    @endif
+
                     <form method="POST" action="{{ route('grades.assessments.grades.update', $selectedAssessment) }}">
                         @csrf
                         @method('PUT')
@@ -202,16 +226,16 @@
                                                 <span class="badge">{{ $student->matricule }}</span>
                                             </td>
                                             <td>
-                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}">
+                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}" @disabled($selectedAssessment->is_locked)>
                                             </td>
                                             <td>
                                                 <label class="check">
-                                                    <input type="checkbox" name="grades[{{ $student->id }}][is_absent]" value="1" @checked(old('grades.' . $student->id . '.is_absent', $grade?->is_absent))>
+                                                    <input type="checkbox" name="grades[{{ $student->id }}][is_absent]" value="1" @checked(old('grades.' . $student->id . '.is_absent', $grade?->is_absent)) @disabled($selectedAssessment->is_locked)>
                                                     Oui
                                                 </label>
                                             </td>
                                             <td>
-                                                <input name="grades[{{ $student->id }}][comment]" value="{{ old('grades.' . $student->id . '.comment', $grade?->comment) }}" placeholder="Facultatif">
+                                                <input name="grades[{{ $student->id }}][comment]" value="{{ old('grades.' . $student->id . '.comment', $grade?->comment) }}" placeholder="Facultatif" @disabled($selectedAssessment->is_locked)>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -219,9 +243,11 @@
                             </table>
                         </div>
 
-                        <div class="form-actions">
-                            <button class="btn btn-primary" type="submit">Enregistrer les notes</button>
-                        </div>
+                        @unless ($selectedAssessment->is_locked)
+                            <div class="form-actions">
+                                <button class="btn btn-primary" type="submit">Enregistrer les notes</button>
+                            </div>
+                        @endunless
                     </form>
                 @endif
             </div>

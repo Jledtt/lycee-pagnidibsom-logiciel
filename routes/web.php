@@ -107,6 +107,14 @@ Route::put('/grades/assessments/{assessment}', [GradeWebController::class, 'upda
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.assessments.grades.update');
 
+Route::put('/grades/assessments/{assessment}/lock', [GradeWebController::class, 'lockAssessment'])
+    ->middleware(['auth', 'permission:grades.lock'])
+    ->name('grades.assessments.lock');
+
+Route::put('/grades/assessments/{assessment}/unlock', [GradeWebController::class, 'unlockAssessment'])
+    ->middleware(['auth', 'permission:grades.unlock'])
+    ->name('grades.assessments.unlock');
+
 Route::delete('/grades/assessments/{assessment}', [GradeWebController::class, 'destroyAssessment'])
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.assessments.destroy');
