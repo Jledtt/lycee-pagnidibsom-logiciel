@@ -49,11 +49,28 @@ class ReportCardService
                     'general_average' => $row['average'],
                     'rank' => $row['average'] === null ? null : $index + 1,
                     'class_size' => count($rows),
+                    'appreciation' => $this->appreciationForAverage($row['average']),
                     'status' => 'draft',
                 ]
             );
         }
 
         return $rows;
+    }
+
+    public function appreciationForAverage(?float $average): string
+    {
+        if ($average === null) {
+            return 'Non note';
+        }
+
+        return match (true) {
+            $average >= 16 => 'Tres bien',
+            $average >= 14 => 'Bien',
+            $average >= 12 => 'Assez bien',
+            $average >= 10 => 'Passable',
+            $average >= 8 => 'Insuffisant',
+            default => 'Tres insuffisant',
+        };
     }
 }

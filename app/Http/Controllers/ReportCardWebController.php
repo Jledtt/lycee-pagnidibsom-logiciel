@@ -116,12 +116,13 @@ class ReportCardWebController extends Controller
     public function update(Request $request, ReportCard $reportCard): RedirectResponse
     {
         $data = $request->validate([
-            'appreciation' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['draft', 'validated', 'published'])],
         ]);
 
         $payload = [
-            'appreciation' => $data['appreciation'] ?? null,
+            'appreciation' => $this->reportCardService->appreciationForAverage(
+                $reportCard->general_average === null ? null : (float) $reportCard->general_average,
+            ),
             'status' => $data['status'],
         ];
 

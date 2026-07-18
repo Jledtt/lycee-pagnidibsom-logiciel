@@ -86,7 +86,7 @@
                 <div class="empty">Aucun eleve actif dans cette classe.</div>
             @else
                 <div class="subject-list-scroll">
-                    <table class="table" style="min-width:1120px">
+                    <table class="table" style="min-width:1040px">
                         <thead>
                             <tr>
                                 <th>Eleve</th>
@@ -126,20 +126,7 @@
                                     </td>
                                     <td>
                                         @if ($reportCard)
-                                            @can('report_cards.validate')
-                                                <form id="update-report-card-{{ $reportCard->id }}" method="POST" action="{{ route('report-cards.update', $reportCard) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <textarea name="appreciation" rows="2" placeholder="Appreciation generale">{{ $reportCard->appreciation }}</textarea>
-                                                    <select name="status" style="margin-top:8px">
-                                                        <option value="draft" @selected($reportCard->status === 'draft')>Brouillon</option>
-                                                        <option value="validated" @selected($reportCard->status === 'validated')>Valide</option>
-                                                        <option value="published" @selected($reportCard->status === 'published')>Publie</option>
-                                                    </select>
-                                                </form>
-                                            @else
-                                                {{ $reportCard->appreciation ?: '-' }}
-                                            @endcan
+                                            <strong>{{ $reportCard->appreciation ?: '-' }}</strong>
                                         @else
                                             -
                                         @endif
@@ -148,6 +135,18 @@
                                         @if ($reportCard)
                                             <div class="page-actions">
                                                 @can('report_cards.validate')
+                                                    <form id="update-report-card-{{ $reportCard->id }}" method="POST" action="{{ route('report-cards.update', $reportCard) }}" class="inline-form">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <div class="field">
+                                                            <label>Statut</label>
+                                                            <select name="status">
+                                                                <option value="draft" @selected($reportCard->status === 'draft')>Brouillon</option>
+                                                                <option value="validated" @selected($reportCard->status === 'validated')>Valide</option>
+                                                                <option value="published" @selected($reportCard->status === 'published')>Publie</option>
+                                                            </select>
+                                                        </div>
+                                                    </form>
                                                     <button class="btn btn-subtle" type="submit" form="update-report-card-{{ $reportCard->id }}">Sauvegarder</button>
                                                 @endcan
                                             @can('report_cards.print')
