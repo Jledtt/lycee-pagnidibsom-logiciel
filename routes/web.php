@@ -18,6 +18,7 @@ use App\Http\Controllers\SchoolClassWebController;
 use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
+use App\Http\Controllers\StudentCardWebController;
 use App\Http\Controllers\StudentDocumentWebController;
 use App\Http\Controllers\StudentImportWebController;
 use App\Http\Controllers\StudentWebController;
@@ -509,6 +510,10 @@ Route::delete('/students/import', [StudentImportWebController::class, 'destroy']
 Route::get('/students/export', [StudentWebController::class, 'export'])
     ->middleware(['auth', 'permission:students.export'])
     ->name('students.export');
+
+Route::get('/students/{student}/school-card/pdf', [StudentCardWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('students.school-card.pdf');
 
 Route::post('/students', [StudentWebController::class, 'store'])
     ->middleware(['auth', 'permission:students.create'])
