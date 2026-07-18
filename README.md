@@ -1,58 +1,126 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LPP Gestion Scolaire
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Logiciel de gestion scolaire pour le Lycee Prive Pagnidibsom au Burkina Faso.
 
-## About Laravel
+L'application est construite avec Laravel, PHP 8.3 et une base SQLite en local. Elle est preparee pour passer plus tard sur MySQL, MariaDB ou PostgreSQL sur un serveur reel.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Modules disponibles
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Tableau de bord avec affichage selon les roles
+- Eleves, parents, dossiers et fiches d'inscription
+- Classes, inscriptions et listes imprimables
+- Paiements, recus, impayes et situations financieres
+- Tarifs scolaires modifiables par classe et par tranche
+- Documents administratifs et certificats PDF
+- Absences, retards, justificatifs et exports PDF
+- Matieres, coefficients, notes, evaluations et bulletins
+- Personnel, roles et permissions
+- Parametres de l'etablissement
+- Aide et guide utilisateur integres
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Installation locale
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+cd C:\Users\eddyt\Documents\Codex\lycee-pagnidibsom-logiciel\app-source
+composer install
+copy .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Adresse locale :
 
-## Contributing
+```text
+http://127.0.0.1:8000
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Compte admin local :
 
-## Code of Conduct
+```text
+Identifiant : admin
+E-mail      : infoslyceepagnidibsom@gmail.com
+Mot de passe: Pagnidibsom
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Tests
 
-## Security Vulnerabilities
+Lancer les tests automatises :
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```powershell
+php artisan test
+```
 
-## License
+Les tests Feature servent a verifier les acces par role, les pages principales et les commandes techniques.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Sauvegarde de la base
+
+Sauvegarde manuelle :
+
+```powershell
+php artisan lpp:backup-database
+```
+
+Par defaut, les sauvegardes sont creees dans :
+
+```text
+storage/app/backups
+```
+
+La commande cree un export JSON portable. En SQLite, elle ajoute aussi une copie du fichier `.sqlite`.
+
+Parametres disponibles dans `.env` :
+
+```text
+LPP_BACKUP_TIME=22:00
+LPP_BACKUP_KEEP_DAYS=14
+```
+
+Pour que la sauvegarde automatique s'execute sur un serveur, il faudra activer le planificateur Laravel avec une tache cron.
+
+## Passage serveur reel
+
+Pour MySQL ou MariaDB :
+
+```text
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lpp_gestion
+DB_USERNAME=lpp_user
+DB_PASSWORD=mot_de_passe
+```
+
+Pour PostgreSQL :
+
+```text
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=lpp_gestion
+DB_USERNAME=lpp_user
+DB_PASSWORD=mot_de_passe
+```
+
+Puis lancer :
+
+```powershell
+php artisan migrate --seed --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+## Commandes utiles
+
+```powershell
+php artisan migrate
+php artisan db:seed --class=RolesAndPermissionsSeeder
+php artisan permission:cache-reset
+php artisan lpp:backup-database
+php artisan test
+```
+
+## Regle importante
+
+Les acces doivent etre geres par roles. Les informations sensibles comme les encaissements, les rapports financiers et les annulations de paiement ne doivent etre visibles qu'aux roles autorises.

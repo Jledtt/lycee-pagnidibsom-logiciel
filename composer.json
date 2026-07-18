@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "lpp/gestion-scolaire",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Logiciel de gestion scolaire pour le Lycee Prive Pagnidibsom.",
+    "keywords": ["laravel", "gestion-scolaire", "burkina-faso", "lpp"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

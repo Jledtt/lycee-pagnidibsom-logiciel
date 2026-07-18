@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'accepted' => 'Le champ :attribute doit etre accepte.',
+    'array' => 'Le champ :attribute doit etre une liste.',
+    'boolean' => 'Le champ :attribute doit etre vrai ou faux.',
+    'date' => 'Le champ :attribute doit etre une date valide.',
+    'email' => 'Le champ :attribute doit etre une adresse e-mail valide.',
+    'exists' => 'La valeur choisie pour :attribute est invalide.',
+    'in' => 'La valeur choisie pour :attribute est invalide.',
+    'integer' => 'Le champ :attribute doit etre un nombre entier.',
+    'max' => [
+        'numeric' => 'Le champ :attribute ne doit pas depasser :max.',
+        'string' => 'Le champ :attribute ne doit pas depasser :max caracteres.',
+        'array' => 'Le champ :attribute ne doit pas contenir plus de :max elements.',
+    ],
+    'min' => [
+        'numeric' => 'Le champ :attribute doit etre au moins :min.',
+        'string' => 'Le champ :attribute doit contenir au moins :min caracteres.',
+        'array' => 'Le champ :attribute doit contenir au moins :min elements.',
+    ],
+    'numeric' => 'Le champ :attribute doit etre un nombre.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'string' => 'Le champ :attribute doit etre un texte.',
+    'unique' => 'Cette valeur de :attribute est deja utilisee.',
+
+    'attributes' => [
+        'first_name' => 'prenom',
+        'last_name' => 'nom',
+        'gender' => 'sexe',
+        'birth_date' => 'date de naissance',
+        'birth_place' => 'lieu de naissance',
+        'student_id' => 'eleve',
+        'school_class_id' => 'classe',
+        'academic_year_id' => 'annee scolaire',
+        'term_id' => 'trimestre',
+        'payment_method' => 'mode de paiement',
+        'paid_at' => 'date de paiement',
+        'amount' => 'montant',
+        'lines' => 'lignes de paiement',
+        'status' => 'statut',
+        'name' => 'nom',
+        'email' => 'e-mail',
+        'phone' => 'telephone',
+        'password' => 'mot de passe',
+    ],
+];

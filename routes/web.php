@@ -28,6 +28,10 @@ Route::get('/dashboard', SchoolDashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
 
+Route::view('/help', 'help.index')
+    ->middleware('auth')
+    ->name('help.index');
+
 Route::get('/attendance', [AttendanceWebController::class, 'index'])
     ->middleware(['auth', 'permission:attendance.view'])
     ->name('attendance.index');

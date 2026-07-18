@@ -1,0 +1,138 @@
+@extends('layouts.app', [
+    'title' => 'Aide - Lycee Prive Pagnidibsom',
+    'active' => 'help',
+    'pageTitle' => 'Aide et guide utilisateur',
+    'pageSubtitle' => 'Reperes rapides pour utiliser le logiciel de gestion scolaire',
+])
+
+@section('content')
+    <section class="grid two-col">
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Demarrage rapide</h2>
+            </div>
+
+            <div class="ledger-list">
+                <div class="detail-item">
+                    <span>1. Parametrer l'annee</span>
+                    <strong>Active l'annee scolaire, les trimestres, les classes, les tarifs et les matieres.</strong>
+                </div>
+                <div class="detail-item">
+                    <span>2. Creer les eleves</span>
+                    <strong>Ajoute les dossiers eleves, parents, contacts et informations medicales.</strong>
+                </div>
+                <div class="detail-item">
+                    <span>3. Inscrire dans une classe</span>
+                    <strong>Rattache chaque eleve a une classe pour l'annee active.</strong>
+                </div>
+                <div class="detail-item">
+                    <span>4. Suivre le quotidien</span>
+                    <strong>Enregistre paiements, absences, notes, bulletins et documents.</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Roles principaux</h2>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Utilisation normale</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Direction</strong></td>
+                        <td>Suivi global, bulletins, rapports et controle.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Secretariat</strong></td>
+                        <td>Dossiers eleves, inscriptions, classes et documents.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Comptabilite</strong></td>
+                        <td>Paiements, recus, impayes, journal et rapports financiers.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enseignant</strong></td>
+                        <td>Notes et pointage selon les acces donnes.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Surveillant</strong></td>
+                        <td>Absences, retards, justifications et rapports d'assiduite.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+        <div class="panel-head">
+            <h2>Raccourcis de travail</h2>
+        </div>
+
+        <div class="grid modules">
+            @can('students.view')
+                <a class="module" href="{{ route('students.index') }}">
+                    <strong>Rechercher un eleve</strong>
+                    <span>Ouvre la liste, recherche par nom ou matricule, puis accede a la fiche.</span>
+                </a>
+            @endcan
+            @can('students.export')
+                <a class="module" href="{{ route('certificates.index') }}">
+                    <strong>Documents officiels</strong>
+                    <span>Certificats, fiches d'inscription et impressions PDF.</span>
+                </a>
+            @endcan
+            @can('payments.view')
+                <a class="module" href="{{ route('payments.index') }}">
+                    <strong>Situation financiere</strong>
+                    <span>Consulte les paiements, impayes et recus selon ton role.</span>
+                </a>
+            @endcan
+            @can('attendance.view')
+                <a class="module" href="{{ route('attendance.index') }}">
+                    <strong>Absences et retards</strong>
+                    <span>Faire l'appel, corriger une absence et exporter les rapports.</span>
+                </a>
+            @endcan
+            @can('grades.view')
+                <a class="module" href="{{ route('grades.index') }}">
+                    <strong>Notes</strong>
+                    <span>Saisir, verifier et verrouiller les evaluations.</span>
+                </a>
+            @endcan
+            @can('report_cards.view')
+                <a class="module" href="{{ route('report-cards.index') }}">
+                    <strong>Bulletins</strong>
+                    <span>Generer les moyennes, decisions et PDF de bulletins.</span>
+                </a>
+            @endcan
+        </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+        <div class="panel-head">
+            <h2>Maintenance</h2>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span>Sauvegarde manuelle</span>
+                <strong>php artisan lpp:backup-database</strong>
+            </div>
+            <div class="detail-item">
+                <span>Verification technique</span>
+                <strong>php artisan test</strong>
+            </div>
+            <div class="detail-item">
+                <span>Gestion des acces</span>
+                <strong>Personnel puis Roles et acces</strong>
+            </div>
+        </div>
+    </section>
+@endsection

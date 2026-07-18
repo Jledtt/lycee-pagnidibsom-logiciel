@@ -13,6 +13,7 @@
 
             <nav class="nav">
                 <a class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
+                <a class="{{ ($active ?? '') === 'help' ? 'active' : '' }}" href="{{ route('help.index') }}"><span class="nav-dot"></span>Aide</a>
                 @can('students.view')
                     <a class="{{ ($active ?? '') === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Eleves</a>
                 @endcan
