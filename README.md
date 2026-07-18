@@ -81,6 +81,7 @@ Parametres disponibles dans `.env` :
 ```text
 LPP_BACKUP_TIME=22:00
 LPP_BACKUP_KEEP_DAYS=14
+LPP_BACKUP_PATH=/chemin/vers/dossier/sauvegardes
 LPP_MYSQLDUMP_PATH=C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysqldump.exe
 LPP_PGDUMP_PATH=/usr/bin/pg_dump
 ```

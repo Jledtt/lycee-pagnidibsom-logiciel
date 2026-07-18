@@ -74,7 +74,7 @@ class DatabaseBackupService
 
     public function directory(): string
     {
-        return storage_path('app/backups');
+        return env('LPP_BACKUP_PATH') ?: storage_path('app/backups');
     }
 
     private function tableRows(string $driver, ?string $database): array

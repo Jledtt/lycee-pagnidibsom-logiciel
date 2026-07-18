@@ -43,9 +43,14 @@ class TechnicalMaintenanceTest extends TestCase
     public function test_admin_can_create_and_download_backup_from_settings(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $path = storage_path('app/backups');
+        $path = storage_path('framework/testing/web-backups');
         $admin = User::factory()->create(['username' => 'backup-admin', 'status' => 'active']);
         $admin->assignRole('admin');
+
+        $this->app['config']->set('app.env', 'testing');
+        putenv('LPP_BACKUP_PATH=' . $path);
+        $_ENV['LPP_BACKUP_PATH'] = $path;
+        $_SERVER['LPP_BACKUP_PATH'] = $path;
 
         File::deleteDirectory($path);
 
@@ -67,5 +72,7 @@ class TechnicalMaintenanceTest extends TestCase
             ->assertOk();
 
         File::deleteDirectory($path);
+        putenv('LPP_BACKUP_PATH');
+        unset($_ENV['LPP_BACKUP_PATH'], $_SERVER['LPP_BACKUP_PATH']);
     }
 }
