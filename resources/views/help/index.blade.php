@@ -123,7 +123,7 @@
         <div class="detail-grid">
             <div class="detail-item">
                 <span>Sauvegarde manuelle</span>
-                <strong>php artisan lpp:backup-database</strong>
+                <strong>Parametres puis Sauvegardes, ou php artisan lpp:backup-database</strong>
             </div>
             <div class="detail-item">
                 <span>Verification technique</span>
@@ -132,6 +132,31 @@
             <div class="detail-item">
                 <span>Gestion des acces</span>
                 <strong>Personnel puis Roles et acces</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+        <div class="panel-head">
+            <h2>Serveur reel et restauration</h2>
+        </div>
+
+        <div class="ledger-list">
+            <div class="detail-item">
+                <span>Avant de deployer</span>
+                <strong>Utiliser MySQL ou PostgreSQL, verifier APP_ENV=production, APP_DEBUG=false et proteger le dossier storage.</strong>
+            </div>
+            <div class="detail-item">
+                <span>Fichiers eleves</span>
+                <strong>Les documents scannes et logos doivent rester dans storage/app ou public/images avec une sauvegarde reguliere.</strong>
+            </div>
+            <div class="detail-item">
+                <span>Restauration MySQL</span>
+                <strong>Creer une base vide, importer le fichier .sql via HeidiSQL ou mysql, puis lancer php artisan config:clear.</strong>
+            </div>
+            <div class="detail-item">
+                <span>Restauration SQLite</span>
+                <strong>Arreter l'application, remplacer database/database.sqlite par la copie sauvegardee, puis redemarrer.</strong>
             </div>
         </div>
     </section>

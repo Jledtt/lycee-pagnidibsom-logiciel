@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
+use App\Services\DatabaseBackupService;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -11,62 +10,79 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('lpp:backup-database {--path=}', function () {
-    $connection = config('database.default');
-    $database = config("database.connections.{$connection}.database");
-    $driver = config("database.connections.{$connection}.driver");
-    $directory = $this->option('path') ?: storage_path('app/backups');
-    $timestamp = now()->format('Ymd-His');
+    $backup = app(DatabaseBackupService::class)->create($this->option('path'));
 
-    File::ensureDirectoryExists($directory);
+    $this->info('Sauvegarde JSON creee : ' . $backup['json_path']);
 
-    $tables = match ($driver) {
-        'sqlite' => collect(DB::select("select name from sqlite_master where type = 'table' and name not like 'sqlite_%'"))
-            ->pluck('name')
-            ->values(),
-        'mysql', 'mariadb' => collect(DB::select(
-            'select table_name from information_schema.tables where table_schema = ? and table_type = ?',
-            [$database, 'BASE TABLE']
-        ))->pluck('table_name')->values(),
-        'pgsql' => collect(DB::select(
-            'select tablename from pg_tables where schemaname = ?',
-            ['public']
-        ))->pluck('tablename')->values(),
-        default => collect(),
-    };
-
-    abort_if($tables->isEmpty(), 422, "Sauvegarde non supportee pour la connexion {$driver}.");
-
-    $export = [
-        'application' => 'LPP Gestion Scolaire',
-        'connection' => $connection,
-        'driver' => $driver,
-        'generated_at' => now()->toIso8601String(),
-        'tables' => [],
-    ];
-
-    foreach ($tables as $table) {
-        $export['tables'][$table] = DB::table($table)
-            ->get()
-            ->map(fn (object $row) => (array) $row)
-            ->all();
+    if ($backup['native_path']) {
+        $this->info('Sauvegarde native creee : ' . $backup['native_path']);
     }
-
-    $jsonPath = $directory . DIRECTORY_SEPARATOR . "lpp-{$driver}-{$timestamp}.json";
-    File::put($jsonPath, json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-    if ($driver === 'sqlite' && $database !== ':memory:' && is_string($database) && File::exists($database)) {
-        File::copy($database, $directory . DIRECTORY_SEPARATOR . "lpp-sqlite-{$timestamp}.sqlite");
-    }
-
-    $keepDays = max((int) env('LPP_BACKUP_KEEP_DAYS', 14), 1);
-    foreach (File::glob($directory . DIRECTORY_SEPARATOR . 'lpp-*') as $file) {
-        if (File::lastModified($file) < now()->subDays($keepDays)->timestamp) {
-            File::delete($file);
-        }
-    }
-
-    $this->info("Sauvegarde creee : {$jsonPath}");
 })->purpose('Sauvegarder la base de donnees LPP');
+
+Artisan::command('lpp:clean-demo-data', function () {
+    $matricules = ['TEST-2026-0001', 'TEST-2026-0002'];
+    $students = \App\Models\Student::withTrashed()
+        ->whereIn('matricule', $matricules)
+        ->get();
+
+    if ($students->isEmpty()) {
+        $this->info('Aucune donnee de test a nettoyer.');
+
+        return;
+    }
+
+    $studentIds = $students->pluck('id');
+    $guardianIds = \Illuminate\Support\Facades\DB::table('guardian_student')
+        ->whereIn('student_id', $studentIds)
+        ->pluck('guardian_id');
+    $classIds = \App\Models\Enrollment::query()
+        ->whereIn('student_id', $studentIds)
+        ->pluck('school_class_id')
+        ->filter()
+        ->unique();
+    $paymentIds = \App\Models\Payment::query()->whereIn('student_id', $studentIds)->pluck('id');
+    $attendanceSessionIds = \App\Models\AttendanceRecord::query()
+        ->whereIn('student_id', $studentIds)
+        ->pluck('attendance_session_id');
+    $assessmentIds = \App\Models\Assessment::query()
+        ->whereIn('school_class_id', $classIds)
+        ->where('title', 'like', '%Test MySQL%')
+        ->pluck('id');
+
+    \Illuminate\Support\Facades\DB::transaction(function () use ($studentIds, $guardianIds, $classIds, $paymentIds, $students, $attendanceSessionIds, $assessmentIds) {
+        \App\Models\PaymentLine::query()->whereIn('payment_id', $paymentIds)->delete();
+        \App\Models\Payment::query()->whereIn('id', $paymentIds)->delete();
+        \App\Models\Grade::query()->whereIn('assessment_id', $assessmentIds)->delete();
+        \App\Models\Assessment::query()->whereIn('id', $assessmentIds)->delete();
+        \App\Models\Grade::query()->whereIn('student_id', $studentIds)->delete();
+        \App\Models\ReportCard::query()->whereIn('student_id', $studentIds)->delete();
+        \App\Models\AttendanceRecord::query()->whereIn('student_id', $studentIds)->delete();
+        \App\Models\AttendanceSession::query()
+            ->whereIn('id', $attendanceSessionIds)
+            ->whereDoesntHave('records')
+            ->delete();
+        \App\Models\Enrollment::query()->whereIn('student_id', $studentIds)->delete();
+
+        foreach ($students as $student) {
+            $student->guardians()->detach();
+            $student->forceDelete();
+        }
+
+        \App\Models\Guardian::query()
+            ->whereIn('id', $guardianIds)
+            ->whereDoesntHave('students')
+            ->delete();
+
+        \App\Models\FeeSchedule::query()->whereIn('school_class_id', $classIds)->delete();
+        \App\Models\ClassSubject::query()->whereIn('school_class_id', $classIds)->delete();
+        \App\Models\SchoolClass::query()
+            ->whereIn('id', $classIds)
+            ->whereDoesntHave('enrollments')
+            ->delete();
+    });
+
+    $this->info('Donnees de test Awa/Issa supprimees.');
+})->purpose('Supprimer les eleves de demonstration TEST-2026');
 
 Schedule::command('lpp:backup-database')
     ->dailyAt(env('LPP_BACKUP_TIME', '22:00'))

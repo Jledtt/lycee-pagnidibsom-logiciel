@@ -2,7 +2,7 @@
 
 Logiciel de gestion scolaire pour le Lycee Prive Pagnidibsom au Burkina Faso.
 
-L'application est construite avec Laravel, PHP 8.3 et une base SQLite en local. Elle est preparee pour passer plus tard sur MySQL, MariaDB ou PostgreSQL sur un serveur reel.
+L'application est construite avec Laravel, PHP 8.3 et fonctionne en SQLite, MySQL/MariaDB ou PostgreSQL. En production, MySQL/MariaDB ou PostgreSQL est recommande.
 
 ## Modules disponibles
 
@@ -17,6 +17,7 @@ L'application est construite avec Laravel, PHP 8.3 et une base SQLite en local. 
 - Personnel, roles et permissions
 - Parametres de l'etablissement
 - Aide et guide utilisateur integres
+- Sauvegardes JSON et SQL depuis l'interface ou la console
 
 ## Installation locale
 
@@ -55,6 +56,12 @@ Les tests Feature servent a verifier les acces par role, les pages principales e
 
 ## Sauvegarde de la base
 
+Depuis l'interface :
+
+```text
+Parametres > Sauvegardes > Exporter une sauvegarde
+```
+
 Sauvegarde manuelle :
 
 ```powershell
@@ -67,18 +74,74 @@ Par defaut, les sauvegardes sont creees dans :
 storage/app/backups
 ```
 
-La commande cree un export JSON portable. En SQLite, elle ajoute aussi une copie du fichier `.sqlite`.
+La commande cree un export JSON portable. En SQLite, elle ajoute aussi une copie du fichier `.sqlite`. En MySQL/MariaDB, elle genere aussi un fichier `.sql` si `mysqldump` est disponible. En PostgreSQL, elle fait pareil avec `pg_dump`.
 
 Parametres disponibles dans `.env` :
 
 ```text
 LPP_BACKUP_TIME=22:00
 LPP_BACKUP_KEEP_DAYS=14
+LPP_MYSQLDUMP_PATH=C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysqldump.exe
+LPP_PGDUMP_PATH=/usr/bin/pg_dump
 ```
 
-Pour que la sauvegarde automatique s'execute sur un serveur, il faudra activer le planificateur Laravel avec une tache cron.
+Pour que la sauvegarde automatique s'execute sur un serveur Linux, ajouter la tache cron Laravel :
+
+```bash
+* * * * * cd /chemin/vers/app-source && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Sur Windows Server, creer une tache planifiee qui execute toutes les minutes :
+
+```powershell
+php C:\chemin\vers\app-source\artisan schedule:run
+```
+
+## Restauration
+
+Avant restauration, toujours faire une sauvegarde de la base actuelle et mettre l'application en maintenance :
+
+```powershell
+php artisan down
+php artisan lpp:backup-database
+```
+
+Restaurer MySQL/MariaDB avec HeidiSQL :
+
+1. Creer ou vider la base `lpp_gestion`.
+2. Ouvrir le fichier `.sql` de sauvegarde dans HeidiSQL.
+3. Executer le script.
+4. Lancer :
+
+```powershell
+php artisan config:clear
+php artisan up
+```
+
+Restaurer MySQL/MariaDB en ligne de commande :
+
+```powershell
+mysql -h 127.0.0.1 -P 3306 -u root lpp_gestion < storage/app/backups/lpp-mysql-YYYYMMDD-HHMMSS.sql
+php artisan config:clear
+php artisan up
+```
+
+Restaurer SQLite :
+
+1. Arreter l'application.
+2. Remplacer `database/database.sqlite` par le fichier `.sqlite` sauvegarde.
+3. Redemarrer l'application.
 
 ## Passage serveur reel
+
+`.env` production minimal :
+
+```text
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://votre-domaine.com
+SESSION_SECURE_COOKIE=true
+```
 
 Pour MySQL ou MariaDB :
 
@@ -111,6 +174,14 @@ php artisan route:cache
 php artisan view:cache
 ```
 
+Verifier aussi :
+
+- le dossier `storage` est sauvegarde et non public
+- `storage/app` conserve les documents scannes des eleves
+- `public/images` contient le logo officiel
+- les permissions des roles sont relues avant ouverture au personnel
+- une sauvegarde automatique est activee et testee
+
 ## Commandes utiles
 
 ```powershell
@@ -118,6 +189,7 @@ php artisan migrate
 php artisan db:seed --class=RolesAndPermissionsSeeder
 php artisan permission:cache-reset
 php artisan lpp:backup-database
+php artisan lpp:clean-demo-data
 php artisan test
 ```
 

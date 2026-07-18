@@ -7,6 +7,7 @@ use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\ClassCouncilWebController;
+use App\Http\Controllers\DatabaseBackupWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
@@ -138,6 +139,19 @@ Route::get('/settings/numbering', [NumberingSettingWebController::class, 'index'
 Route::put('/settings/numbering', [NumberingSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.numbering.update');
+
+Route::get('/settings/backups', [DatabaseBackupWebController::class, 'index'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.backups.index');
+
+Route::post('/settings/backups', [DatabaseBackupWebController::class, 'store'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('settings.backups.store');
+
+Route::get('/settings/backups/{filename}', [DatabaseBackupWebController::class, 'download'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->where('filename', '.*')
+    ->name('settings.backups.download');
 
 Route::get('/academic-years', [AcademicYearWebController::class, 'index'])
     ->middleware(['auth', 'permission:academic_years.manage'])

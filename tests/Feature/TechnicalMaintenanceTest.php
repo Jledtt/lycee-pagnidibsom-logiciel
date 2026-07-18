@@ -39,4 +39,33 @@ class TechnicalMaintenanceTest extends TestCase
 
         File::deleteDirectory($path);
     }
+
+    public function test_admin_can_create_and_download_backup_from_settings(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $path = storage_path('app/backups');
+        $admin = User::factory()->create(['username' => 'backup-admin', 'status' => 'active']);
+        $admin->assignRole('admin');
+
+        File::deleteDirectory($path);
+
+        $this->actingAs($admin)
+            ->get(route('settings.backups.index'))
+            ->assertOk()
+            ->assertSee('Sauvegardes');
+
+        $this->actingAs($admin)
+            ->post(route('settings.backups.store'))
+            ->assertRedirect(route('settings.backups.index'));
+
+        $backup = collect(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.json'))->first();
+
+        $this->assertNotNull($backup);
+
+        $this->actingAs($admin)
+            ->get(route('settings.backups.download', basename($backup)))
+            ->assertOk();
+
+        File::deleteDirectory($path);
+    }
 }
