@@ -7,6 +7,7 @@ use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
+use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\ReportCardWebController;
@@ -149,6 +150,26 @@ Route::post('/grades/assessments', [GradeWebController::class, 'storeAssessment'
 Route::get('/grades/assessments/{assessment}/pdf', [GradeWebController::class, 'assessmentPdf'])
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.assessments.pdf');
+
+Route::get('/grades/assessments/{assessment}/import', [GradeImportWebController::class, 'create'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.import');
+
+Route::get('/grades/assessments/{assessment}/import/template', [GradeImportWebController::class, 'template'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.import.template');
+
+Route::post('/grades/assessments/{assessment}/import/preview', [GradeImportWebController::class, 'preview'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.import.preview');
+
+Route::post('/grades/assessments/{assessment}/import', [GradeImportWebController::class, 'store'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.import.store');
+
+Route::delete('/grades/assessments/{assessment}/import', [GradeImportWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:grades.update'])
+    ->name('grades.import.destroy');
 
 Route::get('/grades/assessments/{assessment}/export', [GradeWebController::class, 'assessmentExport'])
     ->middleware(['auth', 'permission:grades.view'])
