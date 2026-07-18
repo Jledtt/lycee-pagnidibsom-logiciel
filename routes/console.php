@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use App\Services\DatabaseBackupService;
+use App\Services\PagnidibsomClassSubjectSetupService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
@@ -83,6 +84,16 @@ Artisan::command('lpp:clean-demo-data', function () {
 
     $this->info('Donnees de test Awa/Issa supprimees.');
 })->purpose('Supprimer les eleves de demonstration TEST-2026');
+
+Artisan::command('lpp:setup-classes-subjects', function () {
+    $result = app(PagnidibsomClassSubjectSetupService::class)->apply();
+
+    $this->info('Configuration appliquee pour ' . $result['academic_year'] . '.');
+
+    foreach ($result['classes'] as $line) {
+        $this->line('- ' . $line['class'] . ' : ' . $line['subjects'] . ' matiere(s)');
+    }
+})->purpose('Creer les classes et rattacher les matieres LPP');
 
 Schedule::command('lpp:backup-database')
     ->dailyAt(env('LPP_BACKUP_TIME', '22:00'))
