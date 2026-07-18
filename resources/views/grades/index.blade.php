@@ -75,9 +75,7 @@
                     <h2>Nouvelle evaluation</h2>
                 </div>
 
-                @if ($selectedTerm->is_closed)
-                    <div class="empty">Ce trimestre est ferme. La creation d evaluations est bloquee.</div>
-                @elseif ($classSubjects->isEmpty())
+                @if ($classSubjects->isEmpty())
                     <div class="empty">Aucune matiere active pour cette classe. Ajoute d'abord les matieres et coefficients.</div>
                 @else
                     <form class="form-grid" method="POST" action="{{ route('grades.assessments.store') }}">
@@ -156,9 +154,7 @@
                                             <div class="page-actions" style="justify-content:flex-end">
                                                 <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
                                                 <a class="btn btn-primary" href="{{ route('grades.assessments.pdf', $assessment) }}">PDF</a>
-                                                @if ($selectedTerm->is_closed)
-                                                    <span class="badge badge-warning">Trimestre ferme</span>
-                                                @elseif ($assessment->is_locked)
+                                                @if ($assessment->is_locked)
                                                     @can('grades.unlock')
                                                         <button class="btn btn-subtle" type="submit" form="unlock-assessment-{{ $assessment->id }}">Deverrouiller</button>
                                                     @endcan
@@ -205,8 +201,11 @@
                 @else
                     @if ($selectedTerm->is_closed || $selectedAssessment->is_locked)
                         <p class="notice">
-                            {{ $selectedTerm->is_closed ? 'Ce trimestre est ferme.' : 'Cette evaluation est verrouillee.' }}
-                            Les notes sont en lecture seule.
+                            @if ($selectedAssessment->is_locked)
+                                Cette evaluation est verrouillee. Les notes sont en lecture seule.
+                            @else
+                                Ce trimestre est marque ferme, mais les notes restent modifiables.
+                            @endif
                         </p>
                     @endif
 
@@ -233,16 +232,16 @@
                                                 <span class="badge">{{ $student->matricule }}</span>
                                             </td>
                                             <td>
-                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}" @disabled($selectedTerm->is_closed || $selectedAssessment->is_locked)>
+                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}" @disabled($selectedAssessment->is_locked)>
                                             </td>
                                             <td>
                                                 <label class="check">
-                                                    <input type="checkbox" name="grades[{{ $student->id }}][is_absent]" value="1" @checked(old('grades.' . $student->id . '.is_absent', $grade?->is_absent)) @disabled($selectedTerm->is_closed || $selectedAssessment->is_locked)>
+                                                    <input type="checkbox" name="grades[{{ $student->id }}][is_absent]" value="1" @checked(old('grades.' . $student->id . '.is_absent', $grade?->is_absent)) @disabled($selectedAssessment->is_locked)>
                                                     Oui
                                                 </label>
                                             </td>
                                             <td>
-                                                <input name="grades[{{ $student->id }}][comment]" value="{{ old('grades.' . $student->id . '.comment', $grade?->comment) }}" placeholder="Facultatif" @disabled($selectedTerm->is_closed || $selectedAssessment->is_locked)>
+                                                <input name="grades[{{ $student->id }}][comment]" value="{{ old('grades.' . $student->id . '.comment', $grade?->comment) }}" placeholder="Facultatif" @disabled($selectedAssessment->is_locked)>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -250,7 +249,7 @@
                             </table>
                         </div>
 
-                        @unless ($selectedTerm->is_closed || $selectedAssessment->is_locked)
+                        @unless ($selectedAssessment->is_locked)
                             <div class="form-actions">
                                 <button class="btn btn-primary" type="submit">Enregistrer les notes</button>
                             </div>
