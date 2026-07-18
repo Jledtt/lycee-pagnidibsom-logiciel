@@ -113,6 +113,51 @@ class ReportCardWebController extends Controller
             ->stream($filename);
     }
 
+    public function classPdf(Request $request)
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        $data = $request->validate([
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id),
+            ],
+            'term_id' => [
+                'required',
+                Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id),
+            ],
+        ]);
+
+        $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
+        $term = Term::query()->findOrFail($data['term_id']);
+
+        $this->reportCardService->generateForClass($schoolClass, $term);
+
+        $reportCards = ReportCard::query()
+            ->with(['academicYear', 'term', 'student', 'schoolClass.level'])
+            ->where('academic_year_id', $academicYear->id)
+            ->where('school_class_id', $schoolClass->id)
+            ->where('term_id', $term->id)
+            ->join('students', 'students.id', '=', 'report_cards.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('report_cards.*')
+            ->get()
+            ->map(fn (ReportCard $reportCard) => [
+                'reportCard' => $reportCard,
+                'subjectRows' => $this->subjectRows($reportCard),
+            ]);
+
+        $filename = 'bulletins-' . Str::slug($schoolClass->name . '-' . $term->name) . '.pdf';
+
+        return Pdf::loadView('report-cards.class-pdf', [
+            'items' => $reportCards,
+            'school' => SchoolSetting::query()->first(),
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
+    }
+
     public function update(Request $request, ReportCard $reportCard): RedirectResponse
     {
         $data = $request->validate([

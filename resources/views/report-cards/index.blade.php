@@ -72,14 +72,19 @@
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $selectedClass->name }} - {{ $selectedTerm->name }}</h2>
-                @can('report_cards.generate')
-                    <form method="POST" action="{{ route('report-cards.generate') }}">
-                        @csrf
-                        <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
-                        <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
-                        <button class="btn btn-primary" type="submit">Generer / recalculer</button>
-                    </form>
-                @endcan
+                <div class="page-actions">
+                    @can('report_cards.generate')
+                        <form method="POST" action="{{ route('report-cards.generate') }}">
+                            @csrf
+                            <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
+                            <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
+                            <button class="btn btn-primary" type="submit">Generer / recalculer</button>
+                        </form>
+                    @endcan
+                    @can('report_cards.print')
+                        <a class="btn btn-subtle" href="{{ route('report-cards.class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}">PDF classe</a>
+                    @endcan
+                </div>
             </div>
 
             @if ($students->isEmpty())
