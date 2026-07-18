@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Services\CsvExportService;
 use App\Services\StudentImportService;
+use App\Services\XlsxExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -21,12 +21,13 @@ class StudentImportWebController extends Controller
         ]);
     }
 
-    public function template(CsvExportService $csvExport, StudentImportService $studentImport)
+    public function template(XlsxExportService $xlsxExport, StudentImportService $studentImport)
     {
-        return $csvExport->download(
-            'modele-import-eleves.csv',
+        return $xlsxExport->download(
+            'modele-import-eleves.xlsx',
             $studentImport->templateHeaders(),
             $studentImport->templateRows(),
+            'Modele import',
         );
     }
 

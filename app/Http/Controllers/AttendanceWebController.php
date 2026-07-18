@@ -8,7 +8,7 @@ use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
-use App\Services\CsvExportService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -89,7 +89,7 @@ class AttendanceWebController extends Controller
         return $this->attendancePdfResponse($session, $schoolClass, $academicYear, $date);
     }
 
-    public function export(Request $request, CsvExportService $csvExport)
+    public function export(Request $request, XlsxExportService $xlsxExport)
     {
         $academicYear = $this->activeAcademicYear();
         $classes = $this->classes($academicYear);
@@ -114,7 +114,7 @@ class AttendanceWebController extends Controller
                 ->values()
             : collect();
 
-        return $csvExport->download('absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.csv', [
+        return $xlsxExport->download('absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.xlsx', [
             'Date',
             'Classe',
             'Matricule',

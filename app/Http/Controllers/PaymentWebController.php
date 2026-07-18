@@ -10,8 +10,8 @@ use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolSetting;
 use App\Models\Student;
-use App\Services\CsvExportService;
 use App\Services\PaymentService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,14 +77,14 @@ class PaymentWebController extends Controller
         ]);
     }
 
-    public function export(Request $request, CsvExportService $csvExport)
+    public function export(Request $request, XlsxExportService $xlsxExport)
     {
         $academicYear = $this->activeAcademicYear();
         $payments = $this->paymentQuery($request, $academicYear)
             ->orderByDesc('paid_at')
             ->get();
 
-        return $csvExport->download('paiements-' . now()->format('Ymd-His') . '.csv', [
+        return $xlsxExport->download('paiements-' . now()->format('Ymd-His') . '.xlsx', [
             'Recu',
             'Date',
             'Eleve',
@@ -219,12 +219,12 @@ class PaymentWebController extends Controller
         ]);
     }
 
-    public function unpaidExport(CsvExportService $csvExport)
+    public function unpaidExport(XlsxExportService $xlsxExport)
     {
         $academicYear = $this->activeAcademicYear();
         $rows = $this->unpaidRows($academicYear);
 
-        return $csvExport->download('impayes-' . now()->format('Ymd-His') . '.csv', [
+        return $xlsxExport->download('impayes-' . now()->format('Ymd-His') . '.xlsx', [
             'Matricule',
             'Eleve',
             'Classe',

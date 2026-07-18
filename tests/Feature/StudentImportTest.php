@@ -25,11 +25,15 @@ class StudentImportTest extends TestCase
         $user = $this->userWithRole('secretariat');
 
         $response = $this->actingAs($user)->get(route('students.import.template'));
-        $content = $response->streamedContent();
+        $sheetXml = $this->sheetXml($response->getContent());
 
         $response->assertOk();
-        $this->assertStringContainsString('Nom;Prenom;Sexe;"Date naissance"', $content);
-        $this->assertStringContainsString('Ouedraogo;Awa;Fille', $content);
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('Nom', $sheetXml);
+        $this->assertStringContainsString('Prenom', $sheetXml);
+        $this->assertStringContainsString('Date naissance', $sheetXml);
+        $this->assertStringContainsString('Ouedraogo', $sheetXml);
+        $this->assertStringContainsString('Awa', $sheetXml);
     }
 
     public function test_secretariat_can_preview_and_import_students_csv(): void
@@ -192,5 +196,19 @@ Kabre;Issa;Garcon;20/05/2011;Ouagadougou;6e A</pre>'
         $user->assignRole($role);
 
         return $user;
+    }
+
+    private function sheetXml(string $content): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
+        file_put_contents($path, $content);
+
+        $zip = new \ZipArchive();
+        $zip->open($path);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
+        $zip->close();
+        @unlink($path);
+
+        return $xml;
     }
 }

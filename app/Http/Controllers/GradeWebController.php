@@ -12,7 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
-use App\Services\CsvExportService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -205,15 +205,15 @@ class GradeWebController extends Controller
             ->stream($filename);
     }
 
-    public function assessmentExport(Assessment $assessment, CsvExportService $csvExport)
+    public function assessmentExport(Assessment $assessment, XlsxExportService $xlsxExport)
     {
         $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
         $students = $this->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
-        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.csv';
+        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.xlsx';
 
-        return $csvExport->download($filename, [
+        return $xlsxExport->download($filename, [
             'Matricule',
             'Eleve',
             'Classe',

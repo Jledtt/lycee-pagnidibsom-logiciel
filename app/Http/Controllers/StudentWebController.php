@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\Student;
-use App\Services\CsvExportService;
 use App\Services\MatriculeGeneratorService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,7 +49,7 @@ class StudentWebController extends Controller
         ]);
     }
 
-    public function export(Request $request, CsvExportService $csvExport)
+    public function export(Request $request, XlsxExportService $xlsxExport)
     {
         $students = $this->studentQuery($request)
             ->with(['guardians', 'enrollments.schoolClass'])
@@ -57,7 +57,7 @@ class StudentWebController extends Controller
             ->orderBy('first_name')
             ->get();
 
-        return $csvExport->download('eleves-' . now()->format('Ymd-His') . '.csv', [
+        return $xlsxExport->download('eleves-' . now()->format('Ymd-His') . '.xlsx', [
             'Matricule',
             'Nom',
             'Prenom',

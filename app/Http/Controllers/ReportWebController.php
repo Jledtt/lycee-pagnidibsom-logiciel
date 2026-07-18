@@ -8,7 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
-use App\Services\CsvExportService;
+use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
@@ -57,7 +57,7 @@ class ReportWebController extends Controller
             ->stream($filename);
     }
 
-    public function classListExport(Request $request, CsvExportService $csvExport)
+    public function classListExport(Request $request, XlsxExportService $xlsxExport)
     {
         $academicYear = $this->activeAcademicYear();
         $classes = $this->classes($academicYear);
@@ -66,9 +66,9 @@ class ReportWebController extends Controller
         abort_if(! $schoolClass, 404, 'Classe introuvable.');
 
         $schoolClass = $this->loadClassList($schoolClass);
-        $filename = 'liste-eleves-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.csv';
+        $filename = 'liste-eleves-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
 
-        return $csvExport->download($filename, [
+        return $xlsxExport->download($filename, [
             'No',
             'Matricule',
             'Nom et prenom',
@@ -139,7 +139,7 @@ class ReportWebController extends Controller
             ->stream($filename);
     }
 
-    public function paymentSituationExport(Request $request, CsvExportService $csvExport)
+    public function paymentSituationExport(Request $request, XlsxExportService $xlsxExport)
     {
         $academicYear = $this->activeAcademicYear();
         $classes = $this->classes($academicYear);
@@ -149,9 +149,9 @@ class ReportWebController extends Controller
 
         $schoolClass = $this->loadClassList($schoolClass);
         $rows = $this->paymentRows($schoolClass, $academicYear);
-        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.csv';
+        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
 
-        return $csvExport->download($filename, [
+        return $xlsxExport->download($filename, [
             'Matricule',
             'Eleve',
             'Classe',
