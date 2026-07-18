@@ -111,6 +111,7 @@ class GradeWebController extends Controller
             'assessment_date' => ['nullable', 'date'],
         ]);
 
+        $this->abortIfTermClosed((int) $data['term_id']);
         abort_unless($this->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matiere non affectee a cette classe.');
 
         $assessment = Assessment::create([
@@ -130,6 +131,7 @@ class GradeWebController extends Controller
 
     public function updateGrades(Request $request, Assessment $assessment): RedirectResponse
     {
+        $this->abortIfTermClosed($assessment->term_id);
         abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
 
         $data = $request->validate([
@@ -206,6 +208,7 @@ class GradeWebController extends Controller
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse
     {
+        $this->abortIfTermClosed($assessment->term_id);
         abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
 
         $schoolClassId = $assessment->school_class_id;
@@ -230,6 +233,7 @@ class GradeWebController extends Controller
 
     public function unlockAssessment(Assessment $assessment): RedirectResponse
     {
+        $this->abortIfTermClosed($assessment->term_id);
         $assessment->update(['is_locked' => false]);
 
         return $this->backToAssessment($assessment)
@@ -270,6 +274,13 @@ class GradeWebController extends Controller
             ->pluck('student')
             ->filter()
             ->values();
+    }
+
+    private function abortIfTermClosed(int $termId): void
+    {
+        $term = Term::query()->find($termId);
+
+        abort_if($term?->is_closed, 403, 'Cette periode est fermee. La saisie des notes est bloquee.');
     }
 
     private function backToAssessment(Assessment $assessment): RedirectResponse

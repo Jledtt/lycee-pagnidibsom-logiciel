@@ -112,6 +112,12 @@
                                 <span>Comptes utilisateurs, roles et acces internes.</span>
                             </a>
                         @endcan
+                        @can('academic_years.manage')
+                            <a class="module" href="{{ route('academic-years.index') }}">
+                                <strong>Annees scolaires</strong>
+                                <span>Activation des annees, trimestres et clotures.</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
 

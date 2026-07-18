@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountingWebController;
+use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\EnrollmentWebController;
@@ -62,6 +63,30 @@ Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
 Route::put('/settings', [SchoolSettingWebController::class, 'update'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('settings.update');
+
+Route::get('/academic-years', [AcademicYearWebController::class, 'index'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.index');
+
+Route::post('/academic-years', [AcademicYearWebController::class, 'store'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.store');
+
+Route::put('/academic-years/{academicYear}', [AcademicYearWebController::class, 'update'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.update');
+
+Route::put('/academic-years/{academicYear}/activate', [AcademicYearWebController::class, 'activate'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.activate');
+
+Route::post('/academic-years/terms', [AcademicYearWebController::class, 'storeTerm'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.terms.store');
+
+Route::put('/academic-years/terms/{term}', [AcademicYearWebController::class, 'updateTerm'])
+    ->middleware(['auth', 'permission:academic_years.manage'])
+    ->name('academic-years.terms.update');
 
 Route::get('/subjects', [SubjectWebController::class, 'index'])
     ->middleware(['auth', 'permission:settings.manage'])

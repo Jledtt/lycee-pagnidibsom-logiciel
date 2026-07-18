@@ -53,6 +53,9 @@
                 @can('settings.manage')
                     <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
                 @endcan
+                @can('academic_years.manage')
+                    <a class="{{ ($active ?? '') === 'academic-years' ? 'active' : '' }}" href="{{ route('academic-years.index') }}"><span class="nav-dot"></span>Annees scolaires</a>
+                @endcan
             </nav>
         </aside>
 
