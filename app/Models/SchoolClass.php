@@ -47,9 +47,4 @@ class SchoolClass extends Model
     {
         return $this->hasMany(Assessment::class);
     }
-
-    public function timetables(): HasMany
-    {
-        return $this->hasMany(Timetable::class);
-    }
 }
