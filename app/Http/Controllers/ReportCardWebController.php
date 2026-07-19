@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReportCard\ReportCardSelectionRequest;
 use App\Http\Requests\ReportCard\UpdateReportCardRequest;
 use App\Models\AcademicYear;
+use App\Models\Assessment;
 use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\ReportCard;
@@ -26,8 +27,7 @@ class ReportCardWebController extends Controller
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly ReportCardService $reportCardService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -86,7 +86,7 @@ class ReportCardWebController extends Controller
                 'school_class_id' => $schoolClass->id,
                 'term_id' => $term->id,
             ])
-            ->with('success', count($rows) . ' bulletin(s) genere(s).');
+            ->with('success', count($rows).' bulletin(s) genere(s).');
     }
 
     public function pdf(ReportCard $reportCard)
@@ -94,9 +94,10 @@ class ReportCardWebController extends Controller
         $reportCard->load(['academicYear', 'term', 'student', 'schoolClass.level']);
 
         $subjectRows = $this->subjectRows($reportCard);
-        $filename = 'bulletin-' . Str::slug($reportCard->student->matricule . '-' . $reportCard->term->name) . '.pdf';
+        $filename = 'bulletin-'.Str::slug($reportCard->student->matricule.'-'.$reportCard->term->name).'.pdf';
 
         return Pdf::loadView('report-cards.pdf', [
+            'classStats' => $this->classStats($reportCard),
             'reportCard' => $reportCard,
             'school' => SchoolSetting::query()->first(),
             'subjectRows' => $subjectRows,
@@ -126,11 +127,12 @@ class ReportCardWebController extends Controller
             ->select('report_cards.*')
             ->get()
             ->map(fn (ReportCard $reportCard) => [
+                'classStats' => $this->classStats($reportCard),
                 'reportCard' => $reportCard,
                 'subjectRows' => $this->subjectRows($reportCard),
             ]);
 
-        $filename = 'bulletins-' . Str::slug($schoolClass->name . '-' . $term->name) . '.pdf';
+        $filename = 'bulletins-'.Str::slug($schoolClass->name.'-'.$term->name).'.pdf';
 
         return Pdf::loadView('report-cards.class-pdf', [
             'items' => $reportCards,
@@ -161,7 +163,7 @@ class ReportCardWebController extends Controller
             ->select('report_cards.*')
             ->get();
 
-        return $xlsxExport->download('bulletins-' . Str::slug($schoolClass->name . '-' . $term->name) . '.xlsx', [
+        return $xlsxExport->download('bulletins-'.Str::slug($schoolClass->name.'-'.$term->name).'.xlsx', [
             'Rang',
             'Matricule',
             'Eleve',
@@ -242,11 +244,80 @@ class ReportCardWebController extends Controller
                 return [
                     'subject' => $classSubject->subject,
                     'coefficient' => $coefficient,
+                    'devoir_average' => $this->assessmentAverage($reportCard, $classSubject->subject_id, ['interrogation', 'devoir']),
+                    'composition_average' => $this->assessmentAverage($reportCard, $classSubject->subject_id, ['composition']),
                     'average' => $average,
                     'points' => $average === null ? null : round($average * $coefficient, 2),
                     'appreciation' => $this->appreciation($average),
+                    'teacher' => $this->teacherName($reportCard, $classSubject->subject_id),
                 ];
             });
+    }
+
+    private function assessmentAverage(ReportCard $reportCard, int $subjectId, array $typeNames): ?float
+    {
+        $assessments = Assessment::query()
+            ->with(['assessmentType', 'grades' => fn ($query) => $query->where('student_id', $reportCard->student_id)])
+            ->where('term_id', $reportCard->term_id)
+            ->where('school_class_id', $reportCard->school_class_id)
+            ->where('subject_id', $subjectId)
+            ->get()
+            ->filter(function (Assessment $assessment) use ($typeNames) {
+                $typeName = Str::lower($assessment->assessmentType?->name ?? '');
+
+                return collect($typeNames)->contains(fn (string $name) => str_contains($typeName, $name));
+            });
+
+        $weightedTotal = 0.0;
+        $weights = 0.0;
+
+        foreach ($assessments as $assessment) {
+            $grade = $assessment->grades->first();
+
+            if ($grade === null || $grade->is_absent || $grade->score === null) {
+                continue;
+            }
+
+            $normalizedScore = ((float) $grade->score / (float) $assessment->max_score) * 20;
+            $weight = (float) $assessment->assessmentType->weight;
+            $weightedTotal += $normalizedScore * $weight;
+            $weights += $weight;
+        }
+
+        if ($weights <= 0) {
+            return null;
+        }
+
+        return round($weightedTotal / $weights, 2);
+    }
+
+    private function teacherName(ReportCard $reportCard, int $subjectId): string
+    {
+        $assessment = Assessment::query()
+            ->with('teacher')
+            ->where('term_id', $reportCard->term_id)
+            ->where('school_class_id', $reportCard->school_class_id)
+            ->where('subject_id', $subjectId)
+            ->whereNotNull('teacher_id')
+            ->first();
+
+        return $assessment?->teacher?->name ?? '-';
+    }
+
+    private function classStats(ReportCard $reportCard): array
+    {
+        $cards = ReportCard::query()
+            ->where('academic_year_id', $reportCard->academic_year_id)
+            ->where('term_id', $reportCard->term_id)
+            ->where('school_class_id', $reportCard->school_class_id)
+            ->whereNotNull('general_average')
+            ->get();
+
+        return [
+            'average' => $cards->isEmpty() ? null : round($cards->avg(fn (ReportCard $card) => (float) $card->general_average), 2),
+            'best' => $cards->sortByDesc(fn (ReportCard $card) => (float) $card->general_average)->first(),
+            'weakest' => $cards->sortBy(fn (ReportCard $card) => (float) $card->general_average)->first(),
+        ];
     }
 
     private function appreciation(?float $average): string

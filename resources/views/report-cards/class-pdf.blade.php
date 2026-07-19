@@ -4,123 +4,48 @@
     <meta charset="utf-8">
     <title>Bulletins de classe</title>
     <style>
-        @page { margin: 18px 22px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
+        @page { margin: 16px 20px; }
+        body { margin: 0; color: #111; font-family: "DejaVu Serif", serif; font-size: 9px; }
         table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 17px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 18px 0 12px; text-align: center; font-size: 19px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
-        .summary { margin-bottom: 10px; }
-        .summary td { border: 1px solid #000; padding: 6px 8px; font-weight: bold; }
-        .list th, .list td { border: 1px solid #000; padding: 6px 5px; vertical-align: top; }
-        .list th { background: #f1f1f1; text-align: left; font-size: 9px; text-transform: uppercase; }
+        .bulletin-header td { vertical-align: middle; }
+        .logo-cell { width: 120px; text-align: center; }
+        .logo { width: 95px; height: 95px; object-fit: contain; }
+        .school-box { border: 1.4px solid #111; text-align: center; padding: 8px 10px; background: #f6d4c1; line-height: 1.25; }
+        .school-box h1 { margin: 0 0 4px; font-size: 19px; font-family: "DejaVu Sans", sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .year-cell { width: 150px; text-align: center; font-size: 11px; }
+        .identity { margin-top: 4px; border: 1.2px solid #111; font-size: 10px; }
+        .identity td { padding: 3px 6px; }
+        .bulletin-title { margin: 5px 0 2px; text-align: center; font-weight: bold; text-decoration: underline; font-size: 16px; }
+        .marks th, .marks td { border: 1px solid #111; padding: 3px 4px; vertical-align: middle; }
+        .marks th { font-weight: bold; text-align: center; background: #f4f4f4; }
+        .discipline { width: 27%; text-align: left !important; }
         .center { text-align: center; }
-        .decision { margin-top: 12px; }
-        .decision td { border: 1px solid #000; padding: 8px; height: 48px; vertical-align: top; }
-        .footer { margin-top: 18px; font-size: 10px; }
+        .right { text-align: right; }
+        .strong { font-weight: bold; }
+        .group-row td { background: #e9e9e9; font-weight: bold; font-size: 10px; }
+        .total-row td { font-weight: bold; }
+        .footer-grid { margin-top: 0; border: 1px solid #111; }
+        .footer-grid td { border: 1px solid #111; padding: 5px 6px; vertical-align: top; }
+        .sanctions { width: 36%; }
+        .section-label { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 4px; }
+        .sanction-line { clear: both; height: 18px; line-height: 18px; }
+        .sanction-line span:first-child { float: left; }
+        .box { float: right; display: inline-block; width: 20px; height: 16px; border: 1px solid #111; text-align: center; line-height: 16px; font-weight: bold; }
+        .small-stats { width: 17%; text-align: center; }
+        .observations { width: 30%; text-align: center; }
+        .signature { text-align: center; height: 82px; font-style: italic; }
+        .bulletin-note { margin-top: 4px; text-align: center; font-size: 9px; font-style: italic; }
         .page-break { page-break-after: always; }
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
-    @php($statusLabels = ['draft' => 'Brouillon', 'validated' => 'Valide', 'published' => 'Publie'])
-
     @forelse ($items as $item)
-        @php($reportCard = $item['reportCard'])
-        @php($subjectRows = $item['subjectRows'])
-
-        <table class="header">
-            <tr>
-                <td style="width:78px">
-                    <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-                </td>
-                <td class="school">
-                    <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
-                    <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                    <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                    <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-                </td>
-                <td class="meta" style="width:220px">
-                    <strong>Annee scolaire : {{ $reportCard->academicYear?->name ?? '-' }}</strong><br>
-                    Classe : {{ $reportCard->schoolClass->name }}<br>
-                    Trimestre : {{ $reportCard->term->name }}
-                </td>
-            </tr>
-        </table>
-
-        <div class="title">Bulletin de notes</div>
-
-        <table class="summary">
-            <tr>
-                <td>Eleve : {{ $reportCard->student->full_name }}</td>
-                <td>Matricule : {{ $reportCard->student->matricule }}</td>
-                <td>Classe : {{ $reportCard->schoolClass->name }}</td>
-            </tr>
-            <tr>
-                <td>Moyenne generale : {{ $reportCard->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') . ' / 20' }}</td>
-                <td>Rang : {{ $reportCard->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}</td>
-                <td>Statut : {{ $statusLabels[$reportCard->status] ?? ucfirst($reportCard->status) }}</td>
-            </tr>
-            <tr>
-                <td colspan="3">Decision du conseil : <strong>{{ $reportCard->decision ?: '-' }}</strong></td>
-            </tr>
-        </table>
-
-        <table class="list">
-            <thead>
-                <tr>
-                    <th>Matiere</th>
-                    <th style="width:70px" class="center">Coef.</th>
-                    <th style="width:90px" class="center">Moyenne</th>
-                    <th style="width:90px" class="center">Points</th>
-                    <th style="width:120px">Appreciation</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($subjectRows as $row)
-                    <tr>
-                        <td><strong>{{ $row['subject']->name }}</strong></td>
-                        <td class="center">{{ number_format($row['coefficient'], 2, ',', ' ') }}</td>
-                        <td class="center">{{ $row['average'] === null ? '-' : number_format($row['average'], 2, ',', ' ') }}</td>
-                        <td class="center">{{ $row['points'] === null ? '-' : number_format($row['points'], 2, ',', ' ') }}</td>
-                        <td>{{ $row['appreciation'] }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="center">Aucune matiere active pour cette classe.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <table class="decision">
-            <tr>
-                <td style="width:50%">
-                    <strong>Appreciation generale</strong><br>
-                    {{ $reportCard->appreciation ?: '-' }}
-                    @if ($reportCard->principal_observation)
-                        <br><br><strong>Observation</strong><br>
-                        {{ $reportCard->principal_observation }}
-                    @endif
-                </td>
-                <td>
-                    <strong>Visa de l'administration</strong><br>
-                    @if ($reportCard->validated_at)
-                        Valide le {{ $reportCard->validated_at->format('d/m/Y') }}
-                    @endif
-                </td>
-            </tr>
-        </table>
-
-        <table class="footer">
-            <tr>
-                <td>Document genere par le logiciel de gestion scolaire.</td>
-                <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
-            </tr>
-        </table>
+        @include('report-cards._bulletin', [
+            'classStats' => $item['classStats'],
+            'reportCard' => $item['reportCard'],
+            'school' => $school,
+            'subjectRows' => $item['subjectRows'],
+        ])
 
         @if (! $loop->last)
             <div class="page-break"></div>
