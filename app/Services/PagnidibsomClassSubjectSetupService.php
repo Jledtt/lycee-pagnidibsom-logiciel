@@ -40,7 +40,7 @@ class PagnidibsomClassSubjectSetupService
                     ],
                 );
 
-                foreach ($plan['subjects'] as $subjectCode) {
+                foreach ($plan['subjects'] as $subjectCode => $coefficient) {
                     $subject = $this->subject($subjectCode);
 
                     ClassSubject::query()->updateOrCreate(
@@ -49,7 +49,7 @@ class PagnidibsomClassSubjectSetupService
                             'subject_id' => $subject->id,
                         ],
                         [
-                            'coefficient' => 1,
+                            'coefficient' => $coefficient,
                             'is_active' => true,
                         ],
                     );
@@ -77,7 +77,16 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 1,
                 'code' => '6E',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'ANG', 'SVT', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 3,
+                    'SVT' => 2,
+                    'TIC' => 2,
+                ],
             ],
             '5e' => [
                 'level' => '5e',
@@ -85,7 +94,16 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 2,
                 'code' => '5E',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'ANG', 'SVT', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 3,
+                    'SVT' => 2,
+                    'TIC' => 2,
+                ],
             ],
             '4e' => [
                 'level' => '4e',
@@ -93,7 +111,18 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 3,
                 'code' => '4E',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'PC', 'ANG', 'SVT', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ALL' => 2,
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 3,
+                    'PC' => 2,
+                    'SVT' => 2,
+                    'TIC' => 2,
+                ],
             ],
             '3e' => [
                 'level' => '3e',
@@ -101,7 +130,18 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 4,
                 'code' => '3E',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'PC', 'ANG', 'SVT', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ALL' => 2,
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 3,
+                    'PC' => 2,
+                    'SVT' => 2,
+                    'TIC' => 2,
+                ],
             ],
             '2nde A' => [
                 'level' => '2nde',
@@ -109,7 +149,19 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 5,
                 'code' => '2NDA',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'ANG', 'ALL', 'PHILO', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ALL' => 3,
+                    'ANG' => 4,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 5,
+                    'HG' => 3,
+                    'MATH' => 3,
+                    'PC' => 2,
+                    'PHILO' => 2,
+                    'SVT' => 2,
+                    'TIC' => 2,
+                ],
             ],
             '2nde C' => [
                 'level' => '2nde',
@@ -117,26 +169,65 @@ class PagnidibsomClassSubjectSetupService
                 'position' => 5,
                 'code' => '2NDC',
                 'capacity' => 60,
-                'subjects' => ['FR', 'MATH', 'ANG', 'SVT', 'PC', 'PHILO', 'HG', 'EPS', 'ECM'],
+                'subjects' => [
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 6,
+                    'PC' => 6,
+                    'PHILO' => 2,
+                    'SVT' => 3,
+                    'TIC' => 2,
+                ],
             ],
         ];
+    }
+
+    public function suggestedSubjectsForClass(SchoolClass $schoolClass): array
+    {
+        $plan = $this->classPlan()[$schoolClass->name] ?? null;
+
+        if (! $plan) {
+            return [];
+        }
+
+        return collect($plan['subjects'])
+            ->map(function (int|float $coefficient, string $code): array {
+                $subject = $this->subjects()[$code];
+
+                return [
+                    'name' => $subject['name'],
+                    'code' => $code,
+                    'coefficient' => $coefficient,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function subject(string $code): Subject
     {
         $data = $this->subjects()[$code];
 
-        $subject = Subject::query()->firstOrCreate(
-            ['name' => $data['name']],
-            [
+        $subject = Subject::query()
+            ->where('code', $code)
+            ->orWhere('name', $data['name'])
+            ->first();
+
+        if (! $subject) {
+            $subject = Subject::query()->create([
+                'name' => $data['name'],
                 'code' => $code,
                 'status' => 'active',
-            ],
-        );
+            ]);
+        }
 
-        if ($subject->code !== $code || $subject->status !== 'active') {
+        if ($subject->name !== $data['name'] || $subject->code !== $code || $subject->status !== 'active') {
             $subject->forceFill([
-                'code' => $subject->code ?: $code,
+                'name' => $data['name'],
+                'code' => $code,
                 'status' => 'active',
             ])->save();
         }
@@ -157,6 +248,7 @@ class PagnidibsomClassSubjectSetupService
             'PC' => ['name' => 'Physique-Chimie'],
             'ALL' => ['name' => 'Allemand'],
             'PHILO' => ['name' => 'Philosophie'],
+            'TIC' => ['name' => 'Technologies de l information et de la communication'],
         ];
     }
 }

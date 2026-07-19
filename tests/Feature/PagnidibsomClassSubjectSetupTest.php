@@ -28,7 +28,7 @@ class PagnidibsomClassSubjectSetupTest extends TestCase
         $this->assertDatabaseHas('school_classes', ['name' => '2nde C', 'code' => '2NDC']);
 
         $this->assertSame(6, SchoolClass::query()->count());
-        $this->assertSame(10, Subject::query()->whereIn('code', [
+        $this->assertSame(11, Subject::query()->whereIn('code', [
             'FR',
             'MATH',
             'ANG',
@@ -39,14 +39,25 @@ class PagnidibsomClassSubjectSetupTest extends TestCase
             'PC',
             'ALL',
             'PHILO',
+            'TIC',
         ])->count());
 
-        $this->assertSame(7, $this->subjectCountForClass('6e'));
-        $this->assertSame(7, $this->subjectCountForClass('5e'));
-        $this->assertSame(8, $this->subjectCountForClass('4e'));
-        $this->assertSame(8, $this->subjectCountForClass('3e'));
-        $this->assertSame(8, $this->subjectCountForClass('2nde A'));
-        $this->assertSame(9, $this->subjectCountForClass('2nde C'));
+        $this->assertSame(8, $this->subjectCountForClass('6e'));
+        $this->assertSame(8, $this->subjectCountForClass('5e'));
+        $this->assertSame(10, $this->subjectCountForClass('4e'));
+        $this->assertSame(10, $this->subjectCountForClass('3e'));
+        $this->assertSame(11, $this->subjectCountForClass('2nde A'));
+        $this->assertSame(10, $this->subjectCountForClass('2nde C'));
+
+        $this->assertSame(18.0, $this->coefficientTotalForClass('6e'));
+        $this->assertSame(22.0, $this->coefficientTotalForClass('4e'));
+        $this->assertSame(30.0, $this->coefficientTotalForClass('2nde A'));
+        $this->assertSame(30.0, $this->coefficientTotalForClass('2nde C'));
+
+        $this->assertSame(6.0, $this->coefficientForClassSubject('2nde C', 'MATH'));
+        $this->assertSame(6.0, $this->coefficientForClassSubject('2nde C', 'PC'));
+        $this->assertSame(5.0, $this->coefficientForClassSubject('2nde A', 'FR'));
+        $this->assertSame(2.0, $this->coefficientForClassSubject('3e', 'TIC'));
     }
 
     private function subjectCountForClass(string $className): int
@@ -57,5 +68,27 @@ class PagnidibsomClassSubjectSetupTest extends TestCase
             ->where('school_class_id', $schoolClass->id)
             ->where('is_active', true)
             ->count();
+    }
+
+    private function coefficientTotalForClass(string $className): float
+    {
+        $schoolClass = SchoolClass::query()->where('name', $className)->firstOrFail();
+
+        return (float) ClassSubject::query()
+            ->where('school_class_id', $schoolClass->id)
+            ->where('is_active', true)
+            ->sum('coefficient');
+    }
+
+    private function coefficientForClassSubject(string $className, string $subjectCode): float
+    {
+        $schoolClass = SchoolClass::query()->where('name', $className)->firstOrFail();
+        $subject = Subject::query()->where('code', $subjectCode)->firstOrFail();
+
+        return (float) ClassSubject::query()
+            ->where('school_class_id', $schoolClass->id)
+            ->where('subject_id', $subject->id)
+            ->where('is_active', true)
+            ->value('coefficient');
     }
 }

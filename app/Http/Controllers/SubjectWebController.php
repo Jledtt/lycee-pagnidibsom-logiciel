@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Services\PagnidibsomClassSubjectSetupService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -155,13 +156,26 @@ class SubjectWebController extends Controller
         $created = 0;
 
         foreach ($this->suggestedSubjectsForClass($schoolClass) as $item) {
-            $subject = Subject::firstOrCreate(
-                ['name' => $item['name']],
-                [
+            $subject = Subject::query()
+                ->where('code', $item['code'])
+                ->orWhere('name', $item['name'])
+                ->first();
+
+            if (! $subject) {
+                $subject = Subject::create([
+                    'name' => $item['name'],
                     'code' => $item['code'],
                     'status' => 'active',
-                ],
-            );
+                ]);
+            }
+
+            if ($subject->name !== $item['name'] || $subject->code !== $item['code'] || $subject->status !== 'active') {
+                $subject->forceFill([
+                    'name' => $item['name'],
+                    'code' => $item['code'],
+                    'status' => 'active',
+                ])->save();
+            }
 
             ClassSubject::updateOrCreate(
                 [
@@ -178,7 +192,7 @@ class SubjectWebController extends Controller
         }
 
         return $this->backToIndex($schoolClass->id)
-            ->with('success', $created . ' matiere(s) proposees appliquees a ' . $schoolClass->name . '.');
+            ->with('success', $created.' matiere(s) proposees appliquees a '.$schoolClass->name.'.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -199,7 +213,14 @@ class SubjectWebController extends Controller
 
     private function suggestedSubjectsForClass(SchoolClass $schoolClass): array
     {
-        $name = Str::lower($schoolClass->name . ' ' . ($schoolClass->level?->name ?? ''));
+        $officialSubjects = app(PagnidibsomClassSubjectSetupService::class)
+            ->suggestedSubjectsForClass($schoolClass);
+
+        if ($officialSubjects !== []) {
+            return $officialSubjects;
+        }
+
+        $name = Str::lower($schoolClass->name.' '.($schoolClass->level?->name ?? ''));
 
         if (str_contains($name, 'bep') || str_contains($name, 'genie') || str_contains($name, 'electro')) {
             return [
