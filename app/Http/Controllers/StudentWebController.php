@@ -58,7 +58,7 @@ class StudentWebController extends Controller
             ->orderBy('first_name')
             ->get();
 
-        return $xlsxExport->download('eleves-' . now()->format('Ymd-His') . '.xlsx', [
+        return $xlsxExport->download('eleves-'.now()->format('Ymd-His').'.xlsx', [
             'Matricule',
             'Nom',
             'Prenom',
@@ -78,7 +78,7 @@ class StudentWebController extends Controller
                 $student->matricule,
                 $student->last_name,
                 $student->first_name,
-                $student->gender === 'female' ? 'Fille' : 'Garcon',
+                $student->gender_label,
                 $student->desired_class ?: ($enrollment?->schoolClass?->name ?? ''),
                 $student->birth_date?->format('d/m/Y'),
                 $student->birth_place,
@@ -144,7 +144,7 @@ class StudentWebController extends Controller
     public function registrationSheetPdf(Student $student)
     {
         $data = $this->registrationSheetData($student);
-        $filename = 'fiche-inscription-' . Str::slug($student->matricule . '-' . $student->full_name) . '.pdf';
+        $filename = 'fiche-inscription-'.Str::slug($student->matricule.'-'.$student->full_name).'.pdf';
 
         return Pdf::loadView('students.registration-sheet-pdf', $data)
             ->setPaper('a4')
@@ -225,7 +225,7 @@ class StudentWebController extends Controller
         return $request->validate([
             'first_name' => [$updating ? 'sometimes' : 'required', 'string', 'max:255'],
             'last_name' => [$updating ? 'sometimes' : 'required', 'string', 'max:255'],
-            'gender' => [$updating ? 'sometimes' : 'required', 'in:male,female'],
+            'gender' => ['nullable', 'in:male,female'],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'desired_class' => ['nullable', 'string', 'max:255'],
@@ -270,28 +270,28 @@ class StudentWebController extends Controller
 
     private function attachGuardianIfPresent(Student $student, array $data, string $prefix, string $relationship): void
     {
-        if (blank($data[$prefix . '_phone_primary'] ?? null) || blank($data[$prefix . '_last_name'] ?? null)) {
+        if (blank($data[$prefix.'_phone_primary'] ?? null) || blank($data[$prefix.'_last_name'] ?? null)) {
             return;
         }
 
         $guardian = Guardian::firstOrCreate(
-            ['phone_primary' => $data[$prefix . '_phone_primary']],
+            ['phone_primary' => $data[$prefix.'_phone_primary']],
             [
-                'first_name' => $data[$prefix . '_first_name'] ?? '',
-                'last_name' => $data[$prefix . '_last_name'],
-                'email' => $data[$prefix . '_email'] ?? null,
-                'profession' => $data[$prefix . '_profession'] ?? null,
-                'service' => $data[$prefix . '_service'] ?? null,
+                'first_name' => $data[$prefix.'_first_name'] ?? '',
+                'last_name' => $data[$prefix.'_last_name'],
+                'email' => $data[$prefix.'_email'] ?? null,
+                'profession' => $data[$prefix.'_profession'] ?? null,
+                'service' => $data[$prefix.'_service'] ?? null,
                 'status' => 'active',
             ]
         );
 
         $guardian->update([
-            'first_name' => $data[$prefix . '_first_name'] ?? $guardian->first_name,
-            'last_name' => $data[$prefix . '_last_name'],
-            'email' => $data[$prefix . '_email'] ?? $guardian->email,
-            'profession' => $data[$prefix . '_profession'] ?? $guardian->profession,
-            'service' => $data[$prefix . '_service'] ?? $guardian->service,
+            'first_name' => $data[$prefix.'_first_name'] ?? $guardian->first_name,
+            'last_name' => $data[$prefix.'_last_name'],
+            'email' => $data[$prefix.'_email'] ?? $guardian->email,
+            'profession' => $data[$prefix.'_profession'] ?? $guardian->profession,
+            'service' => $data[$prefix.'_service'] ?? $guardian->service,
         ]);
 
         if (! $student->guardians()->whereKey($guardian->id)->exists()) {

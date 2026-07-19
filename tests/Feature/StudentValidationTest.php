@@ -19,6 +19,7 @@ class StudentValidationTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('students.store'), []);
 
-        $response->assertSessionHasErrors(['first_name', 'last_name', 'gender']);
+        $response->assertSessionHasErrors(['first_name', 'last_name']);
+        $response->assertSessionDoesntHaveErrors(['gender']);
     }
 }

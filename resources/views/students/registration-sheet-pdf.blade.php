@@ -180,7 +180,7 @@
                 <p class="line">Prenom(s): <strong>{{ $student->first_name }}</strong></p>
                 <p class="line">Date de naissance: <strong>{{ $student->birth_date?->format('d/m/Y') }}</strong></p>
                 <p class="line">Lieu de naissance: <strong>{{ $student->birth_place }}</strong></p>
-                <p class="line">Sexe: <strong>{{ $student->gender === 'female' ? 'Fille' : 'Garcon' }}</strong></p>
+                <p class="line">Sexe: <strong>{{ $student->gender_label }}</strong></p>
                 <p class="line">Nationalite: <strong>{{ $student->nationality }}</strong></p>
                 <p class="line">Ethnie: <strong>{{ $student->ethnicity }}</strong></p>
                 <p class="line">Religion: <strong>{{ $student->religion }}</strong></p>

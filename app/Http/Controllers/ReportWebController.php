@@ -12,8 +12,8 @@ use App\Models\SchoolSetting;
 use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -47,7 +47,7 @@ class ReportWebController extends Controller
         abort_if(! $schoolClass, 404, 'Classe introuvable.');
 
         $schoolClass = $this->loadClassList($schoolClass);
-        $filename = 'liste-eleves-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+        $filename = 'liste-eleves-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.pdf';
 
         return Pdf::loadView('reports.class-list-pdf', [
             'academicYear' => $academicYear,
@@ -68,7 +68,7 @@ class ReportWebController extends Controller
         abort_if(! $schoolClass, 404, 'Classe introuvable.');
 
         $schoolClass = $this->loadClassList($schoolClass);
-        $filename = 'liste-eleves-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
+        $filename = 'liste-eleves-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.xlsx';
 
         return $xlsxExport->download($filename, [
             'No',
@@ -87,7 +87,7 @@ class ReportWebController extends Controller
                 $index + 1,
                 $student?->matricule,
                 $student?->full_name,
-                $student?->gender === 'female' ? 'Fille' : 'Garcon',
+                $student?->gender_label ?? 'Non renseigne',
                 $student?->birth_date?->format('d/m/Y'),
                 $guardian?->full_name,
                 $guardian?->phone_primary ?? $student?->home_phone,
@@ -128,7 +128,7 @@ class ReportWebController extends Controller
 
         $schoolClass = $this->loadClassList($schoolClass);
         $rows = $this->paymentRows($schoolClass, $academicYear);
-        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+        $filename = 'situation-paiements-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.pdf';
 
         return Pdf::loadView('reports.payment-situation-pdf', [
             'academicYear' => $academicYear,
@@ -151,7 +151,7 @@ class ReportWebController extends Controller
 
         $schoolClass = $this->loadClassList($schoolClass);
         $rows = $this->paymentRows($schoolClass, $academicYear);
-        $filename = 'situation-paiements-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
+        $filename = 'situation-paiements-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.xlsx';
 
         return $xlsxExport->download($filename, [
             'Matricule',
@@ -207,7 +207,7 @@ class ReportWebController extends Controller
 
         $schoolClass = $this->loadClassList($schoolClass);
         $rows = $this->installmentRows($schoolClass, $academicYear);
-        $filename = 'tranches-paiement-' . Str::slug($schoolClass->name . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+        $filename = 'tranches-paiement-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.pdf';
 
         return Pdf::loadView('reports.installments-pdf', [
             'academicYear' => $academicYear,
@@ -251,7 +251,7 @@ class ReportWebController extends Controller
             $request
         );
         $scope = $schoolClass?->name ?? 'toutes-classes';
-        $filename = 'pieces-manquantes-' . Str::slug($scope . '-' . ($academicYear?->name ?? 'annee')) . '.pdf';
+        $filename = 'pieces-manquantes-'.Str::slug($scope.'-'.($academicYear?->name ?? 'annee')).'.pdf';
 
         return Pdf::loadView('reports.missing-documents-pdf', [
             'academicYear' => $academicYear,
@@ -275,7 +275,7 @@ class ReportWebController extends Controller
             $request
         );
         $scope = $schoolClass?->name ?? 'toutes-classes';
-        $filename = 'pieces-manquantes-' . Str::slug($scope . '-' . ($academicYear?->name ?? 'annee')) . '.xlsx';
+        $filename = 'pieces-manquantes-'.Str::slug($scope.'-'.($academicYear?->name ?? 'annee')).'.xlsx';
 
         return $xlsxExport->download($filename, [
             'Matricule',
@@ -469,13 +469,13 @@ class ReportWebController extends Controller
             ->selectRaw('payments.student_id, payment_lines.fee_schedule_id, sum(payment_lines.amount) as total_paid')
             ->groupBy('payments.student_id', 'payment_lines.fee_schedule_id')
             ->get()
-            ->mapWithKeys(fn ($row) => [$row->student_id . ':' . $row->fee_schedule_id => (float) $row->total_paid]);
+            ->mapWithKeys(fn ($row) => [$row->student_id.':'.$row->fee_schedule_id => (float) $row->total_paid]);
 
         return $schoolClass->enrollments
             ->flatMap(function ($enrollment) use ($paidByStudentAndSchedule, $schedules) {
                 return $schedules->map(function (FeeSchedule $schedule) use ($enrollment, $paidByStudentAndSchedule) {
                     $expected = (float) $schedule->amount;
-                    $paid = (float) ($paidByStudentAndSchedule[$enrollment->student_id . ':' . $schedule->id] ?? 0);
+                    $paid = (float) ($paidByStudentAndSchedule[$enrollment->student_id.':'.$schedule->id] ?? 0);
                     $balance = max($expected - $paid, 0);
 
                     return [
@@ -507,7 +507,7 @@ class ReportWebController extends Controller
             ->get();
 
         return $requiredDocuments->reportRows($enrollments)
-            ->sortBy(fn (array $row) => ($row['class']?->name ?? '') . '|' . Str::lower($row['student']?->full_name ?? ''))
+            ->sortBy(fn (array $row) => ($row['class']?->name ?? '').'|'.Str::lower($row['student']?->full_name ?? ''))
             ->values();
     }
 
@@ -581,7 +581,7 @@ class ReportWebController extends Controller
             ->sortBy(function (array $row) {
                 $order = ['unpaid' => 0, 'partial' => 1, 'paid' => 2];
 
-                return ($order[$row['status']['key']] ?? 9) . '|' . Str::lower($row['student']->full_name);
+                return ($order[$row['status']['key']] ?? 9).'|'.Str::lower($row['student']->full_name);
             })
             ->values();
     }

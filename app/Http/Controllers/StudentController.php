@@ -32,7 +32,7 @@ class StudentController extends Controller
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'gender' => ['required', 'in:male,female'],
+            'gender' => ['nullable', 'in:male,female'],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],
@@ -61,7 +61,7 @@ class StudentController extends Controller
         $data = $request->validate([
             'first_name' => ['sometimes', 'required', 'string', 'max:255'],
             'last_name' => ['sometimes', 'required', 'string', 'max:255'],
-            'gender' => ['sometimes', 'required', 'in:male,female'],
+            'gender' => ['nullable', 'in:male,female'],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],

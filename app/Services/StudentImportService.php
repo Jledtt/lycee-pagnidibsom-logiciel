@@ -16,9 +16,7 @@ use ZipArchive;
 
 class StudentImportService
 {
-    public function __construct(private readonly MatriculeGeneratorService $matriculeGenerator)
-    {
-    }
+    public function __construct(private readonly MatriculeGeneratorService $matriculeGenerator) {}
 
     public function templateHeaders(): array
     {
@@ -131,6 +129,7 @@ class StudentImportService
 
                 if ($this->existingDuplicate($data)) {
                     $skipped++;
+
                     continue;
                 }
 
@@ -171,7 +170,7 @@ class StudentImportService
         }
 
         if (isset($seen[$duplicateKey])) {
-            $errors[] = 'Doublon dans le fichier avec la ligne ' . $seen[$duplicateKey] . '.';
+            $errors[] = 'Doublon dans le fichier avec la ligne '.$seen[$duplicateKey].'.';
         } elseif ($duplicateKey !== '') {
             $seen[$duplicateKey] = $lineNumber;
         }
@@ -188,7 +187,7 @@ class StudentImportService
 
         return [
             'line' => $lineNumber,
-            'display_name' => trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')),
+            'display_name' => trim(($data['first_name'] ?? '').' '.($data['last_name'] ?? '')),
             'class_label' => $data['desired_class'] ?? '',
             'status' => $status,
             'errors' => $errors,
@@ -247,10 +246,6 @@ class StudentImportService
             $errors[] = 'Prenom obligatoire.';
         }
 
-        if (blank($data['gender'])) {
-            $errors[] = 'Sexe obligatoire ou invalide. Utilise Fille/Garcon.';
-        }
-
         if (($data['birth_date'] ?? null) === false) {
             $errors[] = 'Date de naissance invalide. Format conseille: jj/mm/aaaa.';
         }
@@ -287,8 +282,8 @@ class StudentImportService
 
     private function attachGuardian(Student $student, array $data, string $prefix, string $relationship): void
     {
-        $phone = $data[$prefix . '_phone_primary'] ?? null;
-        $lastName = $data[$prefix . '_last_name'] ?? null;
+        $phone = $data[$prefix.'_phone_primary'] ?? null;
+        $lastName = $data[$prefix.'_last_name'] ?? null;
 
         if (blank($phone) || blank($lastName)) {
             return;
@@ -297,19 +292,19 @@ class StudentImportService
         $guardian = Guardian::query()->firstOrCreate(
             ['phone_primary' => $phone],
             [
-                'first_name' => $data[$prefix . '_first_name'] ?? '',
+                'first_name' => $data[$prefix.'_first_name'] ?? '',
                 'last_name' => $lastName,
-                'profession' => $data[$prefix . '_profession'] ?? null,
-                'service' => $data[$prefix . '_service'] ?? null,
+                'profession' => $data[$prefix.'_profession'] ?? null,
+                'service' => $data[$prefix.'_service'] ?? null,
                 'status' => 'active',
             ],
         );
 
         $guardian->update([
-            'first_name' => $data[$prefix . '_first_name'] ?? $guardian->first_name,
+            'first_name' => $data[$prefix.'_first_name'] ?? $guardian->first_name,
             'last_name' => $lastName,
-            'profession' => $data[$prefix . '_profession'] ?? $guardian->profession,
-            'service' => $data[$prefix . '_service'] ?? $guardian->service,
+            'profession' => $data[$prefix.'_profession'] ?? $guardian->profession,
+            'service' => $data[$prefix.'_service'] ?? $guardian->service,
         ]);
 
         $student->guardians()->syncWithoutDetaching([
@@ -375,7 +370,7 @@ class StudentImportService
 
     private function readXlsxRows(string $path): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         if ($zip->open($path) !== true) {
             return [];
@@ -422,7 +417,7 @@ class StudentImportService
     private function readPdfRows(string $path): array
     {
         try {
-            $text = (new PdfTextParser())->parseFile($path)->getText();
+            $text = (new PdfTextParser)->parseFile($path)->getText();
         } catch (\Throwable) {
             return [];
         }
@@ -478,6 +473,7 @@ class StudentImportService
         foreach ($document->si as $item) {
             if (isset($item->t)) {
                 $sharedStrings[] = (string) $item->t;
+
                 continue;
             }
 
@@ -586,7 +582,7 @@ class StudentImportService
             return '';
         }
 
-        return $this->normalizeKey($data['first_name'] . ' ' . $data['last_name'] . ' ' . ($data['birth_date'] ?? ''));
+        return $this->normalizeKey($data['first_name'].' '.$data['last_name'].' '.($data['birth_date'] ?? ''));
     }
 
     private function normalizeGender(?string $value): ?string

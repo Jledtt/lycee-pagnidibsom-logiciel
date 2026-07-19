@@ -66,7 +66,7 @@
                         <tr>
                             <td>{{ $student->matricule }}</td>
                             <td><strong>{{ $student->full_name }}</strong></td>
-                            <td>{{ $student->gender === 'female' ? 'Fille' : 'Garcon' }}</td>
+                            <td>{{ $student->gender_label }}</td>
                             <td>{{ $student->desired_class ?: ($enrollment?->schoolClass?->name ?? '-') }}</td>
                             <td>{{ $guardian?->full_name ?? '-' }}</td>
                             <td><span class="badge">{{ $student->status }}</span></td>

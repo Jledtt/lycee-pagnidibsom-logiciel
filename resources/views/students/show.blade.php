@@ -44,7 +44,7 @@
             </div>
             <div class="detail-item">
                 <span>Sexe</span>
-                <strong>{{ $student->gender === 'female' ? 'Fille' : 'Garcon' }}</strong>
+                <strong>{{ $student->gender_label }}</strong>
             </div>
             <div class="detail-item">
                 <span>Classe demandee</span>

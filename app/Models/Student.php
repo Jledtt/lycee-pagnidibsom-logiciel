@@ -86,6 +86,24 @@ class Student extends Model
 
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return trim($this->first_name.' '.$this->last_name);
+    }
+
+    public function getGenderLabelAttribute(): string
+    {
+        return match ($this->gender) {
+            'female' => 'Fille',
+            'male' => 'Garcon',
+            default => 'Non renseigne',
+        };
+    }
+
+    public function getGenderShortLabelAttribute(): string
+    {
+        return match ($this->gender) {
+            'female' => 'F',
+            'male' => 'G',
+            default => '-',
+        };
     }
 }

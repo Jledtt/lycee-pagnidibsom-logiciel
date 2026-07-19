@@ -105,7 +105,7 @@
                     <td class="center">{{ $loop->iteration }}</td>
                     <td>{{ $student?->matricule }}</td>
                     <td><strong>{{ $student?->full_name }}</strong></td>
-                    <td class="center">{{ $student?->gender === 'female' ? 'F' : 'G' }}</td>
+                    <td class="center">{{ $student?->gender_short_label ?? '-' }}</td>
                     <td>{{ $student?->birth_date?->format('d/m/Y') ?? '-' }}</td>
                     <td>{{ $guardian?->full_name ?? '-' }}</td>
                     <td>{{ $guardian?->phone_primary ?? $student?->home_phone ?? '-' }}</td>

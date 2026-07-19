@@ -48,8 +48,8 @@
 
         <div class="field">
             <label for="gender">Sexe</label>
-            <select id="gender" name="gender" required>
-                <option value="">Choisir</option>
+            <select id="gender" name="gender">
+                <option value="">Non renseigne</option>
                 <option value="male" @selected(old('gender', $student->gender) === 'male')>Garcon</option>
                 <option value="female" @selected(old('gender', $student->gender) === 'female')>Fille</option>
             </select>
