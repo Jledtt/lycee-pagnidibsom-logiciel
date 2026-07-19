@@ -40,4 +40,9 @@ class AcademicYear extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function timetables(): HasMany
+    {
+        return $this->hasMany(Timetable::class);
+    }
 }

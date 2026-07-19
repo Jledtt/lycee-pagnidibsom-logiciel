@@ -1,0 +1,245 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AcademicYear;
+use App\Models\SchoolClass;
+use App\Models\Timetable;
+use App\Services\TimetableTemplateService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class TimetableWebController extends Controller
+{
+    public function __construct(private readonly TimetableTemplateService $templates)
+    {
+    }
+
+    public function index(Request $request): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $selectedClass = $this->selectedClass($request, $classes);
+
+        $timetable = $selectedClass
+            ? Timetable::query()
+                ->with(['schoolClass.level', 'academicYear', 'entries'])
+                ->where('academic_year_id', $academicYear?->id)
+                ->where('school_class_id', $selectedClass->id)
+                ->first()
+            : null;
+
+        $timetables = Timetable::query()
+            ->with(['schoolClass.level', 'academicYear'])
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return view('timetables.index', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'selectedClass' => $selectedClass,
+            'timetable' => $timetable,
+            'timetables' => $timetables,
+            'days' => $this->templates->days(),
+            'grid' => $timetable ? $this->grid($timetable) : [],
+            'canApplyExample' => $this->templates->classHasExample($selectedClass),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        $data = $request->validate([
+            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $timetable = Timetable::query()->updateOrCreate(
+            [
+                'academic_year_id' => $academicYear->id,
+                'school_class_id' => $data['school_class_id'],
+            ],
+            [
+                'title' => $data['title'] ?: 'Emploi du temps',
+                'status' => 'draft',
+                'created_by' => $request->user()->id,
+            ],
+        );
+
+        if ($timetable->entries()->doesntExist()) {
+            $this->templates->seedBlankEntries($timetable);
+        }
+
+        return redirect()
+            ->route('timetables.edit', $timetable)
+            ->with('success', 'Emploi du temps cree. Tu peux maintenant remplir la grille.');
+    }
+
+    public function edit(Timetable $timetable): View
+    {
+        $timetable->load(['schoolClass.level', 'academicYear', 'entries']);
+
+        return view('timetables.edit', [
+            'timetable' => $timetable,
+            'days' => $this->templates->days(),
+            'grid' => $this->grid($timetable),
+            'subjectOptions' => $this->templates->subjectOptions(),
+        ]);
+    }
+
+    public function update(Request $request, Timetable $timetable): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'principal_teacher' => ['nullable', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:3000'],
+            'status' => ['required', 'in:draft,active,archived'],
+            'entries' => ['required', 'array'],
+            'entries.*.sort_order' => ['required', 'integer', 'min:1', 'max:99'],
+            'entries.*.period_label' => ['required', 'string', 'max:40'],
+            'entries.*.starts_at' => ['nullable', 'date_format:H:i'],
+            'entries.*.ends_at' => ['nullable', 'date_format:H:i'],
+            'entries.*.day_of_week' => ['required', 'string', 'max:20'],
+            'entries.*.subject_name' => ['nullable', 'string', 'max:120'],
+            'entries.*.teacher_name' => ['nullable', 'string', 'max:160'],
+            'entries.*.room' => ['nullable', 'string', 'max:60'],
+            'entries.*.is_break' => ['nullable', 'boolean'],
+        ]);
+
+        $timetable->update([
+            'title' => $data['title'],
+            'principal_teacher' => $data['principal_teacher'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'status' => $data['status'],
+        ]);
+
+        $entries = collect($data['entries'])
+            ->map(fn (array $entry) => [
+                'sort_order' => (int) $entry['sort_order'],
+                'period_label' => $entry['period_label'],
+                'starts_at' => $entry['starts_at'] ?: null,
+                'ends_at' => $entry['ends_at'] ?: null,
+                'day_of_week' => $entry['day_of_week'],
+                'subject_name' => filled($entry['subject_name'] ?? null) ? trim($entry['subject_name']) : null,
+                'teacher_name' => filled($entry['teacher_name'] ?? null) ? trim($entry['teacher_name']) : null,
+                'room' => filled($entry['room'] ?? null) ? trim($entry['room']) : null,
+                'is_break' => (bool) ($entry['is_break'] ?? false),
+            ])
+            ->values()
+            ->all();
+
+        $timetable->entries()->delete();
+        $timetable->entries()->createMany($entries);
+
+        return redirect()
+            ->route('timetables.edit', $timetable)
+            ->with('success', 'Emploi du temps mis a jour.');
+    }
+
+    public function applyExample(Request $request): RedirectResponse
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        $data = $request->validate([
+            'school_class_id' => ['required', 'exists:school_classes,id'],
+        ]);
+
+        $timetable = Timetable::query()->updateOrCreate(
+            [
+                'academic_year_id' => $academicYear->id,
+                'school_class_id' => $data['school_class_id'],
+            ],
+            [
+                'title' => 'Emploi du temps provisoire',
+                'status' => 'draft',
+                'created_by' => $request->user()->id,
+            ],
+        );
+
+        $timetable->load('schoolClass');
+
+        if (! $this->templates->applyExample($timetable)) {
+            return redirect()
+                ->route('timetables.index', ['school_class_id' => $data['school_class_id']])
+                ->withErrors(['school_class_id' => 'Aucun modele 2025-2026 n est disponible pour cette classe.']);
+        }
+
+        return redirect()
+            ->route('timetables.edit', $timetable)
+            ->with('success', 'Modele 2025-2026 applique. Verifie puis adapte la grille.');
+    }
+
+    public function pdf(Timetable $timetable)
+    {
+        $timetable->load(['schoolClass.level', 'academicYear', 'entries']);
+
+        $filename = 'emploi-du-temps-' . str($timetable->schoolClass->name)->slug() . '.pdf';
+
+        return Pdf::loadView('timetables.pdf', [
+            'timetable' => $timetable,
+            'days' => $this->templates->days(),
+            'grid' => $this->grid($timetable),
+        ])
+            ->setPaper('a4', 'landscape')
+            ->stream($filename);
+    }
+
+    private function activeAcademicYear(): ?AcademicYear
+    {
+        return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function requireActiveAcademicYear(): AcademicYear
+    {
+        $academicYear = $this->activeAcademicYear();
+
+        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+
+        return $academicYear;
+    }
+
+    private function classes(?AcademicYear $academicYear)
+    {
+        return SchoolClass::query()
+            ->with('level')
+            ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function selectedClass(Request $request, $classes): ?SchoolClass
+    {
+        if ($classes->isEmpty()) {
+            return null;
+        }
+
+        return $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
+    }
+
+    private function grid(Timetable $timetable): array
+    {
+        $rows = [];
+
+        foreach ($timetable->entries->sortBy([['sort_order', 'asc']]) as $entry) {
+            $key = $entry->sort_order . '-' . $entry->period_label;
+
+            $rows[$key] ??= [
+                'sort_order' => $entry->sort_order,
+                'period_label' => $entry->period_label,
+                'starts_at' => $entry->starts_at ? substr((string) $entry->starts_at, 0, 5) : null,
+                'ends_at' => $entry->ends_at ? substr((string) $entry->ends_at, 0, 5) : null,
+                'is_break' => $entry->is_break,
+                'days' => [],
+            ];
+
+            $rows[$key]['days'][$entry->day_of_week] = $entry;
+        }
+
+        return array_values($rows);
+    }
+}

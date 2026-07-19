@@ -48,6 +48,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'academic_years.manage',
             'classes.manage',
             'subjects.manage',
+            'timetables.view',
+            'timetables.manage',
+            'timetables.print',
         ];
 
         foreach ($permissions as $permission) {
@@ -69,6 +72,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'attendance.view',
                 'attendance.reports',
                 'activity_logs.view',
+                'timetables.view',
+                'timetables.print',
             ],
             'secretariat' => [
                 'students.view',
@@ -80,6 +85,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'enrollments.create',
                 'enrollments.update',
                 'classes.manage',
+                'timetables.view',
+                'timetables.manage',
+                'timetables.print',
             ],
             'comptable' => [
                 'students.view',
@@ -96,6 +104,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'grades.update',
                 'attendance.view',
                 'attendance.create',
+                'timetables.view',
+                'timetables.print',
             ],
             'surveillant' => [
                 'students.view',
@@ -104,6 +114,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'attendance.update',
                 'attendance.justify',
                 'attendance.reports',
+                'timetables.view',
+                'timetables.print',
             ],
             'parent' => [
                 'report_cards.view',
