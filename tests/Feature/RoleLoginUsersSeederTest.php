@@ -16,7 +16,7 @@ class RoleLoginUsersSeederTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        foreach (['direction', 'secretariat', 'comptable', 'enseignant', 'surveillant', 'parent', 'eleve'] as $roleName) {
+        foreach (['direction', 'secretariat', 'comptable', 'enseignant', 'surveillant'] as $roleName) {
             $user = User::query()->where('username', $roleName)->firstOrFail();
 
             $this->assertSame('active', $user->status);
@@ -24,6 +24,26 @@ class RoleLoginUsersSeederTest extends TestCase
             $this->assertTrue($user->hasRole($roleName));
             $this->assertTrue(Hash::check($roleName, $user->password));
         }
+
+        $this->assertDatabaseMissing('users', ['username' => 'parent']);
+        $this->assertDatabaseMissing('users', ['username' => 'eleve']);
+    }
+
+    public function test_old_parent_and_student_default_accounts_are_removed(): void
+    {
+        User::factory()->create([
+            'username' => 'parent',
+            'email' => 'parent@lyceepagnidibsom.local',
+        ]);
+        User::factory()->create([
+            'username' => 'eleve',
+            'email' => 'eleve@lyceepagnidibsom.local',
+        ]);
+
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertDatabaseMissing('users', ['username' => 'parent']);
+        $this->assertDatabaseMissing('users', ['username' => 'eleve']);
     }
 
     public function test_admin_password_stays_on_existing_school_password(): void

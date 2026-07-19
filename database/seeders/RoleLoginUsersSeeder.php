@@ -11,14 +11,17 @@ class RoleLoginUsersSeeder extends Seeder
 {
     public function run(): void
     {
+        User::query()
+            ->whereIn('username', ['parent', 'eleve'])
+            ->whereIn('email', ['parent@lyceepagnidibsom.local', 'eleve@lyceepagnidibsom.local'])
+            ->delete();
+
         $accounts = [
             'direction' => 'Direction',
             'secretariat' => 'Secretariat',
             'comptable' => 'Comptable',
             'enseignant' => 'Enseignant',
             'surveillant' => 'Surveillant',
-            'parent' => 'Parent',
-            'eleve' => 'Eleve',
         ];
 
         foreach ($accounts as $roleName => $displayName) {
