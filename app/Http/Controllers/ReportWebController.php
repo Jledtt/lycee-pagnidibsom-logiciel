@@ -294,6 +294,61 @@ class ReportWebController extends Controller
         ]), 'Pieces manquantes');
     }
 
+    public function incompleteStudents(Request $request, RequiredStudentDocumentService $requiredDocuments): View
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedOptionalClass($request, $classes);
+        $allRows = $this->incompleteStudentRows($schoolClass, $classes, $academicYear, $requiredDocuments);
+        $rows = $this->filterIncompleteStudentRows($allRows, $request);
+
+        return view('reports.incomplete-students', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'filters' => $request->only(['school_class_id', 'search', 'status', 'issue']),
+            'rows' => $rows,
+            'schoolClass' => $schoolClass,
+            'summary' => $this->incompleteStudentSummary($allRows),
+        ]);
+    }
+
+    public function incompleteStudentsExport(Request $request, RequiredStudentDocumentService $requiredDocuments, XlsxExportService $xlsxExport)
+    {
+        $academicYear = $this->activeAcademicYear();
+        $classes = $this->classes($academicYear);
+        $schoolClass = $this->selectedOptionalClass($request, $classes);
+        $rows = $this->filterIncompleteStudentRows(
+            $this->incompleteStudentRows($schoolClass, $classes, $academicYear, $requiredDocuments),
+            $request
+        );
+        $scope = $schoolClass?->name ?? 'toutes-classes';
+        $filename = 'donnees-eleves-incompletes-'.Str::slug($scope.'-'.($academicYear?->name ?? 'annee')).'.xlsx';
+
+        return $xlsxExport->download($filename, [
+            'Matricule',
+            'Eleve',
+            'Classe',
+            'Sexe',
+            'Date naissance',
+            'Contact',
+            'Photo',
+            'Pieces obligatoires',
+            'Statut',
+            'A completer',
+        ], $rows->map(fn (array $row) => [
+            $row['student']?->matricule,
+            $row['student']?->full_name,
+            $row['class']?->name,
+            $row['student']?->gender_label ?? 'Non renseigne',
+            $row['student']?->birth_date?->format('d/m/Y') ?? '',
+            $row['has_contact'] ? 'Oui' : 'Non',
+            $row['has_photo'] ? 'Oui' : 'Non',
+            collect($row['missing_documents'])->pluck('label')->implode(', '),
+            $row['is_complete'] ? 'Complet' : 'Incomplet',
+            collect($row['issues'])->pluck('label')->implode(', '),
+        ]), 'Donnees incompletes');
+    }
+
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
@@ -511,6 +566,113 @@ class ReportWebController extends Controller
             ->values();
     }
 
+    private function incompleteStudentRows(?SchoolClass $schoolClass, Collection $classes, ?AcademicYear $academicYear, RequiredStudentDocumentService $requiredDocuments): Collection
+    {
+        if (! $academicYear || $classes->isEmpty()) {
+            return collect();
+        }
+
+        $classIds = $schoolClass ? [$schoolClass->id] : $classes->pluck('id')->all();
+        $enrollments = Enrollment::query()
+            ->with(['schoolClass.level', 'student.guardians', 'student.documents'])
+            ->where('academic_year_id', $academicYear->id)
+            ->whereIn('school_class_id', $classIds)
+            ->where('enrollments.status', 'active')
+            ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active'))
+            ->get();
+
+        return $enrollments
+            ->map(function (Enrollment $enrollment) use ($requiredDocuments) {
+                $student = $enrollment->student;
+                $schoolClass = $enrollment->schoolClass;
+                $missingDocuments = $student ? $requiredDocuments->missingForStudent($student, $schoolClass) : [];
+                $hasContact = $this->studentHasContact($student);
+                $hasPhoto = $this->studentHasPhoto($student);
+                $issues = $this->studentDataIssues($student, $missingDocuments, $hasContact, $hasPhoto);
+
+                return [
+                    'enrollment' => $enrollment,
+                    'student' => $student,
+                    'class' => $schoolClass,
+                    'has_contact' => $hasContact,
+                    'has_photo' => $hasPhoto,
+                    'missing_documents' => $missingDocuments,
+                    'issues' => $issues,
+                    'is_complete' => count($issues) === 0,
+                ];
+            })
+            ->sortBy(fn (array $row) => ($row['class']?->name ?? '').'|'.Str::lower($row['student']?->full_name ?? ''))
+            ->values();
+    }
+
+    private function studentDataIssues($student, array $missingDocuments, bool $hasContact, bool $hasPhoto): array
+    {
+        if (! $student) {
+            return [['key' => 'identity', 'label' => 'Eleve introuvable']];
+        }
+
+        $issues = [];
+
+        if (blank($student->gender)) {
+            $issues[] = ['key' => 'gender', 'label' => 'Sexe non renseigne'];
+        }
+
+        if (blank($student->birth_date)) {
+            $issues[] = ['key' => 'birth_date', 'label' => 'Date de naissance manquante'];
+        }
+
+        if (! $hasContact) {
+            $issues[] = ['key' => 'contact', 'label' => 'Contact parent/tuteur manquant'];
+        }
+
+        if (! $hasPhoto) {
+            $issues[] = ['key' => 'photo', 'label' => 'Photo manquante'];
+        }
+
+        foreach ($missingDocuments as $document) {
+            if (($document['type'] ?? null) === 'photo') {
+                continue;
+            }
+
+            $issues[] = [
+                'key' => 'documents',
+                'label' => 'Piece manquante : '.$document['label'],
+            ];
+        }
+
+        return $issues;
+    }
+
+    private function studentHasContact($student): bool
+    {
+        if (! $student) {
+            return false;
+        }
+
+        if (filled($student->home_phone) || filled($student->emergency_contact_phone) || filled($student->school_info_whatsapp)) {
+            return true;
+        }
+
+        return $student->guardians
+            ->contains(fn ($guardian) => filled($guardian->phone_primary) || filled($guardian->phone_secondary));
+    }
+
+    private function studentHasPhoto($student): bool
+    {
+        if (! $student) {
+            return false;
+        }
+
+        if (filled($student->photo_path)) {
+            return true;
+        }
+
+        return $student->documents
+            ->where('document_type', 'photo')
+            ->where('status', 'received')
+            ->isNotEmpty();
+    }
+
     private function filterMissingDocumentRows(Collection $rows, Request $request): Collection
     {
         $search = Str::lower(trim($request->string('search')->toString()));
@@ -528,6 +690,43 @@ class ReportWebController extends Controller
                 });
             })
             ->values();
+    }
+
+    private function filterIncompleteStudentRows(Collection $rows, Request $request): Collection
+    {
+        $search = Str::lower(trim($request->string('search')->toString()));
+        $status = $request->string('status')->toString();
+        $issue = $request->string('issue')->toString();
+
+        return $rows
+            ->when($status === 'complete', fn (Collection $items) => $items->where('is_complete', true))
+            ->when($status === 'incomplete', fn (Collection $items) => $items->where('is_complete', false))
+            ->when($issue, function (Collection $items) use ($issue) {
+                return $items->filter(fn (array $row) => collect($row['issues'])->contains('key', $issue));
+            })
+            ->when($search, function (Collection $items) use ($search) {
+                return $items->filter(function (array $row) use ($search) {
+                    $student = $row['student'];
+
+                    return Str::contains(Str::lower($student?->full_name ?? ''), $search)
+                        || Str::contains(Str::lower($student?->matricule ?? ''), $search);
+                });
+            })
+            ->values();
+    }
+
+    private function incompleteStudentSummary(Collection $rows): array
+    {
+        return [
+            'students' => $rows->count(),
+            'complete' => $rows->where('is_complete', true)->count(),
+            'incomplete' => $rows->where('is_complete', false)->count(),
+            'missing_gender' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'gender'))->count(),
+            'missing_birth_date' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'birth_date'))->count(),
+            'missing_contact' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'contact'))->count(),
+            'missing_photo' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'photo'))->count(),
+            'missing_documents' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'documents'))->count(),
+        ];
     }
 
     private function requiredDocumentLabelsForReport(?SchoolClass $schoolClass, RequiredStudentDocumentService $requiredDocuments): array

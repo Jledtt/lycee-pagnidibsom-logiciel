@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ActivityLogWebController;
-use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\AcademicYearWebController;
+use App\Http\Controllers\AccountingWebController;
+use App\Http\Controllers\ActivityLogWebController;
 use App\Http\Controllers\AttendanceWebController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\DatabaseBackupWebController;
@@ -18,8 +18,8 @@ use App\Http\Controllers\ProfileWebController;
 use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
 use App\Http\Controllers\RequiredStudentDocumentWebController;
-use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolClassWebController;
+use App\Http\Controllers\SchoolDashboardController;
 use App\Http\Controllers\SchoolSettingWebController;
 use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
@@ -364,6 +364,14 @@ Route::get('/reports/missing-documents/pdf', [ReportWebController::class, 'missi
 Route::get('/reports/missing-documents/export', [ReportWebController::class, 'missingDocumentsExport'])
     ->middleware(['auth', 'permission:students.export'])
     ->name('reports.missing-documents.export');
+
+Route::get('/reports/incomplete-students', [ReportWebController::class, 'incompleteStudents'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.incomplete-students');
+
+Route::get('/reports/incomplete-students/export', [ReportWebController::class, 'incompleteStudentsExport'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('reports.incomplete-students.export');
 
 Route::get('/reports/payment-situation', [ReportWebController::class, 'paymentSituation'])
     ->middleware(['auth', 'permission:payments.reports'])

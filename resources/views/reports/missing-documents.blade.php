@@ -6,6 +6,7 @@
 ])
 
 @section('page_actions')
+    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Donnees incompletes</a>
     <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste eleves</a>
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation paiements</a>
