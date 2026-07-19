@@ -52,7 +52,7 @@
                             <td class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</td>
                             <td>
                                 @can('payments.create')
-                                    <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $enrollment->student_id]) }}">Payer</a>
+                                    <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $enrollment->student_id, 'amount' => is_null($summary['balance']) ? null : (int) $summary['balance']]) }}">Payer</a>
                                 @endcan
                             </td>
                         </tr>

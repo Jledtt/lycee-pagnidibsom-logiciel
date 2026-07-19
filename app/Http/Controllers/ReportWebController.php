@@ -106,15 +106,16 @@ class ReportWebController extends Controller
             $schoolClass = $this->loadClassList($schoolClass);
         }
 
-        $rows = $this->paymentRows($schoolClass, $academicYear);
+        $allRows = $this->paymentRows($schoolClass, $academicYear);
+        $rows = $this->filterPaymentRows($allRows, $request);
 
         return view('reports.payment-situation', [
             'academicYear' => $academicYear,
             'classes' => $classes,
-            'filters' => $request->only(['school_class_id']),
+            'filters' => $request->only(['school_class_id', 'search', 'status']),
             'rows' => $rows,
             'schoolClass' => $schoolClass,
-            'summary' => $this->paymentSummary($rows),
+            'summary' => $this->paymentSummary($allRows),
         ]);
     }
 
@@ -150,25 +151,31 @@ class ReportWebController extends Controller
         abort_if(! $schoolClass, 404, 'Classe introuvable.');
 
         $schoolClass = $this->loadClassList($schoolClass);
-        $rows = $this->paymentRows($schoolClass, $academicYear);
+        $rows = $this->filterPaymentRows($this->paymentRows($schoolClass, $academicYear), $request);
         $filename = 'situation-paiements-'.Str::slug($schoolClass->name.'-'.($academicYear?->name ?? 'annee')).'.xlsx';
 
         return $xlsxExport->download($filename, [
             'Matricule',
             'Eleve',
             'Classe',
+            'Contact',
             'Attendu',
             'Paye',
             'Reste',
+            'Progression',
             'Statut',
+            'Dernier paiement',
         ], $rows->map(fn (array $row) => [
             $row['student']?->matricule,
             $row['student']?->full_name,
             $row['class'] ?? $schoolClass->name,
+            $row['contact'] ?? '',
             $row['expected'] ?? 'A configurer',
             $row['paid'],
             $row['balance'] ?? 'A configurer',
+            $row['progress'].'%',
             $row['status']['label'],
+            $row['last_payment_at']?->format('d/m/Y H:i') ?? '',
         ]));
     }
 
@@ -430,25 +437,35 @@ class ReportWebController extends Controller
         $expected = $this->expectedAmount($schoolClass, $academicYear);
         $studentIds = $schoolClass->enrollments->pluck('student_id')->all();
 
-        $paidByStudent = Payment::query()
+        $validPayments = Payment::query()
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->whereIn('student_id', $studentIds)
             ->where('status', 'valid')
-            ->selectRaw('student_id, sum(amount) as total_paid')
+            ->get();
+
+        $paidByStudent = $validPayments
             ->groupBy('student_id')
-            ->pluck('total_paid', 'student_id');
+            ->map(fn (Collection $payments) => (float) $payments->sum('amount'));
 
         return $schoolClass->enrollments
-            ->map(function ($enrollment) use ($expected, $paidByStudent) {
+            ->map(function ($enrollment) use ($expected, $paidByStudent, $validPayments) {
                 $paid = (float) ($paidByStudent[$enrollment->student_id] ?? 0);
                 $balance = is_null($expected) ? null : max($expected - $paid, 0);
+                $student = $enrollment->student;
+                $lastPaymentAt = $validPayments
+                    ->where('student_id', $enrollment->student_id)
+                    ->sortByDesc('paid_at')
+                    ->first()?->paid_at;
 
                 return [
                     'enrollment' => $enrollment,
-                    'student' => $enrollment->student,
+                    'student' => $student,
                     'expected' => $expected,
                     'paid' => $paid,
                     'balance' => $balance,
+                    'progress' => $expected ? min((int) round(($paid / $expected) * 100), 100) : 0,
+                    'contact' => $this->studentPaymentContact($student),
+                    'last_payment_at' => $lastPaymentAt,
                     'status' => $this->paymentStatus($expected, $paid),
                 ];
             })
@@ -468,18 +485,51 @@ class ReportWebController extends Controller
     private function paymentStatus(?float $expected, float $paid): array
     {
         if (is_null($expected)) {
-            return ['label' => 'Tarif a configurer', 'class' => 'badge-warning'];
+            return ['key' => 'unconfigured', 'label' => 'Tarif a configurer', 'class' => 'badge-warning'];
         }
 
         if ($paid <= 0) {
-            return ['label' => 'Impaye', 'class' => 'badge-warning'];
+            return ['key' => 'unpaid', 'label' => 'Impaye', 'class' => 'badge-warning'];
         }
 
         if ($paid < $expected) {
-            return ['label' => 'Partiel', 'class' => 'badge-warning'];
+            return ['key' => 'partial', 'label' => 'Partiel', 'class' => 'badge-warning'];
         }
 
-        return ['label' => 'A jour', 'class' => ''];
+        return ['key' => 'paid', 'label' => 'A jour', 'class' => ''];
+    }
+
+    private function filterPaymentRows(Collection $rows, Request $request): Collection
+    {
+        $search = Str::lower(trim($request->string('search')->toString()));
+        $status = $request->string('status')->toString();
+
+        return $rows
+            ->when($status, fn (Collection $items) => $items->filter(fn (array $row) => $row['status']['key'] === $status))
+            ->when($search, function (Collection $items) use ($search) {
+                return $items->filter(function (array $row) use ($search) {
+                    $student = $row['student'];
+
+                    return Str::contains(Str::lower($student?->full_name ?? ''), $search)
+                        || Str::contains(Str::lower($student?->matricule ?? ''), $search);
+                });
+            })
+            ->values();
+    }
+
+    private function studentPaymentContact($student): string
+    {
+        if (! $student) {
+            return '';
+        }
+
+        $guardian = $student->guardians->first();
+
+        return $guardian?->phone_primary
+            ?? $guardian?->phone_secondary
+            ?? $student->home_phone
+            ?? $student->emergency_contact_phone
+            ?? '';
     }
 
     private function paymentSummary(Collection $rows): array

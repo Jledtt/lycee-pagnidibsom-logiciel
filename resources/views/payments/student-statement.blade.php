@@ -87,7 +87,7 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Paiements recents</h2>
+                <h2>Historique des recus</h2>
                 <span class="badge">{{ $profile['payments']->count() }} paiement(s)</span>
             </div>
 
@@ -97,7 +97,7 @@
                 <div class="ledger-list">
                     @foreach ($profile['payments'] as $payment)
                         <div class="ledger-item">
-                            <div class="ledger-summary" style="grid-template-columns:minmax(170px,1fr) minmax(110px,.6fr) minmax(120px,.6fr) minmax(120px,.6fr)">
+                            <div class="ledger-summary" style="grid-template-columns:minmax(170px,1fr) minmax(110px,.6fr) minmax(120px,.6fr) minmax(120px,.6fr) minmax(120px,.6fr)">
                                 <div class="ledger-person">
                                     <strong>{{ $payment->receipt_number }}</strong>
                                     <span>{{ $payment->paid_at?->format('d/m/Y H:i') }}</span>
@@ -108,6 +108,9 @@
                                 </div>
                                 <span class="badge {{ $payment->status === 'valid' ? '' : 'badge-warning' }}">{{ $payment->status }}</span>
                                 <a class="btn btn-subtle" href="{{ route('payments.show', $payment) }}">Voir</a>
+                                @can('payments.print_receipt')
+                                    <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">PDF</a>
+                                @endcan
                             </div>
                         </div>
                     @endforeach

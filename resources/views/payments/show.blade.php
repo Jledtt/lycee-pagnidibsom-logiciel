@@ -109,7 +109,9 @@
                     @method('DELETE')
                     <div class="field">
                         <label for="reason">Motif d'annulation</label>
-                        <input id="reason" name="reason" placeholder="Ex: erreur de saisie" required>
+                        <textarea id="reason" name="reason" minlength="5" placeholder="Ex: erreur de montant, mauvais eleve, doublon de recu" required>{{ old('reason') }}</textarea>
+                        <small>Motif obligatoire. Il restera visible dans l'historique du recu.</small>
+                        @error('reason') <small class="error">{{ $message }}</small> @enderror
                     </div>
                     <button class="btn btn-danger" type="submit">Annuler le paiement</button>
                 </form>

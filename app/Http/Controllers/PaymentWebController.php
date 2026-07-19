@@ -24,8 +24,7 @@ class PaymentWebController extends Controller
 {
     public function __construct(
         private readonly PaymentFinancialProfileService $financialProfileService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -90,29 +89,43 @@ class PaymentWebController extends Controller
             ->orderByDesc('paid_at')
             ->get();
 
-        return $xlsxExport->download('paiements-' . now()->format('Ymd-His') . '.xlsx', [
+        return $xlsxExport->download('paiements-'.now()->format('Ymd-His').'.xlsx', [
             'Recu',
             'Date',
             'Eleve',
             'Matricule',
             'Classe',
-            'Montant',
+            'Frais',
+            'Tranche',
+            'Montant ligne',
+            'Montant recu',
             'Mode',
             'Statut',
             'Encaisse par',
+            'Date annulation',
+            'Motif annulation',
             'Notes',
-        ], $payments->map(fn (Payment $payment) => [
-            $payment->receipt_number,
-            $payment->paid_at?->format('d/m/Y H:i'),
-            $payment->student?->full_name,
-            $payment->student?->matricule,
-            $payment->enrollment?->schoolClass?->name,
-            (float) $payment->amount,
-            $payment->payment_method,
-            $payment->status,
-            $payment->receiver?->name,
-            $payment->notes,
-        ]));
+        ], $payments->flatMap(function (Payment $payment) {
+            $lines = $payment->lines->isNotEmpty() ? $payment->lines : collect([null]);
+
+            return $lines->map(fn ($line) => [
+                $payment->receipt_number,
+                $payment->paid_at?->format('d/m/Y H:i'),
+                $payment->student?->full_name,
+                $payment->student?->matricule,
+                $payment->enrollment?->schoolClass?->name,
+                $line?->feeType?->name ?? '',
+                $line?->feeSchedule?->period ?? '',
+                $line ? (float) $line->amount : (float) $payment->amount,
+                (float) $payment->amount,
+                $payment->payment_method,
+                $payment->status,
+                $payment->receiver?->name,
+                $payment->cancelled_at?->format('d/m/Y H:i'),
+                $payment->cancellation_reason,
+                $payment->notes,
+            ]);
+        }));
     }
 
     public function store(StorePaymentRequest $request, PaymentService $paymentService): RedirectResponse
@@ -155,7 +168,7 @@ class PaymentWebController extends Controller
     public function receipt(Payment $payment)
     {
         $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
-        $filename = 'recu-' . Str::slug($payment->receipt_number . '-' . $payment->student->full_name) . '.pdf';
+        $filename = 'recu-'.Str::slug($payment->receipt_number.'-'.$payment->student->full_name).'.pdf';
 
         return Pdf::loadView('payments.receipt-pdf', [
             'payment' => $payment,
@@ -179,7 +192,7 @@ class PaymentWebController extends Controller
     public function studentStatementPdf(Student $student)
     {
         $academicYear = $this->activeAcademicYear();
-        $filename = 'situation-financiere-' . Str::slug($student->matricule . '-' . $student->full_name) . '.pdf';
+        $filename = 'situation-financiere-'.Str::slug($student->matricule.'-'.$student->full_name).'.pdf';
 
         return Pdf::loadView('payments.student-statement-pdf', [
             'academicYear' => $academicYear,
@@ -208,7 +221,7 @@ class PaymentWebController extends Controller
         $academicYear = $this->activeAcademicYear();
         $rows = $this->financialProfileService->unpaidRows($academicYear);
 
-        return $xlsxExport->download('impayes-' . now()->format('Ymd-His') . '.xlsx', [
+        return $xlsxExport->download('impayes-'.now()->format('Ymd-His').'.xlsx', [
             'Matricule',
             'Eleve',
             'Classe',
@@ -252,7 +265,7 @@ class PaymentWebController extends Controller
     private function paymentQuery(Request $request, ?AcademicYear $academicYear)
     {
         return Payment::query()
-            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'receiver'])
+            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'lines.feeSchedule', 'receiver'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
             ->when($request->string('search')->toString(), function ($query, string $search) {
@@ -293,5 +306,4 @@ class PaymentWebController extends Controller
             })
             ->values();
     }
-
 }
