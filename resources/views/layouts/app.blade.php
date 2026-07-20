@@ -45,6 +45,9 @@
                 @can('grades.view')
                     <a class="{{ ($active ?? '') === 'grades' ? 'active' : '' }}" href="{{ route('grades.index') }}"><span class="nav-dot"></span>Notes</a>
                 @endcan
+                @can('mock_exams.view')
+                    <a class="{{ ($active ?? '') === 'mock-exams' ? 'active' : '' }}" href="{{ route('mock-exams.index') }}"><span class="nav-dot"></span>Examens blancs</a>
+                @endcan
                 @can('report_cards.view')
                     <a class="{{ ($active ?? '') === 'report-cards' ? 'active' : '' }}" href="{{ route('report-cards.index') }}"><span class="nav-dot"></span>Bulletins</a>
                 @endcan

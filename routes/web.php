@@ -12,6 +12,7 @@ use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\LoginHistoryWebController;
+use App\Http\Controllers\MockExamWebController;
 use App\Http\Controllers\NumberingSettingWebController;
 use App\Http\Controllers\PaymentWebController;
 use App\Http\Controllers\ProfileWebController;
@@ -233,6 +234,38 @@ Route::get('/timetables/{timetable}/pdf', [TimetableWebController::class, 'pdf']
 Route::get('/grades', [GradeWebController::class, 'index'])
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.index');
+
+Route::get('/mock-exams', [MockExamWebController::class, 'index'])
+    ->middleware(['auth', 'permission:mock_exams.view'])
+    ->name('mock-exams.index');
+
+Route::post('/mock-exams', [MockExamWebController::class, 'store'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.store');
+
+Route::post('/mock-exams/{mockExam}/sync-candidates', [MockExamWebController::class, 'syncCandidates'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.candidates.sync');
+
+Route::post('/mock-exams/{mockExam}/generate-anonymity', [MockExamWebController::class, 'generateAnonymousCodes'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.anonymity.generate');
+
+Route::post('/mock-exams/{mockExam}/distribute-rooms', [MockExamWebController::class, 'distributeRooms'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.rooms.distribute');
+
+Route::get('/mock-exams/{mockExam}/candidates/pdf', [MockExamWebController::class, 'candidatesPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.candidates.pdf');
+
+Route::get('/mock-exams/{mockExam}/rooms/pdf', [MockExamWebController::class, 'roomsPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.rooms.pdf');
+
+Route::get('/mock-exams/{mockExam}/anonymity/pdf', [MockExamWebController::class, 'anonymityPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.anonymity.pdf');
 
 Route::post('/grades/assessments', [GradeWebController::class, 'storeAssessment'])
     ->middleware(['auth', 'permission:grades.create'])
