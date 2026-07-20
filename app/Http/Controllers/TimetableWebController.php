@@ -223,6 +223,17 @@ class TimetableWebController extends Controller
     {
         $rows = [];
 
+        foreach ($this->templates->periods() as $period) {
+            $rows[$period['label']] = [
+                'sort_order' => $period['sort_order'],
+                'period_label' => $period['label'],
+                'starts_at' => $period['starts_at'],
+                'ends_at' => $period['ends_at'],
+                'is_break' => $period['is_break'],
+                'days' => [],
+            ];
+        }
+
         foreach ($timetable->entries->sortBy([['sort_order', 'asc'], ['day_of_week', 'asc']]) as $entry) {
             $key = $entry->period_label;
 

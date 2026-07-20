@@ -143,6 +143,38 @@ class TimetableTest extends TestCase
         $this->assertSame(1, substr_count($response->getContent(), '<strong>7h00-7h55</strong>'));
     }
 
+    public function test_timetable_keeps_afternoon_periods_visible_when_empty(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $schoolClass = $this->schoolClass('5e A');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $timetable = Timetable::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Emploi incomplet',
+            'status' => 'active',
+            'created_by' => $user->id,
+        ]);
+
+        $timetable->entries()->create([
+            'sort_order' => 1,
+            'period_label' => '7h00-7h55',
+            'starts_at' => '07:00',
+            'ends_at' => '07:55',
+            'day_of_week' => 'monday',
+            'subject_name' => 'EPS',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('timetables.index', ['school_class_id' => $schoolClass->id]))
+            ->assertOk()
+            ->assertSee('15h00-16h00')
+            ->assertSee('16h00-17h00');
+    }
+
     public function test_comptable_cannot_open_timetable_module(): void
     {
         $this->seed(DatabaseSeeder::class);
