@@ -12,8 +12,10 @@ use App\Models\ReportCard;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Term;
+use App\Models\TermPeriod;
 use App\Services\GradeCalculationService;
 use App\Services\ReportCardService;
+use App\Services\TermPeriodService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +29,7 @@ class ReportCardWebController extends Controller
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly ReportCardService $reportCardService,
+        private readonly TermPeriodService $termPeriodService,
     ) {}
 
     public function index(Request $request): View
@@ -47,6 +50,8 @@ class ReportCardWebController extends Controller
 
         $selectedClass = $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
         $selectedTerm = $terms->firstWhere('id', $request->integer('term_id')) ?? $terms->first();
+        $termPeriods = $selectedTerm ? $this->termPeriodService->ensureDefaults($selectedTerm) : collect();
+        $selectedTermPeriod = $termPeriods->firstWhere('id', $request->integer('term_period_id')) ?? $termPeriods->first();
         $students = collect();
         $reportCards = collect();
 
@@ -67,7 +72,9 @@ class ReportCardWebController extends Controller
             'reportCards' => $reportCards,
             'selectedClass' => $selectedClass,
             'selectedTerm' => $selectedTerm,
+            'selectedTermPeriod' => $selectedTermPeriod,
             'students' => $students,
+            'termPeriods' => $termPeriods,
             'terms' => $terms,
         ]);
     }
@@ -137,6 +144,50 @@ class ReportCardWebController extends Controller
         return Pdf::loadView('report-cards.class-pdf', [
             'items' => $reportCards,
             'school' => SchoolSetting::query()->first(),
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
+    }
+
+    public function periodClassPdf(ReportCardSelectionRequest $request)
+    {
+        $data = $request->validate([
+            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'term_id' => ['required', 'exists:terms,id'],
+            'term_period_id' => ['required', 'exists:term_periods,id'],
+        ]);
+
+        $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
+        $term = Term::query()->findOrFail($data['term_id']);
+        $period = TermPeriod::query()->findOrFail($data['term_period_id']);
+        abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette periode ne correspond pas au trimestre selectionne.');
+
+        $students = $this->studentsForClass($schoolClass->academic_year_id, $schoolClass->id);
+        $rows = $students
+            ->map(function ($student) use ($schoolClass, $term, $period) {
+                return [
+                    'student' => $student,
+                    'average' => $this->gradeCalculationService->generalAverage($student, $schoolClass, $term, $period->id),
+                    'subjectRows' => $this->subjectRowsForStudent($student, $schoolClass, $term, $period->id),
+                ];
+            })
+            ->sortByDesc(fn (array $row) => $row['average'] ?? -1)
+            ->values()
+            ->map(function (array $row, int $index) use ($students) {
+                $row['rank'] = $row['average'] === null ? null : $index + 1;
+                $row['classSize'] = $students->count();
+
+                return $row;
+            });
+
+        $filename = 'releves-'.Str::slug($schoolClass->name.'-'.$term->name.'-'.$period->name).'.pdf';
+
+        return Pdf::loadView('report-cards.period-class-pdf', [
+            'items' => $rows,
+            'period' => $period,
+            'school' => SchoolSetting::query()->first(),
+            'schoolClass' => $schoolClass,
+            'term' => $term,
         ])
             ->setPaper('a4')
             ->stream($filename);
@@ -250,6 +301,38 @@ class ReportCardWebController extends Controller
                     'points' => $average === null ? null : round($average * $coefficient, 2),
                     'appreciation' => $this->appreciation($average),
                     'teacher' => $this->teacherName($reportCard, $classSubject->subject_id),
+                ];
+            });
+    }
+
+    private function subjectRowsForStudent($student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): Collection
+    {
+        return ClassSubject::query()
+            ->with('subject')
+            ->where('school_class_id', $schoolClass->id)
+            ->where('is_active', true)
+            ->join('subjects', 'subjects.id', '=', 'class_subjects.subject_id')
+            ->orderBy('subjects.name')
+            ->select('class_subjects.*')
+            ->get()
+            ->map(function (ClassSubject $classSubject) use ($student, $schoolClass, $term, $termPeriodId) {
+                $average = $this->gradeCalculationService->subjectAverage(
+                    $student,
+                    $term,
+                    $classSubject->subject_id,
+                    $schoolClass->id,
+                    $termPeriodId,
+                );
+
+                $coefficient = (float) $classSubject->coefficient;
+
+                return [
+                    'subject' => $classSubject->subject,
+                    'coefficient' => $coefficient,
+                    'average' => $average,
+                    'points' => $average === null ? null : round($average * $coefficient, 2),
+                    'appreciation' => $this->appreciation($average),
+                    'teacher' => '-',
                 ];
             });
     }

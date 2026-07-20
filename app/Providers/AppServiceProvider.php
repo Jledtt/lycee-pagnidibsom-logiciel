@@ -23,6 +23,7 @@ use App\Models\StudentDocument;
 use App\Models\Subject;
 use App\Models\Timetable;
 use App\Models\TimetableEntry;
+use App\Models\TermPeriod;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
 use Illuminate\Support\Facades\Gate;
@@ -90,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
             Subject::class,
             Timetable::class,
             TimetableEntry::class,
+            TermPeriod::class,
             User::class,
         ];
     }

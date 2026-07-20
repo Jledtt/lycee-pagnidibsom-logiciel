@@ -10,13 +10,14 @@ use App\Models\Term;
 
 class GradeCalculationService
 {
-    public function subjectAverage(Student $student, Term $term, int $subjectId, ?int $schoolClassId = null): ?float
+    public function subjectAverage(Student $student, Term $term, int $subjectId, ?int $schoolClassId = null, ?int $termPeriodId = null): ?float
     {
         $assessments = Assessment::query()
             ->with(['assessmentType', 'grades' => fn ($query) => $query->where('student_id', $student->id)])
             ->where('term_id', $term->id)
             ->where('subject_id', $subjectId)
             ->when($schoolClassId, fn ($query) => $query->where('school_class_id', $schoolClassId))
+            ->when($termPeriodId, fn ($query) => $query->where('term_period_id', $termPeriodId))
             ->get();
 
         $weightedTotal = 0.0;
@@ -42,7 +43,7 @@ class GradeCalculationService
         return round($weightedTotal / $weights, 2);
     }
 
-    public function generalAverage(Student $student, SchoolClass $schoolClass, Term $term): ?float
+    public function generalAverage(Student $student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): ?float
     {
         $classSubjects = ClassSubject::query()
             ->where('school_class_id', $schoolClass->id)
@@ -53,7 +54,7 @@ class GradeCalculationService
         $coefficients = 0.0;
 
         foreach ($classSubjects as $classSubject) {
-            $average = $this->subjectAverage($student, $term, $classSubject->subject_id, $schoolClass->id);
+            $average = $this->subjectAverage($student, $term, $classSubject->subject_id, $schoolClass->id, $termPeriodId);
 
             if ($average === null) {
                 continue;

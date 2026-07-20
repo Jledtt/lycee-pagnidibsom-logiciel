@@ -11,6 +11,7 @@ class Assessment extends Model
     protected $fillable = [
         'academic_year_id',
         'term_id',
+        'term_period_id',
         'school_class_id',
         'subject_id',
         'assessment_type_id',
@@ -35,6 +36,11 @@ class Assessment extends Model
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
+    }
+
+    public function termPeriod(): BelongsTo
+    {
+        return $this->belongsTo(TermPeriod::class);
     }
 
     public function schoolClass(): BelongsTo

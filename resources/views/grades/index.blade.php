@@ -40,6 +40,14 @@
                     @endforeach
                 </select>
 
+                @if ($termPeriods->isNotEmpty())
+                    <select name="term_period_id">
+                        @foreach ($termPeriods as $period)
+                            <option value="{{ $period->id }}" @selected($selectedTermPeriod?->id === $period->id)>{{ $period->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+
                 <button class="btn btn-subtle" type="submit">Afficher</button>
             </form>
         @endif
@@ -54,6 +62,10 @@
             <div class="stat">
                 <span>Trimestre</span>
                 <strong>{{ $selectedTerm->name }}</strong>
+            </div>
+            <div class="stat">
+                <span>Periode</span>
+                <strong>{{ $selectedTermPeriod?->name ?? 'Non definie' }}</strong>
             </div>
             <div class="stat">
                 <span>Eleves</span>
@@ -82,6 +94,7 @@
                         @csrf
                         <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                         <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
+                        <input type="hidden" name="term_period_id" value="{{ $selectedTermPeriod?->id }}">
 
                         <div class="field">
                             <label>Matiere</label>
@@ -103,7 +116,7 @@
 
                         <div class="field wide">
                             <label>Titre</label>
-                            <input name="title" placeholder="Ex: Devoir 1" required>
+                            <input name="title" placeholder="Ex: {{ $selectedTermPeriod?->name ?? 'Devoir' }} - Francais" required>
                         </div>
 
                         <div class="field">
@@ -152,7 +165,7 @@
                                                 <span>Notes</span>
                                             </div>
                                             <div class="page-actions" style="justify-content:flex-end">
-                                                <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
+                                                <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $assessment->term_period_id, 'assessment_id' => $assessment->id]) }}">Saisir</a>
                                                 @can('grades.update')
                                                     <a class="btn btn-subtle" href="{{ route('grades.import', $assessment) }}">Importer</a>
                                                 @endcan

@@ -39,6 +39,7 @@
                 <strong>Annee scolaire : {{ $assessment->academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $assessment->schoolClass->name }}<br>
                 Trimestre : {{ $assessment->term->name }}<br>
+                Periode : {{ $assessment->termPeriod?->name ?? '-' }}<br>
                 Date : {{ $assessment->assessment_date?->format('d/m/Y') ?? '-' }}
             </td>
         </tr>

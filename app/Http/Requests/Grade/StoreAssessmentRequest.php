@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Grade;
 
 use App\Models\AcademicYear;
+use App\Models\TermPeriod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreAssessmentRequest extends FormRequest
 {
@@ -25,11 +27,31 @@ class StoreAssessmentRequest extends FormRequest
                     ? Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id)
                     : 'exists:terms,id',
             ],
+            'term_period_id' => ['nullable', 'exists:term_periods,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'assessment_type_id' => ['required', 'exists:assessment_types,id'],
             'title' => ['required', 'string', 'max:255'],
             'max_score' => ['required', 'numeric', 'min:1', 'max:100'],
             'assessment_date' => ['nullable', 'date'],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $termPeriodId = $this->integer('term_period_id');
+
+                if (! $termPeriodId) {
+                    return;
+                }
+
+                $period = TermPeriod::query()->find($termPeriodId);
+
+                if ($period && (int) $period->term_id !== $this->integer('term_id')) {
+                    $validator->errors()->add('term_period_id', 'La periode choisie ne correspond pas au trimestre.');
+                }
+            },
         ];
     }
 }

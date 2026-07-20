@@ -1,0 +1,153 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AcademicYear;
+use App\Models\Assessment;
+use App\Models\AssessmentType;
+use App\Models\ClassSubject;
+use App\Models\Enrollment;
+use App\Models\Grade;
+use App\Models\Level;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use App\Models\Subject;
+use App\Models\Term;
+use App\Models\User;
+use App\Services\GradeCalculationService;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class TermPeriodGradeTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_grade_periods_separate_monthly_devoirs_and_feed_the_trimester_average(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('admin');
+        [$academicYear, $schoolClass, $term, $subject, $assessmentType, $student] = $this->classWithStudentAndSubject();
+        $firstPeriod = $term->periods()->where('position', 1)->firstOrFail();
+        $secondPeriod = $term->periods()->where('position', 2)->firstOrFail();
+
+        $this->actingAs($user)
+            ->post(route('grades.assessments.store'), [
+                'school_class_id' => $schoolClass->id,
+                'term_id' => $term->id,
+                'term_period_id' => $firstPeriod->id,
+                'subject_id' => $subject->id,
+                'assessment_type_id' => $assessmentType->id,
+                'title' => '1er devoir - Francais',
+                'max_score' => 20,
+                'assessment_date' => now()->toDateString(),
+            ])
+            ->assertRedirect();
+
+        $firstAssessment = Assessment::query()->where('title', '1er devoir - Francais')->firstOrFail();
+
+        Grade::query()->create([
+            'assessment_id' => $firstAssessment->id,
+            'student_id' => $student->id,
+            'score' => 10,
+            'is_absent' => false,
+            'entered_by' => $user->id,
+        ]);
+
+        $secondAssessment = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'term_period_id' => $secondPeriod->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $assessmentType->id,
+            'title' => '2e devoir - Francais',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $secondAssessment->id,
+            'student_id' => $student->id,
+            'score' => 18,
+            'is_absent' => false,
+            'entered_by' => $user->id,
+        ]);
+
+        $calculator = app(GradeCalculationService::class);
+
+        $this->assertDatabaseHas('assessments', [
+            'title' => '1er devoir - Francais',
+            'term_period_id' => $firstPeriod->id,
+        ]);
+        $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));
+        $this->assertSame(18.0, $calculator->generalAverage($student, $schoolClass, $term, $secondPeriod->id));
+        $this->assertSame(14.0, $calculator->generalAverage($student, $schoolClass, $term));
+
+        $this->actingAs($user)
+            ->get(route('report-cards.period-class-pdf', [
+                'school_class_id' => $schoolClass->id,
+                'term_id' => $term->id,
+                'term_period_id' => $firstPeriod->id,
+            ]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    private function classWithStudentAndSubject(): array
+    {
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $term = Term::query()->where('academic_year_id', $academicYear->id)->where('position', 1)->firstOrFail();
+        $level = Level::query()->where('name', 'Terminale')->firstOrFail();
+        $subject = Subject::query()->where('name', 'Francais')->firstOrFail();
+        $assessmentType = AssessmentType::query()->where('name', 'Devoir')->firstOrFail();
+
+        $schoolClass = SchoolClass::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'level_id' => $level->id,
+            'name' => 'Terminale A',
+            'code' => 'TA',
+            'status' => 'active',
+        ]);
+
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'coefficient' => 2,
+            'is_active' => true,
+        ]);
+
+        $student = Student::query()->create([
+            'matricule' => 'LPP-2026-TERM',
+            'first_name' => 'Issa',
+            'last_name' => 'Kabre',
+            'gender' => 'male',
+            'status' => 'active',
+        ]);
+
+        Enrollment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'student_id' => $student->id,
+            'school_class_id' => $schoolClass->id,
+            'enrollment_date' => now()->toDateString(),
+            'status' => 'active',
+            'type' => 'new',
+        ]);
+
+        return [$academicYear, $schoolClass, $term, $subject, $assessmentType, $student];
+    }
+
+    private function userWithRole(string $role): User
+    {
+        $user = User::factory()->create([
+            'username' => $role.'-term-period-test-'.uniqid(),
+            'status' => 'active',
+        ]);
+
+        $user->assignRole($role);
+
+        return $user;
+    }
+}

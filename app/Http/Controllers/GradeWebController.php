@@ -14,6 +14,7 @@ use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
 use App\Services\GradeEntryService;
+use App\Services\TermPeriodService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class GradeWebController extends Controller
 {
     public function __construct(
         private readonly GradeEntryService $gradeEntryService,
+        private readonly TermPeriodService $termPeriodService,
     ) {
     }
 
@@ -46,6 +48,8 @@ class GradeWebController extends Controller
 
         $selectedClass = $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
         $selectedTerm = $terms->firstWhere('id', $request->integer('term_id')) ?? $terms->first();
+        $termPeriods = $selectedTerm ? $this->termPeriodService->ensureDefaults($selectedTerm) : collect();
+        $selectedTermPeriod = $termPeriods->firstWhere('id', $request->integer('term_period_id')) ?? $termPeriods->first();
 
         $classSubjects = collect();
         $assessments = collect();
@@ -69,6 +73,7 @@ class GradeWebController extends Controller
                 ->where('academic_year_id', $academicYear->id)
                 ->where('school_class_id', $selectedClass->id)
                 ->where('term_id', $selectedTerm->id)
+                ->when($selectedTermPeriod, fn ($query) => $query->where('term_period_id', $selectedTermPeriod->id))
                 ->latest('assessment_date')
                 ->latest('id')
                 ->get();
@@ -91,11 +96,13 @@ class GradeWebController extends Controller
             'terms' => $terms,
             'selectedClass' => $selectedClass,
             'selectedTerm' => $selectedTerm,
+            'selectedTermPeriod' => $selectedTermPeriod,
             'classSubjects' => $classSubjects,
             'assessmentTypes' => AssessmentType::query()->where('status', 'active')->orderBy('name')->get(),
             'assessments' => $assessments,
             'selectedAssessment' => $selectedAssessment,
             'students' => $students,
+            'termPeriods' => $termPeriods,
             'gradesByStudent' => $gradesByStudent,
         ]);
     }
@@ -118,6 +125,7 @@ class GradeWebController extends Controller
             ->route('grades.index', [
                 'school_class_id' => $assessment->school_class_id,
                 'term_id' => $assessment->term_id,
+                'term_period_id' => $assessment->term_period_id,
                 'assessment_id' => $assessment->id,
             ])
             ->with('success', 'Evaluation creee. Tu peux saisir les notes.');
@@ -133,6 +141,7 @@ class GradeWebController extends Controller
             ->route('grades.index', [
                 'school_class_id' => $assessment->school_class_id,
                 'term_id' => $assessment->term_id,
+                'term_period_id' => $assessment->term_period_id,
                 'assessment_id' => $assessment->id,
             ])
             ->with('success', 'Notes enregistrees.');
@@ -140,7 +149,7 @@ class GradeWebController extends Controller
 
     public function assessmentPdf(Assessment $assessment)
     {
-        $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
+        $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
@@ -170,7 +179,7 @@ class GradeWebController extends Controller
 
     public function assessmentExport(Assessment $assessment, XlsxExportService $xlsxExport)
     {
-        $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
+        $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
@@ -180,6 +189,7 @@ class GradeWebController extends Controller
             'Matricule',
             'Eleve',
             'Classe',
+            'Periode',
             'Matiere',
             'Evaluation',
             'Note',
@@ -196,6 +206,7 @@ class GradeWebController extends Controller
                 $student->matricule,
                 $student->full_name,
                 $assessment->schoolClass->name,
+                $assessment->termPeriod?->name ?? '-',
                 $assessment->subject->name,
                 $assessment->title,
                 $score,
@@ -213,12 +224,14 @@ class GradeWebController extends Controller
 
         $schoolClassId = $assessment->school_class_id;
         $termId = $assessment->term_id;
+        $termPeriodId = $assessment->term_period_id;
         $assessment->delete();
 
         return redirect()
             ->route('grades.index', [
                 'school_class_id' => $schoolClassId,
                 'term_id' => $termId,
+                'term_period_id' => $termPeriodId,
             ])
             ->with('success', 'Evaluation supprimee.');
     }
@@ -253,6 +266,7 @@ class GradeWebController extends Controller
         return redirect()->route('grades.index', [
             'school_class_id' => $assessment->school_class_id,
             'term_id' => $assessment->term_id,
+            'term_period_id' => $assessment->term_period_id,
             'assessment_id' => $assessment->id,
         ]);
     }

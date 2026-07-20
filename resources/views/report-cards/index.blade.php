@@ -41,6 +41,14 @@
                     @endforeach
                 </select>
 
+                @if ($termPeriods->isNotEmpty())
+                    <select name="term_period_id">
+                        @foreach ($termPeriods as $period)
+                            <option value="{{ $period->id }}" @selected($selectedTermPeriod?->id === $period->id)>{{ $period->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+
                 <button class="btn btn-subtle" type="submit">Afficher</button>
             </form>
         @endif
@@ -55,6 +63,10 @@
             <div class="stat">
                 <span>Trimestre</span>
                 <strong>{{ $selectedTerm->name }}</strong>
+            </div>
+            <div class="stat">
+                <span>Periode</span>
+                <strong>{{ $selectedTermPeriod?->name ?? '-' }}</strong>
             </div>
             <div class="stat">
                 <span>Eleves</span>
@@ -84,6 +96,9 @@
                     @endcan
                     @can('report_cards.print')
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}">PDF classe</a>
+                        @if ($selectedTermPeriod)
+                            <a class="btn btn-subtle" href="{{ route('report-cards.period-class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $selectedTermPeriod->id]) }}" data-download-feedback="Telechargement du releve par devoir lance.">PDF {{ $selectedTermPeriod->name }}</a>
+                        @endif
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-export', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}" data-download-feedback="Telechargement Excel des bulletins lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
                     @endcan
                 </div>

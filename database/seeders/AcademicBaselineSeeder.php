@@ -3,11 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\AcademicYear;
+use App\Models\Assessment;
 use App\Models\AssessmentType;
 use App\Models\FeeType;
 use App\Models\Level;
 use App\Models\SchoolSetting;
 use App\Models\Subject;
+use App\Models\TermPeriod;
 use Illuminate\Database\Seeder;
 
 class AcademicBaselineSeeder extends Seeder
@@ -48,13 +50,37 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'Trimestre 2', 'position' => 2],
             ['name' => 'Trimestre 3', 'position' => 3],
         ] as $term) {
-            $academicYear->terms()->firstOrCreate(
+            $createdTerm = $academicYear->terms()->firstOrCreate(
                 ['position' => $term['position']],
                 [
                     'name' => $term['name'],
                     'type' => 'trimestre',
                 ]
             );
+
+            foreach ([
+                ['position' => 1, 'name' => '1er devoir'],
+                ['position' => 2, 'name' => '2e devoir'],
+                ['position' => 3, 'name' => '3e devoir'],
+            ] as $period) {
+                $createdPeriod = TermPeriod::firstOrCreate(
+                    [
+                        'term_id' => $createdTerm->id,
+                        'position' => $period['position'],
+                    ],
+                    [
+                        'name' => $period['name'],
+                        'status' => 'active',
+                    ],
+                );
+
+                if ((int) $period['position'] === 1) {
+                    Assessment::query()
+                        ->where('term_id', $createdTerm->id)
+                        ->whereNull('term_period_id')
+                        ->update(['term_period_id' => $createdPeriod->id]);
+                }
+            }
         }
 
         foreach ([
@@ -93,7 +119,24 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'Production', 'code' => 'PROD'],
             ['name' => 'Dessin technique', 'code' => 'DESS_TECH'],
         ] as $subject) {
-            Subject::firstOrCreate(['name' => $subject['name']], $subject);
+            $model = Subject::query()
+                ->where('code', $subject['code'])
+                ->orWhere('name', $subject['name'])
+                ->first();
+
+            if ($model) {
+                $model->forceFill([
+                    'name' => $subject['name'],
+                    'code' => $subject['code'],
+                    'status' => 'active',
+                ])->save();
+            } else {
+                Subject::query()->create([
+                    'name' => $subject['name'],
+                    'code' => $subject['code'],
+                    'status' => 'active',
+                ]);
+            }
         }
 
         foreach ([
@@ -103,7 +146,19 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'Frais d examen', 'code' => 'EXAM'],
             ['name' => 'Autres frais', 'code' => 'AUTRE'],
         ] as $feeType) {
-            FeeType::firstOrCreate(['name' => $feeType['name']], $feeType);
+            $model = FeeType::query()
+                ->where('code', $feeType['code'])
+                ->orWhere('name', $feeType['name'])
+                ->first();
+
+            if ($model) {
+                $model->forceFill([
+                    'name' => $feeType['name'],
+                    'code' => $feeType['code'],
+                ])->save();
+            } else {
+                FeeType::query()->create($feeType);
+            }
         }
 
         foreach ([

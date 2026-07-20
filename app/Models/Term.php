@@ -33,4 +33,9 @@ class Term extends Model
     {
         return $this->hasMany(Assessment::class);
     }
+
+    public function periods(): HasMany
+    {
+        return $this->hasMany(TermPeriod::class);
+    }
 }
