@@ -33,6 +33,11 @@
                 <option value="graduated" @selected(($filters['status'] ?? '') === 'graduated')>Diplomes</option>
                 <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>Suspendus</option>
             </select>
+            <select name="per_page">
+                @foreach ([12, 25, 50, 100] as $size)
+                    <option value="{{ $size }}" @selected((int) ($filters['per_page'] ?? 12) === $size)>{{ $size }} par page</option>
+                @endforeach
+            </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
             <a class="btn btn-subtle" href="{{ route('students.index') }}">Reinitialiser</a>
         </form>

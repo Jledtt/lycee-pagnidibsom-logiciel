@@ -19,6 +19,9 @@ class StudentWebController extends Controller
 {
     public function index(Request $request): View
     {
+        $perPage = $request->integer('per_page', 12);
+        $perPage = in_array($perPage, [12, 25, 50, 100], true) ? $perPage : 12;
+
         $students = Student::query()
             ->with(['guardians', 'enrollments.schoolClass'])
             ->when($request->string('search')->toString(), function ($query, string $search) {
@@ -30,13 +33,13 @@ class StudentWebController extends Controller
             })
             ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
             ->latest()
-            ->paginate(12)
+            ->paginate($perPage)
             ->withQueryString();
 
         return view('students.index', [
             'academicYear' => $this->activeAcademicYear(),
             'students' => $students,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search', 'status', 'per_page']),
         ]);
     }
 
