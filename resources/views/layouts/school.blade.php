@@ -6,16 +6,19 @@
     <title>{{ $title ?? 'Lycee Prive Pagnidibsom' }}</title>
     <style>
         :root {
-            --ink: #162019;
-            --muted: #65706a;
-            --line: #dfe6e1;
-            --paper: #f7f8f5;
+            --ink: #1d1718;
+            --muted: #6f6564;
+            --line: #e7dfd8;
+            --paper: #fbfaf7;
             --panel: #ffffff;
-            --forest: #164534;
-            --forest-2: #20624a;
-            --gold: #c9922c;
-            --red: #b9473f;
-            --blue: #2f629b;
+            --forest: #8b1e2d;
+            --forest-2: #6f1724;
+            --gold: #e6a817;
+            --red: #b42318;
+            --blue: #2f5f8f;
+            --brand-soft: #f8edf0;
+            --gold-soft: #fff6db;
+            --surface: #fffdf9;
         }
 
         * { box-sizing: border-box; }
@@ -41,8 +44,8 @@
             display: grid;
             grid-template-columns: minmax(320px, 1fr) minmax(320px, 460px);
             background:
-                linear-gradient(120deg, rgba(22, 69, 52, .92), rgba(22, 69, 52, .76)),
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect fill='%23eef2ec' width='1200' height='800'/%3E%3Cg fill='none' stroke='%23c9922c' stroke-width='12' opacity='.55'%3E%3Cpath d='M-60 720C150 550 350 500 540 610s390 90 720-170'/%3E%3Cpath d='M-30 540c220-90 420-70 600 60s360 150 690-10'/%3E%3Cpath d='M90 110h250v250H90zM780 80h260v180H780zM630 430h380v230H630z'/%3E%3C/g%3E%3C/svg%3E");
+                linear-gradient(120deg, rgba(111, 23, 36, .95), rgba(139, 30, 45, .82)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect fill='%23fbfaf7' width='1200' height='800'/%3E%3Cg fill='none' stroke='%23e6a817' stroke-width='12' opacity='.55'%3E%3Cpath d='M-60 720C150 550 350 500 540 610s390 90 720-170'/%3E%3Cpath d='M-30 540c220-90 420-70 600 60s360 150 690-10'/%3E%3Cpath d='M90 110h250v250H90zM780 80h260v180H780zM630 430h380v230H630z'/%3E%3C/g%3E%3C/svg%3E");
             background-size: cover;
             background-position: center;
         }
@@ -62,7 +65,7 @@
             place-items: center;
             border: 1px solid rgba(255,255,255,.38);
             border-radius: 8px;
-            background: rgba(255,255,255,.12);
+            background: rgba(230,168,23,.16);
             font-weight: 800;
         }
 
@@ -85,7 +88,7 @@
             display: grid;
             place-items: center;
             padding: 28px;
-            background: rgba(247,248,245,.96);
+            background: rgba(251,250,247,.96);
         }
 
         .auth-card {
@@ -143,7 +146,7 @@
         .field input:focus,
         .field select:focus,
         .field textarea:focus {
-            outline: 3px solid rgba(32,98,74,.14);
+            outline: 3px solid rgba(139,30,45,.15);
             border-color: var(--forest-2);
         }
 
@@ -186,7 +189,7 @@
         }
 
         .btn-subtle {
-            background: #edf2ee;
+            background: var(--brand-soft);
             color: var(--forest);
         }
 
@@ -215,7 +218,7 @@
             min-height: 100vh;
             padding: 22px 16px;
             border-right: 1px solid var(--line);
-            background: #ffffff;
+            background: #fffdf9;
         }
 
         .sidebar .brand {
@@ -247,13 +250,13 @@
             min-height: 40px;
             padding: 0 10px;
             border-radius: 6px;
-            color: #435048;
+            color: #514747;
             font-weight: 650;
         }
 
         .nav a.active,
         .nav a:hover {
-            background: #edf2ee;
+            background: var(--brand-soft);
             color: var(--forest);
         }
 
@@ -367,9 +370,9 @@
         .notice {
             margin: 0 0 16px;
             padding: 12px 14px;
-            border: 1px solid rgba(32,98,74,.24);
+            border: 1px solid rgba(139,30,45,.24);
             border-radius: 6px;
-            background: rgba(32,98,74,.08);
+            background: var(--brand-soft);
             color: var(--forest);
             font-weight: 650;
         }
@@ -381,7 +384,7 @@
             z-index: 50;
             max-width: min(360px, calc(100vw - 32px));
             padding: 13px 16px;
-            border: 1px solid rgba(32,98,74,.24);
+            border: 1px solid rgba(111,23,36,.28);
             border-radius: 8px;
             background: var(--forest);
             color: #fff;
@@ -437,7 +440,7 @@
             min-height: 26px;
             padding: 0 9px;
             border-radius: 999px;
-            background: #edf2ee;
+            background: var(--brand-soft);
             color: var(--forest);
             font-size: 12px;
             font-weight: 750;
@@ -470,7 +473,7 @@
             height: 9px;
             overflow: hidden;
             border-radius: 999px;
-            background: #edf2ee;
+            background: #f2eadf;
         }
 
         .meter span {
@@ -502,7 +505,7 @@
             padding: 12px;
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: #fbfcfa;
+            background: var(--surface);
         }
 
         .detail-item span {
@@ -588,8 +591,8 @@
         }
 
         .ledger-item[open] {
-            border-color: rgba(14,75,54,.24);
-            box-shadow: 0 14px 35px rgba(17, 47, 37, .06);
+            border-color: rgba(139,30,45,.24);
+            box-shadow: 0 14px 35px rgba(111, 23, 36, .07);
         }
 
         .ledger-summary {
@@ -640,7 +643,7 @@
         .ledger-detail {
             padding: 0 16px 16px;
             border-top: 1px solid var(--line);
-            background: #fbfcfa;
+            background: var(--surface);
             overflow-x: auto;
         }
 
@@ -677,7 +680,7 @@
             border: 1px dashed var(--line);
             border-radius: 8px;
             color: var(--muted);
-            background: #fbfcfa;
+            background: var(--surface);
         }
 
         @media (max-width: 980px) {
