@@ -29,6 +29,7 @@ use App\Http\Controllers\StudentImportWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
+use App\Http\Controllers\TimetableWebController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -204,6 +205,30 @@ Route::delete('/subjects/class-subjects/{classSubject}', [SubjectWebController::
 Route::post('/subjects/defaults', [SubjectWebController::class, 'applyDefaults'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('subjects.defaults');
+
+Route::get('/timetables', [TimetableWebController::class, 'index'])
+    ->middleware(['auth', 'permission:timetables.view'])
+    ->name('timetables.index');
+
+Route::get('/timetables/pdf', [TimetableWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:timetables.print'])
+    ->name('timetables.pdf');
+
+Route::post('/timetables', [TimetableWebController::class, 'store'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.store');
+
+Route::post('/timetables/defaults', [TimetableWebController::class, 'applyTemplate'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.defaults');
+
+Route::put('/timetables/{timetableEntry}', [TimetableWebController::class, 'update'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.update');
+
+Route::delete('/timetables/{timetableEntry}', [TimetableWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.destroy');
 
 Route::get('/grades', [GradeWebController::class, 'index'])
     ->middleware(['auth', 'permission:grades.view'])

@@ -41,6 +41,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'attendance.update',
             'attendance.justify',
             'attendance.reports',
+            'timetables.view',
+            'timetables.manage',
+            'timetables.print',
             'users.manage',
             'roles.manage',
             'activity_logs.view',
@@ -68,6 +71,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'report_cards.print',
                 'attendance.view',
                 'attendance.reports',
+                'timetables.view',
+                'timetables.print',
                 'activity_logs.view',
             ],
             'secretariat' => [
@@ -80,6 +85,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'enrollments.create',
                 'enrollments.update',
                 'classes.manage',
+                'timetables.view',
+                'timetables.manage',
+                'timetables.print',
             ],
             'comptable' => [
                 'students.view',
@@ -96,6 +104,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'grades.update',
                 'attendance.view',
                 'attendance.create',
+                'timetables.view',
             ],
             'surveillant' => [
                 'students.view',
@@ -104,6 +113,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'attendance.update',
                 'attendance.justify',
                 'attendance.reports',
+                'timetables.view',
             ],
             'parent' => [
                 'report_cards.view',

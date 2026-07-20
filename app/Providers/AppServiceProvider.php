@@ -10,13 +10,14 @@ use App\Models\FeeSchedule;
 use App\Models\Grade;
 use App\Models\NumberingSetting;
 use App\Models\Payment;
-use App\Models\RequiredStudentDocument;
 use App\Models\ReportCard;
+use App\Models\RequiredStudentDocument;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\Subject;
+use App\Models\TimetableEntry;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
 use Illuminate\Support\Facades\Gate;
@@ -78,6 +79,7 @@ class AppServiceProvider extends ServiceProvider
             Student::class,
             StudentDocument::class,
             Subject::class,
+            TimetableEntry::class,
             User::class,
         ];
     }

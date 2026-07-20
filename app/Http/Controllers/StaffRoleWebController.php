@@ -121,6 +121,11 @@ class StaffRoleWebController extends Controller
                 'attendance.justify' => 'Justifier les absences',
                 'attendance.reports' => 'Voir les rapports d absences',
             ],
+            'Emplois du temps' => [
+                'timetables.view' => 'Voir les emplois du temps',
+                'timetables.manage' => 'Creer et modifier les emplois du temps',
+                'timetables.print' => 'Imprimer les emplois du temps',
+            ],
             'Administration' => [
                 'users.manage' => 'Gerer les comptes du personnel',
                 'roles.manage' => 'Modifier les roles et acces',
@@ -174,6 +179,9 @@ class StaffRoleWebController extends Controller
             'attendance.update' => 'modify',
             'attendance.justify' => 'modify',
             'attendance.reports' => 'report',
+            'timetables.view' => 'view',
+            'timetables.manage' => 'modify',
+            'timetables.print' => 'print',
             'users.manage' => 'manage',
             'roles.manage' => 'manage',
             'activity_logs.view' => 'view',
