@@ -163,7 +163,7 @@ class GradeImportTest extends TestCase
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $level = Level::query()->firstOrFail();
         $subject = Subject::query()->firstOrFail();
-        $assessmentType = AssessmentType::query()->firstOrFail();
+        $assessmentType = AssessmentType::query()->where('name', 'Devoir')->firstOrFail();
         $term = $academicYear->terms()->firstOrFail();
 
         $schoolClass = SchoolClass::query()->create([

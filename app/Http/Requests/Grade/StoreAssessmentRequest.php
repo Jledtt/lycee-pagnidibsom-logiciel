@@ -29,7 +29,7 @@ class StoreAssessmentRequest extends FormRequest
             ],
             'term_period_id' => ['nullable', 'exists:term_periods,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'assessment_type_id' => ['required', 'exists:assessment_types,id'],
+            'assessment_type_id' => ['required', Rule::exists('assessment_types', 'id')->where('status', 'active')],
             'title' => ['required', 'string', 'max:255'],
             'max_score' => ['required', 'numeric', 'min:1', 'max:100'],
             'assessment_date' => ['nullable', 'date'],

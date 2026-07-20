@@ -28,7 +28,7 @@ class TermPeriodGradeTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $user = $this->userWithRole('admin');
-        [$academicYear, $schoolClass, $term, $subject, $assessmentType, $student] = $this->classWithStudentAndSubject();
+        [$academicYear, $schoolClass, $term, $subject, $assessmentType, $compositionType, $student] = $this->classWithStudentAndSubject();
         $firstPeriod = $term->periods()->where('position', 1)->firstOrFail();
         $secondPeriod = $term->periods()->where('position', 2)->firstOrFail();
 
@@ -76,6 +76,26 @@ class TermPeriodGradeTest extends TestCase
             'entered_by' => $user->id,
         ]);
 
+        $composition = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $compositionType->id,
+            'title' => 'Composition - Francais',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $composition->id,
+            'student_id' => $student->id,
+            'score' => 20,
+            'is_absent' => false,
+            'entered_by' => $user->id,
+        ]);
+
         $calculator = app(GradeCalculationService::class);
 
         $this->assertDatabaseHas('assessments', [
@@ -84,7 +104,7 @@ class TermPeriodGradeTest extends TestCase
         ]);
         $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));
         $this->assertSame(18.0, $calculator->generalAverage($student, $schoolClass, $term, $secondPeriod->id));
-        $this->assertSame(14.0, $calculator->generalAverage($student, $schoolClass, $term));
+        $this->assertSame(17.6, $calculator->generalAverage($student, $schoolClass, $term));
 
         $this->actingAs($user)
             ->get(route('report-cards.period-class-pdf', [
@@ -103,6 +123,7 @@ class TermPeriodGradeTest extends TestCase
         $level = Level::query()->where('name', 'Terminale')->firstOrFail();
         $subject = Subject::query()->where('name', 'Francais')->firstOrFail();
         $assessmentType = AssessmentType::query()->where('name', 'Devoir')->firstOrFail();
+        $compositionType = AssessmentType::query()->where('name', 'Composition')->firstOrFail();
 
         $schoolClass = SchoolClass::query()->create([
             'academic_year_id' => $academicYear->id,
@@ -136,7 +157,7 @@ class TermPeriodGradeTest extends TestCase
             'type' => 'new',
         ]);
 
-        return [$academicYear, $schoolClass, $term, $subject, $assessmentType, $student];
+        return [$academicYear, $schoolClass, $term, $subject, $assessmentType, $compositionType, $student];
     }
 
     private function userWithRole(string $role): User

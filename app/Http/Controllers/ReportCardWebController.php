@@ -295,7 +295,7 @@ class ReportCardWebController extends Controller
                 return [
                     'subject' => $classSubject->subject,
                     'coefficient' => $coefficient,
-                    'devoir_average' => $this->assessmentAverage($reportCard, $classSubject->subject_id, ['interrogation', 'devoir']),
+                    'devoir_average' => $this->assessmentAverage($reportCard, $classSubject->subject_id, ['devoir']),
                     'composition_average' => $this->assessmentAverage($reportCard, $classSubject->subject_id, ['composition']),
                     'average' => $average,
                     'points' => $average === null ? null : round($average * $coefficient, 2),
@@ -355,6 +355,10 @@ class ReportCardWebController extends Controller
         $weights = 0.0;
 
         foreach ($assessments as $assessment) {
+            if ($assessment->assessmentType?->status !== 'active') {
+                continue;
+            }
+
             $grade = $assessment->grades->first();
 
             if ($grade === null || $grade->is_absent || $grade->score === null) {

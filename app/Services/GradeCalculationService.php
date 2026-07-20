@@ -20,10 +20,13 @@ class GradeCalculationService
             ->when($termPeriodId, fn ($query) => $query->where('term_period_id', $termPeriodId))
             ->get();
 
-        $weightedTotal = 0.0;
-        $weights = 0.0;
+        $scoresByType = [];
 
         foreach ($assessments as $assessment) {
+            if ($assessment->assessmentType?->status !== 'active') {
+                continue;
+            }
+
             $grade = $assessment->grades->first();
 
             if ($grade === null || $grade->is_absent || $grade->score === null) {
@@ -32,8 +35,23 @@ class GradeCalculationService
 
             $normalizedScore = ((float) $grade->score / (float) $assessment->max_score) * 20;
             $weight = (float) $assessment->assessmentType->weight;
-            $weightedTotal += $normalizedScore * $weight;
-            $weights += $weight;
+            $typeId = (int) $assessment->assessment_type_id;
+
+            $scoresByType[$typeId]['weight'] = $weight;
+            $scoresByType[$typeId]['scores'][] = $normalizedScore;
+        }
+
+        $weightedTotal = 0.0;
+        $weights = 0.0;
+
+        foreach ($scoresByType as $typeData) {
+            if (($typeData['weight'] ?? 0) <= 0 || empty($typeData['scores'])) {
+                continue;
+            }
+
+            $typeAverage = array_sum($typeData['scores']) / count($typeData['scores']);
+            $weightedTotal += $typeAverage * $typeData['weight'];
+            $weights += $typeData['weight'];
         }
 
         if ($weights <= 0) {

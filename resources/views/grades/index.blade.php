@@ -109,7 +109,7 @@
                             <label>Type</label>
                             <select name="assessment_type_id" required>
                                 @foreach ($assessmentTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }} x{{ number_format($type->weight, 0, ',', ' ') }}</option>
+                                    <option value="{{ $type->id }}">{{ $type->name }} - {{ number_format($type->weight, 0, ',', ' ') }}%</option>
                                 @endforeach
                             </select>
                         </div>

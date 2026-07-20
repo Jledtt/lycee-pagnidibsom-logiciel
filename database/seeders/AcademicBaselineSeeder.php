@@ -162,11 +162,17 @@ class AcademicBaselineSeeder extends Seeder
         }
 
         foreach ([
-            ['name' => 'Interrogation', 'weight' => 1],
-            ['name' => 'Devoir', 'weight' => 1],
-            ['name' => 'Composition', 'weight' => 2],
+            ['name' => 'Interrogation', 'weight' => 0, 'status' => 'inactive'],
+            ['name' => 'Devoir', 'weight' => 40, 'status' => 'active'],
+            ['name' => 'Composition', 'weight' => 60, 'status' => 'active'],
         ] as $type) {
-            AssessmentType::firstOrCreate(['name' => $type['name']], $type);
+            AssessmentType::query()->updateOrCreate(
+                ['name' => $type['name']],
+                [
+                    'weight' => $type['weight'],
+                    'status' => $type['status'],
+                ],
+            );
         }
     }
 }
