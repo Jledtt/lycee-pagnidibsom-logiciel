@@ -223,8 +223,8 @@ class TimetableWebController extends Controller
     {
         $rows = [];
 
-        foreach ($timetable->entries->sortBy([['sort_order', 'asc']]) as $entry) {
-            $key = $entry->sort_order.'-'.$entry->period_label;
+        foreach ($timetable->entries->sortBy([['sort_order', 'asc'], ['day_of_week', 'asc']]) as $entry) {
+            $key = $entry->period_label;
 
             $rows[$key] ??= [
                 'sort_order' => $entry->sort_order,
@@ -238,6 +238,9 @@ class TimetableWebController extends Controller
             $rows[$key]['days'][$entry->day_of_week] = $entry;
         }
 
-        return array_values($rows);
+        return collect($rows)
+            ->sortBy('sort_order')
+            ->values()
+            ->all();
     }
 }

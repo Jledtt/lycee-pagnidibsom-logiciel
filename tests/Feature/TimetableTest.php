@@ -98,6 +98,51 @@ class TimetableTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_timetable_groups_same_period_on_one_row(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $schoolClass = $this->schoolClass('5e A');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $timetable = Timetable::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Emploi test',
+            'status' => 'active',
+            'created_by' => $user->id,
+        ]);
+
+        $timetable->entries()->createMany([
+            [
+                'sort_order' => 1,
+                'period_label' => '7h00-7h55',
+                'starts_at' => '07:00',
+                'ends_at' => '07:55',
+                'day_of_week' => 'monday',
+                'subject_name' => 'EPS',
+            ],
+            [
+                'sort_order' => 2,
+                'period_label' => '7h00-7h55',
+                'starts_at' => '07:00',
+                'ends_at' => '07:55',
+                'day_of_week' => 'tuesday',
+                'subject_name' => 'Francais',
+            ],
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('timetables.index', ['school_class_id' => $schoolClass->id]))
+            ->assertOk()
+            ->assertSee('7h00-7h55', false)
+            ->assertSee('EPS')
+            ->assertSee('Francais');
+
+        $this->assertSame(1, substr_count($response->getContent(), '<strong>7h00-7h55</strong>'));
+    }
+
     public function test_comptable_cannot_open_timetable_module(): void
     {
         $this->seed(DatabaseSeeder::class);
