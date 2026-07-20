@@ -210,25 +210,25 @@ Route::get('/timetables', [TimetableWebController::class, 'index'])
     ->middleware(['auth', 'permission:timetables.view'])
     ->name('timetables.index');
 
-Route::get('/timetables/pdf', [TimetableWebController::class, 'pdf'])
-    ->middleware(['auth', 'permission:timetables.print'])
-    ->name('timetables.pdf');
-
 Route::post('/timetables', [TimetableWebController::class, 'store'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.store');
 
-Route::post('/timetables/defaults', [TimetableWebController::class, 'applyTemplate'])
+Route::post('/timetables/example', [TimetableWebController::class, 'applyExample'])
     ->middleware(['auth', 'permission:timetables.manage'])
-    ->name('timetables.defaults');
+    ->name('timetables.example');
 
-Route::put('/timetables/{timetableEntry}', [TimetableWebController::class, 'update'])
+Route::get('/timetables/{timetable}/edit', [TimetableWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.edit');
+
+Route::put('/timetables/{timetable}', [TimetableWebController::class, 'update'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.update');
 
-Route::delete('/timetables/{timetableEntry}', [TimetableWebController::class, 'destroy'])
-    ->middleware(['auth', 'permission:timetables.manage'])
-    ->name('timetables.destroy');
+Route::get('/timetables/{timetable}/pdf', [TimetableWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:timetables.print'])
+    ->name('timetables.pdf');
 
 Route::get('/grades', [GradeWebController::class, 'index'])
     ->middleware(['auth', 'permission:grades.view'])

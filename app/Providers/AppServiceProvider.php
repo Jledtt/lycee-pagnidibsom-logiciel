@@ -17,6 +17,7 @@ use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\Subject;
+use App\Models\Timetable;
 use App\Models\TimetableEntry;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
@@ -79,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
             Student::class,
             StudentDocument::class,
             Subject::class,
+            Timetable::class,
             TimetableEntry::class,
             User::class,
         ];

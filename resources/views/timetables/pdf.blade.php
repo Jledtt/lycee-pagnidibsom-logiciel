@@ -2,94 +2,79 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Emploi du temps - {{ $schoolClass->name }}</title>
     <style>
-        @page { margin: 18px 20px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 17px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 16px 0 10px; text-align: center; font-size: 20px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
-        .schedule th, .schedule td { border: 1px solid #000; padding: 5px 4px; vertical-align: top; }
-        .schedule th { background: #f1f1f1; text-align: center; text-transform: uppercase; }
-        .time { width: 84px; text-align: center; font-weight: bold; }
-        .subject { font-weight: bold; font-size: 10px; }
-        .teacher { margin-top: 2px; font-size: 8px; color: #333; }
-        .empty { color: #777; text-align: center; }
-        .footer { margin-top: 14px; font-size: 9px; }
+        @page { margin: 22px 26px; }
+        body { font-family: DejaVu Sans, sans-serif; color: #111; font-size: 10px; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .school { font-size: 16px; font-weight: 800; text-transform: uppercase; }
+        .meta { margin-top: 4px; font-size: 11px; }
+        h1 { margin: 8px 0 10px; text-align: center; font-size: 18px; text-transform: uppercase; }
+        .info { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
+        .info td { border: 1px solid #333; padding: 5px 7px; vertical-align: top; }
+        .schedule { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .schedule th, .schedule td { border: 1px solid #222; padding: 6px 4px; text-align: center; vertical-align: middle; }
+        .schedule th { background: #174534; color: #fff; font-weight: 800; }
+        .schedule td:first-child { width: 90px; font-weight: 800; background: #f2f2f2; }
+        .break td { background: #faedcd; font-weight: 800; color: #7a5300; letter-spacing: 1px; }
+        .subject { font-size: 11px; font-weight: 800; }
+        .teacher, .room { margin-top: 3px; font-size: 8px; color: #444; }
+        .notes { margin-top: 10px; font-size: 9px; }
     </style>
 </head>
 <body>
-    @php($school = $school ?? $schoolSettings)
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    <div class="header">
+        <div class="school">Lycee Prive Pagnidibsom</div>
+        <div class="meta">Annee scolaire : {{ $timetable->academicYear?->name }} | Classe : {{ $timetable->schoolClass?->name }}</div>
+    </div>
 
-    <table class="header">
+    <h1>{{ $timetable->title }}</h1>
+
+    <table class="info">
         <tr>
-            <td style="width:78px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-            </td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
-                Classe : {{ $schoolClass->name }}<br>
-                Document genere le : {{ now()->format('d/m/Y') }}
-            </td>
+            <td><strong>Statut :</strong> {{ $timetable->status }}</td>
+            <td><strong>Professeur principal / equipe :</strong> {{ $timetable->principal_teacher ?: '-' }}</td>
         </tr>
     </table>
-
-    <div class="title">Emploi du temps</div>
 
     <table class="schedule">
         <thead>
             <tr>
-                <th class="time">Horaire</th>
-                @foreach ($dayLabels as $day)
-                    <th>{{ $day }}</th>
+                <th>Horaire</th>
+                @foreach ($days as $dayLabel)
+                    <th>{{ $dayLabel }}</th>
                 @endforeach
             </tr>
         </thead>
         <tbody>
-            @forelse ($grid as $row)
-                <tr>
-                    <td class="time">{{ $row['slot']['label'] }}</td>
-                    @foreach ($dayLabels as $dayNumber => $day)
-                        @php($entry = $row['days'][$dayNumber] ?? null)
-                        <td>
-                            @if ($entry)
-                                <div class="subject">{{ $entry->subject_label }}</div>
-                                @if ($entry->teacher_name)
+            @foreach ($grid as $row)
+                @if ($row['is_break'])
+                    <tr class="break">
+                        <td>{{ $row['period_label'] }}</td>
+                        <td colspan="{{ count($days) }}">{{ $row['period_label'] }}</td>
+                    </tr>
+                @else
+                    <tr>
+                        <td>{{ $row['period_label'] }}</td>
+                        @foreach (array_keys($days) as $dayKey)
+                            @php($entry = $row['days'][$dayKey] ?? null)
+                            <td>
+                                <div class="subject">{{ $entry?->subject_name ?: '-' }}</div>
+                                @if ($entry?->teacher_name)
                                     <div class="teacher">{{ $entry->teacher_name }}</div>
                                 @endif
-                                @if ($entry->room)
-                                    <div class="teacher">Salle : {{ $entry->room }}</div>
+                                @if ($entry?->room)
+                                    <div class="room">Salle : {{ $entry->room }}</div>
                                 @endif
-                            @else
-                                <div class="empty">-</div>
-                            @endif
-                        </td>
-                    @endforeach
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="empty">Aucun creneau saisi pour cette classe.</td>
-                </tr>
-            @endforelse
+                            </td>
+                        @endforeach
+                    </tr>
+                @endif
+            @endforeach
         </tbody>
     </table>
 
-    <table class="footer">
-        <tr>
-            <td>Document provisoire modifiable depuis le logiciel de gestion scolaire.</td>
-            <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
-        </tr>
-    </table>
+    @if ($timetable->notes)
+        <div class="notes"><strong>Notes :</strong> {{ $timetable->notes }}</div>
+    @endif
 </body>
 </html>

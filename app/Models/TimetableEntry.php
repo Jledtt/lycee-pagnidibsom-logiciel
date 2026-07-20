@@ -8,46 +8,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TimetableEntry extends Model
 {
     protected $fillable = [
-        'academic_year_id',
-        'school_class_id',
-        'day_of_week',
+        'timetable_id',
+        'sort_order',
+        'period_label',
         'starts_at',
         'ends_at',
-        'subject_label',
+        'day_of_week',
+        'subject_id',
+        'subject_name',
         'teacher_name',
         'room',
-        'notes',
+        'is_break',
     ];
 
-    public function academicYear(): BelongsTo
+    protected $casts = [
+        'is_break' => 'boolean',
+    ];
+
+    public function timetable(): BelongsTo
     {
-        return $this->belongsTo(AcademicYear::class);
+        return $this->belongsTo(Timetable::class);
     }
 
-    public function schoolClass(): BelongsTo
+    public function subject(): BelongsTo
     {
-        return $this->belongsTo(SchoolClass::class);
-    }
-
-    public function getDayLabelAttribute(): string
-    {
-        return self::dayLabels()[$this->day_of_week] ?? 'Jour';
-    }
-
-    public function getTimeLabelAttribute(): string
-    {
-        return substr((string) $this->starts_at, 0, 5).' - '.substr((string) $this->ends_at, 0, 5);
-    }
-
-    public static function dayLabels(): array
-    {
-        return [
-            1 => 'Lundi',
-            2 => 'Mardi',
-            3 => 'Mercredi',
-            4 => 'Jeudi',
-            5 => 'Vendredi',
-            6 => 'Samedi',
-        ];
+        return $this->belongsTo(Subject::class);
     }
 }
