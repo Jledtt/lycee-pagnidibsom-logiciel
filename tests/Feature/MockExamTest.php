@@ -7,6 +7,7 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Level;
 use App\Models\MockExam;
+use App\Models\MockExamScore;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -79,10 +80,34 @@ class MockExamTest extends TestCase
             'room_name' => 'Salle 1',
         ]);
 
-        $this->actingAs($user)
-            ->get(route('mock-exams.candidates.pdf', $exam))
-            ->assertOk()
-            ->assertHeader('content-type', 'application/pdf');
+        $exam->load(['subjects', 'candidates']);
+        $examSubject = $exam->subjects->firstOrFail();
+
+        foreach ($exam->candidates as $candidate) {
+            MockExamScore::query()->create([
+                'mock_exam_subject_id' => $examSubject->id,
+                'mock_exam_candidate_id' => $candidate->id,
+                'score' => 12,
+                'is_absent' => false,
+            ]);
+        }
+
+        foreach ([
+            route('mock-exams.candidates.pdf', $exam),
+            route('mock-exams.rooms.pdf', $exam),
+            route('mock-exams.anonymity.pdf', $exam),
+            route('mock-exams.surveillance-pv.pdf', $exam),
+            route('mock-exams.copy-receipt.pdf', $exam),
+            route('mock-exams.results.pdf', [$exam, 'provisoire']),
+            route('mock-exams.results.pdf', [$exam, 'definitif']),
+            route('mock-exams.jury-decision.pdf', $exam),
+            route('mock-exams.teacher-fees.pdf', $exam),
+        ] as $pdfUrl) {
+            $this->actingAs($user)
+                ->get($pdfUrl)
+                ->assertOk()
+                ->assertHeader('content-type', 'application/pdf');
+        }
     }
 
     private function userWithRole(string $role): User

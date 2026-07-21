@@ -267,6 +267,27 @@ Route::get('/mock-exams/{mockExam}/anonymity/pdf', [MockExamWebController::class
     ->middleware(['auth', 'permission:mock_exams.print'])
     ->name('mock-exams.anonymity.pdf');
 
+Route::get('/mock-exams/{mockExam}/surveillance-pv/pdf', [MockExamWebController::class, 'surveillancePvPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.surveillance-pv.pdf');
+
+Route::get('/mock-exams/{mockExam}/copy-receipt/pdf', [MockExamWebController::class, 'copyReceiptPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.copy-receipt.pdf');
+
+Route::get('/mock-exams/{mockExam}/results/{status}/pdf', [MockExamWebController::class, 'resultsPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->whereIn('status', ['provisoire', 'definitif'])
+    ->name('mock-exams.results.pdf');
+
+Route::get('/mock-exams/{mockExam}/jury-decision/pdf', [MockExamWebController::class, 'juryDecisionPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.jury-decision.pdf');
+
+Route::get('/mock-exams/{mockExam}/teacher-fees/pdf', [MockExamWebController::class, 'teacherFeesPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.teacher-fees.pdf');
+
 Route::post('/grades/assessments', [GradeWebController::class, 'storeAssessment'])
     ->middleware(['auth', 'permission:grades.create'])
     ->name('grades.assessments.store');

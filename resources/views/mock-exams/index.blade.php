@@ -162,6 +162,15 @@
                     <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la liste des anonymats lance.">PDF anonymats</a>
                 </div>
 
+                <div class="page-actions" style="margin-top:10px">
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Telechargement du PV de surveillance lance.">PV surveillance</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Telechargement du bordereau des copies lance.">Bordereau copies</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Telechargement des resultats provisoires lance.">Resultats provisoires</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'definitif']) }}" data-download-feedback="Telechargement des resultats definitifs lance.">Resultats definitifs</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la decision du jury lance.">Decision jury</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.teacher-fees.pdf', $selectedExam) }}" data-download-feedback="Telechargement des honoraires professeurs lance.">Honoraires</a>
+                </div>
+
                 @if ($selectedExam->notes)
                     <p class="notice" style="margin-top:16px">{{ $selectedExam->notes }}</p>
                 @endif
