@@ -155,6 +155,12 @@
                         <input id="principal_name" name="principal_name" value="{{ old('principal_name', $settings->principal_name) }}" placeholder="Yamdaogo TINTILA">
                         @error('principal_name') <small class="error">{{ $message }}</small> @enderror
                     </div>
+
+                    <div class="field wide">
+                        <label for="accountant_name">Nom du comptable</label>
+                        <input id="accountant_name" name="accountant_name" value="{{ old('accountant_name', $settings->accountant_name) }}" placeholder="Nom du comptable">
+                        @error('accountant_name') <small class="error">{{ $message }}</small> @enderror
+                    </div>
                 </div>
 
                 <div class="form-actions">

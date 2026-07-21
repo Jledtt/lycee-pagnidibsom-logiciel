@@ -11,8 +11,11 @@
             font-family: "Times New Roman", "DejaVu Serif", serif;
             font-size: 11px;
         }
-        .header { text-align: center; margin-bottom: 12px; line-height: 1.3; }
-        .header strong { font-size: 14px; text-transform: uppercase; }
+        .header { width: 100%; border-collapse: collapse; margin-bottom: 10px; line-height: 1.3; }
+        .header td { vertical-align: middle; }
+        .logo { width: 72px; height: 72px; object-fit: contain; }
+        .school { text-align: center; }
+        .school strong { font-size: 14px; text-transform: uppercase; }
         .meta { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
         .meta td { padding: 2px 4px; }
         .sheet { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -27,11 +30,19 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <strong>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</strong><br>
-        {{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }} -
-        Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}
-    </div>
+    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    <table class="header">
+        <tr>
+            <td style="width:86px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
+            <td class="school">
+                <strong>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</strong><br>
+                {{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }} -
+                Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}<br>
+                E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}
+            </td>
+            <td style="width:86px"></td>
+        </tr>
+    </table>
 
     <table class="meta">
         <tr>
@@ -76,7 +87,7 @@
     </table>
 
     <div class="footer">
-        Note : a chaque fin de cours, le professeur passe a la vie scolaire pour emarger le nombre d heures effectuees.
+        Note : cette fiche est generee par le logiciel. A chaque fin de cours, le professeur passe a la vie scolaire pour signer le nombre d heures effectuees.
     </div>
 </body>
 </html>

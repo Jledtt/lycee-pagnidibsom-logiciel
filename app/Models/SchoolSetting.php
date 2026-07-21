@@ -22,5 +22,6 @@ class SchoolSetting extends Model
         'currency',
         'principal_name',
         'principal_title',
+        'accountant_name',
     ];
 }

@@ -32,6 +32,7 @@ class AcademicBaselineSeeder extends Seeder
                 'postal_box' => '04 BP 8825',
                 'principal_name' => 'Yamdaogo TINTILA',
                 'principal_title' => 'Le Proviseur',
+                'accountant_name' => 'Le Comptable',
             ]
         );
 

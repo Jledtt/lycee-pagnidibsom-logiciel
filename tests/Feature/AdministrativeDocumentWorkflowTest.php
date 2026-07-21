@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\Level;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\StudentExitAuthorization;
@@ -106,6 +107,41 @@ class AdministrativeDocumentWorkflowTest extends TestCase
             ->get(route('certificates.pdf', $certificate))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_admin_can_save_accountant_name_for_official_documents(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('admin');
+        $settings = SchoolSetting::query()->firstOrFail();
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $this->actingAs($user)
+            ->put(route('settings.update'), [
+                'school_name' => $settings->school_name,
+                'short_name' => $settings->short_name,
+                'address' => $settings->address,
+                'phone' => $settings->phone,
+                'email' => $settings->email,
+                'website' => $settings->website,
+                'currency' => $settings->currency,
+                'motto' => $settings->motto,
+                'country' => $settings->country,
+                'national_motto' => $settings->national_motto,
+                'city' => $settings->city,
+                'postal_box' => $settings->postal_box,
+                'principal_name' => 'Yamdaogo TINTILA',
+                'principal_title' => 'Le Proviseur',
+                'accountant_name' => 'Mika COMPTABLE',
+                'active_academic_year_id' => $academicYear->id,
+            ])
+            ->assertRedirect(route('settings.edit'));
+
+        $this->assertDatabaseHas('school_settings', [
+            'id' => $settings->id,
+            'accountant_name' => 'Mika COMPTABLE',
+        ]);
     }
 
     private function userWithRole(string $role): User

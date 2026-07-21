@@ -45,15 +45,15 @@
             </div>
             <div class="detail-item">
                 <span>Vie scolaire</span>
-                <strong>Le professeur passe a la vie scolaire apres le cours pour signer.</strong>
+                <strong>Le logiciel genere la fiche, puis le professeur passe a la vie scolaire apres le cours pour signer sur papier.</strong>
             </div>
             <div class="detail-item">
                 <span>Controle</span>
-                <strong>Sans emargement, l administration peut considerer que le cours n a pas ete effectue.</strong>
+                <strong>Sans signature sur la fiche imprimee, l administration peut considerer que le cours n a pas ete effectue.</strong>
             </div>
             <div class="detail-item">
                 <span>Source</span>
-                <strong>Les cases sont pre-remplies depuis les emplois du temps lorsque le professeur est choisi.</strong>
+                <strong>Les cases sont pre-remplies depuis les emplois du temps; la vie scolaire imprime puis archive la fiche signee.</strong>
             </div>
         </div>
     </section>

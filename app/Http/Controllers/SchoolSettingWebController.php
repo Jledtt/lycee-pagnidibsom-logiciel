@@ -40,6 +40,7 @@ class SchoolSettingWebController extends Controller
             'postal_box' => ['nullable', 'string', 'max:255'],
             'principal_name' => ['nullable', 'string', 'max:255'],
             'principal_title' => ['nullable', 'string', 'max:255'],
+            'accountant_name' => ['nullable', 'string', 'max:255'],
             'active_academic_year_id' => ['required', 'exists:academic_years,id'],
             'logo' => ['nullable', 'image', 'max:2048'],
         ]);
@@ -83,6 +84,7 @@ class SchoolSettingWebController extends Controller
                 'postal_box' => '04 BP 8825',
                 'principal_name' => 'Yamdaogo TINTILA',
                 'principal_title' => 'Le Proviseur',
+                'accountant_name' => 'Le Comptable',
             ],
         );
     }

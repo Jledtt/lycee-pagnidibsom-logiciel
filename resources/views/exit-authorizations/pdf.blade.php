@@ -4,31 +4,44 @@
     <meta charset="utf-8">
     <title>Autorisation d entree et de sortie</title>
     <style>
-        @page { margin: 50px; }
+        @page { margin: 34px 48px; }
         body {
             margin: 0;
             color: #000;
             font-family: "Times New Roman", "DejaVu Serif", serif;
-            font-size: 14px;
-            line-height: 1.75;
+            font-size: 13px;
+            line-height: 1.55;
         }
-        .school { text-align: center; font-weight: bold; font-size: 12px; line-height: 1.35; margin-bottom: 34px; }
-        .title { text-align: center; font-weight: bold; text-decoration: underline; font-size: 16px; margin: 0 0 34px; }
-        .row { margin-bottom: 16px; }
-        .label { display: inline-block; min-width: 230px; }
-        .line { display: inline-block; min-width: 360px; border-bottom: 1px dotted #000; font-weight: bold; }
-        .small-line { display: inline-block; min-width: 80px; border-bottom: 1px dotted #000; text-align: center; font-weight: bold; }
-        .signature { margin-top: 58px; text-align: right; }
+        .header { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .header td { vertical-align: top; }
+        .logo { width: 96px; height: 96px; object-fit: contain; }
+        .school { text-align: center; font-weight: bold; font-size: 13px; line-height: 1.42; }
+        .title { text-align: center; font-weight: bold; text-decoration: underline; font-size: 16px; margin: 0 0 26px; }
+        .row { margin-bottom: 13px; }
+        .label { display: inline-block; width: 230px; }
+        .line { display: inline-block; width: 390px; border-bottom: 1px dotted #000; font-weight: bold; padding-left: 4px; }
+        .small-line { display: inline-block; width: 78px; border-bottom: 1px dotted #000; text-align: center; font-weight: bold; }
+        .signature { margin-top: 42px; text-align: right; }
         .sign-box { display: inline-block; min-width: 230px; text-align: center; }
         .muted { color: #333; }
     </style>
 </head>
 <body>
-    <div class="school">
-        {{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}<br>
-        {{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}<br>
-        Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}
-    </div>
+    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    <table class="header">
+        <tr>
+            <td style="width:120px">
+                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
+            </td>
+            <td class="school">
+                {{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}<br>
+                {{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}<br>
+                Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}<br>
+                E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}
+            </td>
+            <td style="width:120px"></td>
+        </tr>
+    </table>
 
     <h1 class="title">AUTORISATION D'ENTREE ET DE SORTIE</h1>
 
