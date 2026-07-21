@@ -7,7 +7,6 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Level;
 use App\Models\MockExam;
-use App\Models\MockExamScore;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -123,14 +122,34 @@ class MockExamTest extends TestCase
             'fee_amount' => 1000,
         ]);
 
-        foreach ($exam->candidates as $candidate) {
-            MockExamScore::query()->create([
-                'mock_exam_subject_id' => $examSubject->id,
-                'mock_exam_candidate_id' => $candidate->id,
-                'score' => 12,
-                'is_absent' => false,
-            ]);
-        }
+        $scorePayload = $exam->candidates
+            ->mapWithKeys(fn ($candidate) => [
+                $candidate->id => [
+                    'score' => 12,
+                    'is_absent' => false,
+                    'observation' => 'RAS',
+                ],
+            ])
+            ->all();
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.subjects.scores', [$exam, $examSubject]))
+            ->assertOk()
+            ->assertSee('Saisie des notes')
+            ->assertSee('Francais');
+
+        $this->actingAs($user)
+            ->put(route('mock-exams.subjects.scores.update', [$exam, $examSubject]), [
+                'scores' => $scorePayload,
+            ])
+            ->assertRedirect(route('mock-exams.subjects.scores', [$exam, $examSubject]));
+
+        $this->assertDatabaseHas('mock_exam_scores', [
+            'mock_exam_subject_id' => $examSubject->id,
+            'mock_exam_candidate_id' => $exam->candidates->first()->id,
+            'score' => 12,
+            'observation' => 'RAS',
+        ]);
 
         $this->actingAs($user)
             ->put(route('mock-exams.jury-decisions.update', $exam), [
@@ -161,6 +180,7 @@ class MockExamTest extends TestCase
             route('mock-exams.anonymity.pdf', $exam),
             route('mock-exams.surveillance-pv.pdf', $exam),
             route('mock-exams.copy-receipt.pdf', $exam),
+            route('mock-exams.subjects.scores.pdf', [$exam, $examSubject]),
             route('mock-exams.results.pdf', [$exam, 'provisoire']),
             route('mock-exams.results.pdf', [$exam, 'definitif']),
             route('mock-exams.jury-decision.pdf', $exam),

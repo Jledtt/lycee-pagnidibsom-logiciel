@@ -95,6 +95,47 @@ class ClassCouncilWebController extends Controller
             ->stream($filename);
     }
 
+    public function annualRedemptions(Request $request): View
+    {
+        [$academicYear, $classes, $terms, $selectedClass] = $this->annualSelection($request);
+        $threshold = $this->redemptionThreshold($request);
+        $rows = $selectedClass ? $this->annualRedemptionRows($academicYear, $selectedClass, $terms, $threshold) : collect();
+
+        return view('class-council.annual-redemptions', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'eligibleRows' => $rows->where('is_eligible', true)->values(),
+            'rows' => $rows,
+            'selectedClass' => $selectedClass,
+            'terms' => $terms,
+            'threshold' => $threshold,
+        ]);
+    }
+
+    public function annualRedemptionsPdf(Request $request)
+    {
+        [$academicYear, $classes, $terms, $selectedClass] = $this->annualSelection($request);
+        $threshold = $this->redemptionThreshold($request);
+
+        abort_if(! $selectedClass, 404, 'Classe introuvable.');
+
+        $eligibleRows = $this->annualRedemptionRows($academicYear, $selectedClass, $terms, $threshold)
+            ->where('is_eligible', true)
+            ->values();
+
+        return Pdf::loadView('class-council.annual-redemptions-pdf', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'eligibleRows' => $eligibleRows,
+            'school' => SchoolSetting::query()->first(),
+            'schoolClass' => $selectedClass,
+            'terms' => $terms,
+            'threshold' => $threshold,
+        ])
+            ->setPaper('a4')
+            ->stream('liste-rachats-' . Str::slug($selectedClass->name . '-' . $academicYear->name) . '.pdf');
+    }
+
     public function lock(Request $request): RedirectResponse
     {
         [$academicYear, , , $schoolClass, $term] = $this->validatedSelection($request);
@@ -164,6 +205,26 @@ class ClassCouncilWebController extends Controller
         return [$academicYear, $classes, $terms, $selectedClass, $selectedTerm];
     }
 
+    private function annualSelection(Request $request): array
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+        $classes = SchoolClass::query()
+            ->with('level')
+            ->where('academic_year_id', $academicYear->id)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $terms = Term::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->orderBy('position')
+            ->get();
+
+        $selectedClass = $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
+
+        return [$academicYear, $classes, $terms, $selectedClass];
+    }
+
     private function validatedSelection(Request $request): array
     {
         $academicYear = $this->requireActiveAcademicYear();
@@ -201,6 +262,65 @@ class ClassCouncilWebController extends Controller
             ->orderBy('students.first_name')
             ->select('report_cards.*')
             ->get();
+    }
+
+    private function redemptionThreshold(Request $request): float
+    {
+        $threshold = (float) str_replace(',', '.', (string) $request->input('threshold', '9.85'));
+
+        return min(9.99, max(0, round($threshold, 2)));
+    }
+
+    private function annualRedemptionRows(AcademicYear $academicYear, SchoolClass $schoolClass, Collection $terms, float $threshold): Collection
+    {
+        $termIds = $terms->pluck('id');
+        $cardsByStudent = ReportCard::query()
+            ->with('student')
+            ->where('academic_year_id', $academicYear->id)
+            ->where('school_class_id', $schoolClass->id)
+            ->whereIn('term_id', $termIds)
+            ->whereNotNull('general_average')
+            ->get()
+            ->groupBy('student_id');
+
+        $students = Enrollment::query()
+            ->with('student')
+            ->where('academic_year_id', $academicYear->id)
+            ->where('school_class_id', $schoolClass->id)
+            ->where('enrollments.status', 'active')
+            ->whereHas('student', fn ($query) => $query->where('students.status', 'active'))
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('enrollments.*')
+            ->get()
+            ->pluck('student');
+
+        return $students
+            ->map(function (Student $student) use ($cardsByStudent, $terms, $threshold) {
+                $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
+                $averages = $terms->mapWithKeys(fn (Term $term) => [
+                    $term->id => $cards->get($term->id)?->general_average === null ? null : (float) $cards->get($term->id)->general_average,
+                ]);
+                $knownAverages = $averages->filter(fn ($average) => $average !== null);
+                $annualAverage = $knownAverages->isEmpty() ? null : round($knownAverages->avg(), 2);
+
+                return [
+                    'annual_average' => $annualAverage,
+                    'is_eligible' => $annualAverage !== null && $annualAverage >= $threshold && $annualAverage < 10,
+                    'redeemed_average' => $annualAverage !== null && $annualAverage >= $threshold && $annualAverage < 10 ? 10.00 : $annualAverage,
+                    'student' => $student,
+                    'term_averages' => $averages,
+                    'terms_count' => $knownAverages->count(),
+                ];
+            })
+            ->sortByDesc(fn (array $row) => $row['annual_average'] ?? -1)
+            ->values()
+            ->map(function (array $row, int $index) {
+                $row['rank'] = $row['annual_average'] === null ? null : $index + 1;
+
+                return $row;
+            });
     }
 
     private function subjectRows(ReportCard $reportCard): Collection

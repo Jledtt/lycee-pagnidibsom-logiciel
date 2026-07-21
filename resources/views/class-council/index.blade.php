@@ -8,6 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('report-cards.index', ['school_class_id' => $selectedClass?->id, 'term_id' => $selectedTerm?->id]) }}">Bulletins</a>
     <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $selectedClass?->id, 'term_id' => $selectedTerm?->id]) }}">Notes</a>
+    <a class="btn btn-subtle" href="{{ route('class-council.annual-redemptions', ['school_class_id' => $selectedClass?->id]) }}">Rachats conseil</a>
 @endsection
 
 @section('content')

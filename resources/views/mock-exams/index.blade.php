@@ -273,7 +273,13 @@
                             <strong>{{ $subject->subject?->name }}</strong>
                             <span>{{ $subject->exam_part_label }} - Note / {{ number_format($subject->max_score, 0, ',', ' ') }} - Coef {{ number_format($subject->coefficient, 2, ',', ' ') }}</span>
                         </div>
-                        <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire paye' : ($subject->fee_status === 'approved' ? 'Honoraire valide' : 'A traiter') }}</span>
+                        <div class="page-actions">
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores', [$selectedExam, $subject]) }}">Saisie notes</a>
+                            @can('mock_exams.print')
+                                <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores.pdf', [$selectedExam, $subject]) }}" data-download-feedback="Telechargement de la feuille de notes lance.">PDF notes</a>
+                            @endcan
+                            <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire paye' : ($subject->fee_status === 'approved' ? 'Honoraire valide' : 'A traiter') }}</span>
+                        </div>
                     </div>
 
                     <div class="form-grid">

@@ -298,6 +298,14 @@ Route::put('/mock-exams/subjects/{mockExamSubject}/tracking', [MockExamWebContro
     ->middleware(['auth', 'permission:mock_exams.manage'])
     ->name('mock-exams.subjects.tracking.update');
 
+Route::get('/mock-exams/{mockExam}/subjects/{mockExamSubject}/scores', [MockExamWebController::class, 'subjectScores'])
+    ->middleware(['auth', 'permission:mock_exams.view'])
+    ->name('mock-exams.subjects.scores');
+
+Route::put('/mock-exams/{mockExam}/subjects/{mockExamSubject}/scores', [MockExamWebController::class, 'updateSubjectScores'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.subjects.scores.update');
+
 Route::put('/mock-exams/{mockExam}/jury-decisions', [MockExamWebController::class, 'updateJuryDecisions'])
     ->middleware(['auth', 'permission:mock_exams.manage'])
     ->name('mock-exams.jury-decisions.update');
@@ -321,6 +329,10 @@ Route::get('/mock-exams/{mockExam}/surveillance-pv/pdf', [MockExamWebController:
 Route::get('/mock-exams/{mockExam}/copy-receipt/pdf', [MockExamWebController::class, 'copyReceiptPdf'])
     ->middleware(['auth', 'permission:mock_exams.print'])
     ->name('mock-exams.copy-receipt.pdf');
+
+Route::get('/mock-exams/{mockExam}/subjects/{mockExamSubject}/scores/pdf', [MockExamWebController::class, 'scoreSheetPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.subjects.scores.pdf');
 
 Route::get('/mock-exams/{mockExam}/results/{status}/pdf', [MockExamWebController::class, 'resultsPdf'])
     ->middleware(['auth', 'permission:mock_exams.print'])
@@ -394,6 +406,14 @@ Route::get('/class-council', [ClassCouncilWebController::class, 'index'])
 Route::get('/class-council/pv/pdf', [ClassCouncilWebController::class, 'pvPdf'])
     ->middleware(['auth', 'permission:report_cards.print'])
     ->name('class-council.pv-pdf');
+
+Route::get('/class-council/annual-redemptions', [ClassCouncilWebController::class, 'annualRedemptions'])
+    ->middleware(['auth', 'permission:report_cards.view'])
+    ->name('class-council.annual-redemptions');
+
+Route::get('/class-council/annual-redemptions/pdf', [ClassCouncilWebController::class, 'annualRedemptionsPdf'])
+    ->middleware(['auth', 'permission:report_cards.print'])
+    ->name('class-council.annual-redemptions-pdf');
 
 Route::post('/class-council/lock', [ClassCouncilWebController::class, 'lock'])
     ->middleware(['auth', 'permission:report_cards.validate'])

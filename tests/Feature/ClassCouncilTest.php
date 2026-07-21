@@ -83,6 +83,70 @@ class ClassCouncilTest extends TestCase
         $this->assertStringContainsString('Awa Ouedraogo', $this->sheetXml($response->getContent()));
     }
 
+    public function test_admin_can_view_and_print_annual_redemptions(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('admin');
+        [$class, $term] = $this->classWithGrades();
+
+        app(ReportCardService::class)->generateForClass($class, $term);
+
+        $terms = Term::query()
+            ->where('academic_year_id', $class->academic_year_id)
+            ->orderBy('position')
+            ->get();
+        $students = Student::query()
+            ->whereIn('matricule', ['LPP-COUNCIL-001', 'LPP-COUNCIL-002'])
+            ->get()
+            ->keyBy('matricule');
+
+        foreach ($terms as $index => $termItem) {
+            ReportCard::query()->updateOrCreate([
+                'academic_year_id' => $class->academic_year_id,
+                'term_id' => $termItem->id,
+                'student_id' => $students->get('LPP-COUNCIL-001')->id,
+            ], [
+                'school_class_id' => $class->id,
+                'general_average' => [9.80, 9.90, 9.95][$index] ?? 9.90,
+                'rank' => 1,
+                'class_size' => 2,
+                'status' => 'validated',
+            ]);
+
+            ReportCard::query()->updateOrCreate([
+                'academic_year_id' => $class->academic_year_id,
+                'term_id' => $termItem->id,
+                'student_id' => $students->get('LPP-COUNCIL-002')->id,
+            ], [
+                'school_class_id' => $class->id,
+                'general_average' => [8.20, 8.50, 8.40][$index] ?? 8.40,
+                'rank' => 2,
+                'class_size' => 2,
+                'status' => 'validated',
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->get(route('class-council.annual-redemptions', [
+                'school_class_id' => $class->id,
+                'threshold' => 9.85,
+            ]))
+            ->assertOk()
+            ->assertSee('Rachats conseil')
+            ->assertSee('Awa Ouedraogo')
+            ->assertDontSee('Issa Kabre');
+
+        $response = $this->actingAs($user)
+            ->get(route('class-council.annual-redemptions-pdf', [
+                'school_class_id' => $class->id,
+                'threshold' => 9.85,
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $response->getContent());
+    }
+
     public function test_council_lock_blocks_teacher_grade_updates_but_admin_can_correct(): void
     {
         $this->seed(DatabaseSeeder::class);

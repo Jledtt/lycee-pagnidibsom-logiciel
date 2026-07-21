@@ -103,6 +103,9 @@
                     <a class="ledger-item" href="{{ route('class-council.index') }}">
                         <div class="ledger-person"><strong>Conseil de classe</strong><span>PV, classement, releves et decisions.</span></div>
                     </a>
+                    <a class="ledger-item" href="{{ route('class-council.annual-redemptions', ['school_class_id' => $firstClass?->id]) }}">
+                        <div class="ledger-person"><strong>Rachats conseil</strong><span>Liste des eleves proches de 10/20 selon un seuil choisi.</span></div>
+                    </a>
                 </div>
             </div>
         @endcan

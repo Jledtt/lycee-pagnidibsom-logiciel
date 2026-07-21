@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\MockExam;
 use App\Models\MockExamCandidate;
+use App\Models\MockExamScore;
 use App\Models\MockExamSubject;
 use App\Models\SchoolSetting;
 use App\Models\Term;
@@ -198,6 +199,71 @@ class MockExamWebController extends Controller
             ->with('success', 'Suivi de la matiere mis a jour.');
     }
 
+    public function subjectScores(Request $request, MockExam $mockExam, MockExamSubject $mockExamSubject): View
+    {
+        abort_unless($mockExamSubject->mock_exam_id === $mockExam->id, 404);
+
+        $mockExam->load(['academicYear', 'classes.level']);
+        $mockExamSubject->load(['subject', 'scores']);
+
+        $candidates = $mockExam->candidates()
+            ->with(['student', 'schoolClass', 'scores'])
+            ->join('students', 'students.id', '=', 'mock_exam_candidates.student_id')
+            ->orderByRaw('case when mock_exam_candidates.anonymous_code is null then 1 else 0 end')
+            ->orderBy('mock_exam_candidates.anonymous_code')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('mock_exam_candidates.*')
+            ->get();
+
+        return view('mock-exams.subject-scores', [
+            'canEditExam' => $request->user()->can('mock_exams.manage') && (! $mockExam->is_locked || $request->user()->hasRole('admin')),
+            'candidates' => $candidates,
+            'exam' => $mockExam,
+            'scores' => MockExamScore::query()
+                ->where('mock_exam_subject_id', $mockExamSubject->id)
+                ->get()
+                ->keyBy('mock_exam_candidate_id'),
+            'subject' => $mockExamSubject,
+        ]);
+    }
+
+    public function updateSubjectScores(Request $request, MockExam $mockExam, MockExamSubject $mockExamSubject): RedirectResponse
+    {
+        abort_unless($mockExamSubject->mock_exam_id === $mockExam->id, 404);
+        $this->ensureExamEditable($request, $mockExam);
+
+        $data = $request->validate([
+            'scores' => ['nullable', 'array'],
+            'scores.*.score' => ['nullable', 'numeric', 'min:0', 'max:' . (float) $mockExamSubject->max_score],
+            'scores.*.is_absent' => ['nullable', 'boolean'],
+            'scores.*.observation' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $candidateIds = $mockExam->candidates()->pluck('id')->all();
+
+        foreach (($data['scores'] ?? []) as $candidateId => $scoreData) {
+            if (! in_array((int) $candidateId, $candidateIds, true)) {
+                continue;
+            }
+
+            $isAbsent = (bool) ($scoreData['is_absent'] ?? false);
+
+            MockExamScore::query()->updateOrCreate([
+                'mock_exam_subject_id' => $mockExamSubject->id,
+                'mock_exam_candidate_id' => $candidateId,
+            ], [
+                'score' => $isAbsent ? null : ($scoreData['score'] ?? null),
+                'is_absent' => $isAbsent,
+                'observation' => $scoreData['observation'] ?? null,
+            ]);
+        }
+
+        return redirect()
+            ->route('mock-exams.subjects.scores', [$mockExam, $mockExamSubject])
+            ->with('success', 'Notes de l epreuve enregistrees.');
+    }
+
     public function updateJuryDecisions(Request $request, MockExam $mockExam): RedirectResponse
     {
         $this->ensureExamEditable($request, $mockExam);
@@ -288,6 +354,36 @@ class MockExamWebController extends Controller
         ])
             ->setPaper('a4')
             ->stream('bordereau-copies-' . Str::slug($mockExam->name) . '.pdf');
+    }
+
+    public function scoreSheetPdf(MockExam $mockExam, MockExamSubject $mockExamSubject)
+    {
+        abort_unless($mockExamSubject->mock_exam_id === $mockExam->id, 404);
+
+        $mockExam->load(['academicYear', 'classes.level']);
+        $mockExamSubject->load(['subject']);
+
+        $candidates = $mockExam->candidates()
+            ->with(['student', 'schoolClass'])
+            ->leftJoin('mock_exam_scores', function ($join) use ($mockExamSubject) {
+                $join->on('mock_exam_scores.mock_exam_candidate_id', '=', 'mock_exam_candidates.id')
+                    ->where('mock_exam_scores.mock_exam_subject_id', $mockExamSubject->id);
+            })
+            ->orderByRaw('case when mock_exam_candidates.anonymous_code is null then 1 else 0 end')
+            ->orderBy('mock_exam_candidates.anonymous_code')
+            ->orderBy('mock_exam_candidates.id')
+            ->select('mock_exam_candidates.*', 'mock_exam_scores.score as sheet_score', 'mock_exam_scores.is_absent as sheet_is_absent', 'mock_exam_scores.observation as sheet_observation')
+            ->get();
+
+        return Pdf::loadView('mock-exams.score-sheet-pdf', [
+            'candidates' => $candidates,
+            'exam' => $mockExam,
+            'school' => SchoolSetting::query()->first(),
+            'subject' => $mockExamSubject,
+            'title' => 'Releve de notes',
+        ])
+            ->setPaper('a4')
+            ->stream('saisie-notes-' . Str::slug($mockExam->name . '-' . $mockExamSubject->subject?->name) . '.pdf');
     }
 
     public function resultsPdf(MockExam $mockExam, string $status = 'provisoire')
