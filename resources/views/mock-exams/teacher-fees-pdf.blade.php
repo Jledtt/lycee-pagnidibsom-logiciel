@@ -65,13 +65,14 @@
         <tbody>
             @forelse ($exam->subjects->sortBy('position') as $subject)
                 <tr>
+                    @php($copyCount = $subject->received_copies ?? $subject->scores->where('is_absent', false)->whereNotNull('score')->count())
                     <td class="center">{{ $loop->iteration }}</td>
                     <td><strong>{{ $subject->subject?->name }}</strong></td>
                     <td>{{ $subject->exam_part_label }}</td>
-                    <td class="center">{{ $subject->scores->where('is_absent', false)->whereNotNull('score')->count() ?: $exam->candidates->count() }}</td>
-                    <td></td>
-                    <td class="right"></td>
-                    <td class="right"></td>
+                    <td class="center">{{ $copyCount ?: $exam->candidates->count() }}</td>
+                    <td>{{ $subject->correction_teacher_name ?: '' }}</td>
+                    <td class="right">{{ $subject->fee_rate ? number_format((float) $subject->fee_rate, 0, ',', ' ') : '' }}</td>
+                    <td class="right">{{ $subject->fee_amount ? number_format((float) $subject->fee_amount, 0, ',', ' ') : '' }}</td>
                     <td></td>
                 </tr>
             @empty
@@ -81,7 +82,7 @@
         <tfoot>
             <tr>
                 <th colspan="6" class="right">Total a payer</th>
-                <th></th>
+                <th class="right">{{ number_format((float) $exam->subjects->sum('fee_amount'), 0, ',', ' ') }}</th>
                 <th></th>
             </tr>
         </tfoot>

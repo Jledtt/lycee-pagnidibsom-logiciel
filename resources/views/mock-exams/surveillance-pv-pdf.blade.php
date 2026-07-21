@@ -43,28 +43,40 @@
 
     <div class="title">{{ $title }}</div>
 
-    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectee') as $room => $candidates)
-        <div class="room">{{ $room }} - {{ $candidates->count() }} candidat(s)</div>
-        <table class="list">
+    <table class="list" style="margin-bottom:12px">
+        <thead>
             <tr>
                 <th>Matiere</th>
                 <th>Date</th>
-                <th>Heure debut</th>
-                <th>Heure fin</th>
+                <th>Heure</th>
                 <th>Surveillant 1</th>
                 <th>Surveillant 2</th>
+                <th>Absents</th>
+                <th>Copies</th>
+                <th>Incidents</th>
             </tr>
-            <tr>
-                <td class="sign"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </table>
+        </thead>
+        <tbody>
+            @forelse ($exam->subjects->sortBy('position') as $subject)
+                <tr>
+                    <td><strong>{{ $subject->subject?->name }}</strong></td>
+                    <td>{{ $subject->exam_date?->format('d/m/Y') ?: '-' }}</td>
+                    <td>{{ $subject->starts_at ?: '-' }} - {{ $subject->ends_at ?: '-' }}</td>
+                    <td>{{ $subject->supervisor_one ?: '-' }}</td>
+                    <td>{{ $subject->supervisor_two ?: '-' }}</td>
+                    <td class="center">{{ $subject->absent_count ?? '-' }}</td>
+                    <td class="center">{{ $subject->received_copies ?? '-' }} / {{ $subject->expected_copies ?? $exam->candidates->count() }}</td>
+                    <td>{{ $subject->incident_notes ?: '' }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="8" class="center">Aucune matiere.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
 
-        <table class="list" style="margin-top:8px">
+    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectee') as $room => $candidates)
+        <div class="room">{{ $room }} - {{ $candidates->count() }} candidat(s)</div>
+        <table class="list">
             <tr>
                 <th>Inscrits</th>
                 <th>Present(s)</th>

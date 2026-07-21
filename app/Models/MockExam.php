@@ -11,22 +11,38 @@ class MockExam extends Model
 {
     protected $fillable = [
         'academic_year_id',
+        'term_id',
         'name',
         'exam_type',
         'starts_on',
         'ends_on',
         'status',
+        'result_status',
+        'validated_at',
+        'validated_by',
+        'finalized_at',
+        'finalized_by',
+        'locked_at',
+        'locked_by',
         'notes',
     ];
 
     protected $casts = [
         'starts_on' => 'date',
         'ends_on' => 'date',
+        'validated_at' => 'datetime',
+        'finalized_at' => 'datetime',
+        'locked_at' => 'datetime',
     ];
 
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
     }
 
     public function classes(): BelongsToMany
@@ -48,6 +64,7 @@ class MockExam extends Model
     public function getExamTypeLabelAttribute(): string
     {
         return match ($this->exam_type) {
+            'trimestriel' => 'Examen trimestriel',
             'bac_blanc' => 'BAC blanc',
             default => 'BEPC blanc',
         };
@@ -61,5 +78,21 @@ class MockExam extends Model
             'archived' => 'Archive',
             default => 'Preparation',
         };
+    }
+
+    public function getResultStatusLabelAttribute(): string
+    {
+        return match ($this->result_status) {
+            'provisoire' => 'Provisoire',
+            'corrige' => 'Corrige',
+            'definitif' => 'Definitif',
+            'verrouille' => 'Verrouille',
+            default => 'Preparation',
+        };
+    }
+
+    public function getIsLockedAttribute(): bool
+    {
+        return $this->result_status === 'verrouille' || filled($this->locked_at);
     }
 }

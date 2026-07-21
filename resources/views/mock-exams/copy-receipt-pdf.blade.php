@@ -60,10 +60,10 @@
                     <td class="center">{{ $loop->iteration }}</td>
                     <td><strong>{{ $subject->subject?->name }}</strong></td>
                     <td>{{ $subject->exam_part_label }}</td>
-                    <td class="center">{{ $exam->candidates->count() }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="center">{{ $subject->expected_copies ?? $exam->candidates->count() }}</td>
+                    <td class="center">{{ $subject->received_copies ?? '' }}</td>
+                    <td class="center">{{ $subject->absent_count ?? '' }}</td>
+                    <td>{{ $subject->correction_teacher_name ?: '' }}</td>
                     <td></td>
                 </tr>
             @empty

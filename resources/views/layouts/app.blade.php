@@ -42,6 +42,9 @@
                 @canany(['students.export', 'payments.reports'])
                     <a class="{{ ($active ?? '') === 'reports' ? 'active' : '' }}" href="{{ auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation') }}"><span class="nav-dot"></span>Rapports</a>
                 @endcanany
+                @canany(['students.export', 'payments.reports', 'mock_exams.print', 'report_cards.print', 'attendance.reports'])
+                    <a class="{{ ($active ?? '') === 'print-center' ? 'active' : '' }}" href="{{ route('print-center.index') }}"><span class="nav-dot"></span>Impressions</a>
+                @endcanany
                 @can('grades.view')
                     <a class="{{ ($active ?? '') === 'grades' ? 'active' : '' }}" href="{{ route('grades.index') }}"><span class="nav-dot"></span>Notes</a>
                 @endcan

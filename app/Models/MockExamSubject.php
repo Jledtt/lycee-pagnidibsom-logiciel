@@ -15,11 +15,33 @@ class MockExamSubject extends Model
         'max_score',
         'coefficient',
         'position',
+        'exam_date',
+        'starts_at',
+        'ends_at',
+        'supervisor_one',
+        'supervisor_two',
+        'expected_copies',
+        'received_copies',
+        'absent_count',
+        'incident_notes',
+        'copies_received_at',
+        'copy_receiver_name',
+        'correction_teacher_name',
+        'fee_rate',
+        'fee_amount',
+        'fee_status',
+        'fee_paid_at',
+        'fee_payment_reference',
     ];
 
     protected $casts = [
         'max_score' => 'decimal:2',
         'coefficient' => 'decimal:2',
+        'exam_date' => 'date',
+        'copies_received_at' => 'datetime',
+        'fee_rate' => 'decimal:2',
+        'fee_amount' => 'decimal:2',
+        'fee_paid_at' => 'datetime',
     ];
 
     public function mockExam(): BelongsTo

@@ -19,11 +19,13 @@ class MockExamService
         return DB::transaction(function () use ($academicYear, $data) {
             $exam = MockExam::query()->create([
                 'academic_year_id' => $academicYear->id,
+                'term_id' => $data['term_id'] ?? null,
                 'name' => $data['name'],
                 'exam_type' => $data['exam_type'],
                 'starts_on' => $data['starts_on'] ?? null,
                 'ends_on' => $data['ends_on'] ?? null,
                 'status' => 'preparation',
+                'result_status' => 'preparation',
                 'notes' => $data['notes'] ?? null,
             ]);
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\LoginHistoryWebController;
 use App\Http\Controllers\MockExamWebController;
 use App\Http\Controllers\NumberingSettingWebController;
 use App\Http\Controllers\PaymentWebController;
+use App\Http\Controllers\PrintCenterWebController;
 use App\Http\Controllers\ProfileWebController;
 use App\Http\Controllers\ReportCardWebController;
 use App\Http\Controllers\ReportWebController;
@@ -45,6 +46,10 @@ Route::get('/dashboard', SchoolDashboardController::class)
 Route::view('/help', 'help.index')
     ->middleware('auth')
     ->name('help.index');
+
+Route::get('/print-center', PrintCenterWebController::class)
+    ->middleware('auth')
+    ->name('print-center.index');
 
 Route::get('/activity-logs', [ActivityLogWebController::class, 'index'])
     ->middleware(['auth', 'permission:activity_logs.view'])
@@ -254,6 +259,18 @@ Route::post('/mock-exams/{mockExam}/generate-anonymity', [MockExamWebController:
 Route::post('/mock-exams/{mockExam}/distribute-rooms', [MockExamWebController::class, 'distributeRooms'])
     ->middleware(['auth', 'permission:mock_exams.manage'])
     ->name('mock-exams.rooms.distribute');
+
+Route::put('/mock-exams/{mockExam}/result-status', [MockExamWebController::class, 'updateResultStatus'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.result-status.update');
+
+Route::put('/mock-exams/subjects/{mockExamSubject}/tracking', [MockExamWebController::class, 'updateSubjectTracking'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.subjects.tracking.update');
+
+Route::put('/mock-exams/{mockExam}/jury-decisions', [MockExamWebController::class, 'updateJuryDecisions'])
+    ->middleware(['auth', 'permission:mock_exams.manage'])
+    ->name('mock-exams.jury-decisions.update');
 
 Route::get('/mock-exams/{mockExam}/candidates/pdf', [MockExamWebController::class, 'candidatesPdf'])
     ->middleware(['auth', 'permission:mock_exams.print'])

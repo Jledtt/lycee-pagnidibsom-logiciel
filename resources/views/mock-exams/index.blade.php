@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Examens blancs - Lycee Prive Pagnidibsom',
+    'title' => 'Examens - Lycee Prive Pagnidibsom',
     'active' => 'mock-exams',
-    'pageTitle' => 'Examens blancs',
-    'pageSubtitle' => 'Simulation BEPC blanc aujourd hui, BAC blanc quand la Terminale ouvrira',
+    'pageTitle' => 'Examens',
+    'pageSubtitle' => 'Examens trimestriels, BEPC blanc et BAC blanc separes du module notes',
 ])
 
 @section('content')
@@ -21,14 +21,25 @@
 
             <div class="field">
                 <label>Nom</label>
-                <input name="name" value="{{ old('name', 'BEPC Blanc N 1') }}" required>
+                <input name="name" value="{{ old('name', 'Examen trimestriel N 1') }}" required>
             </div>
 
             <div class="field">
                 <label>Type</label>
                 <select name="exam_type" required>
+                    <option value="trimestriel" @selected(old('exam_type', 'trimestriel') === 'trimestriel')>Examen trimestriel</option>
                     <option value="bepc_blanc" @selected(old('exam_type') === 'bepc_blanc')>BEPC blanc</option>
                     <option value="bac_blanc" @selected(old('exam_type') === 'bac_blanc')>BAC blanc</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Trimestre lie</label>
+                <select name="term_id">
+                    <option value="">Non lie</option>
+                    @foreach ($terms as $term)
+                        <option value="{{ $term->id }}" @selected((int) old('term_id') === $term->id)>{{ $term->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -54,7 +65,7 @@
                         @endforeach
                     </div>
                 </div>
-                <p style="margin:8px 0 0;color:var(--muted)">Conseil : selectionne les 3e pour le BEPC blanc. Plus tard, selectionne les Terminales pour le BAC blanc.</p>
+                <p style="margin:8px 0 0;color:var(--muted)">Conseil : selectionne les classes concernees. Les 3e servent au BEPC blanc et les Terminales au futur BAC blanc.</p>
             </div>
 
             <div class="field wide">
@@ -116,6 +127,7 @@
             @if (! $selectedExam)
                 <div class="empty">Cree ou selectionne une session.</div>
             @else
+                @php($canEditExam = auth()->user()->can('mock_exams.manage') && (! $selectedExam->is_locked || auth()->user()->hasRole('admin')))
                 <div class="summary-row">
                     <div class="stat">
                         <span>Candidats</span>
@@ -129,12 +141,38 @@
                         <span>Classes</span>
                         <strong>{{ $selectedExam->classes->count() }}</strong>
                     </div>
+                    <div class="stat">
+                        <span>Resultats</span>
+                        <strong>{{ $selectedExam->result_status_label }}</strong>
+                    </div>
                 </div>
+
+                @if ($selectedExam->is_locked)
+                    <p class="notice">Session verrouillee : seul un administrateur peut encore effectuer une correction.</p>
+                @endif
+
+                @can('mock_exams.manage')
+                    <div class="page-actions" style="margin-top:16px">
+                        @foreach ([
+                            'provisoire' => 'Marquer provisoire',
+                            'corrige' => 'Marquer corrige',
+                            'definitif' => 'Valider definitif',
+                            'verrouille' => 'Verrouiller',
+                        ] as $status => $label)
+                            <form method="POST" action="{{ route('mock-exams.result-status.update', $selectedExam) }}">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="result_status" value="{{ $status }}">
+                                <button class="btn {{ $status === 'verrouille' ? 'btn-primary' : 'btn-subtle' }}" type="submit">{{ $label }}</button>
+                            </form>
+                        @endforeach
+                    </div>
+                @endcan
 
                 <div class="page-actions" style="margin-top:16px">
                     <form method="POST" action="{{ route('mock-exams.candidates.sync', $selectedExam) }}">
                         @csrf
-                        <button class="btn btn-subtle" type="submit">Synchroniser candidats</button>
+                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Synchroniser candidats</button>
                     </form>
 
                     <form class="inline-form" method="POST" action="{{ route('mock-exams.anonymity.generate', $selectedExam) }}">
@@ -143,7 +181,7 @@
                             <label>Prefixe</label>
                             <input name="prefix" value="X">
                         </div>
-                        <button class="btn btn-subtle" type="submit">Generer anonymats</button>
+                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Generer anonymats</button>
                     </form>
 
                     <form class="inline-form" method="POST" action="{{ route('mock-exams.rooms.distribute', $selectedExam) }}">
@@ -152,7 +190,7 @@
                             <label>Salles</label>
                             <input type="number" name="room_count" min="1" max="30" value="2">
                         </div>
-                        <button class="btn btn-subtle" type="submit">Repartir</button>
+                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Repartir</button>
                     </form>
                 </div>
 
@@ -221,38 +259,165 @@
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>Matieres de la session</h2>
+                <h2>Suivi PV, copies et honoraires</h2>
                 <span class="badge">{{ $selectedExam->subjects->count() }} matiere(s)</span>
             </div>
 
-            <div class="subject-list-scroll">
-                <table class="table" style="min-width:760px">
-                    <thead>
-                        <tr>
-                            <th>Ordre</th>
-                            <th>Matiere</th>
-                            <th>Partie</th>
-                            <th>Note sur</th>
-                            <th>Coefficient</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($selectedExam->subjects->sortBy('position') as $subject)
-                            <tr>
-                                <td>{{ $subject->position }}</td>
-                                <td><strong>{{ $subject->subject?->name }}</strong></td>
-                                <td>{{ $subject->exam_part_label }}</td>
-                                <td>{{ number_format($subject->max_score, 0, ',', ' ') }}</td>
-                                <td>{{ number_format($subject->coefficient, 2, ',', ' ') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5">Aucune matiere. Les matieres actives des classes seront reprises automatiquement a la creation.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            @forelse ($selectedExam->subjects->sortBy('position') as $subject)
+                <form class="detail-item" style="display:block;margin-bottom:12px" method="POST" action="{{ route('mock-exams.subjects.tracking.update', $subject) }}">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="panel-head" style="padding:0;border:0;margin-bottom:12px">
+                        <div>
+                            <strong>{{ $subject->subject?->name }}</strong>
+                            <span>{{ $subject->exam_part_label }} - Note / {{ number_format($subject->max_score, 0, ',', ' ') }} - Coef {{ number_format($subject->coefficient, 2, ',', ' ') }}</span>
+                        </div>
+                        <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire paye' : ($subject->fee_status === 'approved' ? 'Honoraire valide' : 'A traiter') }}</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Date epreuve</label>
+                            <input type="date" name="exam_date" value="{{ old('exam_date', $subject->exam_date?->format('Y-m-d')) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Debut</label>
+                            <input type="time" name="starts_at" value="{{ old('starts_at', $subject->starts_at) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Fin</label>
+                            <input type="time" name="ends_at" value="{{ old('ends_at', $subject->ends_at) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Surveillant 1</label>
+                            <input name="supervisor_one" value="{{ old('supervisor_one', $subject->supervisor_one) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Surveillant 2</label>
+                            <input name="supervisor_two" value="{{ old('supervisor_two', $subject->supervisor_two) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Copies attendues</label>
+                            <input type="number" min="0" name="expected_copies" value="{{ old('expected_copies', $subject->expected_copies ?? $selectedExam->candidates->count()) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Copies recues</label>
+                            <input type="number" min="0" name="received_copies" value="{{ old('received_copies', $subject->received_copies) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Absents</label>
+                            <input type="number" min="0" name="absent_count" value="{{ old('absent_count', $subject->absent_count) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Copies recues le</label>
+                            <input type="datetime-local" name="copies_received_at" value="{{ old('copies_received_at', $subject->copies_received_at?->format('Y-m-d\TH:i')) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Recu par</label>
+                            <input name="copy_receiver_name" value="{{ old('copy_receiver_name', $subject->copy_receiver_name) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Professeur correcteur</label>
+                            <input name="correction_teacher_name" value="{{ old('correction_teacher_name', $subject->correction_teacher_name) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Taux honoraire</label>
+                            <input type="number" min="0" step="1" name="fee_rate" value="{{ old('fee_rate', $subject->fee_rate) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Montant</label>
+                            <input type="number" min="0" step="1" name="fee_amount" value="{{ old('fee_amount', $subject->fee_amount) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Statut honoraire</label>
+                            <select name="fee_status" @disabled(! $canEditExam)>
+                                <option value="pending" @selected($subject->fee_status === 'pending')>A payer</option>
+                                <option value="approved" @selected($subject->fee_status === 'approved')>Valide</option>
+                                <option value="paid" @selected($subject->fee_status === 'paid')>Paye</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Paye le</label>
+                            <input type="datetime-local" name="fee_paid_at" value="{{ old('fee_paid_at', $subject->fee_paid_at?->format('Y-m-d\TH:i')) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Reference paiement</label>
+                            <input name="fee_payment_reference" value="{{ old('fee_payment_reference', $subject->fee_payment_reference) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field wide">
+                            <label>Incidents / observations</label>
+                            <textarea name="incident_notes" @disabled(! $canEditExam)>{{ old('incident_notes', $subject->incident_notes) }}</textarea>
+                        </div>
+                        @can('mock_exams.manage')
+                            <div class="form-actions wide">
+                                <button class="btn btn-primary" type="submit" @disabled(! $canEditExam)>Enregistrer</button>
+                            </div>
+                        @endcan
+                    </div>
+                </form>
+            @empty
+                <div class="empty">Aucune matiere. Les matieres actives des classes seront reprises automatiquement a la creation.</div>
+            @endforelse
+        </section>
+
+        <section class="panel" style="margin-top:16px">
+            <div class="panel-head">
+                <h2>Decisions du jury</h2>
+                <span class="badge">{{ $selectedExam->candidates->count() }} candidat(s)</span>
             </div>
+
+            <form method="POST" action="{{ route('mock-exams.jury-decisions.update', $selectedExam) }}">
+                @csrf
+                @method('PUT')
+
+                <div class="subject-list-scroll">
+                    <table class="table" style="min-width:980px">
+                        <thead>
+                            <tr>
+                                <th>Eleve</th>
+                                <th>Classe</th>
+                                <th>Anonymat</th>
+                                <th>Decision</th>
+                                <th>Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($selectedExam->candidates->sortBy([['schoolClass.name', 'asc'], ['student.last_name', 'asc']]) as $candidate)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $candidate->student?->full_name }}</strong><br>
+                                        <span class="badge">{{ $candidate->student?->matricule }}</span>
+                                    </td>
+                                    <td>{{ $candidate->schoolClass?->name }}</td>
+                                    <td>{{ $candidate->anonymous_code ?: '-' }}</td>
+                                    <td>
+                                        <select name="candidates[{{ $candidate->id }}][jury_decision]" @disabled(! $canEditExam)>
+                                            <option value="">A determiner</option>
+                                            @foreach ($juryDecisionLabels as $value => $label)
+                                                <option value="{{ $value }}" @selected($candidate->jury_decision === $value)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input name="candidates[{{ $candidate->id }}][jury_observation]" value="{{ $candidate->jury_observation }}" placeholder="Observation du jury" @disabled(! $canEditExam)>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5">Aucun candidat.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @can('mock_exams.manage')
+                    <div class="form-actions" style="margin-top:14px">
+                        <button class="btn btn-primary" type="submit" @disabled(! $canEditExam)>Enregistrer les decisions</button>
+                    </div>
+                @endcan
+            </form>
         </section>
     @endif
 @endsection

@@ -80,8 +80,8 @@
                     <td>{{ $candidate->student?->full_name }}</td>
                     <td>{{ $candidate->schoolClass?->name }}</td>
                     <td class="center">{{ $row['average'] === null ? '-' : number_format($row['average'], 2, ',', ' ') }}</td>
-                    <td>{{ $row['decision'] }}</td>
-                    <td></td>
+                    <td>{{ $candidate->jury_decision ? ($juryDecisionLabels[$candidate->jury_decision] ?? $candidate->jury_decision) : $row['decision'] }}</td>
+                    <td>{{ $candidate->jury_observation }}</td>
                 </tr>
             @empty
                 <tr><td colspan="6" class="center">Aucun candidat.</td></tr>

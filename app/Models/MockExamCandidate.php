@@ -15,6 +15,14 @@ class MockExamCandidate extends Model
         'anonymous_code',
         'room_name',
         'status',
+        'jury_decision',
+        'jury_observation',
+        'jury_decided_at',
+        'jury_decided_by',
+    ];
+
+    protected $casts = [
+        'jury_decided_at' => 'datetime',
     ];
 
     public function mockExam(): BelongsTo

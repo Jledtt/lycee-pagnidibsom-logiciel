@@ -83,6 +83,46 @@ class MockExamTest extends TestCase
         $exam->load(['subjects', 'candidates']);
         $examSubject = $exam->subjects->firstOrFail();
 
+        $this->actingAs($user)
+            ->put(route('mock-exams.result-status.update', $exam), [
+                'result_status' => 'provisoire',
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($user)
+            ->put(route('mock-exams.subjects.tracking.update', $examSubject), [
+                'exam_date' => '2026-07-20',
+                'starts_at' => '08:00',
+                'ends_at' => '10:00',
+                'supervisor_one' => 'Surveillant A',
+                'supervisor_two' => 'Surveillant B',
+                'expected_copies' => 2,
+                'received_copies' => 2,
+                'absent_count' => 0,
+                'incident_notes' => 'RAS',
+                'copies_received_at' => '2026-07-20 10:30:00',
+                'copy_receiver_name' => 'Secretariat',
+                'correction_teacher_name' => 'Professeur Test',
+                'fee_rate' => 500,
+                'fee_amount' => 1000,
+                'fee_status' => 'approved',
+                'fee_paid_at' => null,
+                'fee_payment_reference' => null,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('mock_exams', [
+            'id' => $exam->id,
+            'result_status' => 'provisoire',
+        ]);
+
+        $this->assertDatabaseHas('mock_exam_subjects', [
+            'id' => $examSubject->id,
+            'supervisor_one' => 'Surveillant A',
+            'received_copies' => 2,
+            'fee_amount' => 1000,
+        ]);
+
         foreach ($exam->candidates as $candidate) {
             MockExamScore::query()->create([
                 'mock_exam_subject_id' => $examSubject->id,
@@ -91,6 +131,29 @@ class MockExamTest extends TestCase
                 'is_absent' => false,
             ]);
         }
+
+        $this->actingAs($user)
+            ->put(route('mock-exams.jury-decisions.update', $exam), [
+                'candidates' => [
+                    $exam->candidates->first()->id => [
+                        'jury_decision' => 'admitted',
+                        'jury_observation' => 'Passe',
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('mock_exam_candidates', [
+            'id' => $exam->candidates->first()->id,
+            'jury_decision' => 'admitted',
+            'jury_observation' => 'Passe',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('print-center.index'))
+            ->assertOk()
+            ->assertSee('Centre d impression')
+            ->assertSee('PV surveillance');
 
         foreach ([
             route('mock-exams.candidates.pdf', $exam),

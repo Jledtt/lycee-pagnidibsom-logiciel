@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\MockExam;
 use App\Models\MockExamCandidate;
+use App\Models\MockExamSubject;
 use App\Models\SchoolSetting;
+use App\Models\Term;
 use App\Services\MockExamService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +29,7 @@ class MockExamWebController extends Controller
         $classes = $this->mockExamService->eligibleClasses($academicYear);
 
         $exams = MockExam::query()
-            ->with(['classes.level'])
+            ->with(['classes.level', 'term'])
             ->withCount(['candidates', 'subjects'])
             ->where('academic_year_id', $academicYear->id)
             ->latest('id')
@@ -38,11 +40,17 @@ class MockExamWebController extends Controller
         if ($selectedExam) {
             $selectedExam->load([
                 'classes.level',
+                'term',
                 'subjects.subject',
                 'candidates.student',
                 'candidates.schoolClass',
             ]);
         }
+
+        $terms = Term::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->orderBy('position')
+            ->get();
 
         $suggestedClassIds = $classes
             ->filter(fn ($class) => Str::contains(Str::lower($class->name.' '.$class->level?->name), ['3e', '3eme', 'troisieme', 'terminale', 'tle']))
@@ -53,8 +61,10 @@ class MockExamWebController extends Controller
             'academicYear' => $academicYear,
             'classes' => $classes,
             'exams' => $exams,
+            'juryDecisionLabels' => $this->juryDecisionLabels(),
             'selectedExam' => $selectedExam,
             'suggestedClassIds' => $suggestedClassIds,
+            'terms' => $terms,
         ]);
     }
 
@@ -64,7 +74,8 @@ class MockExamWebController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'exam_type' => ['required', 'in:bepc_blanc,bac_blanc'],
+            'exam_type' => ['required', 'in:trimestriel,bepc_blanc,bac_blanc'],
+            'term_id' => ['nullable', 'integer', 'exists:terms,id'],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'school_class_ids' => ['required', 'array', 'min:1'],
@@ -77,6 +88,47 @@ class MockExamWebController extends Controller
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $exam->id])
             ->with('success', 'Session d examen blanc creee avec candidats et matieres de base.');
+    }
+
+    public function updateResultStatus(Request $request, MockExam $mockExam): RedirectResponse
+    {
+        $data = $request->validate([
+            'result_status' => ['required', 'in:preparation,provisoire,corrige,definitif,verrouille'],
+        ]);
+
+        if ($mockExam->is_locked && ! $request->user()->hasRole('admin')) {
+            abort(403, 'Seul un administrateur peut corriger une session verrouillee.');
+        }
+
+        $updates = ['result_status' => $data['result_status']];
+
+        if (in_array($data['result_status'], ['provisoire', 'corrige'], true)) {
+            $updates['validated_at'] = now();
+            $updates['validated_by'] = $request->user()->id;
+        }
+
+        if ($data['result_status'] === 'definitif') {
+            $updates['finalized_at'] = now();
+            $updates['finalized_by'] = $request->user()->id;
+        }
+
+        if ($data['result_status'] === 'verrouille') {
+            $updates['locked_at'] = now();
+            $updates['locked_by'] = $request->user()->id;
+            $updates['finalized_at'] = $mockExam->finalized_at ?? now();
+            $updates['finalized_by'] = $mockExam->finalized_by ?? $request->user()->id;
+        }
+
+        if ($mockExam->is_locked && $data['result_status'] !== 'verrouille') {
+            $updates['locked_at'] = null;
+            $updates['locked_by'] = null;
+        }
+
+        $mockExam->update($updates);
+
+        return redirect()
+            ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
+            ->with('success', 'Statut des resultats mis a jour.');
     }
 
     public function syncCandidates(MockExam $mockExam): RedirectResponse
@@ -112,6 +164,65 @@ class MockExamWebController extends Controller
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
             ->with('success', $count . ' candidat(s) reparti(s) en salle.');
+    }
+
+    public function updateSubjectTracking(Request $request, MockExamSubject $mockExamSubject): RedirectResponse
+    {
+        $mockExamSubject->load('mockExam');
+        $this->ensureExamEditable($request, $mockExamSubject->mockExam);
+
+        $data = $request->validate([
+            'exam_date' => ['nullable', 'date'],
+            'starts_at' => ['nullable', 'date_format:H:i'],
+            'ends_at' => ['nullable', 'date_format:H:i'],
+            'supervisor_one' => ['nullable', 'string', 'max:120'],
+            'supervisor_two' => ['nullable', 'string', 'max:120'],
+            'expected_copies' => ['nullable', 'integer', 'min:0', 'max:3000'],
+            'received_copies' => ['nullable', 'integer', 'min:0', 'max:3000'],
+            'absent_count' => ['nullable', 'integer', 'min:0', 'max:3000'],
+            'incident_notes' => ['nullable', 'string', 'max:1200'],
+            'copies_received_at' => ['nullable', 'date'],
+            'copy_receiver_name' => ['nullable', 'string', 'max:120'],
+            'correction_teacher_name' => ['nullable', 'string', 'max:120'],
+            'fee_rate' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'fee_amount' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
+            'fee_status' => ['required', 'in:pending,approved,paid'],
+            'fee_paid_at' => ['nullable', 'date'],
+            'fee_payment_reference' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $mockExamSubject->update($data);
+
+        return redirect()
+            ->route('mock-exams.index', ['mock_exam_id' => $mockExamSubject->mock_exam_id])
+            ->with('success', 'Suivi de la matiere mis a jour.');
+    }
+
+    public function updateJuryDecisions(Request $request, MockExam $mockExam): RedirectResponse
+    {
+        $this->ensureExamEditable($request, $mockExam);
+
+        $data = $request->validate([
+            'candidates' => ['nullable', 'array'],
+            'candidates.*.jury_decision' => ['nullable', 'in:admitted,repeat,excluded,oriented,ec,none'],
+            'candidates.*.jury_observation' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        foreach (($data['candidates'] ?? []) as $candidateId => $candidateData) {
+            MockExamCandidate::query()
+                ->where('mock_exam_id', $mockExam->id)
+                ->whereKey($candidateId)
+                ->update([
+                    'jury_decision' => $candidateData['jury_decision'] ?: null,
+                    'jury_observation' => $candidateData['jury_observation'] ?? null,
+                    'jury_decided_at' => now(),
+                    'jury_decided_by' => $request->user()->id,
+                ]);
+        }
+
+        return redirect()
+            ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
+            ->with('success', 'Decisions du jury mises a jour.');
     }
 
     public function candidatesPdf(MockExam $mockExam)
@@ -223,6 +334,7 @@ class MockExamWebController extends Controller
             'admitted' => $results->where('decision', 'Admis')->count(),
             'deferred' => $results->where('decision', 'A deliberer')->count(),
             'exam' => $mockExam,
+            'juryDecisionLabels' => $this->juryDecisionLabels(),
             'rejected' => $results->where('decision', 'Ajourne')->count(),
             'results' => $results,
             'school' => SchoolSetting::query()->first(),
@@ -297,6 +409,25 @@ class MockExamWebController extends Controller
 
                 return $row;
             });
+    }
+
+    private function ensureExamEditable(Request $request, MockExam $mockExam): void
+    {
+        if ($mockExam->is_locked && ! $request->user()->hasRole('admin')) {
+            abort(403, 'Session verrouillee. Seul un administrateur peut corriger.');
+        }
+    }
+
+    private function juryDecisionLabels(): array
+    {
+        return [
+            'admitted' => 'Admis / Passe',
+            'repeat' => 'Redouble',
+            'excluded' => 'Exclu',
+            'oriented' => 'Oriente',
+            'ec' => 'EC',
+            'none' => 'A determiner',
+        ];
     }
 
     private function requireActiveAcademicYear(): AcademicYear
