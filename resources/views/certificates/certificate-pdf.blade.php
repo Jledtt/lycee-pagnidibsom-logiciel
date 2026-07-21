@@ -8,34 +8,34 @@
         body {
             margin: 0;
             color: #000;
-            font-family: "DejaVu Serif", serif;
+            font-family: "Times New Roman", "DejaVu Serif", serif;
             font-size: 14px;
-            line-height: 1.55;
+            line-height: 1.6;
         }
         .header { width: 100%; border-collapse: collapse; margin-bottom: 46px; }
         .header td { vertical-align: top; }
         .logo { width: 82px; height: 82px; object-fit: contain; }
-        .school { font-family: "DejaVu Sans", sans-serif; font-weight: bold; }
+        .school { font-weight: bold; }
         .school h1 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; }
         .school p { margin: 0 0 4px; font-size: 12px; }
         .motto { width: 90px; margin-top: 12px; font-size: 12px; line-height: 1.35; font-style: italic; font-weight: bold; }
-        .year { text-align: right; font-family: "DejaVu Sans", sans-serif; font-weight: bold; font-size: 13px; }
+        .year { text-align: right; font-weight: bold; font-size: 13px; }
         .title {
             margin: 0 0 30px;
             text-align: center;
-            font-family: "DejaVu Sans", sans-serif;
-            font-size: 20px;
+            font-size: 14px;
             font-weight: bold;
             text-decoration: underline;
             text-transform: uppercase;
         }
-        .content { margin-top: 10px; font-size: 15px; text-align: justify; }
-        .line { margin: 0 0 12px; }
+        .content { margin-top: 10px; font-size: 14px; text-align: justify; }
+        .line { margin: 0 0 14px; }
         .signature { width: 100%; margin-top: 42px; border-collapse: collapse; }
         .signature td { width: 50%; vertical-align: top; }
         .right { text-align: center; }
         .principal { margin-top: 62px; font-weight: bold; }
         .strong { font-weight: bold; }
+        .sign-title { font-weight: bold; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -67,19 +67,18 @@
     <div class="content">
         @if ($certificate->document_type === 'school_certificate')
             <p class="line">
-                {{ $school?->principal_title ?? 'Le Proviseur' }} du <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span> certifie que :
-            </p>
-            <p class="line">
-                <span class="strong">{{ $student->full_name }}</span>, ne(e) le
+                Je soussigne(e) Monsieur/Madame............., {{ $school?->principal_title ?? 'Le Proviseur' }} du
+                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>
+                certifie que <span class="strong">{{ $student->full_name }}</span> ne(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
-                fils(le) de <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span>
-                et de <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span>,
-                est eleve de son etablissement.
+                a <span class="strong">{{ $student->birth_place ?? '-' }}</span> de
+                <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span> et de
+                <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span> est regulierement inscrit(e) dans mon
+                etablissement sous le numero matricule : <span class="strong">{{ $student->matricule }}</span>
+                en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
             </p>
             <p class="line">
-                Classe frequentee : <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>
-                &nbsp;&nbsp;&nbsp; No Matricule : <span class="strong">{{ $student->matricule }}</span>
+                En foi de quoi le present certificat est etabli pour servir et valoir ce que de droit.
             </p>
         @elseif ($certificate->document_type === 'enrollment_certificate')
             <p class="line">
@@ -99,18 +98,19 @@
             </p>
         @else
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Proviseur' }} du/de
-                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>, certifie que
-                <span class="strong">{{ $student->full_name }}</span>, ne(e) le
+                Je soussigne(e) Monsieur/Madame................, Comptable du
+                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>
+                atteste que <span class="strong">{{ $student->full_name }}</span> ne(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
-                numero matricule <span class="strong">{{ $student->matricule }}</span>,
-                frequente regulierement notre etablissement et est inscrit cette annee en classe de
-                <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
+                a <span class="strong">{{ $student->birth_place ?? '-' }}</span> de
+                <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span> et de
+                <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span>
             </p>
             <p class="line">
-                Il est a jour de tout paiement des frais de scolarite enregistres dans notre etablissement,
-                en foi de quoi le present certificat lui est delivre pour servir ce que de droit.
+                en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
+            </p>
+            <p class="line">
+                Est a jour de ses frais de scolarite par consequent n'est pas redevable a l'etablissement.
             </p>
         @endif
     </div>
@@ -120,8 +120,12 @@
             <td></td>
             <td class="right">
                 {{ $school?->city ?? 'Ouagadougou' }}, le {{ $certificate->received_at?->format('d/m/Y') ?? now()->format('d/m/Y') }}<br>
-                <span class="strong">{{ $school?->principal_title ?? 'Le Proviseur' }}</span>
-                <div class="principal">{{ $principalName }}</div>
+                <span class="sign-title">
+                    {{ $certificate->document_type === 'no_debt_certificate' ? 'La Comptabilite' : ($school?->principal_title ?? 'Le Proviseur') }}
+                </span>
+                @if ($certificate->document_type !== 'no_debt_certificate')
+                    <div class="principal">{{ $principalName }}</div>
+                @endif
             </td>
         </tr>
     </table>

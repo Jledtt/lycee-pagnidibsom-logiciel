@@ -20,6 +20,9 @@
                     <a class="ledger-item" href="{{ route('certificates.index') }}">
                         <div class="ledger-person"><strong>Certificats</strong><span>Scolarite, inscription, non redevance et autres documents.</span></div>
                     </a>
+                    <a class="ledger-item" href="{{ route('exit-authorizations.index') }}">
+                        <div class="ledger-person"><strong>Autorisations entree / sortie</strong><span>Document pour absence, maladie, sortie ou retour autorise.</span></div>
+                    </a>
                     @if ($firstClass)
                         <a class="ledger-item" href="{{ route('reports.class-list.pdf', ['school_class_id' => $firstClass->id]) }}" data-download-feedback="Telechargement de la liste de classe lance.">
                             <div class="ledger-person"><strong>Liste de classe PDF</strong><span>{{ $firstClass->name }} par defaut, changeable dans Rapports.</span></div>
@@ -110,6 +113,20 @@
                 <div class="ledger-list">
                     <a class="ledger-item" href="{{ route('attendance.index') }}">
                         <div class="ledger-person"><strong>Rapports d absences</strong><span>Pointage, PDF par classe et historique eleve.</span></div>
+                    </a>
+                    <a class="ledger-item" href="{{ route('exit-authorizations.index') }}">
+                        <div class="ledger-person"><strong>Autorisations d absence</strong><span>Sorties, retours, motifs et PDF officiel.</span></div>
+                    </a>
+                </div>
+            </div>
+        @endcan
+
+        @can('timetables.print')
+            <div class="panel">
+                <div class="panel-head"><h2>Vie scolaire</h2></div>
+                <div class="ledger-list">
+                    <a class="ledger-item" href="{{ route('teacher-attendance-sheets.index') }}">
+                        <div class="ledger-person"><strong>Fiche d emargement professeurs</strong><span>Suivi quotidien des heures faites par cours.</span></div>
                     </a>
                 </div>
             </div>

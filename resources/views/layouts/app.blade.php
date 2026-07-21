@@ -36,6 +36,9 @@
                 @can('timetables.view')
                     <a class="{{ ($active ?? '') === 'timetables' ? 'active' : '' }}" href="{{ route('timetables.index') }}"><span class="nav-dot"></span>Emplois du temps</a>
                 @endcan
+                @can('timetables.print')
+                    <a class="{{ ($active ?? '') === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Emargements</a>
+                @endcan
                 @can('students.export')
                     <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
                 @endcan
@@ -57,6 +60,9 @@
                 @can('attendance.view')
                     <a class="{{ ($active ?? '') === 'attendance' ? 'active' : '' }}" href="{{ route('attendance.index') }}"><span class="nav-dot"></span>Absences</a>
                 @endcan
+                @canany(['attendance.view', 'students.export'])
+                    <a class="{{ ($active ?? '') === 'exit-authorizations' ? 'active' : '' }}" href="{{ route('exit-authorizations.index') }}"><span class="nav-dot"></span>Autorisations</a>
+                @endcanany
                 @can('users.manage')
                     <a class="{{ ($active ?? '') === 'staff' ? 'active' : '' }}" href="{{ route('staff.index') }}"><span class="nav-dot"></span>Personnel</a>
                 @endcan

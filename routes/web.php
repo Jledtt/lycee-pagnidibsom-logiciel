@@ -27,10 +27,12 @@ use App\Http\Controllers\StaffRoleWebController;
 use App\Http\Controllers\StaffUserWebController;
 use App\Http\Controllers\StudentCardWebController;
 use App\Http\Controllers\StudentDocumentWebController;
+use App\Http\Controllers\StudentExitAuthorizationWebController;
 use App\Http\Controllers\StudentImportWebController;
 use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
+use App\Http\Controllers\TeacherAttendanceSheetWebController;
 use App\Http\Controllers\TimetableWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -114,6 +116,26 @@ Route::put('/attendance/sessions/{attendanceSession}', [AttendanceWebController:
 Route::delete('/attendance/records/{attendanceRecord}', [AttendanceWebController::class, 'clearRecord'])
     ->middleware(['auth', 'permission:attendance.update'])
     ->name('attendance.records.clear');
+
+Route::get('/exit-authorizations', [StudentExitAuthorizationWebController::class, 'index'])
+    ->middleware(['auth', 'permission:attendance.view|students.export'])
+    ->name('exit-authorizations.index');
+
+Route::get('/exit-authorizations/create', [StudentExitAuthorizationWebController::class, 'create'])
+    ->middleware(['auth', 'permission:attendance.create|students.export'])
+    ->name('exit-authorizations.create');
+
+Route::post('/exit-authorizations', [StudentExitAuthorizationWebController::class, 'store'])
+    ->middleware(['auth', 'permission:attendance.create|students.export'])
+    ->name('exit-authorizations.store');
+
+Route::get('/exit-authorizations/{exitAuthorization}', [StudentExitAuthorizationWebController::class, 'show'])
+    ->middleware(['auth', 'permission:attendance.view|students.export'])
+    ->name('exit-authorizations.show');
+
+Route::get('/exit-authorizations/{exitAuthorization}/pdf', [StudentExitAuthorizationWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:attendance.reports|students.export'])
+    ->name('exit-authorizations.pdf');
 
 Route::get('/settings', [SchoolSettingWebController::class, 'edit'])
     ->middleware(['auth', 'permission:settings.manage'])
@@ -235,6 +257,14 @@ Route::put('/timetables/{timetable}', [TimetableWebController::class, 'update'])
 Route::get('/timetables/{timetable}/pdf', [TimetableWebController::class, 'pdf'])
     ->middleware(['auth', 'permission:timetables.print'])
     ->name('timetables.pdf');
+
+Route::get('/teacher-attendance-sheets', [TeacherAttendanceSheetWebController::class, 'index'])
+    ->middleware(['auth', 'permission:timetables.print'])
+    ->name('teacher-attendance-sheets.index');
+
+Route::get('/teacher-attendance-sheets/pdf', [TeacherAttendanceSheetWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:timetables.print'])
+    ->name('teacher-attendance-sheets.pdf');
 
 Route::get('/grades', [GradeWebController::class, 'index'])
     ->middleware(['auth', 'permission:grades.view'])
