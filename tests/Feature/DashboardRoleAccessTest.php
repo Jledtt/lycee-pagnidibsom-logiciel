@@ -21,8 +21,9 @@ class DashboardRoleAccessTest extends TestCase
         $response->assertOk();
         $response->assertSee('Élèves actifs');
         $response->assertSee('Inscriptions');
-        $response->assertDontSee('Encaissements');
-        $response->assertDontSee('Finances rapides');
+        $response->assertDontSee('Encaisser');
+        $response->assertDontSee('Encaisse du jour');
+        $response->assertDontSee('Total attendu');
         $response->assertDontSee('Derniers paiements');
     }
 
@@ -35,8 +36,9 @@ class DashboardRoleAccessTest extends TestCase
         $payments = $this->actingAs($user)->get(route('payments.index'));
 
         $dashboard->assertOk();
-        $dashboard->assertSee('Encaissements');
-        $dashboard->assertSee('Finances rapides');
+        $dashboard->assertSee('Encaisser');
+        $dashboard->assertSee('Encaisse du jour');
+        $dashboard->assertSee('Derniers paiements');
         $payments->assertOk();
     }
 

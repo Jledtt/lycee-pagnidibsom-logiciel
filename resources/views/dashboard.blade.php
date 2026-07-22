@@ -2,401 +2,453 @@
     'title' => 'Tableau de bord - Lycée Privé Pagnidibsom',
     'active' => 'dashboard',
     'pageTitle' => 'Tableau de bord',
-    'pageSubtitle' => "Vue administrative de l’année " . ($academicYear?->name ?? 'active'),
+    'pageSubtitle' => 'Actions, alertes et suivi de l’année ' . ($academicYear?->name ?? 'active'),
 ])
 
-@section('content')
-            <section class="grid stats">
-                @can('students.view')
-                    <div class="stat">
-                        <span>Élèves actifs</span>
-                        <strong>{{ number_format($stats['students'], 0, ',', ' ') }}</strong>
-                    </div>
-                @endcan
-                @can('classes.manage')
-                    <div class="stat">
-                        <span>Classes</span>
-                        <strong>{{ number_format($stats['classes'], 0, ',', ' ') }}</strong>
-                    </div>
-                @endcan
-                @can('enrollments.view')
-                    <div class="stat">
-                        <span>Inscriptions</span>
-                        <strong>{{ number_format($stats['enrollments'], 0, ',', ' ') }}</strong>
-                    </div>
-                @endcan
-                @can('payments.reports')
-                    <div class="stat">
-                        <span>Encaissements</span>
-                        <strong>{{ number_format($stats['payments'], 0, ',', ' ') }} FCFA</strong>
-                    </div>
-                @endcan
-                @can('attendance.view')
-                    <div class="stat">
-                        <span>Absences du jour</span>
-                        <strong>{{ number_format($stats['absences_today'], 0, ',', ' ') }}</strong>
-                    </div>
-                @endcan
-            </section>
+@section('page_actions')
+    @canany(['students.export', 'payments.reports', 'mock_exams.print', 'report_cards.print', 'attendance.reports'])
+        <a class="btn btn-subtle" href="{{ route('print-center.index') }}">Centre d’impression</a>
+    @endcanany
+@endsection
 
-            @canany(['payments.reports', 'attendance.view', 'report_cards.view'])
-                <section class="grid stats" style="margin-top:16px">
+@section('content')
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>Actions rapides</h2>
+                <p style="margin:4px 0 0;color:var(--muted)">Les opérations les plus fréquentes sont accessibles ici.</p>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            @can('students.create')
+                <a class="action-card" href="{{ route('students.create') }}">
+                    <strong>Ajouter élève</strong>
+                    <span>Créer un nouveau dossier élève.</span>
+                </a>
+            @endcan
+            @can('students.import')
+                <a class="action-card" href="{{ route('students.import') }}">
+                    <strong>Importer élèves</strong>
+                    <span>Charger une liste CSV/Excel.</span>
+                </a>
+            @endcan
+            @can('enrollments.create')
+                <a class="action-card" href="{{ route('enrollments.create') }}">
+                    <strong>Inscrire</strong>
+                    <span>Affecter un élève à une classe.</span>
+                </a>
+            @endcan
+            @can('payments.create')
+                <a class="action-card" href="{{ route('payments.create') }}">
+                    <strong>Encaisser</strong>
+                    <span>Enregistrer un paiement et reçu.</span>
+                </a>
+            @endcan
+            @can('students.export')
+                <a class="action-card" href="{{ route('certificates.create') }}">
+                    <strong>Certificat</strong>
+                    <span>Générer un document administratif.</span>
+                </a>
+            @endcan
+            @can('attendance.create')
+                <a class="action-card" href="{{ route('attendance.index') }}">
+                    <strong>Pointage</strong>
+                    <span>Présences, absences et retards.</span>
+                </a>
+            @endcan
+            @can('grades.view')
+                <a class="action-card" href="{{ route('grades.index') }}">
+                    <strong>Saisie notes</strong>
+                    <span>Créer un devoir ou saisir les notes.</span>
+                </a>
+            @endcan
+            @can('report_cards.view')
+                <a class="action-card" href="{{ route('report-cards.index') }}">
+                    <strong>Bulletins</strong>
+                    <span>Générer ou imprimer les bulletins.</span>
+                </a>
+            @endcan
+            @can('mock_exams.view')
+                <a class="action-card" href="{{ route('mock-exams.index') }}">
+                    <strong>Examens blancs</strong>
+                    <span>Candidats, anonymats, PV et résultats.</span>
+                </a>
+            @endcan
+        </div>
+    </section>
+
+    @canany(['students.view', 'classes.manage', 'enrollments.view', 'payments.reports', 'attendance.view', 'settings.manage', 'grades.view', 'report_cards.view'])
+        <section class="grid two-col">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Alertes importantes</h2>
+                    <span class="badge">À traiter</span>
+                </div>
+
+                <div class="alert-stack">
                     @can('payments.reports')
-                        <div class="stat">
-                            <span>Encaisse aujourd’hui</span>
+                        @if ($financeAlerts['unpaid_count'] > 0)
+                            <div class="alert-item">
+                                <div>
+                                    <strong>{{ number_format($financeAlerts['unpaid_count'], 0, ',', ' ') }} élève(s) avec reste à payer</strong>
+                                    <span>Reste estimé : {{ number_format($financeAlerts['remaining'], 0, ',', ' ') }} FCFA.</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Voir</a>
+                            </div>
+                        @endif
+                    @endcan
+
+                    @can('attendance.view')
+                        @if ($attendanceAlerts['absences_today'] > 0 || $attendanceAlerts['late_today'] > 0)
+                            <div class="alert-item">
+                                <div>
+                                    <strong>Vie scolaire du jour</strong>
+                                    <span>{{ $attendanceAlerts['absences_today'] }} absent(s), {{ $attendanceAlerts['late_today'] }} retard(s).</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('attendance.index') }}">Voir</a>
+                            </div>
+                        @endif
+
+                        @if ($attendanceAlerts['classes_not_pointed'] > 0)
+                            <div class="alert-item">
+                                <div>
+                                    <strong>{{ $attendanceAlerts['classes_not_pointed'] }} classe(s) non pointée(s)</strong>
+                                    <span>Le pointage du jour n’est pas complet.</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('attendance.index') }}">Pointer</a>
+                            </div>
+                        @endif
+                    @endcan
+
+                    @can('report_cards.view')
+                        @if ($academicAlerts['bulletins_pending'] > 0)
+                            <div class="alert-item">
+                                <div>
+                                    <strong>{{ number_format($academicAlerts['bulletins_pending'], 0, ',', ' ') }} bulletin(s) en brouillon</strong>
+                                    <span>À vérifier avant validation ou impression.</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('report-cards.index') }}">Ouvrir</a>
+                            </div>
+                        @endif
+                    @endcan
+
+                    @can('settings.manage')
+                        @if ($configurationAlerts['classes_without_tariffs_count'] > 0)
+                            <div class="alert-item">
+                                <div>
+                                    <strong>{{ $configurationAlerts['classes_without_tariffs_count'] }} classe(s) sans tarif</strong>
+                                    <span>Les états financiers seront incomplets tant que les tarifs ne sont pas configurés.</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('tariffs.index') }}">Configurer</a>
+                            </div>
+                        @endif
+
+                        @if ($configurationAlerts['classes_without_subjects']->isNotEmpty())
+                            <div class="alert-item">
+                                <div>
+                                    <strong>{{ $configurationAlerts['classes_without_subjects']->count() }} classe(s) sans matières</strong>
+                                    <span>Les notes et bulletins ont besoin des matières et coefficients.</span>
+                                </div>
+                                <a class="btn btn-subtle" href="{{ route('subjects.index') }}">Configurer</a>
+                            </div>
+                        @endif
+                    @endcan
+
+                    @if (
+                        (! auth()->user()->can('payments.reports') || $financeAlerts['unpaid_count'] === 0)
+                        && (! auth()->user()->can('attendance.view') || ($attendanceAlerts['absences_today'] === 0 && $attendanceAlerts['late_today'] === 0 && $attendanceAlerts['classes_not_pointed'] === 0))
+                        && (! auth()->user()->can('report_cards.view') || $academicAlerts['bulletins_pending'] === 0)
+                        && (! auth()->user()->can('settings.manage') || ($configurationAlerts['classes_without_tariffs_count'] === 0 && $configurationAlerts['classes_without_subjects']->isEmpty()))
+                    )
+                        <div class="empty">Aucune alerte urgente pour le moment.</div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Chiffres utiles</h2>
+                    <span class="badge">{{ $academicYear?->name ?? 'Année active' }}</span>
+                </div>
+
+                <div class="summary-row">
+                    @can('students.view')
+                        <div class="detail-item">
+                            <span>Élèves actifs</span>
+                            <strong>{{ number_format($stats['students'], 0, ',', ' ') }}</strong>
+                        </div>
+                    @endcan
+                    @can('classes.manage')
+                        <div class="detail-item">
+                            <span>Classes</span>
+                            <strong>{{ number_format($stats['classes'], 0, ',', ' ') }}</strong>
+                        </div>
+                    @endcan
+                    @can('enrollments.view')
+                        <div class="detail-item">
+                            <span>Inscriptions</span>
+                            <strong>{{ number_format($stats['enrollments'], 0, ',', ' ') }}</strong>
+                        </div>
+                    @endcan
+                    @can('payments.reports')
+                        <div class="detail-item">
+                            <span>Encaisse du jour</span>
                             <strong class="money">{{ number_format($financeAlerts['today_paid'], 0, ',', ' ') }} FCFA</strong>
-                        </div>
-                        <div class="stat">
-                            <span>Paiements du jour</span>
-                            <strong>{{ number_format($financeAlerts['today_count'], 0, ',', ' ') }}</strong>
-                        </div>
-                        <div class="stat">
-                            <span>Reste total estime</span>
-                            <strong class="money">{{ number_format($financeAlerts['remaining'], 0, ',', ' ') }} FCFA</strong>
                         </div>
                     @endcan
                     @can('attendance.view')
-                        <div class="stat">
-                            <span>Classes pointees</span>
-                            <strong>{{ $attendanceAlerts['classes_pointed'] }} / {{ $stats['classes'] }}</strong>
+                        <div class="detail-item">
+                            <span>Absences du jour</span>
+                            <strong>{{ number_format($stats['absences_today'], 0, ',', ' ') }}</strong>
                         </div>
                     @endcan
-                    @can('report_cards.view')
-                        <div class="stat">
-                            <span>Bulletins en brouillon</span>
-                            <strong>{{ number_format($academicAlerts['bulletins_pending'], 0, ',', ' ') }}</strong>
+                    @can('grades.view')
+                        <div class="detail-item">
+                            <span>Évaluations semaine</span>
+                            <strong>{{ number_format($academicAlerts['assessments_week'], 0, ',', ' ') }}</strong>
                         </div>
                     @endcan
-                </section>
-            @endcanany
+                </div>
+            </div>
+        </section>
+    @endcanany
 
-            <section class="grid two-col">
-                <div class="panel">
-                    <div class="panel-head">
-                        <h2>Modules principaux</h2>
+    @can('payments.reports')
+        <section class="grid stats" style="margin-top:16px">
+            <div class="stat">
+                <span>Total attendu</span>
+                <strong class="money">{{ number_format($financeAlerts['expected'], 0, ',', ' ') }} FCFA</strong>
+            </div>
+            <div class="stat">
+                <span>Total payé</span>
+                <strong class="money">{{ number_format($financeAlerts['paid'], 0, ',', ' ') }} FCFA</strong>
+            </div>
+            <div class="stat">
+                <span>Reste estimé</span>
+                <strong class="money">{{ number_format($financeAlerts['remaining'], 0, ',', ' ') }} FCFA</strong>
+            </div>
+            <div class="stat">
+                <span>Paiements du jour</span>
+                <strong>{{ number_format($financeAlerts['today_count'], 0, ',', ' ') }}</strong>
+            </div>
+            <div class="stat">
+                <span>Élèves avec reste</span>
+                <strong>{{ number_format($financeAlerts['unpaid_count'], 0, ',', ' ') }}</strong>
+            </div>
+        </section>
+    @endcan
+
+    <section class="grid two-col">
+        @can('payments.reports')
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Plus gros restes à payer</h2>
+                    <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Tous les impayés</a>
+                </div>
+
+                @if ($financeAlerts['top_unpaid']->isEmpty())
+                    <div class="empty">Aucun impayé détecté sur les tarifs configurés.</div>
+                @else
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Élève</th>
+                                    <th>Classe</th>
+                                    <th>Reste</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($financeAlerts['top_unpaid'] as $row)
+                                    <tr>
+                                        <td><strong>{{ $row['student']?->full_name }}</strong></td>
+                                        <td>{{ $row['class']?->name ?? '-' }}</td>
+                                        <td class="money">{{ number_format($row['balance'], 0, ',', ' ') }} FCFA</td>
+                                        <td>
+                                            @can('payments.view')
+                                                <a class="btn btn-subtle" href="{{ route('payments.students.statement', $row['student']) }}">Voir</a>
+                                            @endcan
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
+                @endif
+            </div>
+        @endcan
 
-                    <div class="grid modules">
-                        @can('students.view')
-                            <a class="module" href="{{ route('students.index') }}">
-                                <strong>Élèves</strong>
-                                <span>Dossiers, parents, documents et historique.</span>
-                            </a>
-                        @endcan
-                        @can('classes.manage')
-                            <a class="module" href="{{ route('classes.index') }}">
-                                <strong>Classes</strong>
-                                <span>Niveaux, capacités, effectifs et affectation des élèves.</span>
-                            </a>
-                        @endcan
-                        @can('enrollments.view')
-                            <a class="module" href="{{ route('enrollments.index') }}">
-                                <strong>Inscriptions</strong>
-                                <span>Nouvelle inscription, reinscription et affectation.</span>
-                            </a>
-                        @endcan
-                        @can('payments.view')
-                            <a class="module" href="{{ route('payments.index') }}">
-                                <strong>Paiements</strong>
-                                <span>Scolarité, reçus, impayés et rapports de caisse.</span>
-                            </a>
-                        @endcan
-                        @can('attendance.view')
-                            <a class="module" href="{{ route('attendance.index') }}">
-                                <strong>Absences</strong>
-                                <span>Appel par classe, retards, justificatifs et suivi quotidien.</span>
-                            </a>
-                        @endcan
-                        @can('grades.view')
-                            <a class="module" href="{{ route('grades.index') }}">
-                                <strong>Notes</strong>
-                                <span>Evaluations, saisie des notes et suivi par trimestre.</span>
-                            </a>
-                        @endcan
-                        @can('report_cards.view')
-                            <a class="module" href="{{ route('report-cards.index') }}">
-                                <strong>Bulletins</strong>
-                                <span>Moyennes, rangs et bulletins imprimables par élève.</span>
-                            </a>
-                        @endcan
-                        @can('payments.reports')
-                            <a class="module" href="{{ route('accounting.cash-journal') }}">
-                                <strong>Comptabilité</strong>
-                                <span>Journal de caisse, d?penses, bilan et contrôles.</span>
-                            </a>
-                        @endcan
-                        @can('settings.manage')
-                            <a class="module" href="{{ route('tariffs.index') }}">
-                                <strong>Tarifs</strong>
-                                <span>Montants par classe, tranches et frais annexes.</span>
-                            </a>
-                            <a class="module" href="{{ route('subjects.index') }}">
-                                <strong>Matières</strong>
-                                <span>Matières enseignees, coefficients et activation par classe.</span>
-                            </a>
-                        @endcan
-                        @can('students.export')
-                            <a class="module" href="{{ route('certificates.index') }}">
-                                <strong>Documents</strong>
-                                <span>Certificats, attestations et documents administratifs.</span>
-                            </a>
-                        @endcan
-                        @canany(['students.export', 'payments.reports'])
-                            <a class="module" href="{{ auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation') }}">
-                                <strong>Rapports</strong>
-                                <span>Listes imprimables par classe et exports administratifs.</span>
-                            </a>
-                        @endcanany
-                        @can('users.manage')
-                            <a class="module" href="{{ route('staff.index') }}">
-                                <strong>Personnel</strong>
-                                <span>Comptes utilisateurs, rôles et accès internes.</span>
-                            </a>
-                        @endcan
-                        @can('academic_years.manage')
-                            <a class="module" href="{{ route('academic-years.index') }}">
-                                <strong>Années scolaires</strong>
-                                <span>Activation des années, trimestres et clotures.</span>
-                            </a>
-                        @endcan
+        @can('attendance.view')
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Vie scolaire aujourd’hui</h2>
+                    <a class="btn btn-subtle" href="{{ route('attendance.index') }}">Ouvrir</a>
+                </div>
+
+                <div class="summary-row">
+                    <div class="detail-item">
+                        <span>Absents</span>
+                        <strong>{{ number_format($attendanceAlerts['absences_today'], 0, ',', ' ') }}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Retards</span>
+                        <strong>{{ number_format($attendanceAlerts['late_today'], 0, ',', ' ') }}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Classes pointées</span>
+                        <strong>{{ $attendanceAlerts['classes_pointed'] }} / {{ $stats['classes'] }}</strong>
                     </div>
                 </div>
 
-                @can('payments.reports')
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2>Finances rapides</h2>
-                            <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayés</a>
-                        </div>
-
-                        <div class="summary-row">
+                @if ($attendanceAlerts['not_pointed_classes']->isNotEmpty())
+                    <div class="ledger-list" style="margin-top:14px">
+                        @foreach ($attendanceAlerts['not_pointed_classes'] as $class)
                             <div class="detail-item">
-                                <span>Attendu</span>
-                                <strong class="money">{{ number_format($financeAlerts['expected'], 0, ',', ' ') }} FCFA</strong>
+                                <span>Classe non pointée</span>
+                                <strong>{{ $class->name }}</strong>
                             </div>
-                            <div class="detail-item">
-                                <span>Paye</span>
-                                <strong class="money">{{ number_format($financeAlerts['paid'], 0, ',', ' ') }} FCFA</strong>
-                            </div>
-                            <div class="detail-item">
-                                <span>Élèves avec reste</span>
-                                <strong>{{ number_format($financeAlerts['unpaid_count'], 0, ',', ' ') }}</strong>
-                            </div>
-                        </div>
-
-                        <div class="panel-head" style="margin-top:16px">
-                            <h2>Plus gros restes</h2>
-                        </div>
-
-                        @if ($financeAlerts['top_unpaid']->isEmpty())
-                            <div class="empty">Aucun impayé detecte sur les tarifs configurés.</div>
-                        @else
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Élève</th>
-                                        <th>Classe</th>
-                                        <th>Reste</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($financeAlerts['top_unpaid'] as $row)
-                                        <tr>
-                                            <td><strong>{{ $row['student']?->full_name }}</strong></td>
-                                            <td>{{ $row['class']?->name ?? '-' }}</td>
-                                            <td class="money">{{ number_format($row['balance'], 0, ',', ' ') }} FCFA</td>
-                                            <td>
-                                                @can('payments.view')
-                                                    <a class="btn btn-subtle" href="{{ route('payments.students.statement', $row['student']) }}">Voir</a>
-                                                @endcan
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                        @endforeach
                     </div>
-                @endcan
-            </section>
+                @endif
+            </div>
+        @endcan
 
-            @canany(['attendance.view', 'grades.view', 'report_cards.view', 'settings.manage'])
-                <section class="grid two-col" style="margin-top:16px">
-                    @can('attendance.view')
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2>Vie scolaire aujourd’hui</h2>
-                            <a class="btn btn-subtle" href="{{ route('attendance.index') }}">Absences</a>
-                        </div>
-
-                        <div class="summary-row">
-                            <div class="detail-item">
-                                <span>Absents</span>
-                                <strong>{{ number_format($attendanceAlerts['absences_today'], 0, ',', ' ') }}</strong>
-                            </div>
-                            <div class="detail-item">
-                                <span>Retards</span>
-                                <strong>{{ number_format($attendanceAlerts['late_today'], 0, ',', ' ') }}</strong>
-                            </div>
-                            <div class="detail-item">
-                                <span>Non pointees</span>
-                                <strong>{{ number_format($attendanceAlerts['classes_not_pointed'], 0, ',', ' ') }}</strong>
-                            </div>
-                        </div>
-
-                        @if ($attendanceAlerts['not_pointed_classes']->isNotEmpty())
-                            <div class="panel-head" style="margin-top:16px">
-                                <h2>Classes non pointees</h2>
-                            </div>
-                            <div class="ledger-list">
-                                @foreach ($attendanceAlerts['not_pointed_classes'] as $class)
-                                    <div class="detail-item">
-                                        <span>Classe</span>
-                                        <strong>{{ $class->name }}</strong>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
+        @canany(['classes.manage', 'students.view'])
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Effectifs par classe</h2>
+                    @can('classes.manage')
+                        <a class="btn btn-subtle" href="{{ route('classes.index') }}">Classes</a>
                     @endcan
+                </div>
 
-                    @canany(['grades.view', 'report_cards.view', 'settings.manage'])
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2>Pedagogie</h2>
-                            @can('report_cards.view')
-                                <a class="btn btn-subtle" href="{{ route('report-cards.index') }}">Bulletins</a>
-                            @endcan
-                        </div>
-
-                        <div class="summary-row">
-                            @can('grades.view')
-                                <div class="detail-item">
-                                    <span>Evaluations semaine</span>
-                                    <strong>{{ number_format($academicAlerts['assessments_week'], 0, ',', ' ') }}</strong>
-                                </div>
-                                <div class="detail-item">
-                                    <span>Evaluations verrouillees</span>
-                                    <strong>{{ number_format($academicAlerts['locked_assessments'], 0, ',', ' ') }}</strong>
-                                </div>
-                            @endcan
-                            @can('report_cards.view')
-                                <div class="detail-item">
-                                    <span>Bulletins générés</span>
-                                    <strong>{{ number_format($academicAlerts['bulletins_generated'], 0, ',', ' ') }}</strong>
-                                </div>
-                            @endcan
-                        </div>
-
-                        @can('settings.manage')
-                            <div class="panel-head" style="margin-top:16px">
-                                <h2>Alertes configuration</h2>
-                            </div>
-
-                            @if ($configurationAlerts['classes_without_tariffs']->isEmpty() && $configurationAlerts['classes_without_subjects']->isEmpty())
-                                <div class="empty">Tarifs et matières semblent configurés pour les classes actives.</div>
-                            @else
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Type</th>
-                                            <th>Classe</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($configurationAlerts['classes_without_tariffs'] as $class)
-                                            <tr>
-                                                <td><span class="badge badge-warning">Tarifs manquants</span></td>
-                                                <td><strong>{{ $class->name }}</strong></td>
-                                                <td>
-                                                <a class="btn btn-subtle" href="{{ route('tariffs.edit', $class) }}">Configurer</a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        @foreach ($configurationAlerts['classes_without_subjects'] as $class)
-                                            <tr>
-                                                <td><span class="badge badge-warning">Matières manquantes</span></td>
-                                                <td><strong>{{ $class->name }}</strong></td>
-                                                <td>
-                                                <a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $class->id]) }}">Configurer</a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            @endif
-                        @endcan
-                    </div>
-                    @endcanany
-                </section>
-            @endcanany
-
-            <section class="grid two-col" style="margin-top:16px">
-                @can('payments.view')
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2>Derniers paiements</h2>
-                        </div>
-
-                        @if ($recentPayments->isEmpty())
-                            <div class="empty">Aucun paiement enregistré pour le moment.</div>
-                        @else
-                            <table class="table">
-                                <thead>
+                @if ($classes->isEmpty())
+                    <div class="empty">Aucune classe configurée pour l’année active.</div>
+                @else
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Classe</th>
+                                    <th>Effectif</th>
+                                    <th>Capacité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($classes as $class)
                                     <tr>
-                                        <th>Élève</th>
-                                        <th>Montant</th>
+                                        <td>
+                                            @can('classes.manage')
+                                                <a href="{{ route('classes.show', $class) }}"><strong>{{ $class->name }}</strong></a>
+                                            @else
+                                                <strong>{{ $class->name }}</strong>
+                                            @endcan
+                                        </td>
+                                        <td>{{ $class->enrollments_count }}</td>
+                                        <td>{{ $class->capacity ?? '-' }}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($recentPayments as $payment)
-                                        <tr>
-                                            <td><a href="{{ route('payments.show', $payment) }}"><strong>{{ $payment->student->full_name }}</strong></a></td>
-                                            <td>{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                @endcan
+                @endif
+            </div>
+        @endcanany
 
-                @canany(['classes.manage', 'students.view'])
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2>Effectifs par classe</h2>
+        @can('payments.view')
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Derniers paiements</h2>
+                    <a class="btn btn-subtle" href="{{ route('payments.index') }}">Paiements</a>
+                </div>
+
+                @if ($recentPayments->isEmpty())
+                    <div class="empty">Aucun paiement enregistré pour le moment.</div>
+                @else
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Élève</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($recentPayments as $payment)
+                                    <tr>
+                                        <td><a href="{{ route('payments.show', $payment) }}"><strong>{{ $payment->student->full_name }}</strong></a></td>
+                                        <td class="money">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        @endcan
+
+        @canany(['grades.view', 'report_cards.view', 'settings.manage'])
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Notes et bulletins</h2>
+                    @can('report_cards.view')
+                        <a class="btn btn-subtle" href="{{ route('report-cards.index') }}">Bulletins</a>
+                    @endcan
+                </div>
+
+                <div class="summary-row">
+                    @can('grades.view')
+                        <div class="detail-item">
+                            <span>Évaluations semaine</span>
+                            <strong>{{ number_format($academicAlerts['assessments_week'], 0, ',', ' ') }}</strong>
                         </div>
+                        <div class="detail-item">
+                            <span>Évaluations verrouillées</span>
+                            <strong>{{ number_format($academicAlerts['locked_assessments'], 0, ',', ' ') }}</strong>
+                        </div>
+                    @endcan
+                    @can('report_cards.view')
+                        <div class="detail-item">
+                            <span>Bulletins générés</span>
+                            <strong>{{ number_format($academicAlerts['bulletins_generated'], 0, ',', ' ') }}</strong>
+                        </div>
+                    @endcan
+                </div>
 
-                        @if ($classes->isEmpty())
-                            <div class="empty">Aucune classe configurée pour l’année active.</div>
-                        @else
+                @can('settings.manage')
+                    @if ($configurationAlerts['classes_without_tariffs']->isNotEmpty() || $configurationAlerts['classes_without_subjects']->isNotEmpty())
+                        <div class="table-scroll" style="margin-top:14px">
                             <table class="table">
                                 <thead>
                                     <tr>
+                                        <th>Type</th>
                                         <th>Classe</th>
-                                        <th>Effectif</th>
-                                        <th>Capacite</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($classes as $class)
+                                    @foreach ($configurationAlerts['classes_without_tariffs'] as $class)
                                         <tr>
-                                            <td>
-                                                @can('classes.manage')
-                                                    <a href="{{ route('classes.show', $class) }}"><strong>{{ $class->name }}</strong></a>
-                                                @else
-                                                    <strong>{{ $class->name }}</strong>
-                                                @endcan
-                                            </td>
-                                            <td>{{ $class->enrollments_count }}</td>
-                                            <td>{{ $class->capacity ?? '-' }}</td>
+                                            <td><span class="badge badge-warning">Tarifs manquants</span></td>
+                                            <td><strong>{{ $class->name }}</strong></td>
+                                            <td><a class="btn btn-subtle" href="{{ route('tariffs.edit', $class) }}">Configurer</a></td>
+                                        </tr>
+                                    @endforeach
+                                    @foreach ($configurationAlerts['classes_without_subjects'] as $class)
+                                        <tr>
+                                            <td><span class="badge badge-warning">Matières manquantes</span></td>
+                                            <td><strong>{{ $class->name }}</strong></td>
+                                            <td><a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $class->id]) }}">Configurer</a></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-                        @endif
-                    </div>
-                @endcanany
-            </section>
+                        </div>
+                    @endif
+                @endcan
+            </div>
+        @endcanany
+    </section>
 @endsection
