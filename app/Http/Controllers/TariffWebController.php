@@ -136,7 +136,7 @@ class TariffWebController extends Controller
 
         return redirect()
             ->route('tariffs.edit', $schoolClass)
-            ->with('success', 'Tarifs mis a jour.');
+            ->with('success', 'Tarifs mis à jour.');
     }
 
     public function applyDefaults(): RedirectResponse
@@ -170,7 +170,7 @@ class TariffWebController extends Controller
 
         return redirect()
             ->route('tariffs.index')
-            ->with('success', $created . ' ligne(s) de tarifs initialisees depuis l affiche.');
+            ->with('success', $created . ' ligne(s) de tarifs initialisées depuis l’affiche.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -182,7 +182,7 @@ class TariffWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }
@@ -190,9 +190,9 @@ class TariffWebController extends Controller
     private function ensureDefaultFeeTypes(): array
     {
         $items = [
-            'inscription' => ['Inscription / Reinscription', 'INS_REINS'],
-            'novembre' => ['Scolarite novembre', 'SCO_NOV'],
-            'fevrier' => ['Scolarite fevrier', 'SCO_FEV'],
+            'inscription' => ['Inscription / R?inscription', 'INS_REINS'],
+            'novembre' => ['Scolarité novembre', 'SCO_NOV'],
+            'fevrier' => ['Scolarité février', 'SCO_FEV'],
             'conseil' => ['Conseil de l ecole', 'CONSEIL'],
             'cis' => ['Carte d identite scolaire', 'CIS'],
             'frais_inscription' => ['Frais d inscription et reinscription', 'FRAIS_INS'],
@@ -251,7 +251,7 @@ class TariffWebController extends Controller
         return [
             ['fee_type_id' => $feeTypes['inscription'], 'period' => 'Inscription', 'amount' => $inscription],
             ['fee_type_id' => $feeTypes['novembre'], 'period' => 'Novembre 2026', 'amount' => $novembre, 'due_date' => '2026-11-30'],
-            ['fee_type_id' => $feeTypes['fevrier'], 'period' => 'Fevrier 2027', 'amount' => $fevrier, 'due_date' => '2027-02-28'],
+            ['fee_type_id' => $feeTypes['fevrier'], 'period' => 'Février 2027', 'amount' => $fevrier, 'due_date' => '2027-02-28'],
             ['fee_type_id' => $feeTypes['conseil'], 'period' => 'Frais annexes', 'amount' => 1000],
             ['fee_type_id' => $feeTypes['cis'], 'period' => 'Frais annexes', 'amount' => 1000],
             ['fee_type_id' => $feeTypes['frais_inscription'], 'period' => 'Frais annexes', 'amount' => 2500],

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Fiche d'inscription</title>
+    <title>Fiche d’inscription</title>
     <style>
         @page {
             margin: 14px 18px;
@@ -152,10 +152,10 @@
         <tr>
             <td style="width: 170px">
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-                <div class="motto">{{ $school?->motto ?? '"Batir l\'excellence"' }}</div>
+                <div class="motto">{{ $school?->motto ?? '"Bâtir l\'excellence"' }}</div>
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
@@ -166,10 +166,10 @@
         </tr>
     </table>
 
-    <div class="title">FICHE D'INSCRIPTION {{ $academicYear?->name ?? '2025-2026' }}</div>
+    <div class="title">FICHE d’INSCRIPTION {{ $academicYear?->name ?? '2025-2026' }}</div>
 
     <div class="section-title">
-        1- Identite de l'eleve
+        1- Identite de l’élève
         <span class="right-title">Classe: {{ $student->desired_class ?: '.................' }}</span>
     </div>
 
@@ -177,7 +177,7 @@
         <tr>
             <td>
                 <p class="line">Nom: <strong>{{ $student->last_name }}</strong></p>
-                <p class="line">Prenom(s): <strong>{{ $student->first_name }}</strong></p>
+                <p class="line">Prénom(s): <strong>{{ $student->first_name }}</strong></p>
                 <p class="line">Date de naissance: <strong>{{ $student->birth_date?->format('d/m/Y') }}</strong></p>
                 <p class="line">Lieu de naissance: <strong>{{ $student->birth_place }}</strong></p>
                 <p class="line">Sexe: <strong>{{ $student->gender_label }}</strong></p>
@@ -186,9 +186,9 @@
                 <p class="line">Religion: <strong>{{ $student->religion }}</strong></p>
             </td>
             <td>
-                <p class="line">Ecole d'origine: <strong>{{ $student->origin_school }}</strong></p>
+                <p class="line">École d’origine: <strong>{{ $student->origin_school }}</strong></p>
                 <p class="line">Classe frequentee: <strong>{{ $student->previous_class }}</strong></p>
-                <p class="line">Classe deja redoublee: <strong>{{ $student->repeated_class }}</strong></p>
+                <p class="line">Classe déjà redoublee: <strong>{{ $student->repeated_class }}</strong></p>
                 <p class="line">Secteur: <strong>{{ $student->sector }}</strong></p>
                 <p class="line">Quartier: <strong>{{ $student->district }}</strong></p>
                 <p class="line">Tel(dom): <strong>{{ $student->home_phone }}</strong></p>
@@ -203,7 +203,7 @@
             <td>
                 <p class="subhead">Pere/Tuteur</p>
                 <p class="line">Nom: <strong>{{ $fatherGuardian?->last_name }}</strong></p>
-                <p class="line">Prenom(s): <strong>{{ $fatherGuardian?->first_name }}</strong></p>
+                <p class="line">Prénom(s): <strong>{{ $fatherGuardian?->first_name }}</strong></p>
                 <p class="line">Profession: <strong>{{ $fatherGuardian?->profession }}</strong></p>
                 <p class="line">Service: <strong>{{ $fatherGuardian?->service }}</strong></p>
                 <p class="line">Tel(portable): <strong>{{ $fatherGuardian?->phone_primary }}</strong></p>
@@ -212,7 +212,7 @@
             <td>
                 <p class="subhead">Mere/Tutrice</p>
                 <p class="line">Nom: <strong>{{ $motherGuardian?->last_name }}</strong></p>
-                <p class="line">Prenom(s): <strong>{{ $motherGuardian?->first_name }}</strong></p>
+                <p class="line">Prénom(s): <strong>{{ $motherGuardian?->first_name }}</strong></p>
                 <p class="line">Profession: <strong>{{ $motherGuardian?->profession }}</strong></p>
                 <p class="line">Service: <strong>{{ $motherGuardian?->service }}</strong></p>
                 <p class="line">Tel(portable): <strong>{{ $motherGuardian?->phone_primary }}</strong></p>
@@ -261,7 +261,7 @@
             Mr/Mme: <strong>{{ $student->emergency_contact_name }}</strong>
             <span style="float: right;">Contact : <strong>{{ $student->emergency_contact_phone }}</strong></span>
         </p>
-        <p class="line">No WhatsApp pour les infos de l'ecole : <strong>{{ $student->school_info_whatsapp }}</strong></p>
+        <p class="line">No WhatsApp pour les infos de l’école : <strong>{{ $student->school_info_whatsapp }}</strong></p>
     </div>
 </body>
 </html>

@@ -110,12 +110,12 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)
             ->get(route('staff.roles.index'))
             ->assertOk()
-            ->assertSee('Ce role peut')
+            ->assertSee('Ce rôle peut')
             ->assertSee('Voir')
             ->assertSee('Modifier')
             ->assertSee('Imprimer')
             ->assertSee('Administrer')
-            ->assertSee('Gestion quotidienne des dossiers eleves');
+            ->assertSee('Gestion quotidienne des dossiers élèves');
 
         $this->actingAs($user)
             ->get(route('staff.roles.edit', $secretariat))

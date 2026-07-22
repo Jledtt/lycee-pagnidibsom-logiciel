@@ -163,7 +163,7 @@ class ClassCouncilWebController extends Controller
                 'school_class_id' => $schoolClass->id,
                 'term_id' => $term->id,
             ])
-            ->with('success', 'Conseil verrouille. Les notes du trimestre sont protegees.');
+            ->with('success', 'Conseil verrouillé. Les notes du trimestre sont protégées.');
     }
 
     public function unlock(Request $request): RedirectResponse
@@ -181,7 +181,7 @@ class ClassCouncilWebController extends Controller
                 'school_class_id' => $schoolClass->id,
                 'term_id' => $term->id,
             ])
-            ->with('success', 'Conseil deverrouille pour correction admin.');
+            ->with('success', 'Conseil déverrouillé pour correction admin.');
     }
 
     private function selection(Request $request): array
@@ -455,7 +455,7 @@ class ClassCouncilWebController extends Controller
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

@@ -25,7 +25,7 @@ class EnrollmentService
 
             if ($exists) {
                 throw ValidationException::withMessages([
-                    'student_id' => 'Cet eleve est deja inscrit pour cette annee scolaire.',
+                    'student_id' => 'Cet élève est déjà inscrit pour cette année scolaire.',
                 ]);
             }
 

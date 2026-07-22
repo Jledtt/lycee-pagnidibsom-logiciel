@@ -25,13 +25,13 @@ class IncompleteStudentDataReportTest extends TestCase
         $this->actingAs($user)
             ->get(route('reports.incomplete-students', ['school_class_id' => $class->id]))
             ->assertOk()
-            ->assertSee('Donnees eleves incompletes')
+            ->assertSee('Données élèves incomplètes')
             ->assertSee($student->full_name)
-            ->assertSee('Sexe non renseigne')
+            ->assertSee('Sexe non renseigné')
             ->assertSee('Date de naissance manquante')
             ->assertSee('Contact parent/tuteur manquant')
             ->assertSee('Photo manquante')
-            ->assertSee('Piece manquante : Acte de naissance')
+            ->assertSee('Pièce manquante : Acte de naissance')
             ->assertSee('Modifier');
     }
 
@@ -94,8 +94,8 @@ class IncompleteStudentDataReportTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString($student->matricule, $sheetXml);
-        $this->assertStringContainsString('A completer', $sheetXml);
-        $this->assertStringContainsString('Sexe non renseigne', $sheetXml);
+        $this->assertStringContainsString('À compléter', $sheetXml);
+        $this->assertStringContainsString('Sexe non renseigné', $sheetXml);
     }
 
     private function classWithIncompleteStudent(): array

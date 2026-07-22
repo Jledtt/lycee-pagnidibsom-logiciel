@@ -26,13 +26,13 @@
         <tr>
             <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $exam->academicYear?->name }}</strong><br>
+                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
                 Session : {{ $exam->name }}<br>
                 Type : {{ $exam->exam_type_label }}<br>
                 Date : {{ now()->format('d/m/Y') }}
@@ -43,7 +43,7 @@
     <div class="title">{{ $title }}</div>
 
     <div class="box">
-        Le jury de la session <strong>{{ $exam->name }}</strong>, apres examen des resultats, arrete les decisions provisoires suivantes :
+        Le jury de la session <strong>{{ $exam->name }}</strong>, après examen des résultats, arrête les décisions provisoires suivantes :
     </div>
 
     <table class="list" style="margin-top:12px">
@@ -65,10 +65,10 @@
         <thead>
             <tr>
                 <th style="width:34px" class="center">Rang</th>
-                <th>Nom et prenom(s)</th>
+                <th>Nom et prénom(s)</th>
                 <th style="width:86px">Classe</th>
                 <th style="width:70px">Moyenne</th>
-                <th style="width:96px">Decision</th>
+                <th style="width:96px">Décision</th>
                 <th>Observation jury</th>
             </tr>
         </thead>

@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Modifier utilisateur - Lycee Prive Pagnidibsom',
+    'title' => 'Modifier utilisateur - Lycée Privé Pagnidibsom',
     'active' => 'staff',
     'pageTitle' => 'Modifier utilisateur',
     'pageSubtitle' => $user->name,

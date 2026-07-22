@@ -12,7 +12,7 @@
 
 <div class="panel">
     <div class="panel-head">
-        <h2>1- Identite de l'eleve</h2>
+        <h2>1- Identite de l’élève</h2>
     </div>
 
     <div class="form-grid">
@@ -22,7 +22,7 @@
         </div>
 
         <div class="field">
-            <label for="origin_school">Ecole d'origine</label>
+            <label for="origin_school">École d’origine</label>
             <input id="origin_school" name="origin_school" value="{{ old('origin_school', $student->origin_school) }}">
         </div>
 
@@ -32,7 +32,7 @@
         </div>
 
         <div class="field">
-            <label for="first_name">Prenom(s)</label>
+            <label for="first_name">Prénom(s)</label>
             <input id="first_name" name="first_name" value="{{ old('first_name', $student->first_name) }}" required>
         </div>
 
@@ -49,7 +49,7 @@
         <div class="field">
             <label for="gender">Sexe</label>
             <select id="gender" name="gender">
-                <option value="">Non renseigne</option>
+                <option value="">Non renseign?</option>
                 <option value="male" @selected(old('gender', $student->gender) === 'male')>Garcon</option>
                 <option value="female" @selected(old('gender', $student->gender) === 'female')>Fille</option>
             </select>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="field">
-            <label for="repeated_class">Classe deja redoublee</label>
+            <label for="repeated_class">Classe déjà redoublee</label>
             <input id="repeated_class" name="repeated_class" value="{{ old('repeated_class', $student->repeated_class) }}">
         </div>
 
@@ -129,7 +129,7 @@
         </div>
 
         <div class="field">
-            <label for="father_first_name">Prenom(s)</label>
+            <label for="father_first_name">Prénom(s)</label>
             <input id="father_first_name" name="father_first_name" value="{{ old('father_first_name', $fatherGuardian?->first_name) }}">
         </div>
 
@@ -163,7 +163,7 @@
         </div>
 
         <div class="field">
-            <label for="mother_first_name">Prenom(s)</label>
+            <label for="mother_first_name">Prénom(s)</label>
             <input id="mother_first_name" name="mother_first_name" value="{{ old('mother_first_name', $motherGuardian?->first_name) }}">
         </div>
 
@@ -252,7 +252,7 @@
         </div>
 
         <div class="field wide">
-            <label for="school_info_whatsapp">No WhatsApp pour les infos de l'ecole</label>
+            <label for="school_info_whatsapp">No WhatsApp pour les infos de l’école</label>
             <input id="school_info_whatsapp" name="school_info_whatsapp" value="{{ old('school_info_whatsapp', $student->school_info_whatsapp) }}">
         </div>
     </div>

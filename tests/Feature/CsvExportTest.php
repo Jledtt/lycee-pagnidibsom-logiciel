@@ -32,7 +32,7 @@ class CsvExportTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString('Matricule', $sheetXml);
-        $this->assertStringContainsString('Prenom', $sheetXml);
+        $this->assertStringContainsString('Prénom', $sheetXml);
         $this->assertStringContainsString('LPP-TEST-001', $sheetXml);
     }
 

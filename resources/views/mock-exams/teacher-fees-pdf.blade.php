@@ -28,13 +28,13 @@
         <tr>
             <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $exam->academicYear?->name }}</strong><br>
+                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
                 Session : {{ $exam->name }}<br>
                 Type : {{ $exam->exam_type_label }}<br>
                 Candidats : {{ $exam->candidates->count() }}
@@ -45,15 +45,15 @@
     <div class="title">{{ $title }}</div>
 
     <p class="muted">
-        Ce bordereau permet de preparer le paiement des professeurs correcteurs ou intervenants.
-        Les taux et montants peuvent etre completes par la comptabilite avant validation.
+        Ce bordereau permet de préparer le paiement des professeurs correcteurs ou intervenants.
+        Les taux et montants peuvent être completes par la comptabilité avant validation.
     </p>
 
     <table class="list">
         <thead>
             <tr>
                 <th style="width:28px" class="center">No</th>
-                <th>Matiere</th>
+                <th>Matière</th>
                 <th style="width:64px">Partie</th>
                 <th style="width:60px" class="center">Copies</th>
                 <th style="width:130px">Professeur</th>
@@ -76,12 +76,12 @@
                     <td></td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="center">Aucune matiere.</td></tr>
+                <tr><td colspan="8" class="center">Aucune matière.</td></tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="6" class="right">Total a payer</th>
+                <th colspan="6" class="right">Total à payer</th>
                 <th class="right">{{ number_format((float) $exam->subjects->sum('fee_amount'), 0, ',', ' ') }}</th>
                 <th></th>
             </tr>
@@ -92,7 +92,7 @@
         <tr>
             <td class="list sign">Prepare par</td>
             <td style="width:24px"></td>
-            <td class="list sign">Controle comptabilite</td>
+            <td class="list sign">Contrôle comptabilité</td>
             <td style="width:24px"></td>
             <td class="list sign">Visa direction</td>
         </tr>

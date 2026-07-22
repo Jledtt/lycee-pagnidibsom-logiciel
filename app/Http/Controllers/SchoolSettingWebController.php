@@ -63,30 +63,36 @@ class SchoolSettingWebController extends Controller
 
         return redirect()
             ->route('settings.edit')
-            ->with('success', 'Parametres de l ecole mis a jour.');
+            ->with('success', 'Paramètres de l’école mis à jour.');
     }
 
     private function settings(): SchoolSetting
     {
-        return SchoolSetting::query()->firstOrCreate(
-            ['school_name' => 'Lycee Prive Pagnidibsom'],
-            [
-                'short_name' => 'LPP',
-                'currency' => 'FCFA',
-                'address' => '04 Ouagadougou 04 BP 8825',
-                'phone' => '(+226) 72 81 61 59 / 78 42 62 06',
-                'email' => 'infoslyceepagnidibsom@gmail.com',
-                'logo_path' => 'images/logo-pagnidibsom.png',
-                'motto' => '"Batir l\'excellence"',
-                'country' => 'Burkina Faso',
-                'national_motto' => 'La Patrie ou la Mort Nous Vaincrons',
-                'city' => 'Ouagadougou',
-                'postal_box' => '04 BP 8825',
-                'principal_name' => 'Yamdaogo TINTILA',
-                'principal_title' => 'Le Proviseur',
-                'accountant_name' => 'Le Comptable',
-            ],
-        );
+        $defaults = [
+            'school_name' => 'Lycée Privé Pagnidibsom',
+            'short_name' => 'LPP',
+            'currency' => 'FCFA',
+            'address' => '04 Ouagadougou 04 BP 8825',
+            'phone' => '(+226) 72 81 61 59 / 78 42 62 06',
+            'email' => 'infoslyceepagnidibsom@gmail.com',
+            'logo_path' => 'images/logo-pagnidibsom.png',
+            'motto' => '"Bâtir l\'excellence"',
+            'country' => 'Burkina Faso',
+            'national_motto' => 'La Patrie ou la Mort Nous Vaincrons',
+            'city' => 'Ouagadougou',
+            'postal_box' => '04 BP 8825',
+            'principal_name' => 'Yamdaogo TINTILA',
+            'principal_title' => 'Le Proviseur',
+            'accountant_name' => 'Le Comptable',
+        ];
+
+        $settings = SchoolSetting::query()->first();
+
+        if ($settings) {
+            return $settings;
+        }
+
+        return SchoolSetting::query()->create($defaults);
     }
 
     private function activeAcademicYear(): ?AcademicYear

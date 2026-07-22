@@ -32,13 +32,13 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:210px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Date : {{ $date->format('d/m/Y') }}
             </td>
@@ -62,7 +62,7 @@
             <tr>
                 <th style="width:34px" class="center">No</th>
                 <th style="width:105px">Matricule</th>
-                <th>Eleve</th>
+                <th>Élève</th>
                 <th style="width:90px">Statut</th>
                 <th style="width:80px">Retard</th>
                 <th>Motif / observation</th>
@@ -80,7 +80,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="center">Aucune absence ou retard pour cette classe a cette date.</td>
+                    <td colspan="6" class="center">Aucune absence ou retard pour cette classe à cette date.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -88,7 +88,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

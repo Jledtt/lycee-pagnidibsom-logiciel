@@ -102,7 +102,7 @@ class GradeImportTest extends TestCase
             ->actingAs($user)
             ->get(route('grades.import', $assessment))
             ->assertOk()
-            ->assertSee('Mise a jour');
+            ->assertSee('Mise à jour');
 
         $this->actingAs($user)
             ->post(route('grades.import.store', $assessment))
@@ -130,7 +130,7 @@ class GradeImportTest extends TestCase
             ->actingAs($user)
             ->get(route('grades.import', $assessment))
             ->assertOk()
-            ->assertSee('Note hors bareme');
+            ->assertSee('Note hors barème');
 
         $this->actingAs($user)
             ->post(route('grades.import.store', $assessment))

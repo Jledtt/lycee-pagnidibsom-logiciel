@@ -1,24 +1,24 @@
 @extends('layouts.app', [
-    'title' => 'Pieces manquantes - Lycee Prive Pagnidibsom',
+    'title' => 'Pièces manquantes - Lycée Privé Pagnidibsom',
     'active' => 'reports',
-    'pageTitle' => 'Pieces manquantes',
-    'pageSubtitle' => 'Controle des dossiers administratifs pour ' . ($academicYear?->name ?? 'l annee active'),
+    'pageTitle' => 'Pièces manquantes',
+    'pageSubtitle' => 'Contrôle des dossiers administratifs pour ' . ($academicYear?->name ?? 'l année active'),
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Donnees incompletes</a>
-    <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste eleves</a>
+    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Donn?es incompl?tes</a>
+    <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste élèves</a>
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation paiements</a>
     @endcan
-    <a class="btn btn-subtle" href="{{ route('reports.missing-documents.export', request()->query()) }}" data-download-feedback="Telechargement Excel des pieces manquantes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+    <a class="btn btn-subtle" href="{{ route('reports.missing-documents.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des pièces manquantes lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     <a class="btn btn-primary" href="{{ route('reports.missing-documents.pdf', request()->query()) }}">PDF</a>
 @endsection
 
 @section('content')
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('reports.missing-documents') }}">
@@ -42,7 +42,7 @@
 
     <section class="summary-row" style="margin-top:16px">
         <div class="stat">
-            <span>Eleves suivis</span>
+            <span>Élèves suivis</span>
             <strong>{{ $summary['students'] }}</strong>
         </div>
         <div class="stat">
@@ -54,7 +54,7 @@
             <strong>{{ $summary['incomplete'] }}</strong>
         </div>
         <div class="stat">
-            <span>Pieces manquantes</span>
+            <span>Pièces manquantes</span>
             <strong>{{ $summary['missing_documents'] }}</strong>
         </div>
     </section>
@@ -64,23 +64,23 @@
             <div>
                 <h2>{{ $schoolClass?->name ?? 'Toutes les classes' }}</h2>
                 <p style="margin:4px 0 0;color:var(--muted)">
-                    Base controlee : {{ implode(', ', $requiredDocuments) }}.
+                    Base contrôlee : {{ implode(', ', $requiredDocuments) }}.
                 </p>
             </div>
             <span class="badge">{{ $rows->count() }} ligne(s)</span>
         </div>
 
         @if ($rows->isEmpty())
-            <div class="empty">Aucun eleve ne correspond a cette selection.</div>
+            <div class="empty">Aucun élève ne correspond à cette sélection.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:980px">
                     <thead>
                         <tr>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Statut dossier</th>
-                            <th>Pieces manquantes</th>
+                            <th>Pièces manquantes</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -100,7 +100,7 @@
                                 </td>
                                 <td>
                                     @if ($row['is_complete'])
-                                        <span style="color:var(--muted)">Aucune piece manquante</span>
+                                        <span style="color:var(--muted)">Aucune pièce manquante</span>
                                     @else
                                         <div class="page-actions" style="justify-content:flex-start">
                                             @foreach ($row['missing_documents'] as $document)

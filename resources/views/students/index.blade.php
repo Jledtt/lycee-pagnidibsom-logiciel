@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Eleves - Lycee Prive Pagnidibsom',
+    'title' => 'Élèves - Lycée Privé Pagnidibsom',
     'active' => 'students',
-    'pageTitle' => 'Eleves',
-    'pageSubtitle' => 'Dossiers eleves, contacts tuteurs et suivi administratif',
+    'pageTitle' => 'Élèves',
+    'pageSubtitle' => 'Dossiers élèves, contacts tuteurs et suivi administratif',
 ])
 
 @section('page_actions')
@@ -10,10 +10,10 @@
         <a class="btn btn-subtle" href="{{ route('students.import') }}">Importer</a>
     @endcan
     @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('students.export', request()->query()) }}" data-download-feedback="Telechargement Excel des eleves lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('students.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des élèves lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('students.create')
-        <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel eleve</a>
+        <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel élève</a>
     @endcan
 @endsection
 
@@ -24,7 +24,7 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('students.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prenom ou matricule">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prénom ou matricule">
             <select name="status">
                 <option value="">Tous les statuts</option>
                 <option value="active" @selected(($filters['status'] ?? '') === 'active')>Actifs</option>
@@ -39,24 +39,24 @@
                 @endforeach
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('students.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('students.index') }}">Réinitialiser</a>
         </form>
     </section>
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Liste des eleves</h2>
+            <h2>Liste des élèves</h2>
             <span class="badge">{{ $students->total() }} dossier(s)</span>
         </div>
 
         @if ($students->isEmpty())
-            <div class="empty">Aucun eleve trouve. Cree le premier dossier avec le bouton “Nouvel eleve”.</div>
+            <div class="empty">Aucun élève trouvé. Crée le premier dossier avec le bouton “Nouvel élève”.</div>
         @else
             <table class="table">
                 <thead>
                     <tr>
                         <th>Matricule</th>
-                        <th>Eleve</th>
+                        <th>Élève</th>
                         <th>Sexe</th>
                         <th>Classe</th>
                         <th>Tuteur</th>

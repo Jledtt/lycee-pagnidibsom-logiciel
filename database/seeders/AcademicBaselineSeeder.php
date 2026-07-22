@@ -17,7 +17,7 @@ class AcademicBaselineSeeder extends Seeder
     public function run(): void
     {
         SchoolSetting::firstOrCreate(
-            ['school_name' => 'Lycee Prive Pagnidibsom'],
+            ['school_name' => 'Lycée Privé Pagnidibsom'],
             [
                 'short_name' => 'LPP',
                 'currency' => 'FCFA',
@@ -25,7 +25,7 @@ class AcademicBaselineSeeder extends Seeder
                 'phone' => '(+226) 72 81 61 59 / 78 42 62 06',
                 'email' => 'infoslyceepagnidibsom@gmail.com',
                 'logo_path' => 'images/logo-pagnidibsom.png',
-                'motto' => '"Batir l\'excellence"',
+                'motto' => '"Bâtir l\'excellence"',
                 'country' => 'Burkina Faso',
                 'national_motto' => 'La Patrie ou la Mort Nous Vaincrons',
                 'city' => 'Ouagadougou',
@@ -97,17 +97,17 @@ class AcademicBaselineSeeder extends Seeder
         }
 
         foreach ([
-            ['name' => 'Francais', 'code' => 'FR'],
-            ['name' => 'Mathematiques', 'code' => 'MATH'],
-            ['name' => 'Mathematiques appliquees', 'code' => 'MATH_APP'],
+            ['name' => 'Français', 'code' => 'FR'],
+            ['name' => 'Mathématiques', 'code' => 'MATH'],
+            ['name' => 'Mathématiques appliquées', 'code' => 'MATH_APP'],
             ['name' => 'Anglais', 'code' => 'ANG'],
-            ['name' => 'Histoire-Geographie', 'code' => 'HG'],
+            ['name' => 'Histoire-Géographie', 'code' => 'HG'],
             ['name' => 'SVT', 'code' => 'SVT'],
             ['name' => 'Physique-Chimie', 'code' => 'PC'],
             ['name' => 'Sciences physiques', 'code' => 'SP'],
             ['name' => 'Philosophie', 'code' => 'PHILO'],
             ['name' => 'EPS', 'code' => 'EPS'],
-            ['name' => 'Education civique et morale', 'code' => 'ECM'],
+            ['name' => 'Éducation civique et morale', 'code' => 'ECM'],
             ['name' => 'Technologie', 'code' => 'TECH'],
             ['name' => 'Allemand', 'code' => 'ALL'],
             ['name' => 'Espagnol', 'code' => 'ESP'],
@@ -115,8 +115,8 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'TIC', 'code' => 'TIC'],
             ['name' => 'Art et culture', 'code' => 'ART'],
             ['name' => 'Musique et chant', 'code' => 'MUS'],
-            ['name' => 'Theatre', 'code' => 'THEATRE'],
-            ['name' => 'Art menager', 'code' => 'ART_MEN'],
+            ['name' => 'Théâtre', 'code' => 'THEATRE'],
+            ['name' => 'Art ménager', 'code' => 'ART_MEN'],
             ['name' => 'Production', 'code' => 'PROD'],
             ['name' => 'Dessin technique', 'code' => 'DESS_TECH'],
         ] as $subject) {
@@ -142,9 +142,9 @@ class AcademicBaselineSeeder extends Seeder
 
         foreach ([
             ['name' => 'Inscription', 'code' => 'INS'],
-            ['name' => 'Reinscription', 'code' => 'REINS'],
-            ['name' => 'Scolarite', 'code' => 'SCO'],
-            ['name' => 'Frais d examen', 'code' => 'EXAM'],
+            ['name' => 'Réinscription', 'code' => 'REINS'],
+            ['name' => 'Scolarité', 'code' => 'SCO'],
+            ['name' => 'Frais d\'examen', 'code' => 'EXAM'],
             ['name' => 'Autres frais', 'code' => 'AUTRE'],
         ] as $feeType) {
             $model = FeeType::query()

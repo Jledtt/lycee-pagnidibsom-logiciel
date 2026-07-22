@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Nouvelle autorisation - Lycee Prive Pagnidibsom',
+    'title' => 'Nouvelle autorisation - Lycée Privé Pagnidibsom',
     'active' => 'exit-authorizations',
     'pageTitle' => 'Nouvelle autorisation',
-    'pageSubtitle' => 'Autorisation d entree et de sortie selon le modele fourni par le client',
+    'pageSubtitle' => "Autorisation d’entrée et de sortie selon le modèle fourni par le client",
 ])
 
 @section('page_actions')
@@ -20,12 +20,12 @@
             </div>
 
             @if ($students->isEmpty())
-                <div class="empty">Aucun eleve inscrit disponible.</div>
+                <div class="empty">Aucun élève inscrit disponible.</div>
             @else
                 <div class="field">
-                    <label for="student_id">Eleve</label>
+                    <label for="student_id">Élève</label>
                     <select id="student_id" name="student_id" required>
-                        <option value="">Choisir un eleve</option>
+                        <option value="">Choisir un élève</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}" @selected((string) old('student_id', $selectedStudentId) === (string) $student->id)>
                                 {{ $student->matricule }} - {{ $student->full_name }}
@@ -55,8 +55,8 @@
                 </div>
 
                 <div class="field">
-                    <label for="subject_name">Matiere concernee</label>
-                    <input id="subject_name" name="subject_name" value="{{ old('subject_name') }}" placeholder="Ex: Mathematiques, cours de la journee">
+                    <label for="subject_name">Matière concernee</label>
+                    <input id="subject_name" name="subject_name" value="{{ old('subject_name') }}" placeholder="Ex: Mathématiques, cours de la journée">
                     @error('subject_name') <small class="error">{{ $message }}</small> @enderror
                 </div>
 
@@ -80,7 +80,7 @@
 
                 <div class="form-actions">
                     <a class="btn btn-subtle" href="{{ route('exit-authorizations.index') }}">Annuler</a>
-                    <button class="btn btn-primary" type="submit">Generer</button>
+                    <button class="btn btn-primary" type="submit">Générer</button>
                 </div>
             @endif
         </form>
@@ -91,11 +91,11 @@
             </div>
             <div class="detail-item">
                 <span>Cas typique</span>
-                <strong>Eleve malade, convocation parent, sortie administrative, retard justifie.</strong>
+                <strong>Élève malade, convocation parent, sortie administrative, retard justifie.</strong>
             </div>
             <div class="detail-item">
                 <span>Trace</span>
-                <strong>Chaque document reste dans l historique avec le nom de l eleve, la date, le motif et l auteur.</strong>
+                <strong>Chaque document reste dans l historique avec le nom de l élève, la date, le motif et l auteur.</strong>
             </div>
             <div class="detail-item">
                 <span>Impression</span>

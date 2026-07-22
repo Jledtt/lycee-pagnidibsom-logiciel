@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Tranches de paiement - Lycee Prive Pagnidibsom',
+    'title' => 'Tranches de paiement - Lycée Privé Pagnidibsom',
     'active' => 'reports',
     'pageTitle' => 'Tranches de paiement',
     'pageSubtitle' => 'Suivi des tranches payees et restantes par classe',
@@ -7,7 +7,7 @@
 
 @section('page_actions')
     @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pieces manquantes</a>
+        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
     @endcan
     <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation globale</a>
     @if ($schoolClass)
@@ -20,7 +20,7 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('reports.installments') }}">
@@ -34,18 +34,18 @@
             <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom ou matricule">
             <select name="status">
                 <option value="">Tous les statuts</option>
-                <option value="unpaid" @selected(($filters['status'] ?? '') === 'unpaid')>Impayes</option>
+                <option value="unpaid" @selected(($filters['status'] ?? '') === 'unpaid')>Impayés</option>
                 <option value="partial" @selected(($filters['status'] ?? '') === 'partial')>Partiels</option>
                 <option value="paid" @selected(($filters['status'] ?? '') === 'paid')>A jour</option>
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Réinitialiser</a>
         </form>
     </section>
 
     @if (! $schoolClass)
         <section class="panel" style="margin-top:16px">
-            <div class="empty">Aucune classe active disponible pour l'annee scolaire active.</div>
+            <div class="empty">Aucune classe active disponible pour l’année scolaire active.</div>
         </section>
     @else
         <section class="summary-row" style="margin-top:16px">
@@ -66,28 +66,28 @@
         <section class="grid modules" style="margin-top:16px">
             <div class="module">
                 <strong>{{ $studentSummary['total'] }}</strong>
-                <span>Eleves suivis</span>
+                <span>Élèves suivis</span>
             </div>
             <div class="module">
                 <strong>{{ $studentSummary['partial'] }}</strong>
-                <span>Eleves avec paiement partiel</span>
+                <span>Élèves avec paiement partiel</span>
             </div>
             <div class="module">
                 <strong>{{ $studentSummary['unpaid'] }}</strong>
-                <span>Eleves impayes</span>
+                <span>Élèves impayés</span>
             </div>
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $schoolClass->name }}</h2>
-                <span class="badge">{{ $studentRows->count() }} eleve(s) affiche(s)</span>
+                <span class="badge">{{ $studentRows->count() }} élève(s) affiche(s)</span>
             </div>
 
             @if ($rows->isEmpty())
-                <div class="empty">Aucune tranche configuree pour cette classe.</div>
+                <div class="empty">Aucune tranche configurée pour cette classe.</div>
             @elseif ($studentRows->isEmpty())
-                <div class="empty">Aucun eleve ne correspond aux filtres choisis.</div>
+                <div class="empty">Aucun élève ne correspond aux filtres choisis.</div>
             @else
                 <div class="ledger-list">
                     @foreach ($studentRows as $studentRow)
@@ -103,7 +103,7 @@
 
                                 <span class="ledger-metric">
                                     <strong class="money">{{ number_format($studentRow['balance'], 0, ',', ' ') }} {{ $currency }}</strong>
-                                    <span>Reste a payer</span>
+                                    <span>Reste à payer</span>
                                 </span>
 
                                 <span class="ledger-metric">
@@ -127,7 +127,7 @@
                                 <div class="ledger-detail-head">
                                     <div>
                                         <h3>{{ $studentRow['unpaid_rows']->isEmpty() ? 'Toutes les tranches' : 'Tranches a regler' }}</h3>
-                                        <span class="badge">{{ $studentRow['unpaid_count'] }} impaye(s)</span>
+                                        <span class="badge">{{ $studentRow['unpaid_count'] }} impayé(s)</span>
                                     </div>
                                     @can('payments.create')
                                         <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Enregistrer un paiement</a>

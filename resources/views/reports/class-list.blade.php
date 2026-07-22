@@ -1,19 +1,19 @@
 @extends('layouts.app', [
-    'title' => 'Liste des eleves par classe - Lycee Prive Pagnidibsom',
+    'title' => 'Liste des élèves par classe - Lycée Privé Pagnidibsom',
     'active' => 'reports',
-    'pageTitle' => 'Liste des eleves par classe',
-    'pageSubtitle' => 'Rapport imprimable par classe pour ' . ($academicYear?->name ?? 'l annee active'),
+    'pageTitle' => 'Liste des élèves par classe',
+    'pageSubtitle' => 'Rapport imprimable par classe pour ' . ($academicYear?->name ?? 'l année active'),
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Donnees incompletes</a>
-    <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pieces manquantes</a>
+    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Donn?es incompl?tes</a>
+    <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation paiements</a>
         <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Tranches</a>
     @endcan
     @if ($schoolClass)
-        <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Telechargement Excel de la liste de classe lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Téléchargement Excel de la liste de classe lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
         <a class="btn btn-primary" href="{{ route('reports.class-list.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
 @endsection
@@ -21,7 +21,7 @@
 @section('content')
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('reports.class-list') }}">
@@ -38,7 +38,7 @@
 
     @if (! $schoolClass)
         <section class="panel" style="margin-top:16px">
-            <div class="empty">Aucune classe active disponible pour l'annee scolaire active.</div>
+            <div class="empty">Aucune classe active disponible pour l’année scolaire active.</div>
         </section>
     @else
         <section class="summary-row" style="margin-top:16px">
@@ -58,19 +58,19 @@
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>Eleves inscrits</h2>
-                <span class="badge">{{ $summary['total'] }} eleve(s)</span>
+                <h2>Élèves inscrits</h2>
+                <span class="badge">{{ $summary['total'] }} élève(s)</span>
             </div>
 
             @if ($schoolClass->enrollments->isEmpty())
-                <div class="empty">Aucun eleve actif inscrit dans cette classe.</div>
+                <div class="empty">Aucun élève actif inscrit dans cette classe.</div>
             @else
                 <table class="table">
                     <thead>
                         <tr>
                             <th>No</th>
                             <th>Matricule</th>
-                            <th>Nom et prenom(s)</th>
+                            <th>Nom et prénom(s)</th>
                             <th>Sexe</th>
                             <th>Naissance</th>
                             <th>Tuteur</th>
@@ -85,7 +85,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $student?->matricule }}</td>
                                 <td><strong>{{ $student?->full_name }}</strong></td>
-                                <td>{{ $student?->gender_label ?? 'Non renseigne' }}</td>
+                                <td>{{ $student?->gender_label ?? 'Non renseign?' }}</td>
                                 <td>{{ $student?->birth_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>{{ $guardian?->full_name ?? '-' }}</td>
                                 <td>{{ $guardian?->phone_primary ?? $student?->home_phone ?? '-' }}</td>

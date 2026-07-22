@@ -24,13 +24,13 @@
         <tr>
             <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $exam->academicYear?->name }}</strong><br>
+                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
                 Session : {{ $exam->name }}<br>
                 Type : {{ $exam->exam_type_label }}<br>
                 Candidats : {{ $exam->candidates->count() }}
@@ -46,7 +46,7 @@
                 <th style="width:34px" class="center">No</th>
                 <th style="width:90px">Anonymat</th>
                 <th style="width:95px">Matricule</th>
-                <th>Nom et prenom(s)</th>
+                <th>Nom et prénom(s)</th>
                 <th style="width:90px">Classe</th>
                 <th style="width:80px">Salle</th>
             </tr>

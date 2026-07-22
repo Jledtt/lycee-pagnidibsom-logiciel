@@ -42,7 +42,7 @@ class StudentImportWebController extends Controller
 
         return redirect()
             ->route('students.import')
-            ->with('success', 'Fichier analyse. Verifie les lignes avant de lancer l import.');
+            ->with('success', 'Fichier analysé. Vérifie les lignes avant de lancer l’import.');
     }
 
     public function store(Request $request, StudentImportService $studentImport): RedirectResponse
@@ -60,7 +60,7 @@ class StudentImportWebController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', $result['created'] . ' eleve(s) importe(s). ' . $result['skipped'] . ' doublon(s) ignore(s).');
+            ->with('success', $result['created'] . ' élève(s) importé(s). ' . $result['skipped'] . ' doublon(s) ignoré(s).');
     }
 
     public function destroy(): RedirectResponse
@@ -69,7 +69,7 @@ class StudentImportWebController extends Controller
 
         return redirect()
             ->route('students.import')
-            ->with('success', 'Previsualisation annulee.');
+            ->with('success', 'Prévisualisation annulée.');
     }
 
     private function activeAcademicYear(): ?AcademicYear

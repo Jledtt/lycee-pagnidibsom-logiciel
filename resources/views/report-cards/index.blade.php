@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Bulletins - Lycee Prive Pagnidibsom',
+    'title' => 'Bulletins - Lycée Privé Pagnidibsom',
     'active' => 'report-cards',
     'pageTitle' => 'Bulletins',
-    'pageSubtitle' => 'Generation des moyennes, rangs et bulletins imprimables',
+    'pageSubtitle' => 'Génération des moyennes, rangs et bulletins imprimables',
 ])
 
 @section('page_actions')
@@ -19,12 +19,12 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
             <span class="badge">{{ $academicYear->name }}</span>
         </div>
 
         @if ($classes->isEmpty() || $terms->isEmpty())
-            <div class="empty">Il faut au moins une classe active et un trimestre pour generer les bulletins.</div>
+            <div class="empty">Il faut au moins une classe active et un trimestre pour générér les bulletins.</div>
         @else
             <form class="searchbar" method="GET" action="{{ route('report-cards.index') }}">
                 <select name="school_class_id">
@@ -65,15 +65,15 @@
                 <strong>{{ $selectedTerm->name }}</strong>
             </div>
             <div class="stat">
-                <span>Periode</span>
+                <span>Période</span>
                 <strong>{{ $selectedTermPeriod?->name ?? '-' }}</strong>
             </div>
             <div class="stat">
-                <span>Eleves</span>
+                <span>Élèves</span>
                 <strong>{{ $students->count() }}</strong>
             </div>
             <div class="stat">
-                <span>Bulletins generes</span>
+                <span>Bulletins générés</span>
                 <strong>{{ $reportCards->count() }}</strong>
             </div>
             <div class="stat">
@@ -91,32 +91,32 @@
                             @csrf
                             <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                             <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
-                            <button class="btn btn-primary" type="submit">Generer / recalculer</button>
+                            <button class="btn btn-primary" type="submit">Générer / recalculer</button>
                         </form>
                     @endcan
                     @can('report_cards.print')
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}">PDF classe</a>
                         @if ($selectedTermPeriod)
-                            <a class="btn btn-subtle" href="{{ route('report-cards.period-class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $selectedTermPeriod->id]) }}" data-download-feedback="Telechargement du releve par devoir lance.">PDF {{ $selectedTermPeriod->name }}</a>
+                            <a class="btn btn-subtle" href="{{ route('report-cards.period-class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $selectedTermPeriod->id]) }}" data-download-feedback="Téléchargement du relevé par devoir lancé.">PDF {{ $selectedTermPeriod->name }}</a>
                         @endif
-                        <a class="btn btn-subtle" href="{{ route('report-cards.class-export', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}" data-download-feedback="Telechargement Excel des bulletins lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+                        <a class="btn btn-subtle" href="{{ route('report-cards.class-export', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}" data-download-feedback="Téléchargement Excel des bulletins lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
                     @endcan
                 </div>
             </div>
 
             @if ($students->isEmpty())
-                <div class="empty">Aucun eleve actif dans cette classe.</div>
+                <div class="empty">Aucun élève actif dans cette classe.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:1040px">
                         <thead>
                             <tr>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Moyenne</th>
                                 <th>Rang</th>
                                 <th>Statut</th>
                                 <th>Appreciation generale</th>
-                                <th>Decision</th>
+                                <th>Décision</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -136,7 +136,7 @@
                                     </td>
                                     <td>
                                         @if (! $reportCard)
-                                            <span class="badge badge-warning">A generer</span>
+                                            <span class="badge badge-warning">A générér</span>
                                         @elseif ($reportCard->general_average === null)
                                             <span class="badge badge-warning">Non note</span>
                                         @elseif ($reportCard->status === 'validated')

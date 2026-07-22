@@ -82,7 +82,7 @@ class DatabaseBackupService
         $tables = $this->tables($driver, $database);
 
         if ($tables->isEmpty()) {
-            throw new RuntimeException("Sauvegarde non supportee pour la connexion {$driver}.");
+            throw new RuntimeException("Sauvegarde non supportée pour la connexion {$driver}.");
         }
 
         $rows = [];

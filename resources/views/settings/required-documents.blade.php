@@ -1,13 +1,13 @@
 @extends('layouts.app', [
-    'title' => 'Pieces obligatoires - Lycee Prive Pagnidibsom',
+    'title' => 'Pi?ces obligatoires - Lycée Privé Pagnidibsom',
     'active' => 'settings',
-    'pageTitle' => 'Pieces obligatoires',
-    'pageSubtitle' => 'Parametrage des documents exiges dans les dossiers eleves',
+    'pageTitle' => 'Pi?ces obligatoires',
+    'pageSubtitle' => 'Parametrage des documents exiges dans les dossiers élèves',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Parametres ecole</a>
-    <a class="btn btn-subtle" href="{{ route('reports.missing-documents') }}">Rapport pieces manquantes</a>
+    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Paramètres école</a>
+    <a class="btn btn-subtle" href="{{ route('reports.missing-documents') }}">Rapport pièces manquantes</a>
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Nouvelle piece</h2>
+                <h2>Nouvelle pièce</h2>
             </div>
 
             <form method="POST" action="{{ route('settings.required-documents.store') }}">
@@ -27,18 +27,18 @@
                 <div class="form-grid">
                     <div class="field wide">
                         <label>Nom affiche</label>
-                        <input name="name" value="{{ old('name') }}" placeholder="Ex: Certificat medical" required>
+                        <input name="name" value="{{ old('name') }}" placeholder="Ex: Certificat médical" required>
                     </div>
 
                     <div class="field wide">
                         <label>Type / code</label>
-                        <input name="document_type" value="{{ old('document_type') }}" placeholder="Laisse vide pour generer automatiquement">
+                        <input name="document_type" value="{{ old('document_type') }}" placeholder="Laisse vide pour générér automatiquement">
                     </div>
 
                     <div class="field">
                         <label>Portee</label>
                         <select name="scope" required>
-                            <option value="all" @selected(old('scope', 'all') === 'all')>Tous les eleves</option>
+                            <option value="all" @selected(old('scope', 'all') === 'all')>Tous les élèves</option>
                             <option value="cycle" @selected(old('scope') === 'cycle')>Un cycle</option>
                             <option value="class" @selected(old('scope') === 'class')>Une classe</option>
                         </select>
@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">Ajouter la piece</button>
+                    <button class="btn btn-primary" type="submit">Ajouter la pièce</button>
                 </div>
             </form>
         </div>
@@ -115,12 +115,12 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Pieces configurees</h2>
+            <h2>Pieces configurées</h2>
             <span class="badge">{{ $requiredDocuments->count() }} regle(s)</span>
         </div>
 
         @if ($requiredDocuments->isEmpty())
-            <div class="empty">Aucune piece obligatoire configuree.</div>
+            <div class="empty">Aucune pièce obligatoire configurée.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:1180px">
@@ -182,7 +182,7 @@
                                             @method('PUT')
                                             <button class="btn btn-primary" type="submit">Enregistrer</button>
                                         </form>
-                                            <form method="POST" action="{{ route('settings.required-documents.destroy', $document) }}" onsubmit="return confirm('Supprimer cette piece obligatoire ?')">
+                                            <form method="POST" action="{{ route('settings.required-documents.destroy', $document) }}" onsubmit="return confirm('Supprimer cette pièce obligatoire ?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger" type="submit">Supprimer</button>

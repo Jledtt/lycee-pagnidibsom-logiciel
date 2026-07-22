@@ -1,4 +1,4 @@
-@extends('layouts.school', ['title' => $title ?? 'Lycee Prive Pagnidibsom'])
+@extends('layouts.school', ['title' => $title ?? 'Lycée Privé Pagnidibsom'])
 
 @section('body')
     <div class="app-shell">
@@ -6,8 +6,8 @@
             <div class="brand">
                 <div class="brand-mark">{{ $schoolSettings?->short_name ?? 'LPP' }}</div>
                 <div>
-                    <strong>{{ $schoolSettings?->school_name ?? 'Lycee Prive Pagnidibsom' }}</strong>
-                    <span>{{ $academicYear?->name ?? 'Annee non configuree' }}</span>
+                    <strong>{{ $schoolSettings?->school_name ?? 'Lycée Privé Pagnidibsom' }}</strong>
+                    <span>{{ $academicYear?->name ?? 'Année non configurée' }}</span>
                 </div>
             </div>
 
@@ -15,7 +15,7 @@
                 <a class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
                 <a class="{{ ($active ?? '') === 'help' ? 'active' : '' }}" href="{{ route('help.index') }}"><span class="nav-dot"></span>Aide</a>
                 @can('students.view')
-                    <a class="{{ ($active ?? '') === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Eleves</a>
+                    <a class="{{ ($active ?? '') === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Élèves</a>
                 @endcan
                 @can('classes.manage')
                     <a class="{{ ($active ?? '') === 'classes' ? 'active' : '' }}" href="{{ route('classes.index') }}"><span class="nav-dot"></span>Classes</a>
@@ -27,17 +27,17 @@
                     <a class="{{ ($active ?? '') === 'payments' ? 'active' : '' }}" href="{{ route('payments.index') }}"><span class="nav-dot"></span>Paiements</a>
                 @endcan
                 @can('payments.reports')
-                    <a class="{{ ($active ?? '') === 'accounting' ? 'active' : '' }}" href="{{ route('accounting.cash-journal') }}"><span class="nav-dot"></span>Comptabilite</a>
+                    <a class="{{ ($active ?? '') === 'accounting' ? 'active' : '' }}" href="{{ route('accounting.cash-journal') }}"><span class="nav-dot"></span>Comptabilité</a>
                 @endcan
                 @can('settings.manage')
                     <a class="{{ ($active ?? '') === 'tariffs' ? 'active' : '' }}" href="{{ route('tariffs.index') }}"><span class="nav-dot"></span>Tarifs</a>
-                    <a class="{{ ($active ?? '') === 'subjects' ? 'active' : '' }}" href="{{ route('subjects.index') }}"><span class="nav-dot"></span>Matieres</a>
+                    <a class="{{ ($active ?? '') === 'subjects' ? 'active' : '' }}" href="{{ route('subjects.index') }}"><span class="nav-dot"></span>Matières</a>
                 @endcan
                 @can('timetables.view')
                     <a class="{{ ($active ?? '') === 'timetables' ? 'active' : '' }}" href="{{ route('timetables.index') }}"><span class="nav-dot"></span>Emplois du temps</a>
                 @endcan
                 @can('timetables.print')
-                    <a class="{{ ($active ?? '') === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Emargements</a>
+                    <a class="{{ ($active ?? '') === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Émargements</a>
                 @endcan
                 @can('students.export')
                     <a class="{{ ($active ?? '') === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Documents</a>
@@ -70,10 +70,10 @@
                     <a class="{{ ($active ?? '') === 'activity-logs' ? 'active' : '' }}" href="{{ route('activity-logs.index') }}"><span class="nav-dot"></span>Journal</a>
                 @endcan
                 @can('settings.manage')
-                    <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Parametres</a>
+                    <a class="{{ ($active ?? '') === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Paramètres</a>
                 @endcan
                 @can('academic_years.manage')
-                    <a class="{{ ($active ?? '') === 'academic-years' ? 'active' : '' }}" href="{{ route('academic-years.index') }}"><span class="nav-dot"></span>Annees scolaires</a>
+                    <a class="{{ ($active ?? '') === 'academic-years' ? 'active' : '' }}" href="{{ route('academic-years.index') }}"><span class="nav-dot"></span>Années scolaires</a>
                 @endcan
             </nav>
         </aside>
@@ -90,7 +90,7 @@
                     <a class="user-pill" href="{{ route('profile.show') }}">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="btn btn-subtle" type="submit">Deconnexion</button>
+                        <button class="btn btn-subtle" type="submit">Déconnexion</button>
                     </form>
                 </div>
             </header>

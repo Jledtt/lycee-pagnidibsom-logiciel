@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Depenses - Lycee Prive Pagnidibsom',
+    'title' => 'Dépenses - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
-    'pageTitle' => 'Depenses',
+    'pageTitle' => 'Dépenses',
     'pageSubtitle' => 'Sorties de caisse et justificatifs',
 ])
 
@@ -47,17 +47,17 @@
             </select>
 
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Aujourd'hui</a>
+            <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Aujourd’hui</a>
         </form>
     </section>
 
     <section class="summary-row" style="margin-top:16px">
         <div class="stat">
-            <span>Total depenses</span>
+            <span>Total d?penses</span>
             <strong class="money">{{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</strong>
         </div>
         <div class="stat">
-            <span>Depenses valides</span>
+            <span>Dépenses validées</span>
             <strong>{{ $summary['valid_count'] }}</strong>
         </div>
         <div class="stat">
@@ -73,7 +73,7 @@
             </div>
 
             @if ($summary['by_category']->isEmpty())
-                <div class="empty">Aucune depense valide sur la periode.</div>
+                <div class="empty">Aucune depense valide sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -100,7 +100,7 @@
             </div>
 
             @if ($summary['by_method']->isEmpty())
-                <div class="empty">Aucune depense valide sur la periode.</div>
+                <div class="empty">Aucune depense valide sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -124,7 +124,7 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Liste des depenses</h2>
+            <h2>Liste des d?penses</h2>
             <span class="badge">{{ $expenses->total() }} depense(s)</span>
         </div>
 

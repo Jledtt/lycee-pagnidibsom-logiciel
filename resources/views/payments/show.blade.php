@@ -1,17 +1,17 @@
 @extends('layouts.app', [
-    'title' => $payment->receipt_number . ' - Lycee Prive Pagnidibsom',
+    'title' => $payment->receipt_number . ' - Lycée Privé Pagnidibsom',
     'active' => 'payments',
-    'pageTitle' => 'Recu ' . $payment->receipt_number,
-    'pageSubtitle' => $payment->student->full_name . ' - ' . ($payment->academicYear?->name ?? 'Annee scolaire'),
+    'pageTitle' => 'Reçu ' . $payment->receipt_number,
+    'pageSubtitle' => $payment->student->full_name . ' - ' . ($payment->academicYear?->name ?? 'Année scolaire'),
 ])
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Retour</a>
     @can('payments.print_receipt')
-        <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Recu PDF</a>
+        <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Reçu PDF</a>
     @endcan
     @can('payments.view')
-        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $payment->student) }}">Situation eleve</a>
+        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $payment->student) }}">Situation élève</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
@@ -25,12 +25,12 @@
             <strong class="money">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</strong>
         </div>
         <div class="stat">
-            <span>Total paye eleve</span>
+            <span>Total paye élève</span>
             <strong class="money">{{ number_format($summary['paid'], 0, ',', ' ') }} FCFA</strong>
         </div>
         <div class="stat">
-            <span>Reste a payer</span>
-            <strong class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
+            <span>Reste à payer</span>
+            <strong class="money">{{ is_null($summary['balance']) ? 'À configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
         </div>
     </section>
 
@@ -43,7 +43,7 @@
 
             <div class="detail-grid">
                 <div class="detail-item">
-                    <span>Eleve</span>
+                    <span>Élève</span>
                     <strong>{{ $payment->student->full_name }}</strong>
                 </div>
                 <div class="detail-item">
@@ -108,9 +108,9 @@
                     @csrf
                     @method('DELETE')
                     <div class="field">
-                        <label for="reason">Motif d'annulation</label>
-                        <textarea id="reason" name="reason" minlength="5" placeholder="Ex: erreur de montant, mauvais eleve, doublon de recu" required>{{ old('reason') }}</textarea>
-                        <small>Motif obligatoire. Il restera visible dans l'historique du recu.</small>
+                        <label for="reason">Motif d’annulation</label>
+                        <textarea id="reason" name="reason" minlength="5" placeholder="Ex: erreur de montant, mauvais élève, doublon de reçu" required>{{ old('reason') }}</textarea>
+                        <small>Motif obligatoire. Il restera visible dans l’historique du reçu.</small>
                         @error('reason') <small class="error">{{ $message }}</small> @enderror
                     </div>
                     <button class="btn btn-danger" type="submit">Annuler le paiement</button>

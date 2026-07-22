@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Journal d activite - Lycee Prive Pagnidibsom',
+    'title' => 'Journal d’activité - Lycée Privé Pagnidibsom',
     'active' => 'activity-logs',
-    'pageTitle' => 'Journal d activite',
-    'pageSubtitle' => 'Controle des modifications effectuees dans le logiciel',
+    'pageTitle' => 'Journal d’activité',
+    'pageSubtitle' => 'Contrôle des modifications effectuées dans le logiciel',
 ])
 
 @section('page_actions')
@@ -47,7 +47,7 @@
                 @endforeach
             </select>
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('activity-logs.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('activity-logs.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -58,7 +58,7 @@
         </div>
 
         @if ($logs->isEmpty())
-            <div class="empty">Aucune action trouvee.</div>
+            <div class="empty">Aucune action trouvée.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:1040px">

@@ -53,7 +53,7 @@ class ActivityLogTest extends TestCase
 
         $this->actingAs($direction)->get(route('activity-logs.index'))
             ->assertOk()
-            ->assertSee('Journal d activite')
+            ->assertSee('Journal d’activité')
             ->assertSee('Modification');
 
         $this->actingAs($secretariat)->get(route('activity-logs.index'))->assertForbidden();
@@ -85,7 +85,7 @@ class ActivityLogTest extends TestCase
         $this->actingAs($direction)
             ->get(route('activity-logs.show', $log))
             ->assertOk()
-            ->assertSee('Detail du journal')
+            ->assertSee('Détail du journal')
             ->assertSee('first name')
             ->assertSee('Awa Marie');
     }

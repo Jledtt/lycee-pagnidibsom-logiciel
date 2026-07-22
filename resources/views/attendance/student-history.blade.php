@@ -6,7 +6,7 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('students.show', $student) }}">Fiche eleve</a>
+    <a class="btn btn-subtle" href="{{ route('students.show', $student) }}">Fiche élève</a>
     @can('attendance.reports')
         <a class="btn btn-primary" href="{{ route('attendance.students.history.pdf', ['student' => $student->id, 'month' => $month]) }}">PDF</a>
     @endcan
@@ -18,7 +18,7 @@
     <section class="panel">
         <div class="panel-head">
             <h2>Filtre</h2>
-            <span class="badge">{{ $academicYear?->name ?? 'Aucune annee active' }}</span>
+            <span class="badge">{{ $academicYear?->name ?? 'Aucune année active' }}</span>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('attendance.students.history', $student) }}">
@@ -49,7 +49,7 @@
         </div>
 
         @if ($records->isEmpty())
-            <div class="empty">Aucune absence ou retard pour cette periode.</div>
+            <div class="empty">Aucune absence ou retard pour cette période.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:920px">

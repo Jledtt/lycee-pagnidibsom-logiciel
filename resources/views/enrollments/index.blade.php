@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Inscriptions - Lycee Prive Pagnidibsom',
+    'title' => 'Inscriptions - Lycée Privé Pagnidibsom',
     'active' => 'enrollments',
     'pageTitle' => 'Inscriptions',
-    'pageSubtitle' => 'Suivi des affectations eleves par classe pour ' . ($academicYear?->name ?? 'l\'annee active'),
+    'pageSubtitle' => 'Suivi des affectations élèves par classe pour ' . ($academicYear?->name ?? 'l\'année active'),
 ])
 
 @section('page_actions')
@@ -18,7 +18,7 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('enrollments.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prenom ou matricule">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prénom ou matricule">
             <select name="school_class_id">
                 <option value="">Toutes les classes</option>
                 @foreach ($classes as $class)
@@ -33,7 +33,7 @@
                 <option value="cancelled" @selected(($filters['status'] ?? '') === 'cancelled')>Annulees</option>
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('enrollments.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('enrollments.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -44,13 +44,13 @@
         </div>
 
         @if ($enrollments->isEmpty())
-            <div class="empty">Aucune inscription trouvee pour le moment.</div>
+            <div class="empty">Aucune inscription trouvée pour le moment.</div>
         @else
             <table class="table">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Eleve</th>
+                        <th>Élève</th>
                         <th>Classe</th>
                         <th>Type</th>
                         <th>Statut</th>

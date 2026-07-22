@@ -93,7 +93,7 @@ class ReportCardWebController extends Controller
                 'school_class_id' => $schoolClass->id,
                 'term_id' => $term->id,
             ])
-            ->with('success', count($rows).' bulletin(s) genere(s).');
+            ->with('success', count($rows).' bulletin(s) généré(s).');
     }
 
     public function pdf(ReportCard $reportCard)
@@ -160,7 +160,7 @@ class ReportCardWebController extends Controller
         $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
         $term = Term::query()->findOrFail($data['term_id']);
         $period = TermPeriod::query()->findOrFail($data['term_period_id']);
-        abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette periode ne correspond pas au trimestre selectionne.');
+        abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette p?riode ne correspond pas au trimestre s?lectionn?.');
 
         $students = $this->studentsForClass($schoolClass->academic_year_id, $schoolClass->id);
         $rows = $students
@@ -217,12 +217,12 @@ class ReportCardWebController extends Controller
         return $xlsxExport->download('bulletins-'.Str::slug($schoolClass->name.'-'.$term->name).'.xlsx', [
             'Rang',
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
             'Trimestre',
             'Moyenne',
             'Appreciation',
-            'Decision',
+            'Décision',
             'Statut',
         ], $reportCards->map(fn (ReportCard $reportCard) => [
             $reportCard->rank,
@@ -269,7 +269,7 @@ class ReportCardWebController extends Controller
                 'school_class_id' => $reportCard->school_class_id,
                 'term_id' => $reportCard->term_id,
             ])
-            ->with('success', 'Bulletin mis a jour.');
+            ->with('success', 'Bulletin mis à jour.');
     }
 
     private function subjectRows(ReportCard $reportCard): Collection
@@ -427,7 +427,7 @@ class ReportCardWebController extends Controller
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

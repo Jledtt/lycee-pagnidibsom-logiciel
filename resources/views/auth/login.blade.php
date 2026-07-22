@@ -1,12 +1,12 @@
-@extends('layouts.school', ['title' => 'Connexion - Lycee Prive Pagnidibsom'])
+@extends('layouts.school', ['title' => 'Connexion - Lycée Privé Pagnidibsom'])
 
 @section('body')
     <main class="auth-shell">
         <section class="auth-brand">
             <div>
                 <div class="brand-mark">LPP</div>
-                <h1>Lycee Prive Pagnidibsom</h1>
-                <p>Gestion scolaire, administrative et financiere de l'etablissement.</p>
+                <h1>Lycée Privé Pagnidibsom</h1>
+                <p>Gestion scolaire, administrative et financiere de l’etablissement.</p>
             </div>
             <p>{{ now()->year }} - Plateforme interne</p>
         </section>
@@ -15,7 +15,7 @@
             <form class="auth-card" method="POST" action="{{ route('login.store') }}">
                 @csrf
 
-                <p class="eyebrow">Acces securise</p>
+                <p class="eyebrow">Accès sécurisé</p>
                 <h2>Connexion</h2>
 
                 @if ($errors->any())

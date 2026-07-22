@@ -1,13 +1,13 @@
 @extends('layouts.app', [
-    'title' => 'Personnel - Lycee Prive Pagnidibsom',
+    'title' => 'Personnel - Lycée Privé Pagnidibsom',
     'active' => 'staff',
     'pageTitle' => 'Personnel',
-    'pageSubtitle' => 'Comptes utilisateurs, roles et acces internes',
+    'pageSubtitle' => 'Comptes utilisateurs, rôles et accès internes',
 ])
 
 @section('page_actions')
     @can('roles.manage')
-        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Roles et acces</a>
+        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Rôles et accès</a>
     @endcan
     <a class="btn btn-primary" href="{{ route('staff.create') }}">Nouvel utilisateur</a>
 @endsection
@@ -23,9 +23,9 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('staff.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, identifiant, e-mail ou telephone">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, identifiant, e-mail ou téléphone">
             <select name="role">
-                <option value="">Tous les roles</option>
+                <option value="">Tous les rôles</option>
                 @foreach ($roleLabels as $role => $label)
                     <option value="{{ $role }}" @selected(($filters['role'] ?? '') === $role)>{{ $label }}</option>
                 @endforeach
@@ -37,7 +37,7 @@
                 <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>Suspendus</option>
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('staff.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('staff.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -48,7 +48,7 @@
         </div>
 
         @if ($users->isEmpty())
-            <div class="empty">Aucun compte trouve. Cree le premier compte avec le bouton "Nouvel utilisateur".</div>
+            <div class="empty">Aucun compte trouv?. Cr?e le premier compte avec le bouton "Nouvel utilisateur".</div>
         @else
             <table class="table">
                 <thead>
@@ -57,7 +57,7 @@
                         <th>Identifiant</th>
                         <th>Role</th>
                         <th>Statut</th>
-                        <th>Derniere connexion</th>
+                        <th>Dernière connexion</th>
                         <th></th>
                     </tr>
                 </thead>

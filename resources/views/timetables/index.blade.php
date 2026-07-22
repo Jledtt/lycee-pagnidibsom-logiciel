@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Emplois du temps - Lycee Prive Pagnidibsom',
+    'title' => 'Emplois du temps - Lycée Privé Pagnidibsom',
     'active' => 'timetables',
     'pageTitle' => 'Emplois du temps',
     'pageSubtitle' => 'Creation, modification et impression des grilles hebdomadaires',
@@ -8,7 +8,7 @@
 @section('page_actions')
     @if ($timetable)
         @can('timetables.print')
-            <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Telechargement PDF de l emploi du temps lance.">PDF</a>
+            <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
         @endcan
         @can('timetables.manage')
             <a class="btn btn-subtle" href="{{ route('timetables.edit', $timetable) }}">Modifier</a>
@@ -24,11 +24,11 @@
     <section class="panel">
         <div class="panel-head">
             <h2>Classe</h2>
-            <span class="badge">{{ $academicYear?->name ?? 'Annee non configuree' }}</span>
+            <span class="badge">{{ $academicYear?->name ?? 'Année non configurée' }}</span>
         </div>
 
         @if ($classes->isEmpty())
-            <div class="empty">Aucune classe active. Cree d'abord les classes de l'annee scolaire.</div>
+            <div class="empty">Aucune classe active. Crée d’abord les classes de l’année scolaire.</div>
         @else
             <form class="searchbar" method="GET" action="{{ route('timetables.index') }}">
                 <select name="school_class_id" required>
@@ -48,7 +48,7 @@
                             @csrf
                             <input type="hidden" name="school_class_id" value="{{ $selectedClass?->id }}">
                             <input type="hidden" name="title" value="Emploi du temps">
-                            <button class="btn btn-primary" type="submit">Creer une grille vide</button>
+                            <button class="btn btn-primary" type="submit">Créer une grille vide</button>
                         </form>
                     @endif
 
@@ -56,7 +56,7 @@
                         <form method="POST" action="{{ route('timetables.example') }}">
                             @csrf
                             <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
-                            <button class="btn btn-subtle" type="submit">Appliquer l'exemple 2025-2026</button>
+                            <button class="btn btn-subtle" type="submit">Appliquer l’exemple 2025-2026</button>
                         </form>
                     @endif
                 @endcan
@@ -75,7 +75,7 @@
         </div>
 
         @if (! $timetable)
-            <div class="empty">Aucun emploi du temps pour cette classe. Cree une grille vide ou applique l'exemple Word.</div>
+            <div class="empty">Aucun emploi du temps pour cette classe. Crée une grille vide ou applique l’exemple Word.</div>
         @else
             <div class="summary-row" style="margin-bottom:16px">
                 <div class="stat">
@@ -87,7 +87,7 @@
                     <strong style="font-size:16px">{{ $timetable->principal_teacher ?: '-' }}</strong>
                 </div>
                 <div class="stat">
-                    <span>Derniere modification</span>
+                    <span>Dernière modification</span>
                     <strong style="font-size:18px">{{ $timetable->updated_at?->format('d/m/Y H:i') }}</strong>
                 </div>
             </div>
@@ -136,12 +136,12 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Emplois du temps crees</h2>
+            <h2>Emplois du temps créés</h2>
             <span class="badge">{{ $timetables->count() }} grille(s)</span>
         </div>
 
         @if ($timetables->isEmpty())
-            <div class="empty">Aucune grille enregistree pour le moment.</div>
+            <div class="empty">Aucune grille enregistrée pour le moment.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:760px">
@@ -150,7 +150,7 @@
                             <th>Classe</th>
                             <th>Titre</th>
                             <th>Statut</th>
-                            <th>Mis a jour</th>
+                            <th>Mis à jour</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -165,7 +165,7 @@
                                     <div class="page-actions">
                                         <a class="btn btn-subtle" href="{{ route('timetables.index', ['school_class_id' => $item->school_class_id]) }}">Voir</a>
                                         @can('timetables.print')
-                                            <a class="btn btn-subtle" href="{{ route('timetables.pdf', $item) }}" data-download-feedback="Telechargement PDF de l emploi du temps lance.">PDF</a>
+                                            <a class="btn btn-subtle" href="{{ route('timetables.pdf', $item) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
                                         @endcan
                                     </div>
                                 </td>

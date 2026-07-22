@@ -1,12 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Import eleves - Lycee Prive Pagnidibsom',
+    'title' => 'Import élèves - Lycée Privé Pagnidibsom',
     'active' => 'students',
-    'pageTitle' => 'Import Excel/PDF des eleves',
-    'pageSubtitle' => 'Ajouter plusieurs dossiers eleves a partir d un fichier CSV, XLSX ou PDF texte',
+    'pageTitle' => 'Import Excel/PDF des élèves',
+    'pageSubtitle' => 'Ajouter plusieurs dossiers élèves a partir d un fichier CSV, XLSX ou PDF texte',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('students.index') }}">Retour eleves</a>
+    <a class="btn btn-subtle" href="{{ route('students.index') }}">Retour élèves</a>
     <a class="btn btn-subtle" href="{{ route('students.import.template') }}" data-download-feedback="Modele d import telecharge. Ouvre-le dans Excel puis complete les lignes.">Modele Excel</a>
 @endsection
 
@@ -30,11 +30,11 @@
                 </div>
                 <div class="detail-item">
                     <span>Colonnes obligatoires</span>
-                    <strong>Nom, prenom, sexe</strong>
+                    <strong>Nom, prénom, sexe</strong>
                 </div>
                 <div class="detail-item">
                     <span>Doublons</span>
-                    <strong>Nom + prenom + naissance</strong>
+                    <strong>Nom + prénom + naissance</strong>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@
             <form method="POST" action="{{ route('students.import.preview') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="field">
-                    <label>Fichier des eleves</label>
+                    <label>Fichier des élèves</label>
                     <input type="file" name="students_file" accept=".csv,.txt,.xlsx,.pdf" required>
                 </div>
 
@@ -66,7 +66,7 @@
         @php($summary = $preview['summary'])
         <section class="summary-row" style="margin-top:16px">
             <div class="stat">
-                <span>Lignes trouvees</span>
+                <span>Lignes trouvées</span>
                 <strong>{{ $summary['total'] }}</strong>
             </div>
             <div class="stat">
@@ -81,19 +81,19 @@
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>3. Previsualisation</h2>
+                <h2>3. Prévisualisation</h2>
                 <span class="badge">{{ $summary['valid'] }} importable(s)</span>
             </div>
 
             @if (empty($preview['rows']))
-                <div class="empty">Aucune ligne eleve trouvee dans le fichier.</div>
+                <div class="empty">Aucune ligne élève trouvée dans le fichier.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:880px">
                         <thead>
                             <tr>
                                 <th>Ligne</th>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Sexe</th>
                                 <th>Naissance</th>
                                 <th>Classe</th>
@@ -116,7 +116,7 @@
                                     <td>
                                         {{ $row['class_label'] ?: '-' }}
                                         @if (! empty($data['school_class_id']))
-                                            <br><span class="badge">Classe trouvee</span>
+                                            <br><span class="badge">Classe trouvée</span>
                                         @endif
                                     </td>
                                     <td>

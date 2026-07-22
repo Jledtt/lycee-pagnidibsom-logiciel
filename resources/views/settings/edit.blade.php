@@ -1,13 +1,13 @@
 @extends('layouts.app', [
-    'title' => 'Parametres - ' . ($settings->school_name ?? 'Lycee Prive Pagnidibsom'),
+    'title' => 'Paramètres - ' . ($settings->school_name ?? 'Lycée Privé Pagnidibsom'),
     'active' => 'settings',
-    'pageTitle' => 'Parametres de l ecole',
-    'pageSubtitle' => 'Informations officielles utilisees dans les fiches, recus et certificats',
+    'pageTitle' => 'Paramètres de l école',
+    'pageSubtitle' => 'Informations officielles utilisees dans les fiches, reçus et certificats',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('settings.numbering.index') }}">Numerotation</a>
-    <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pieces obligatoires</a>
+    <a class="btn btn-subtle" href="{{ route('settings.numbering.index') }}">Numérotation</a>
+    <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pi?ces obligatoires</a>
     <a class="btn btn-subtle" href="{{ route('settings.backups.index') }}">Sauvegardes</a>
 @endsection
 
@@ -42,8 +42,8 @@
                     </div>
 
                     <div class="field wide">
-                        <label for="motto">Devise de l'ecole</label>
-                        <input id="motto" name="motto" value="{{ old('motto', $settings->motto) }}" placeholder="Batir l'excellence">
+                        <label for="motto">Devise de l’école</label>
+                        <input id="motto" name="motto" value="{{ old('motto', $settings->motto) }}" placeholder="Bâtir l’excellence">
                         @error('motto') <small class="error">{{ $message }}</small> @enderror
                     </div>
 
@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="active_academic_year_id">Annee scolaire active</label>
+                    <label for="active_academic_year_id">Année scolaire active</label>
                     <select id="active_academic_year_id" name="active_academic_year_id" required>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}" @selected(old('active_academic_year_id', $academicYear?->id) == $year->id)>
@@ -119,7 +119,7 @@
                     </div>
 
                     <div class="field">
-                        <label for="phone">Telephone</label>
+                        <label for="phone">Téléphone</label>
                         <input id="phone" name="phone" value="{{ old('phone', $settings->phone) }}">
                         @error('phone') <small class="error">{{ $message }}</small> @enderror
                     </div>
@@ -164,7 +164,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">Enregistrer les parametres</button>
+                    <button class="btn btn-primary" type="submit">Enregistrer les paramètres</button>
                 </div>
             </div>
         </section>

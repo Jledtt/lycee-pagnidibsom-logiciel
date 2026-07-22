@@ -76,7 +76,7 @@ class UserSecurityTest extends TestCase
             ->get(route('login-histories.index'))
             ->assertOk()
             ->assertSee('Historique de connexion')
-            ->assertSee('Connexion reussie');
+            ->assertSee('Connexion réussie');
 
         $this->actingAs($secretariat)
             ->get(route('login-histories.index'))
@@ -138,7 +138,7 @@ class UserSecurityTest extends TestCase
         $this->actingAs($admin)
             ->get(route('staff.show', $staff))
             ->assertOk()
-            ->assertSee('Reinitialisation du mot de passe');
+            ->assertSee('Réinitialisation du mot de passe');
 
         $this->actingAs($admin)
             ->put(route('staff.reset-password', $staff), [
@@ -166,7 +166,7 @@ class UserSecurityTest extends TestCase
         $this->actingAs($admin)
             ->get(route('staff.show', $admin))
             ->assertOk()
-            ->assertDontSee('Reinitialisation du mot de passe');
+            ->assertDontSee('Réinitialisation du mot de passe');
 
         $this->actingAs($admin)
             ->put(route('staff.reset-password', $admin), [

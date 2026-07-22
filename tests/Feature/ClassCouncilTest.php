@@ -191,7 +191,7 @@ class ClassCouncilTest extends TestCase
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $term = Term::query()->where('academic_year_id', $academicYear->id)->orderBy('position')->firstOrFail();
         $level = Level::query()->firstOrFail();
-        $subject = Subject::query()->where('name', 'Francais')->firstOrFail();
+        $subject = Subject::query()->where('name', 'Français')->firstOrFail();
         $assessmentType = AssessmentType::query()->where('name', 'Composition')->firstOrFail();
 
         $class = SchoolClass::query()->create([

@@ -63,13 +63,13 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:210px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Date : {{ now()->format('d/m/Y') }}
             </td>
@@ -80,10 +80,10 @@
 
     <table class="summary">
         <tr>
-            <td>Eleves : {{ $rows->count() }}</td>
-            <td>Attendu : {{ is_null($summary['expected']) ? 'A configurer' : number_format($summary['expected'], 0, ',', ' ') . ' ' . $currency }}</td>
+            <td>Élèves : {{ $rows->count() }}</td>
+            <td>Attendu : {{ is_null($summary['expected']) ? 'À configurer' : number_format($summary['expected'], 0, ',', ' ') . ' ' . $currency }}</td>
             <td>Paye : {{ number_format($summary['paid'], 0, ',', ' ') }} {{ $currency }}</td>
-            <td>Reste : {{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . $currency }}</td>
+            <td>Reste : {{ is_null($summary['balance']) ? 'À configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . $currency }}</td>
             <td>Statuts : {{ $summary['up_to_date'] }} / {{ $summary['partial'] }} / {{ $summary['unpaid'] }}</td>
         </tr>
     </table>
@@ -93,7 +93,7 @@
             <tr>
                 <th style="width:32px" class="center">No</th>
                 <th style="width:96px">Matricule</th>
-                <th>Nom et prenom(s)</th>
+                <th>Nom et prénom(s)</th>
                 <th style="width:110px" class="right">Attendu</th>
                 <th style="width:110px" class="right">Paye</th>
                 <th style="width:110px" class="right">Reste</th>
@@ -113,7 +113,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="center">Aucun eleve actif inscrit dans cette classe.</td>
+                    <td colspan="7" class="center">Aucun élève actif inscrit dans cette classe.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -121,7 +121,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Examens - Lycee Prive Pagnidibsom',
+    'title' => 'Examens - Lycée Privé Pagnidibsom',
     'active' => 'mock-exams',
     'pageTitle' => 'Examens',
     'pageSubtitle' => 'Examens trimestriels, BEPC blanc et BAC blanc separes du module notes',
@@ -54,7 +54,7 @@
             </div>
 
             <div class="field wide">
-                <label>Classes concernees</label>
+                <label>Classes concernées</label>
                 <div class="subject-list-scroll">
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;min-width:620px">
                         @foreach ($classes as $class)
@@ -65,7 +65,7 @@
                         @endforeach
                     </div>
                 </div>
-                <p style="margin:8px 0 0;color:var(--muted)">Conseil : selectionne les classes concernees. Les 3e servent au BEPC blanc et les Terminales au futur BAC blanc.</p>
+                <p style="margin:8px 0 0;color:var(--muted)">Conseil : sélectionne les classes concernées. Les 3e servent au BEPC blanc et les Terminales au futur BAC blanc.</p>
             </div>
 
             <div class="field wide">
@@ -74,7 +74,7 @@
             </div>
 
             <div class="form-actions wide">
-                <button class="btn btn-primary" type="submit">Creer la session</button>
+                <button class="btn btn-primary" type="submit">Créer la session</button>
             </div>
         </form>
     </section>
@@ -82,12 +82,12 @@
     <section class="grid two-col" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">
-                <h2>Sessions creees</h2>
+                <h2>Sessions créées</h2>
                 <span class="badge">{{ $exams->count() }} session(s)</span>
             </div>
 
             @if ($exams->isEmpty())
-                <div class="empty">Aucune session d'examen blanc pour le moment.</div>
+                <div class="empty">Aucune session d’examen blanc pour le moment.</div>
             @else
                 <div class="ledger-list">
                     @foreach ($exams as $exam)
@@ -103,7 +103,7 @@
                                 </div>
                                 <div class="ledger-metric">
                                     <strong>{{ $exam->subjects_count }}</strong>
-                                    <span>Matieres</span>
+                                    <span>Matières</span>
                                 </div>
                                 <div class="ledger-metric">
                                     <strong>{{ $exam->classes->pluck('name')->join(', ') ?: '-' }}</strong>
@@ -118,14 +118,14 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>{{ $selectedExam ? $selectedExam->name : 'Session selectionnee' }}</h2>
+                <h2>{{ $selectedExam ? $selectedExam->name : 'Session sélectionnée' }}</h2>
                 @if ($selectedExam)
                     <span class="badge">{{ $selectedExam->exam_type_label }}</span>
                 @endif
             </div>
 
             @if (! $selectedExam)
-                <div class="empty">Cree ou selectionne une session.</div>
+                <div class="empty">Crée ou sélectionne une session.</div>
             @else
                 @php($canEditExam = auth()->user()->can('mock_exams.manage') && (! $selectedExam->is_locked || auth()->user()->hasRole('admin')))
                 <div class="summary-row">
@@ -134,7 +134,7 @@
                         <strong>{{ $selectedExam->candidates->count() }}</strong>
                     </div>
                     <div class="stat">
-                        <span>Matieres</span>
+                        <span>Matières</span>
                         <strong>{{ $selectedExam->subjects->count() }}</strong>
                     </div>
                     <div class="stat">
@@ -142,7 +142,7 @@
                         <strong>{{ $selectedExam->classes->count() }}</strong>
                     </div>
                     <div class="stat">
-                        <span>Resultats</span>
+                        <span>Résultats</span>
                         <strong>{{ $selectedExam->result_status_label }}</strong>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                         @foreach ([
                             'provisoire' => 'Marquer provisoire',
                             'corrige' => 'Marquer corrige',
-                            'definitif' => 'Valider definitif',
+                            'définitif' => 'Valider définitif',
                             'verrouille' => 'Verrouiller',
                         ] as $status => $label)
                             <form method="POST" action="{{ route('mock-exams.result-status.update', $selectedExam) }}">
@@ -178,10 +178,10 @@
                     <form class="inline-form" method="POST" action="{{ route('mock-exams.anonymity.generate', $selectedExam) }}">
                         @csrf
                         <div class="field" style="min-width:90px">
-                            <label>Prefixe</label>
+                            <label>Préfixe</label>
                             <input name="prefix" value="X">
                         </div>
-                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Generer anonymats</button>
+                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Générer anonymats</button>
                     </form>
 
                     <form class="inline-form" method="POST" action="{{ route('mock-exams.rooms.distribute', $selectedExam) }}">
@@ -195,18 +195,18 @@
                 </div>
 
                 <div class="page-actions" style="margin-top:16px">
-                    <a class="btn btn-primary" href="{{ route('mock-exams.candidates.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la liste des candidats lance.">PDF candidats</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.rooms.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la repartition par salle lance.">PDF salles</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la liste des anonymats lance.">PDF anonymats</a>
+                    <a class="btn btn-primary" href="{{ route('mock-exams.candidates.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des candidats lancé.">PDF candidats</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.rooms.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la répartition par salle lancé.">PDF salles</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des anonymats lancé.">PDF anonymats</a>
                 </div>
 
                 <div class="page-actions" style="margin-top:10px">
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Telechargement du PV de surveillance lance.">PV surveillance</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Telechargement du bordereau des copies lance.">Bordereau copies</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Telechargement des resultats provisoires lance.">Resultats provisoires</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'definitif']) }}" data-download-feedback="Telechargement des resultats definitifs lance.">Resultats definitifs</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Telechargement de la decision du jury lance.">Decision jury</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.teacher-fees.pdf', $selectedExam) }}" data-download-feedback="Telechargement des honoraires professeurs lance.">Honoraires</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du PV de surveillance lancé.">PV surveillance</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du bordereau des copies lancé.">Bordereau copies</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Téléchargement des résultats provisoires lancé.">Résultats provisoires</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'définitif']) }}" data-download-feedback="Téléchargement des résultats définitifs lancé.">Résultats définitifs</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la decision du jury lancé.">Décision jury</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.teacher-fees.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des honoraires professeurs lancé.">Honoraires</a>
                 </div>
 
                 @if ($selectedExam->notes)
@@ -230,7 +230,7 @@
                             <th>No</th>
                             <th>Anonymat</th>
                             <th>Matricule</th>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Salle</th>
                             <th>Statut</th>
@@ -260,7 +260,7 @@
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Suivi PV, copies et honoraires</h2>
-                <span class="badge">{{ $selectedExam->subjects->count() }} matiere(s)</span>
+                <span class="badge">{{ $selectedExam->subjects->count() }} matière(s)</span>
             </div>
 
             @forelse ($selectedExam->subjects->sortBy('position') as $subject)
@@ -276,7 +276,7 @@
                         <div class="page-actions">
                             <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores', [$selectedExam, $subject]) }}">Saisie notes</a>
                             @can('mock_exams.print')
-                                <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores.pdf', [$selectedExam, $subject]) }}" data-download-feedback="Telechargement de la feuille de notes lance.">PDF notes</a>
+                                <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores.pdf', [$selectedExam, $subject]) }}" data-download-feedback="Téléchargement de la feuille de notes lancé.">PDF notes</a>
                             @endcan
                             <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire paye' : ($subject->fee_status === 'approved' ? 'Honoraire valide' : 'A traiter') }}</span>
                         </div>
@@ -288,7 +288,7 @@
                             <input type="date" name="exam_date" value="{{ old('exam_date', $subject->exam_date?->format('Y-m-d')) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
-                            <label>Debut</label>
+                            <label>Début</label>
                             <input type="time" name="starts_at" value="{{ old('starts_at', $subject->starts_at) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
@@ -308,7 +308,7 @@
                             <input type="number" min="0" name="expected_copies" value="{{ old('expected_copies', $subject->expected_copies ?? $selectedExam->candidates->count()) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
-                            <label>Copies recues</label>
+                            <label>Copies reçues</label>
                             <input type="number" min="0" name="received_copies" value="{{ old('received_copies', $subject->received_copies) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
@@ -316,11 +316,11 @@
                             <input type="number" min="0" name="absent_count" value="{{ old('absent_count', $subject->absent_count) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
-                            <label>Copies recues le</label>
+                            <label>Copies reçues le</label>
                             <input type="datetime-local" name="copies_received_at" value="{{ old('copies_received_at', $subject->copies_received_at?->format('Y-m-d\TH:i')) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
-                            <label>Recu par</label>
+                            <label>Reçu par</label>
                             <input name="copy_receiver_name" value="{{ old('copy_receiver_name', $subject->copy_receiver_name) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
@@ -363,13 +363,13 @@
                     </div>
                 </form>
             @empty
-                <div class="empty">Aucune matiere. Les matieres actives des classes seront reprises automatiquement a la creation.</div>
+                <div class="empty">Aucune matière. Les matières actives des classes seront reprises automatiquement à la création.</div>
             @endforelse
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>Decisions du jury</h2>
+                <h2>Décisions du jury</h2>
                 <span class="badge">{{ $selectedExam->candidates->count() }} candidat(s)</span>
             </div>
 
@@ -381,10 +381,10 @@
                     <table class="table" style="min-width:980px">
                         <thead>
                             <tr>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Classe</th>
                                 <th>Anonymat</th>
-                                <th>Decision</th>
+                                <th>Décision</th>
                                 <th>Observation</th>
                             </tr>
                         </thead>
@@ -420,7 +420,7 @@
 
                 @can('mock_exams.manage')
                     <div class="form-actions" style="margin-top:14px">
-                        <button class="btn btn-primary" type="submit" @disabled(! $canEditExam)>Enregistrer les decisions</button>
+                        <button class="btn btn-primary" type="submit" @disabled(! $canEditExam)>Enregistrer les décisions</button>
                     </div>
                 @endcan
             </form>

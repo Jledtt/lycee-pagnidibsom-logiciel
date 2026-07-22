@@ -1,18 +1,18 @@
 @extends('layouts.app', [
-    'title' => 'Situation des paiements par classe - Lycee Prive Pagnidibsom',
+    'title' => 'Situation des paiements par classe - Lycée Privé Pagnidibsom',
     'active' => 'reports',
     'pageTitle' => 'Situation des paiements',
-    'pageSubtitle' => 'Suivi financier par classe pour ' . ($academicYear?->name ?? 'l annee active'),
+    'pageSubtitle' => 'Suivi financier par classe pour ' . ($academicYear?->name ?? 'l année active'),
 ])
 
 @section('page_actions')
     @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste eleves</a>
-        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pieces manquantes</a>
+        <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste élèves</a>
+        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
     @endcan
     <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Tranches</a>
     @if ($schoolClass)
-        <a class="btn btn-subtle" href="{{ route('reports.payment-situation.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Telechargement Excel de la situation des paiements lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('reports.payment-situation.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Téléchargement Excel de la situation des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
         <a class="btn btn-primary" href="{{ route('reports.payment-situation.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
 @endsection
@@ -22,13 +22,13 @@
     @php($statusOptions = [
         'paid' => 'A jour',
         'partial' => 'Partiel',
-        'unpaid' => 'Impaye',
-        'unconfigured' => 'Tarif a configurer',
+        'unpaid' => 'Impayé',
+        'unconfigured' => 'Tarif à configurer',
     ])
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('reports.payment-situation') }}">
@@ -52,28 +52,28 @@
 
     @if (! $schoolClass)
         <section class="panel" style="margin-top:16px">
-            <div class="empty">Aucune classe active disponible pour l'annee scolaire active.</div>
+            <div class="empty">Aucune classe active disponible pour l’année scolaire active.</div>
         </section>
     @else
         <section class="summary-row" style="margin-top:16px">
             <div class="stat">
                 <span>Total attendu</span>
-                <strong class="money">{{ is_null($summary['expected']) ? 'A configurer' : number_format($summary['expected'], 0, ',', ' ') . ' ' . $currency }}</strong>
+                <strong class="money">{{ is_null($summary['expected']) ? 'À configurer' : number_format($summary['expected'], 0, ',', ' ') . ' ' . $currency }}</strong>
             </div>
             <div class="stat">
                 <span>Total paye</span>
                 <strong class="money">{{ number_format($summary['paid'], 0, ',', ' ') }} {{ $currency }}</strong>
             </div>
             <div class="stat">
-                <span>Reste a payer</span>
-                <strong class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . $currency }}</strong>
+                <span>Reste à payer</span>
+                <strong class="money">{{ is_null($summary['balance']) ? 'À configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . $currency }}</strong>
             </div>
         </section>
 
         <section class="grid modules" style="margin-top:16px">
             <div class="module">
                 <strong>{{ $summary['up_to_date'] }}</strong>
-                <span>Eleves a jour</span>
+                <span>Élèves à jour</span>
             </div>
             <div class="module">
                 <strong>{{ $summary['partial'] }}</strong>
@@ -81,25 +81,25 @@
             </div>
             <div class="module">
                 <strong>{{ $summary['unpaid'] }}</strong>
-                <span>Eleves impayes</span>
+                <span>Élèves impayés</span>
             </div>
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $schoolClass->name }}</h2>
-                <span class="badge">{{ $rows->count() }} eleve(s)</span>
+                <span class="badge">{{ $rows->count() }} élève(s)</span>
             </div>
 
             @if ($rows->isEmpty())
-                <div class="empty">Aucun eleve actif inscrit dans cette classe.</div>
+                <div class="empty">Aucun élève actif inscrit dans cette classe.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:1120px">
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Contact</th>
                                 <th>Attendu</th>
                                 <th>Paye</th>

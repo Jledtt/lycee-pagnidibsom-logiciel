@@ -53,7 +53,7 @@ class StudentDocumentWebController extends Controller
 
         return redirect()
             ->route('students.show', $student)
-            ->with('success', 'Document ajoute au dossier eleve.');
+            ->with('success', 'Document ajouté au dossier élève.');
     }
 
     public function show(StudentDocument $studentDocument): BinaryFileResponse
@@ -87,7 +87,7 @@ class StudentDocumentWebController extends Controller
 
         return redirect()
             ->route('students.show', $student)
-            ->with('success', 'Document supprime du dossier eleve.');
+            ->with('success', 'Document supprimé du dossier élève.');
     }
 
     private function activeAcademicYear(): ?AcademicYear

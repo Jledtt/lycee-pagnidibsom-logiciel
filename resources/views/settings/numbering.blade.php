@@ -1,12 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Numerotation - Lycee Prive Pagnidibsom',
+    'title' => 'Numérotation - Lycée Privé Pagnidibsom',
     'active' => 'settings',
-    'pageTitle' => 'Parametres de numerotation',
-    'pageSubtitle' => 'Formats des matricules, recus et certificats officiels',
+    'pageTitle' => 'Paramètres de numérotation',
+    'pageSubtitle' => 'Formats des matricules, reçus et certificats officiels',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Parametres ecole</a>
+    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Paramètres école</a>
 @endsection
 
 @section('content')
@@ -17,17 +17,17 @@
     <section class="panel">
         <div class="panel-head">
             <h2>Formats disponibles</h2>
-            <span class="badge">{{ $academicYear?->name ?? 'Annee active' }}</span>
+            <span class="badge">{{ $academicYear?->name ?? 'Année active' }}</span>
         </div>
 
         <div class="grid modules">
             <div class="module">
                 <strong>{PREFIX}</strong>
-                <span>Prefixe configure</span>
+                <span>Préfixe configuré</span>
             </div>
             <div class="module">
                 <strong>{YEAR}</strong>
-                <span>Annee scolaire en 4 chiffres</span>
+                <span>Année scolaire en 4 chiffres</span>
             </div>
             <div class="module">
                 <strong>{DATE}</strong>
@@ -35,7 +35,7 @@
             </div>
             <div class="module">
                 <strong>{NUMBER}</strong>
-                <span>Numero sequentiel obligatoire</span>
+                <span>Numéro séquentiel obligatoire</span>
             </div>
         </div>
     </section>
@@ -55,12 +55,12 @@
                     <thead>
                         <tr>
                             <th>Document</th>
-                            <th>Prefixe</th>
+                            <th>Préfixe</th>
                             <th>Format</th>
                             <th>Chiffres</th>
-                            <th>Prochain numero</th>
+                            <th>Prochain numéro</th>
                             <th>Statut</th>
-                            <th>Apercu</th>
+                            <th>Aperçu</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -1,17 +1,17 @@
 @extends('layouts.app', [
-    'title' => 'Paiements - Lycee Prive Pagnidibsom',
+    'title' => 'Paiements - Lycée Privé Pagnidibsom',
     'active' => 'payments',
     'pageTitle' => 'Paiements',
-    'pageSubtitle' => 'Encaissements, recus et suivi de caisse pour ' . ($academicYear?->name ?? 'l\'annee active'),
+    'pageSubtitle' => 'Encaissements, reçus et suivi de caisse pour ' . ($academicYear?->name ?? 'l\'année active'),
 ])
 
 @section('page_actions')
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
-        <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Depenses</a>
+        <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Dépenses</a>
         <a class="btn btn-subtle" href="{{ route('reports.installments') }}">Tranches</a>
-        <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
-        <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Telechargement Excel des paiements lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayés</a>
+        <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
@@ -29,7 +29,7 @@
             <strong>{{ $payments->total() }}</strong>
         </div>
         <div class="stat">
-            <span>Annee scolaire</span>
+            <span>Année scolaire</span>
             <strong>{{ $academicYear?->name ?? '-' }}</strong>
         </div>
     </section>
@@ -40,14 +40,14 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('payments.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Recu, eleve ou matricule">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Reçu, élève ou matricule">
             <select name="status">
                 <option value="">Tous les statuts</option>
                 <option value="valid" @selected(($filters['status'] ?? '') === 'valid')>Valides</option>
                 <option value="cancelled" @selected(($filters['status'] ?? '') === 'cancelled')>Annules</option>
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('payments.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('payments.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -58,15 +58,15 @@
         </div>
 
         @if ($payments->isEmpty())
-            <div class="empty">Aucun paiement enregistre pour le moment.</div>
+            <div class="empty">Aucun paiement enregistré pour le moment.</div>
         @else
             <div class="subject-list-scroll">
             <table class="table" style="min-width:980px">
                 <thead>
                     <tr>
-                        <th>Recu</th>
+                        <th>Reçu</th>
                         <th>Date</th>
-                        <th>Eleve</th>
+                        <th>Élève</th>
                         <th>Classe</th>
                         <th>Montant</th>
                         <th>Statut</th>

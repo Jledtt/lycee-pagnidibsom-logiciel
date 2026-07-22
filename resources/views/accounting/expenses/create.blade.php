@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Nouvelle depense - Lycee Prive Pagnidibsom',
+    'title' => 'Nouvelle depense - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
     'pageTitle' => 'Nouvelle depense',
     'pageSubtitle' => 'Enregistrer une sortie de caisse',

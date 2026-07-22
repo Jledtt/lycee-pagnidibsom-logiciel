@@ -54,7 +54,7 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', 'Annee scolaire creee.');
+            ->with('success', 'Année scolaire créée.');
     }
 
     public function update(Request $request, AcademicYear $academicYear): RedirectResponse
@@ -76,7 +76,7 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', 'Annee scolaire mise a jour.');
+            ->with('success', 'Année scolaire mise à jour.');
     }
 
     public function activate(AcademicYear $academicYear): RedirectResponse
@@ -98,7 +98,7 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', $academicYear->name . ' est maintenant l annee active.');
+            ->with('success', $academicYear->name . ' est maintenant l’année active.');
     }
 
     public function storeTerm(Request $request): RedirectResponse
@@ -122,7 +122,7 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', 'Periode ajoutee.');
+            ->with('success', 'Période ajoutée.');
     }
 
     public function updateTerm(Request $request, Term $term): RedirectResponse
@@ -148,6 +148,6 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', 'Periode mise a jour.');
+            ->with('success', 'Période mise à jour.');
     }
 }

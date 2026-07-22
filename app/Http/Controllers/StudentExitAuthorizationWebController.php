@@ -70,7 +70,7 @@ class StudentExitAuthorizationWebController extends Controller
 
         if (! $enrollment) {
             return back()
-                ->withErrors(['student_id' => 'Cet eleve doit etre inscrit dans une classe avant de generer une autorisation.'])
+                ->withErrors(['student_id' => 'Cet élève doit être inscrit dans une classe avant de générer une autorisation.'])
                 ->withInput();
         }
 
@@ -83,7 +83,7 @@ class StudentExitAuthorizationWebController extends Controller
 
         return redirect()
             ->route('exit-authorizations.show', $authorization)
-            ->with('success', 'Autorisation d entree/sortie generee.');
+            ->with('success', 'Autorisation d’entrée/sortie générée.');
     }
 
     public function show(StudentExitAuthorization $exitAuthorization): View
@@ -118,7 +118,7 @@ class StudentExitAuthorizationWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

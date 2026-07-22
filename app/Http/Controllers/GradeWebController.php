@@ -112,7 +112,7 @@ class GradeWebController extends Controller
         $academicYear = $this->requireActiveAcademicYear();
         $data = $request->validated();
 
-        abort_unless($this->gradeEntryService->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matiere non affectee a cette classe.');
+        abort_unless($this->gradeEntryService->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matière non affectée à cette classe.');
         abort_if(
             $this->gradeEntryService->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
             403,
@@ -128,7 +128,7 @@ class GradeWebController extends Controller
                 'term_period_id' => $assessment->term_period_id,
                 'assessment_id' => $assessment->id,
             ])
-            ->with('success', 'Evaluation creee. Tu peux saisir les notes.');
+            ->with('success', 'Évaluation créée. Tu peux saisir les notes.');
     }
 
     public function updateGrades(UpdateGradesRequest $request, Assessment $assessment): RedirectResponse
@@ -144,7 +144,7 @@ class GradeWebController extends Controller
                 'term_period_id' => $assessment->term_period_id,
                 'assessment_id' => $assessment->id,
             ])
-            ->with('success', 'Notes enregistrees.');
+            ->with('success', 'Notes enregistrées.');
     }
 
     public function assessmentPdf(Assessment $assessment)
@@ -187,10 +187,10 @@ class GradeWebController extends Controller
 
         return $xlsxExport->download($filename, [
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
-            'Periode',
-            'Matiere',
+            'Période',
+            'Matière',
             'Evaluation',
             'Note',
             'Note sur',
@@ -233,7 +233,7 @@ class GradeWebController extends Controller
                 'term_id' => $termId,
                 'term_period_id' => $termPeriodId,
             ])
-            ->with('success', 'Evaluation supprimee.');
+            ->with('success', 'Évaluation supprimée.');
     }
 
     public function lockAssessment(Assessment $assessment): RedirectResponse
@@ -241,7 +241,7 @@ class GradeWebController extends Controller
         $assessment->update(['is_locked' => true]);
 
         return $this->backToAssessment($assessment)
-            ->with('success', 'Evaluation verrouillee.');
+            ->with('success', 'Évaluation verrouillée.');
     }
 
     public function unlockAssessment(Assessment $assessment): RedirectResponse
@@ -249,14 +249,14 @@ class GradeWebController extends Controller
         $assessment->update(['is_locked' => false]);
 
         return $this->backToAssessment($assessment)
-            ->with('success', 'Evaluation deverrouillee.');
+            ->with('success', 'Évaluation déverrouillée.');
     }
 
     private function requireActiveAcademicYear(): AcademicYear
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

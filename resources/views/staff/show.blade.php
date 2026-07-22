@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('staff.index') }}">Retour</a>
     @can('roles.manage')
-        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Roles et acces</a>
+        <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Rôles et accès</a>
     @endcan
     <a class="btn btn-primary" href="{{ route('staff.edit', $user) }}">Modifier</a>
 @endsection
@@ -47,19 +47,19 @@
                     <strong>{{ $user->email }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Telephone</span>
+                    <span>Téléphone</span>
                     <strong>{{ $user->phone ?: '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Derniere connexion</span>
+                    <span>Dernière connexion</span>
                     <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Cree le</span>
+                    <span>Créé le</span>
                     <strong>{{ $user->created_at?->format('d/m/Y H:i') ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Mis a jour</span>
+                    <span>Mis à jour</span>
                     <strong>{{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}</strong>
                 </div>
             </div>
@@ -67,19 +67,19 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Acces</h2>
+                <h2>Accès</h2>
             </div>
 
             @if ($role === 'admin')
-                <div class="empty">Acces total a tous les modules de gestion.</div>
+                <div class="empty">Accès total à tous les modules de gestion.</div>
             @elseif ($role === 'direction')
-                <div class="empty">Acces aux eleves, inscriptions, rapports, documents et suivis de direction.</div>
+                <div class="empty">Accès aux élèves, inscriptions, rapports, documents et suivis de direction.</div>
             @elseif ($role === 'comptable')
-                <div class="empty">Acces aux paiements, recus, impayes et rapports financiers.</div>
+                <div class="empty">Accès aux paiements, reçus, impayés et rapports financiers.</div>
             @elseif ($role === 'secretariat')
-                <div class="empty">Acces aux eleves, inscriptions, classes et documents administratifs.</div>
+                <div class="empty">Accès aux élèves, inscriptions, classes et documents administratifs.</div>
             @else
-                <div class="empty">Acces limite aux modules pedagogiques prevus pour ce role.</div>
+                <div class="empty">Accès limité aux modules pédagogiques prévus pour ce rôle.</div>
             @endif
 
             @can('deactivate-staff-user', $user)
@@ -95,7 +95,7 @@
     @can('reset-staff-password', $user)
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>Reinitialisation du mot de passe</h2>
+                <h2>Réinitialisation du mot de passe</h2>
                 <span class="badge">Admin</span>
             </div>
 
@@ -106,7 +106,7 @@
                 <div class="form-grid">
                     <div class="field">
                         <label for="password">Nouveau mot de passe</label>
-                        <input id="password" name="password" type="password" placeholder="Laisse vide pour generer automatiquement">
+                        <input id="password" name="password" type="password" placeholder="Laisse vide pour générér automatiquement">
                     </div>
                     <div class="field">
                         <label for="password_confirmation">Confirmation</label>
@@ -115,7 +115,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">Reinitialiser le mot de passe</button>
+                    <button class="btn btn-primary" type="submit">Réinitialiser le mot de passe</button>
                 </div>
             </form>
         </section>

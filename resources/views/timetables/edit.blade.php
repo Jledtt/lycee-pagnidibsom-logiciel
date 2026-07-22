@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Modifier emploi du temps - Lycee Prive Pagnidibsom',
+    'title' => 'Modifier emploi du temps - Lycée Privé Pagnidibsom',
     'active' => 'timetables',
     'pageTitle' => 'Modifier emploi du temps',
     'pageSubtitle' => $timetable->schoolClass->name . ' - ' . $timetable->academicYear->name,
@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('timetables.index', ['school_class_id' => $timetable->school_class_id]) }}">Retour</a>
     @can('timetables.print')
-        <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Telechargement PDF de l emploi du temps lance.">PDF</a>
+        <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
     @endcan
 @endsection
 
@@ -54,7 +54,7 @@
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Grille hebdomadaire</h2>
-                <span class="badge">Double saisie possible: matiere + professeur</span>
+                <span class="badge">Double saisie possible: matière + professeur</span>
             </div>
 
             <datalist id="subject-options">
@@ -120,7 +120,7 @@
                                             <input type="hidden" name="entries[{{ $entryIndex }}][is_break]" value="0">
 
                                             <div style="display:grid;gap:6px">
-                                                <input name="entries[{{ $entryIndex }}][subject_name]" list="subject-options" value="{{ old('entries.' . $entryIndex . '.subject_name', $entry?->subject_name) }}" placeholder="Matiere">
+                                                <input name="entries[{{ $entryIndex }}][subject_name]" list="subject-options" value="{{ old('entries.' . $entryIndex . '.subject_name', $entry?->subject_name) }}" placeholder="Matière">
                                                 <input name="entries[{{ $entryIndex }}][teacher_name]" value="{{ old('entries.' . $entryIndex . '.teacher_name', $entry?->teacher_name) }}" placeholder="Professeur">
                                                 <input name="entries[{{ $entryIndex }}][room]" value="{{ old('entries.' . $entryIndex . '.room', $entry?->room) }}" placeholder="Salle">
                                             </div>
@@ -135,7 +135,7 @@
             </div>
 
             <div class="form-actions" style="margin-top:16px">
-                <button class="btn btn-primary" type="submit">Enregistrer l'emploi du temps</button>
+                <button class="btn btn-primary" type="submit">Enregistrer l’emploi du temps</button>
             </div>
         </section>
     </form>

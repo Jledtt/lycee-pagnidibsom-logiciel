@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Autorisations - Lycee Prive Pagnidibsom',
+    'title' => 'Autorisations - Lycée Privé Pagnidibsom',
     'active' => 'exit-authorizations',
     'pageTitle' => 'Autorisations entree / sortie',
-    'pageSubtitle' => 'Documents remis aux eleves autorises a quitter ou rejoindre l etablissement',
+    'pageSubtitle' => 'Documents remis aux élèves autorises a quitter ou rejoindre l etablissement',
 ])
 
 @section('page_actions')
@@ -16,9 +16,9 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('exit-authorizations.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prenom ou matricule">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prénom ou matricule">
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('exit-authorizations.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('exit-authorizations.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -29,14 +29,14 @@
         </div>
 
         @if ($authorizations->isEmpty())
-            <div class="empty">Aucune autorisation generee pour le moment.</div>
+            <div class="empty">Aucune autorisation générée pour le moment.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:900px">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Motif</th>
                             <th>Sortie</th>
@@ -59,7 +59,7 @@
                                 <td>
                                     <div class="searchbar">
                                         <a class="btn btn-subtle" href="{{ route('exit-authorizations.show', $authorization) }}">Voir</a>
-                                        <a class="btn btn-subtle" href="{{ route('exit-authorizations.pdf', $authorization) }}" data-download-feedback="Telechargement de l autorisation lance.">PDF</a>
+                                        <a class="btn btn-subtle" href="{{ route('exit-authorizations.pdf', $authorization) }}" data-download-feedback="Téléchargement de l’autorisation lancé.">PDF</a>
                                     </div>
                                 </td>
                             </tr>

@@ -13,9 +13,9 @@
     $date = now()->format('d/m/Y');
     $logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png';
     $groups = [
-        'Bilan Matieres Litteraires' => ['FR', 'ANG', 'ALL', 'HG', 'PHILO'],
-        'Bilan Matieres Scientifiques' => ['MATH', 'SVT', 'PC'],
-        'Bilan Matieres Complementaires' => ['EPS', 'ECM', 'TIC', 'ART', 'TECH'],
+        'Bilan Matières Litteraires' => ['FR', 'ANG', 'ALL', 'HG', 'PHILO'],
+        'Bilan Matières Scientifiques' => ['MATH', 'SVT', 'PC'],
+        'Bilan Matières Complementaires' => ['EPS', 'ECM', 'TIC', 'ART', 'TECH'],
     ];
     $groupAverage = function ($groupRows) {
         $rated = collect($groupRows)->filter(fn ($row) => $row['average'] !== null);
@@ -44,13 +44,13 @@
             <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
         </td>
         <td class="school-box">
-            <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+            <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
             <div>{{ $school?->address ?? '04 BP 8825 OUAGA 04' }}</div>
             <div>{{ $school?->authorization ?? 'Enseignement technique et general' }}</div>
             <div>Tel. {{ $school?->phone ?? '00226 72 81 61 59 / 78 42 62 06' }}</div>
         </td>
         <td class="year-cell">
-            <strong>Annee Scolaire</strong><br>
+            <strong>Année Scolaire</strong><br>
             {{ $academicYear?->name ?? '-' }}
         </td>
     </tr>
@@ -63,7 +63,7 @@
         <td><strong>Matricule:</strong> {{ $student->matricule ?: '-' }}</td>
     </tr>
     <tr>
-        <td colspan="2"><strong>Nom et prenom(s):</strong> {{ $student->last_name }} {{ $student->first_name }}</td>
+        <td colspan="2"><strong>Nom et prénom(s):</strong> {{ $student->last_name }} {{ $student->first_name }}</td>
         <td><strong>Statut:</strong> {{ $student->status === 'active' ? 'Actif' : ucfirst($student->status) }}</td>
     </tr>
     <tr>
@@ -174,6 +174,6 @@
 </table>
 
 <div class="bulletin-note">
-    Il n'est delivre qu'un seul bulletin. Il appartient au titulaire d'en faire des copies certifiees conformes.<br>
-    <strong>"Batir l'excellence"</strong>
+    Il n’est delivre qu’un seul bulletin. Il appartient au titulaire d’en faire des copies certifiees conformes.<br>
+    <strong>"Bâtir l’excellence"</strong>
 </div>

@@ -87,7 +87,7 @@ class ReportWebController extends Controller
                 $index + 1,
                 $student?->matricule,
                 $student?->full_name,
-                $student?->gender_label ?? 'Non renseigne',
+                $student?->gender_label ?? 'Non renseign?',
                 $student?->birth_date?->format('d/m/Y'),
                 $guardian?->full_name,
                 $guardian?->phone_primary ?? $student?->home_phone,
@@ -156,7 +156,7 @@ class ReportWebController extends Controller
 
         return $xlsxExport->download($filename, [
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
             'Contact',
             'Attendu',
@@ -170,9 +170,9 @@ class ReportWebController extends Controller
             $row['student']?->full_name,
             $row['class'] ?? $schoolClass->name,
             $row['contact'] ?? '',
-            $row['expected'] ?? 'A configurer',
+            $row['expected'] ?? 'À configurer',
             $row['paid'],
-            $row['balance'] ?? 'A configurer',
+            $row['balance'] ?? 'À configurer',
             $row['progress'].'%',
             $row['status']['label'],
             $row['last_payment_at']?->format('d/m/Y H:i') ?? '',
@@ -286,11 +286,11 @@ class ReportWebController extends Controller
 
         return $xlsxExport->download($filename, [
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
             'Statut dossier',
             'Nombre manquant',
-            'Pieces manquantes',
+            'Pièces manquantes',
         ], $rows->map(fn (array $row) => [
             $row['student']?->matricule,
             $row['student']?->full_name,
@@ -298,7 +298,7 @@ class ReportWebController extends Controller
             $row['is_complete'] ? 'Complet' : 'Incomplet',
             $row['missing_count'],
             collect($row['missing_documents'])->pluck('label')->implode(', '),
-        ]), 'Pieces manquantes');
+        ]), 'Pièces manquantes');
     }
 
     public function incompleteStudents(Request $request, RequiredStudentDocumentService $requiredDocuments): View
@@ -333,27 +333,27 @@ class ReportWebController extends Controller
 
         return $xlsxExport->download($filename, [
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
             'Sexe',
             'Date naissance',
             'Contact',
             'Photo',
-            'Pieces obligatoires',
+            'Pi?ces obligatoires',
             'Statut',
-            'A completer',
+            'À compléter',
         ], $rows->map(fn (array $row) => [
             $row['student']?->matricule,
             $row['student']?->full_name,
             $row['class']?->name,
-            $row['student']?->gender_label ?? 'Non renseigne',
+            $row['student']?->gender_label ?? 'Non renseign?',
             $row['student']?->birth_date?->format('d/m/Y') ?? '',
             $row['has_contact'] ? 'Oui' : 'Non',
             $row['has_photo'] ? 'Oui' : 'Non',
             collect($row['missing_documents'])->pluck('label')->implode(', '),
             $row['is_complete'] ? 'Complet' : 'Incomplet',
             collect($row['issues'])->pluck('label')->implode(', '),
-        ]), 'Donnees incompletes');
+        ]), 'Données incomplètes');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -485,7 +485,7 @@ class ReportWebController extends Controller
     private function paymentStatus(?float $expected, float $paid): array
     {
         if (is_null($expected)) {
-            return ['key' => 'unconfigured', 'label' => 'Tarif a configurer', 'class' => 'badge-warning'];
+            return ['key' => 'unconfigured', 'label' => 'Tarif à configurer', 'class' => 'badge-warning'];
         }
 
         if ($paid <= 0) {
@@ -658,13 +658,13 @@ class ReportWebController extends Controller
     private function studentDataIssues($student, array $missingDocuments, bool $hasContact, bool $hasPhoto): array
     {
         if (! $student) {
-            return [['key' => 'identity', 'label' => 'Eleve introuvable']];
+            return [['key' => 'identity', 'label' => 'Élève introuvable']];
         }
 
         $issues = [];
 
         if (blank($student->gender)) {
-            $issues[] = ['key' => 'gender', 'label' => 'Sexe non renseigne'];
+            $issues[] = ['key' => 'gender', 'label' => 'Sexe non renseigné'];
         }
 
         if (blank($student->birth_date)) {
@@ -686,7 +686,7 @@ class ReportWebController extends Controller
 
             $issues[] = [
                 'key' => 'documents',
-                'label' => 'Piece manquante : '.$document['label'],
+                'label' => 'Pièce manquante : '.$document['label'],
             ];
         }
 
@@ -782,7 +782,7 @@ class ReportWebController extends Controller
     private function requiredDocumentLabelsForReport(?SchoolClass $schoolClass, RequiredStudentDocumentService $requiredDocuments): array
     {
         if (! $schoolClass) {
-            return ['Variable selon la classe selectionnee'];
+            return ['Variable selon la classe sélectionnée'];
         }
 
         return array_values($requiredDocuments->requiredTypesForClass($schoolClass));
@@ -866,7 +866,7 @@ class ReportWebController extends Controller
     private function studentInstallmentStatus(float $expected, float $paid, float $balance): array
     {
         if ($expected <= 0) {
-            return ['key' => 'unpaid', 'label' => 'Tarif a configurer', 'class' => 'badge-warning'];
+            return ['key' => 'unpaid', 'label' => 'Tarif à configurer', 'class' => 'badge-warning'];
         }
 
         if ($balance <= 0) {

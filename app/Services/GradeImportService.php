@@ -130,7 +130,7 @@ class GradeImportService
         $warnings = [];
 
         if (! $student) {
-            $errors[] = 'Eleve introuvable dans cette classe. Verifie le matricule.';
+            $errors[] = 'Élève introuvable dans cette classe. Vérifie le matricule.';
         }
 
         if ($student && isset($seenStudents[$student->id])) {
@@ -144,11 +144,11 @@ class GradeImportService
         }
 
         if (! $isAbsent && $score === null) {
-            $errors[] = 'Note obligatoire si l eleve n est pas marque absent.';
+            $errors[] = 'Note obligatoire si l’élève n’est pas marqué absent.';
         }
 
         if (is_numeric($score) && ((float) $score < 0 || (float) $score > (float) $assessment->max_score)) {
-            $errors[] = 'Note hors bareme. Maximum autorise: ' . number_format((float) $assessment->max_score, 0, ',', ' ') . '.';
+            $errors[] = 'Note hors barème. Maximum autorise: ' . number_format((float) $assessment->max_score, 0, ',', ' ') . '.';
         }
 
         $existingGrade = $student
@@ -156,7 +156,7 @@ class GradeImportService
             : false;
 
         if ($existingGrade) {
-            $warnings[] = 'Une note existe deja, elle sera mise a jour.';
+            $warnings[] = 'Une note existe déjà, elle sera mise à jour.';
         }
 
         return [

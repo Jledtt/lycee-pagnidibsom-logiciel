@@ -65,7 +65,7 @@ class TimetableTest extends TestCase
                         'starts_at' => $entry->starts_at ? substr((string) $entry->starts_at, 0, 5) : null,
                         'ends_at' => $entry->ends_at ? substr((string) $entry->ends_at, 0, 5) : null,
                         'day_of_week' => $entry->day_of_week,
-                        'subject_name' => $isTargetCell ? 'Mathematiques' : $entry->subject_name,
+                        'subject_name' => $isTargetCell ? 'Mathématiques' : $entry->subject_name,
                         'teacher_name' => $isTargetCell ? 'BADO Constant' : $entry->teacher_name,
                         'room' => $isTargetCell ? 'Salle 1' : $entry->room,
                         'is_break' => $entry->is_break ? 1 : 0,
@@ -87,7 +87,7 @@ class TimetableTest extends TestCase
             'timetable_id' => $timetable->id,
             'day_of_week' => 'monday',
             'period_label' => '7h00-7h55',
-            'subject_name' => 'Mathematiques',
+            'subject_name' => 'Mathématiques',
             'teacher_name' => 'BADO Constant',
             'room' => 'Salle 1',
         ]);
@@ -129,7 +129,7 @@ class TimetableTest extends TestCase
                 'starts_at' => '07:00',
                 'ends_at' => '07:55',
                 'day_of_week' => 'tuesday',
-                'subject_name' => 'Francais',
+                'subject_name' => 'Français',
             ],
         ]);
 
@@ -138,7 +138,7 @@ class TimetableTest extends TestCase
             ->assertOk()
             ->assertSee('7h00-7h55', false)
             ->assertSee('EPS')
-            ->assertSee('Francais');
+            ->assertSee('Français');
 
         $this->assertSame(1, substr_count($response->getContent(), '<strong>7h00-7h55</strong>'));
     }

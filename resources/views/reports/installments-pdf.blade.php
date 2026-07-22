@@ -32,13 +32,13 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:210px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Date : {{ now()->format('d/m/Y') }}
             </td>
@@ -52,7 +52,7 @@
             <td>Attendu : {{ number_format($summary['expected'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Paye : {{ number_format($summary['paid'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Reste : {{ number_format($summary['balance'], 0, ',', ' ') }} {{ $currency }}</td>
-            <td>A jour / Partiel / Impaye : {{ $summary['up_to_date'] }} / {{ $summary['partial'] }} / {{ $summary['unpaid'] }}</td>
+            <td>A jour / Partiel / Impayé : {{ $summary['up_to_date'] }} / {{ $summary['partial'] }} / {{ $summary['unpaid'] }}</td>
         </tr>
     </table>
 
@@ -60,7 +60,7 @@
         <thead>
             <tr>
                 <th>Matricule</th>
-                <th>Eleve</th>
+                <th>Élève</th>
                 <th>Tranche</th>
                 <th>Frais</th>
                 <th class="right">Attendu</th>
@@ -83,7 +83,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8">Aucune tranche configuree pour cette classe.</td>
+                    <td colspan="8">Aucune tranche configurée pour cette classe.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -91,7 +91,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

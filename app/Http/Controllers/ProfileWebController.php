@@ -28,7 +28,7 @@ class ProfileWebController extends Controller
 
         return redirect()
             ->route('profile.show')
-            ->with('success', 'Profil mis a jour.');
+            ->with('success', 'Profil mis à jour.');
     }
 
     public function updatePassword(UpdatePasswordRequest $request, UserAuditService $userAuditService): RedirectResponse
@@ -43,6 +43,6 @@ class ProfileWebController extends Controller
 
         return redirect()
             ->route('profile.show')
-            ->with('success', 'Mot de passe mis a jour.');
+            ->with('success', 'Mot de passe mis à jour.');
     }
 }

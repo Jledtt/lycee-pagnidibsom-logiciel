@@ -47,16 +47,16 @@
         <tr>
             <td style="width:128px">
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-                <div class="motto">{{ $school?->motto ?? '"Batir l\'excellence"' }}</div>
+                <div class="motto">{{ $school?->motto ?? '"Bâtir l\'excellence"' }}</div>
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="year">
-                Annee scolaire: {{ $certificate->academicYear?->name ?? '-' }}<br>
+                Année scolaire: {{ $certificate->academicYear?->name ?? '-' }}<br>
                 No certificat: {{ $certificate->document_number ?? '-' }}<br>
                 {{ $school?->country ?? 'Burkina Faso' }}<br>
                 {{ $school?->national_motto ?? 'La Patrie ou la Mort Nous Vaincrons' }}
@@ -88,10 +88,10 @@
                 <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>, certifie que
                 <span class="strong">{{ $student->full_name }}</span>, ne(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span>, est eleve de son etablissement.
+                a <span class="strong">{{ $student->birth_place ?? '-' }}</span>, est élève de son etablissement.
             </p>
             <p class="line">
-                Elle / Il s'est inscrit(e) pour le compte de l'annee
+                Elle / Il s’est inscrit(e) pour le compte de l’année
                 <span class="strong">{{ $certificate->academicYear?->name ?? '-' }}</span>
                 en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
             </p>
@@ -112,7 +112,7 @@
                 en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
             </p>
             <p class="line">
-                Est a jour de ses frais de scolarite par consequent n'est pas redevable a l'etablissement.
+                Est à jour de ses frais de scolarité ; par conséquent, il n’est pas redevable à l’établissement.
             </p>
         @endif
     </div>
@@ -123,7 +123,7 @@
             <td class="right">
                 {{ $school?->city ?? 'Ouagadougou' }}, le {{ $certificate->received_at?->format('d/m/Y') ?? now()->format('d/m/Y') }}<br>
                 <span class="sign-title">
-                    {{ $certificate->document_type === 'no_debt_certificate' ? 'La Comptabilite' : ($school?->principal_title ?? 'Le Proviseur') }}
+                    {{ $certificate->document_type === 'no_debt_certificate' ? 'La Comptabilité' : ($school?->principal_title ?? 'Le Proviseur') }}
                 </span>
                 <div class="principal">{{ $certificate->document_type === 'no_debt_certificate' ? $accountantName : $principalName }}</div>
             </td>

@@ -22,7 +22,7 @@ class TechnicalMaintenanceTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Aide et guide utilisateur');
-        $response->assertSee('Demarrage rapide');
+        $response->assertSee('Démarrage rapide');
     }
 
     public function test_database_backup_command_creates_json_export(): void

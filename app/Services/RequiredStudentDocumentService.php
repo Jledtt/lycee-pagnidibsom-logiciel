@@ -53,7 +53,7 @@ class RequiredStudentDocumentService
             'photo' => 'Photo',
             'previous_report_card' => 'Ancien bulletin',
             'certificate' => 'Certificat',
-            'receipt' => 'Recu',
+            'receipt' => 'Reçu',
             'parent_authorization' => 'Autorisation parentale',
             'identity' => 'Piece d identite',
             'other' => 'Autre document',

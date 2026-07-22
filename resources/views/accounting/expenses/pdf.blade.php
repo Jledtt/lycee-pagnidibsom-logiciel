@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Depenses</title>
+    <title>Dépenses</title>
     <style>
         @page { margin: 18px 22px; }
         body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
@@ -33,26 +33,26 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:230px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
-                Periode : {{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                Période : {{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
                 au {{ \Illuminate\Support\Carbon::parse($filters['date_to'])->format('d/m/Y') }}<br>
                 Date edition : {{ now()->format('d/m/Y H:i') }}
             </td>
         </tr>
     </table>
 
-    <div class="title">Etat des depenses</div>
+    <div class="title">Etat des d?penses</div>
 
     <table class="summary">
         <tr>
-            <td>Total depenses : {{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</td>
-            <td>Depenses valides : {{ $summary['valid_count'] }}</td>
+            <td>Total d?penses : {{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</td>
+            <td>Dépenses validées : {{ $summary['valid_count'] }}</td>
             <td>Annulations : {{ $summary['cancelled_count'] }}</td>
             <td>Montant annule : {{ number_format($summary['total_cancelled'], 0, ',', ' ') }} {{ $currency }}</td>
         </tr>
@@ -94,7 +94,7 @@
     <table class="footer">
         <tr>
             <td>Signature du caissier</td>
-            <td style="text-align:center">Controle direction</td>
+            <td style="text-align:center">Contrôle direction</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

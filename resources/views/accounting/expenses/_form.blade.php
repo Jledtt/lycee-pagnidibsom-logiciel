@@ -43,7 +43,7 @@
 
         <div class="field">
             <label for="proof_reference">Reference justificatif</label>
-            <input id="proof_reference" name="proof_reference" value="{{ old('proof_reference', $expense->proof_reference) }}" placeholder="Numero facture, recu ou bon">
+            <input id="proof_reference" name="proof_reference" value="{{ old('proof_reference', $expense->proof_reference) }}" placeholder="Num?ro facture, reçu ou bon">
         </div>
 
         <div class="field wide">

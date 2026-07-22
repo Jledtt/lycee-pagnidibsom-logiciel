@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Conseil de classe - Lycee Prive Pagnidibsom',
+    'title' => 'Conseil de classe - Lycée Privé Pagnidibsom',
     'active' => 'report-cards',
     'pageTitle' => 'Conseil de classe',
     'pageSubtitle' => 'Classement, statistiques, PV et verrouillage des notes',
@@ -18,7 +18,7 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
             <span class="badge">{{ $academicYear->name }}</span>
         </div>
 
@@ -72,7 +72,7 @@
             </div>
             <div class="module">
                 <strong>{{ $summary['admitted'] }}</strong>
-                <span>Decision admis</span>
+                <span>Décision admis</span>
             </div>
             <div class="module">
                 <strong>{{ $summary['deliberation'] }}</strong>
@@ -96,7 +96,7 @@
                             @csrf
                             <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                             <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
-                            <button class="btn btn-subtle" type="submit">Generer / recalculer</button>
+                            <button class="btn btn-subtle" type="submit">Générer / recalculer</button>
                         </form>
                     @endcan
 
@@ -117,11 +117,11 @@
 
                     @can('grades.unlock')
                         @if ($lockSummary['locked'] > 0)
-                            <form method="POST" action="{{ route('class-council.unlock') }}" onsubmit="return confirm('Deverrouiller les evaluations pour correction admin ?')">
+                            <form method="POST" action="{{ route('class-council.unlock') }}" onsubmit="return confirm('Déverrouiller les évaluations pour correction admin ?')">
                                 @csrf
                                 <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                                 <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
-                                <button class="btn btn-danger" type="submit">Deverrouiller</button>
+                                <button class="btn btn-danger" type="submit">Déverrouiller</button>
                             </form>
                         @endif
                     @endcan
@@ -129,17 +129,17 @@
             </div>
 
             @if ($reportCards->isEmpty())
-                <div class="empty">Aucun bulletin genere. Lance d'abord “Generer / recalculer”.</div>
+                <div class="empty">Aucun bulletin généré. Lance d’abord “Générer / recalculer”.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:1040px">
                         <thead>
                             <tr>
                                 <th>Rang</th>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Moyenne</th>
                                 <th>Appreciation</th>
-                                <th>Decision</th>
+                                <th>Décision</th>
                                 <th>Statut</th>
                                 <th>Documents</th>
                             </tr>
@@ -163,7 +163,7 @@
                                     <td>
                                         <div class="page-actions" style="justify-content:flex-start">
                                             @can('report_cards.print')
-                                                <a class="btn btn-subtle" href="{{ route('report-cards.transcript-pdf', $reportCard) }}">Releve</a>
+                                                <a class="btn btn-subtle" href="{{ route('report-cards.transcript-pdf', $reportCard) }}">Rélève</a>
                                                 <a class="btn btn-primary" href="{{ route('report-cards.pdf', $reportCard) }}">Bulletin</a>
                                             @endcan
                                         </div>

@@ -74,7 +74,7 @@ class TimetableWebController extends Controller
 
         return redirect()
             ->route('timetables.edit', $timetable)
-            ->with('success', 'Emploi du temps cree. Tu peux maintenant remplir la grille.');
+            ->with('success', 'Emploi du temps créé. Tu peux maintenant remplir la grille.');
     }
 
     public function edit(Timetable $timetable): View
@@ -135,7 +135,7 @@ class TimetableWebController extends Controller
 
         return redirect()
             ->route('timetables.edit', $timetable)
-            ->with('success', 'Emploi du temps mis a jour.');
+            ->with('success', 'Emploi du temps mis à jour.');
     }
 
     public function applyExample(Request $request): RedirectResponse
@@ -168,7 +168,7 @@ class TimetableWebController extends Controller
 
         return redirect()
             ->route('timetables.edit', $timetable)
-            ->with('success', 'Modele 2025-2026 applique. Verifie puis adapte la grille.');
+            ->with('success', 'Modèle 2025-2026 appliqué. Vérifie puis adapte la grille.');
     }
 
     public function pdf(Timetable $timetable)
@@ -195,7 +195,7 @@ class TimetableWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

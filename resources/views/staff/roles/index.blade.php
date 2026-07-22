@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Roles et acces - Lycee Prive Pagnidibsom',
+    'title' => 'Rôles et accès - Lycée Privé Pagnidibsom',
     'active' => 'staff',
-    'pageTitle' => 'Roles et acces',
+    'pageTitle' => 'Rôles et accès',
     'pageSubtitle' => 'Voir et modifier les autorisations du personnel',
 ])
 
@@ -21,18 +21,18 @@
         </div>
         <div class="module">
             <strong>Imprimer</strong>
-            <span>Generation de PDF, recus, certificats et exports.</span>
+            <span>Génération de PDF, reçus, certificats et exports.</span>
         </div>
         <div class="module">
             <strong>Administrer</strong>
-            <span>Parametres sensibles, utilisateurs, roles et verrouillages.</span>
+            <span>Paramètres sensibles, utilisateurs, rôles et verrouillages.</span>
         </div>
     </section>
 
     <section class="panel">
         <div class="panel-head">
             <h2>Roles internes</h2>
-            <span class="badge">{{ $roles->count() }} role(s)</span>
+            <span class="badge">{{ $roles->count() }} rôle(s)</span>
         </div>
 
         <div class="subject-list-scroll">
@@ -40,7 +40,7 @@
             <thead>
                 <tr>
                     <th>Role</th>
-                    <th>Ce role peut</th>
+                    <th>Ce rôle peut</th>
                     <th>Actions</th>
                     <th>Modules autorises</th>
                     <th></th>
@@ -56,7 +56,7 @@
                             <span style="color:var(--muted)">{{ count($permissions) }} permission(s)</span>
                         </td>
                         <td>
-                            <strong>{{ $roleDescriptions[$role->name] ?? 'Role interne configure.' }}</strong>
+                            <strong>{{ $roleDescriptions[$role->name] ?? 'R?le interne configur?.' }}</strong>
                         </td>
                         <td>
                             <div class="searchbar">
@@ -89,7 +89,7 @@
         @foreach ($permissionGroups as $group => $items)
             <div class="module">
                 <strong>{{ $group }}</strong>
-                <span>{{ count($items) }} acces configurables pour voir, modifier, imprimer ou administrer ce module.</span>
+                <span>{{ count($items) }} accès configurables pour voir, modifier, imprimer ou administrer ce module.</span>
             </div>
         @endforeach
     </section>

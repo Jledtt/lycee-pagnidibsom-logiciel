@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => $typeLabel . ' - Lycee Prive Pagnidibsom',
+    'title' => $typeLabel . ' - Lycée Privé Pagnidibsom',
     'active' => 'certificates',
     'pageTitle' => $typeLabel,
     'pageSubtitle' => $certificate->student->full_name . ' - ' . $certificate->student->matricule,
@@ -7,7 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('certificates.index') }}">Retour</a>
-    <a class="btn btn-subtle" href="{{ route('students.show', $certificate->student) }}">Dossier eleve</a>
+    <a class="btn btn-subtle" href="{{ route('students.show', $certificate->student) }}">Dossier élève</a>
     <a class="btn btn-primary" href="{{ route('certificates.pdf', $certificate) }}">PDF</a>
 @endsection
 
@@ -41,8 +41,8 @@
                     <strong>{{ number_format($summary['paid'], 0, ',', ' ') }} FCFA</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Reste a payer</span>
-                    <strong>{{ is_null($summary['balance']) ? 'Frais a configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
+                    <span>Reste à payer</span>
+                    <strong>{{ is_null($summary['balance']) ? 'Frais à configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
                 </div>
                 <div class="detail-item">
                     <span>Statut</span>
@@ -57,13 +57,13 @@
             </div>
 
             <div class="grid" style="grid-template-columns:1fr">
-                <a class="btn btn-primary" href="{{ route('certificates.pdf', $certificate) }}">Telecharger / imprimer le PDF</a>
-                <a class="btn btn-subtle" href="{{ route('certificates.create', ['student_id' => $certificate->student_id]) }}">Generer un autre certificat</a>
-                <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $certificate->student) }}">Fiche d'inscription PDF</a>
+                <a class="btn btn-primary" href="{{ route('certificates.pdf', $certificate) }}">Télécharger / imprimer le PDF</a>
+                <a class="btn btn-subtle" href="{{ route('certificates.create', ['student_id' => $certificate->student_id]) }}">Générer un autre certificat</a>
+                <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $certificate->student) }}">Fiche d’inscription PDF</a>
             </div>
 
             @if ($certificate->document_type === 'no_debt_certificate' && is_null($summary['balance']))
-                <p class="notice" style="margin-top:16px">Les frais officiels par classe ne sont pas encore configures. Le certificat de non redevance se base donc sur les paiements enregistres.</p>
+                <p class="notice" style="margin-top:16px">Les frais officiels par classe ne sont pas encore configurés. Le certificat de non redevance se base donc sur les paiements enregistrés.</p>
             @endif
         </div>
     </section>

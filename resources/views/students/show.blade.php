@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => $student->full_name . ' - Lycee Prive Pagnidibsom',
+    'title' => $student->full_name . ' - Lycée Privé Pagnidibsom',
     'active' => 'students',
     'pageTitle' => $student->full_name,
     'pageSubtitle' => 'Matricule ' . $student->matricule,
@@ -10,7 +10,7 @@
     @can('students.export')
         <a class="btn btn-subtle" href="{{ route('certificates.create', ['student_id' => $student->id]) }}">Certificat</a>
         <a class="btn btn-subtle" href="{{ route('students.school-card.pdf', $student) }}">Carte scolaire</a>
-        <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $student) }}">Fiche d'inscription</a>
+        <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $student) }}">Fiche d’inscription</a>
         <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $student) }}">PDF</a>
     @endcan
     @can('payments.view')
@@ -36,7 +36,7 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Fiche eleve</h2>
+            <h2>Fiche élève</h2>
             <span class="badge">{{ $student->status }}</span>
         </div>
 
@@ -66,7 +66,7 @@
                 <strong>{{ $student->address ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Ecole d'origine</span>
+                <span>École d’origine</span>
                 <strong>{{ $student->origin_school ?? '-' }}</strong>
             </div>
             <div class="detail-item">
@@ -74,7 +74,7 @@
                 <strong>{{ $student->previous_class ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Classe deja redoublee</span>
+                <span>Classe déjà redoublee</span>
                 <strong>{{ $student->repeated_class ?? '-' }}</strong>
             </div>
             <div class="detail-item">
@@ -107,9 +107,9 @@
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
             <div>
-                <h2>Pieces obligatoires</h2>
+                <h2>Pi?ces obligatoires</h2>
                 <p style="margin:4px 0 0;color:var(--muted)">
-                    {{ count($missingRequiredDocuments) === 0 ? 'Dossier administratif complet.' : count($missingRequiredDocuments) . ' piece(s) encore manquante(s).' }}
+                    {{ count($missingRequiredDocuments) === 0 ? 'Dossier administratif complet.' : count($missingRequiredDocuments) . ' pièce(s) encore manquante(s).' }}
                 </p>
             </div>
             <span class="badge {{ count($missingRequiredDocuments) === 0 ? '' : 'badge-warning' }}">
@@ -123,7 +123,7 @@
                     <strong>{{ $requiredDocument['label'] }}</strong>
                     <span>
                         <span class="badge {{ $requiredDocument['is_received'] ? '' : 'badge-warning' }}">
-                            {{ $requiredDocument['is_received'] ? 'Recu' : 'Manquant' }}
+                            {{ $requiredDocument['is_received'] ? 'Reçu' : 'Manquant' }}
                         </span>
                     </span>
                 </div>
@@ -159,7 +159,7 @@
                         <div class="field">
                             <label>Statut</label>
                             <select name="status" required>
-                                <option value="received" @selected(old('status', 'received') === 'received')>Recu</option>
+                                <option value="received" @selected(old('status', 'received') === 'received')>Reçu</option>
                                 <option value="missing" @selected(old('status') === 'missing')>Manquant</option>
                                 <option value="expired" @selected(old('status') === 'expired')>Expire</option>
                             </select>
@@ -188,15 +188,15 @@
         <div class="panel">
             <div class="panel-head">
                 <h2>Documents</h2>
-                <span class="badge">{{ $student->documents->count() }} piece(s)</span>
+                <span class="badge">{{ $student->documents->count() }} pièce(s)</span>
             </div>
 
             @php($documentTypeLabels = $documentTypeLabels + [
-                'school_certificate' => 'Certificat de scolarite',
+                'school_certificate' => 'Certificat de scolarité',
                 'enrollment_certificate' => 'Certificat d inscription',
                 'no_debt_certificate' => 'Certificat de non redevance',
             ])
-            @php($statusLabels = ['received' => 'Recu', 'missing' => 'Manquant', 'expired' => 'Expire'])
+            @php($statusLabels = ['received' => 'Reçu', 'missing' => 'Manquant', 'expired' => 'Expire'])
             @php($certificateTypes = ['school_certificate', 'enrollment_certificate', 'no_debt_certificate'])
 
             @if ($student->documents->isEmpty())
@@ -231,7 +231,7 @@
                                         <div class="page-actions" style="justify-content:flex-end">
                                             @if ($document->file_path)
                                                 <a class="btn btn-subtle" href="{{ route('student-documents.show', $document) }}" target="_blank" rel="noopener">Voir</a>
-                                                <a class="btn btn-subtle" href="{{ route('student-documents.download', $document) }}">Telecharger</a>
+                                                <a class="btn btn-subtle" href="{{ route('student-documents.download', $document) }}">Télécharger</a>
                                             @elseif (in_array($document->document_type, $certificateTypes, true))
                                                 <a class="btn btn-subtle" href="{{ route('certificates.show', $document) }}">Voir</a>
                                                 <a class="btn btn-subtle" href="{{ route('certificates.pdf', $document) }}">PDF</a>
@@ -267,7 +267,7 @@
                     <thead>
                         <tr>
                             <th>Nom</th>
-                            <th>Telephone</th>
+                            <th>Téléphone</th>
                             <th>Lien</th>
                         </tr>
                     </thead>
@@ -315,7 +315,7 @@
                     <strong>{{ $student->emergency_contact_name ?: '-' }} {{ $student->emergency_contact_phone ? '- ' . $student->emergency_contact_phone : '' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>WhatsApp infos ecole</span>
+                    <span>WhatsApp infos école</span>
                     <strong>{{ $student->school_info_whatsapp ?: '-' }}</strong>
                 </div>
             </div>
@@ -327,7 +327,7 @@
             <h2>Actions</h2>
         </div>
 
-        <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('Archiver ce dossier eleve ?')">
+        <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('Archiver ce dossier élève ?')">
             @csrf
             @method('DELETE')
             <button class="btn btn-danger" type="submit">Archiver le dossier</button>

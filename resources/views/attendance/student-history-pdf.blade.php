@@ -31,21 +31,21 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
-                Eleve : {{ $student->full_name }}<br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                Élève : {{ $student->full_name }}<br>
                 Matricule : {{ $student->matricule }}<br>
                 Mois : {{ $month }}
             </td>
         </tr>
     </table>
 
-    <div class="title">Historique d'assiduite</div>
+    <div class="title">Historique d’assiduite</div>
 
     <table class="summary">
         <tr>
@@ -80,7 +80,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="center">Aucune absence ou retard pour cette periode.</td>
+                    <td colspan="7" class="center">Aucune absence ou retard pour cette période.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -88,7 +88,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

@@ -25,7 +25,7 @@ class DatabaseBackupWebController extends Controller
 
         return redirect()
             ->route('settings.backups.index')
-            ->with('success', 'Sauvegarde creee : ' . basename($backup['json_path']));
+            ->with('success', 'Sauvegarde créée : ' . basename($backup['json_path']));
     }
 
     public function download(string $filename, DatabaseBackupService $backupService): BinaryFileResponse|Response

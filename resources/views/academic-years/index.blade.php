@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Annees scolaires - Lycee Prive Pagnidibsom',
+    'title' => 'Années scolaires - Lycée Privé Pagnidibsom',
     'active' => 'academic-years',
-    'pageTitle' => 'Annees scolaires',
-    'pageSubtitle' => 'Gestion des annees, trimestres et clotures',
+    'pageTitle' => 'Années scolaires',
+    'pageSubtitle' => 'Gestion des années, trimestres et clotures',
 ])
 
 @section('content')
@@ -15,7 +15,7 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Nouvelle annee</h2>
+                <h2>Nouvelle année</h2>
             </div>
 
             <form class="form-grid" method="POST" action="{{ route('academic-years.store') }}">
@@ -35,11 +35,11 @@
                 <div class="field wide">
                     <label class="check">
                         <input type="checkbox" name="create_default_terms" value="1" checked>
-                        Creer automatiquement les 3 trimestres
+                        Créer automatiquement les 3 trimestres
                     </label>
                 </div>
                 <div class="form-actions wide">
-                    <button class="btn btn-primary" type="submit">Creer l annee</button>
+                    <button class="btn btn-primary" type="submit">Créer l année</button>
                 </div>
             </form>
         </div>
@@ -50,7 +50,7 @@
             </div>
             <div class="summary-row">
                 <div class="detail-item">
-                    <span>Annees</span>
+                    <span>Années</span>
                     <strong>{{ $years->count() }}</strong>
                 </div>
                 <div class="detail-item">
@@ -58,7 +58,7 @@
                     <strong>{{ $years->firstWhere('is_active', true)?->name ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Periodes</span>
+                    <span>Périodes</span>
                     <strong>{{ $years->sum(fn ($year) => $year->terms->count()) }}</strong>
                 </div>
             </div>
@@ -67,12 +67,12 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Annees configurees</h2>
+            <h2>Années configurées</h2>
             <span class="badge">{{ $years->count() }} ligne(s)</span>
         </div>
 
         @if ($years->isEmpty())
-            <div class="empty">Aucune annee scolaire configuree.</div>
+            <div class="empty">Aucune année scolaire configurée.</div>
         @else
             <div class="ledger-list">
                 @foreach ($years as $year)
@@ -84,7 +84,7 @@
                             </div>
                             <div class="ledger-metric">
                                 <strong>{{ $year->terms->count() }}</strong>
-                                <span>Periodes</span>
+                                <span>Périodes</span>
                             </div>
                             <div class="ledger-metric">
                                 <strong>{{ $year->classes_count }}</strong>
@@ -101,7 +101,7 @@
 
                         <div class="ledger-detail">
                             <div class="ledger-detail-head">
-                                <h3>Parametres de {{ $year->name }}</h3>
+                                <h3>Paramètres de {{ $year->name }}</h3>
                                 @unless ($year->is_active)
                                     <form method="POST" action="{{ route('academic-years.activate', $year) }}">
                                         @csrf
@@ -136,13 +136,13 @@
                                     <input type="date" name="ends_at" value="{{ $year->ends_at->toDateString() }}" required>
                                 </div>
                                 <div class="form-actions wide">
-                                    <button class="btn btn-subtle" type="submit">Enregistrer l annee</button>
+                                    <button class="btn btn-subtle" type="submit">Enregistrer l année</button>
                                 </div>
                             </form>
 
                             <div class="panel" style="margin-top:16px">
                                 <div class="panel-head">
-                                    <h2>Periodes</h2>
+                                    <h2>Périodes</h2>
                                     <span class="badge">{{ $year->terms->count() }} ligne(s)</span>
                                 </div>
 

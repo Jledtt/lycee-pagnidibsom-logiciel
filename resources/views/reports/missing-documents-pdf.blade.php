@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Pieces manquantes</title>
+    <title>Pièces manquantes</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111b15; }
         table { width: 100%; border-collapse: collapse; }
@@ -29,36 +29,36 @@
                 <div>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</div>
             </td>
             <td style="text-align:right">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 <span>Classe : {{ $schoolClass?->name ?? 'Toutes les classes' }}</span><br>
                 <span>Edite le {{ now()->format('d/m/Y H:i') }}</span>
             </td>
         </tr>
     </table>
 
-    <h1>Rapport des pieces manquantes</h1>
+    <h1>Rapport des pièces manquantes</h1>
 
     <table class="summary">
         <tr>
-            <td>Eleves suivis<strong>{{ $summary['students'] }}</strong></td>
+            <td>Élèves suivis<strong>{{ $summary['students'] }}</strong></td>
             <td>Dossiers complets<strong>{{ $summary['complete'] }}</strong></td>
             <td>Dossiers incomplets<strong>{{ $summary['incomplete'] }}</strong></td>
-            <td>Pieces manquantes<strong>{{ $summary['missing_documents'] }}</strong></td>
+            <td>Pièces manquantes<strong>{{ $summary['missing_documents'] }}</strong></td>
         </tr>
     </table>
 
     <p class="muted">
-        Base controlee : {{ implode(', ', $requiredDocuments) }}.
+        Base contrôlee : {{ implode(', ', $requiredDocuments) }}.
     </p>
 
     <table>
         <thead>
             <tr>
                 <th style="width:18%">Matricule</th>
-                <th style="width:24%">Eleve</th>
+                <th style="width:24%">Élève</th>
                 <th style="width:12%">Classe</th>
                 <th style="width:14%">Statut</th>
-                <th>Pieces manquantes</th>
+                <th>Pièces manquantes</th>
             </tr>
         </thead>
         <tbody>
@@ -78,7 +78,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">Aucun eleve ne correspond a cette selection.</td>
+                    <td colspan="5">Aucun élève ne correspond à cette sélection.</td>
                 </tr>
             @endforelse
         </tbody>

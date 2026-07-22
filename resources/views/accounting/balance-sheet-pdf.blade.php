@@ -33,14 +33,14 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:230px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
-                Periode : {{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                Période : {{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
                 au {{ \Illuminate\Support\Carbon::parse($filters['date_to'])->format('d/m/Y') }}<br>
                 Date edition : {{ now()->format('d/m/Y H:i') }}
             </td>
@@ -52,12 +52,12 @@
     <table class="summary">
         <tr>
             <td>Entrees : {{ number_format($summary['income'], 0, ',', ' ') }} {{ $currency }}</td>
-            <td>Depenses : {{ number_format($summary['expenses'], 0, ',', ' ') }} {{ $currency }}</td>
+            <td>Dépenses : {{ number_format($summary['expenses'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Solde net : {{ number_format($summary['balance'], 0, ',', ' ') }} {{ $currency }}</td>
         </tr>
         <tr>
             <td>Paiements valides : {{ $summary['payment_count'] }}</td>
-            <td>Depenses valides : {{ $summary['expense_count'] }}</td>
+            <td>Dépenses validées : {{ $summary['expense_count'] }}</td>
             <td>Etat : {{ $summary['balance'] >= 0 ? 'Positif' : 'Negatif' }}</td>
         </tr>
     </table>
@@ -85,7 +85,7 @@
         </tbody>
     </table>
 
-    <div class="section-title">Depenses par categorie</div>
+    <div class="section-title">Dépenses par catégorie</div>
     <table class="list">
         <thead>
             <tr>
@@ -111,7 +111,7 @@
     <table class="footer">
         <tr>
             <td>Signature du caissier</td>
-            <td style="text-align:center">Controle direction</td>
+            <td style="text-align:center">Contrôle direction</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

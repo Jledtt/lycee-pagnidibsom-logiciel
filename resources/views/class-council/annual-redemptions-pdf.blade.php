@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Liste des eleves rachetes</title>
+    <title>Liste des élèves rachetes</title>
     <style>
         @page { margin: 22px 26px; }
         body { margin: 0; color: #000; font-family: "DejaVu Serif", serif; font-size: 10px; }
@@ -27,27 +27,27 @@
         <tr>
             <td style="width:72px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $academicYear->name }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear->name }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Seuil : {{ number_format($threshold, 2, ',', ' ') }} / 20
             </td>
         </tr>
     </table>
 
-    <div class="title">Liste des eleves rachetes</div>
+    <div class="title">Liste des élèves rachetes</div>
 
     <table class="list">
         <thead>
             <tr>
                 <th class="center" style="width:8%">Rang</th>
                 <th style="width:18%">Matricule</th>
-                <th>Nom et prenom(s)</th>
+                <th>Nom et prénom(s)</th>
                 @foreach ($terms as $term)
                     <th class="right">{{ $term->name }}</th>
                 @endforeach
@@ -69,12 +69,12 @@
                     <td class="right"><strong>{{ number_format($row['redeemed_average'], 2, ',', ' ') }}</strong></td>
                 </tr>
             @empty
-                <tr><td colspan="{{ 5 + $terms->count() }}" class="center">Aucun eleve eligible.</td></tr>
+                <tr><td colspan="{{ 5 + $terms->count() }}" class="center">Aucun élève eligible.</td></tr>
             @endforelse
         </tbody>
     </table>
 
-    <p>Arrete la presente liste a {{ $eligibleRows->count() }} eleve(s) rachete(s).</p>
+    <p>Arrete la presente liste a {{ $eligibleRows->count() }} élève(s) rachete(s).</p>
 
     <div class="stamp">
         Ouagadougou, le {{ now()->format('d/m/Y') }}<br>

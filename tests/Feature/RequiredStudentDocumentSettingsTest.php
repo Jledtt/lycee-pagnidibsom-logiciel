@@ -25,7 +25,7 @@ class RequiredStudentDocumentSettingsTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('settings.required-documents.store'), [
-                'name' => 'Certificat medical',
+                'name' => 'Certificat médical',
                 'document_type' => '',
                 'scope' => 'class',
                 'school_class_id' => $class->id,
@@ -36,7 +36,7 @@ class RequiredStudentDocumentSettingsTest extends TestCase
             ->assertRedirect(route('settings.required-documents.index'));
 
         $this->assertDatabaseHas('required_student_documents', [
-            'name' => 'Certificat medical',
+            'name' => 'Certificat médical',
             'document_type' => 'certificat_medical',
             'scope' => 'class',
             'school_class_id' => $class->id,
@@ -52,7 +52,7 @@ class RequiredStudentDocumentSettingsTest extends TestCase
         [$class, $student] = $this->classWithStudent();
 
         RequiredStudentDocument::query()->create([
-            'name' => 'Certificat medical',
+            'name' => 'Certificat médical',
             'document_type' => 'certificat_medical',
             'scope' => 'class',
             'school_class_id' => $class->id,
@@ -63,18 +63,18 @@ class RequiredStudentDocumentSettingsTest extends TestCase
         $this->actingAs($secretariat)
             ->get(route('students.show', $student))
             ->assertOk()
-            ->assertSee('Certificat medical')
+            ->assertSee('Certificat médical')
             ->assertSee('certificat_medical');
 
         $this->actingAs($secretariat)
             ->get(route('reports.missing-documents', ['school_class_id' => $class->id]))
             ->assertOk()
             ->assertSee($student->full_name)
-            ->assertSee('Certificat medical');
+            ->assertSee('Certificat médical');
 
         $this->actingAs($admin)
             ->put(route('settings.required-documents.update', RequiredStudentDocument::query()->where('document_type', 'certificat_medical')->firstOrFail()), [
-                'name' => 'Certificat medical',
+                'name' => 'Certificat médical',
                 'document_type' => 'certificat_medical',
                 'scope' => 'class',
                 'school_class_id' => $class->id,
@@ -87,7 +87,7 @@ class RequiredStudentDocumentSettingsTest extends TestCase
         $this->actingAs($secretariat)
             ->get(route('reports.missing-documents', ['school_class_id' => $class->id]))
             ->assertOk()
-            ->assertDontSee('Certificat medical');
+            ->assertDontSee('Certificat médical');
     }
 
     public function test_secretariat_cannot_manage_required_documents(): void

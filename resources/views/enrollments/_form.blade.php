@@ -1,9 +1,9 @@
 <section class="panel">
     <div class="form-grid">
         <div class="field">
-            <label for="student_id">Eleve</label>
+            <label for="student_id">Élève</label>
             <select id="student_id" name="student_id" required @disabled($enrollment->exists)>
-                <option value="">Choisir un eleve</option>
+                <option value="">Choisir un élève</option>
                 @foreach ($students as $student)
                     <option value="{{ $student->id }}" @selected((string) old('student_id', $enrollment->student_id) === (string) $student->id)>
                         {{ $student->matricule }} - {{ $student->full_name }}
@@ -30,7 +30,7 @@
         </div>
 
         <div class="field">
-            <label for="enrollment_date">Date d'inscription</label>
+            <label for="enrollment_date">Date d’inscription</label>
             <input id="enrollment_date" name="enrollment_date" type="date" value="{{ old('enrollment_date', optional($enrollment->enrollment_date)->format('Y-m-d') ?? now()->toDateString()) }}">
             @error('enrollment_date') <small class="error">{{ $message }}</small> @enderror
         </div>
@@ -39,7 +39,7 @@
             <label for="type">Type</label>
             <select id="type" name="type" required>
                 <option value="new" @selected(old('type', $enrollment->type) === 'new')>Nouvelle inscription</option>
-                <option value="renewal" @selected(old('type', $enrollment->type) === 'renewal')>Reinscription</option>
+                <option value="renewal" @selected(old('type', $enrollment->type) === 'renewal')>R?inscription</option>
                 <option value="transfer" @selected(old('type', $enrollment->type) === 'transfer')>Transfert</option>
             </select>
             @error('type') <small class="error">{{ $message }}</small> @enderror
@@ -57,7 +57,7 @@
         </div>
 
         <div class="field">
-            <label for="previous_school">Ecole precedente</label>
+            <label for="previous_school">École precedente</label>
             <input id="previous_school" name="previous_school" value="{{ old('previous_school', $enrollment->previous_school) }}" placeholder="Optionnel">
             @error('previous_school') <small class="error">{{ $message }}</small> @enderror
         </div>

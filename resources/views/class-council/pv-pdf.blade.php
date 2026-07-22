@@ -29,13 +29,13 @@
         <tr>
             <td style="width:72px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:240px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Trimestre : {{ $term->name }}<br>
                 Verrouillage : {{ $lockSummary['locked'] }} / {{ $lockSummary['total'] }} evaluation(s)
@@ -43,11 +43,11 @@
         </tr>
     </table>
 
-    <div class="title">Proces-verbal de conseil de classe</div>
+    <div class="title">Procès-verbal de conseil de classe</div>
 
     <table class="summary">
         <tr>
-            <td>Eleves<strong>{{ $summary['students'] }}</strong></td>
+            <td>Élèves<strong>{{ $summary['students'] }}</strong></td>
             <td>Moyenne classe<strong>{{ $summary['class_average'] === null ? '-' : number_format($summary['class_average'], 2, ',', ' ') }}</strong></td>
             <td>Meilleure moyenne<strong>{{ $summary['best']?->general_average === null ? '-' : number_format($summary['best']->general_average, 2, ',', ' ') }}</strong></td>
             <td>Plus faible moyenne<strong>{{ $summary['weakest']?->general_average === null ? '-' : number_format($summary['weakest']->general_average, 2, ',', ' ') }}</strong></td>
@@ -69,10 +69,10 @@
             <tr>
                 <th style="width:7%">Rang</th>
                 <th style="width:18%">Matricule</th>
-                <th>Eleve</th>
+                <th>Élève</th>
                 <th style="width:12%">Moyenne</th>
                 <th style="width:17%">Appreciation</th>
-                <th style="width:18%">Decision</th>
+                <th style="width:18%">Décision</th>
                 <th style="width:12%">Statut</th>
             </tr>
         </thead>
@@ -93,7 +93,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7">Aucun bulletin genere.</td>
+                    <td colspan="7">Aucun bulletin généré.</td>
                 </tr>
             @endforelse
         </tbody>

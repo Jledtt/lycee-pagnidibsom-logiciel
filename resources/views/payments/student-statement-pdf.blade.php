@@ -26,24 +26,24 @@
         <tr>
             <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:210px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $profile['enrollment']?->schoolClass?->name ?? '-' }}<br>
                 Date : {{ now()->format('d/m/Y') }}
             </td>
         </tr>
     </table>
 
-    <div class="title">Situation financiere de l'eleve</div>
+    <div class="title">Situation financiere de l’élève</div>
 
     <table class="summary">
         <tr>
-            <td>Eleve : <strong>{{ $student->full_name }}</strong></td>
+            <td>Élève : <strong>{{ $student->full_name }}</strong></td>
             <td>Matricule : <strong>{{ $student->matricule }}</strong></td>
             <td>Classe : <strong>{{ $profile['enrollment']?->schoolClass?->name ?? '-' }}</strong></td>
         </tr>
@@ -68,14 +68,14 @@
         <tbody>
             @forelse ($profile['scheduled_rows'] as $row)
                 <tr>
-                    <td>{{ $row['schedule']->period ?: 'Sans periode' }} - {{ $row['schedule']->feeType?->name ?? '-' }}</td>
+                    <td>{{ $row['schedule']->period ?: 'Sans période' }} - {{ $row['schedule']->feeType?->name ?? '-' }}</td>
                     <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} FCFA</td>
                     <td class="money">{{ number_format($row['paid'], 0, ',', ' ') }} FCFA</td>
                     <td class="money">{{ number_format($row['remaining'], 0, ',', ' ') }} FCFA</td>
-                    <td>{{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impaye') }}</td>
+                    <td>{{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impayé') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5">Aucun tarif configure.</td></tr>
+                <tr><td colspan="5">Aucun tarif configur?.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -85,7 +85,7 @@
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Recu</th>
+                <th>Reçu</th>
                 <th>Mode</th>
                 <th class="money">Montant</th>
                 <th>Statut</th>
@@ -108,7 +108,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

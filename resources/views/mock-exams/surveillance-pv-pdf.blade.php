@@ -27,13 +27,13 @@
         <tr>
             <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $exam->academicYear?->name }}</strong><br>
+                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
                 Session : {{ $exam->name }}<br>
                 Type : {{ $exam->exam_type_label }}<br>
                 Date : {{ now()->format('d/m/Y') }}
@@ -46,7 +46,7 @@
     <table class="list" style="margin-bottom:12px">
         <thead>
             <tr>
-                <th>Matiere</th>
+                <th>Matière</th>
                 <th>Date</th>
                 <th>Heure</th>
                 <th>Surveillant 1</th>
@@ -69,7 +69,7 @@
                     <td>{{ $subject->incident_notes ?: '' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="center">Aucune matiere.</td></tr>
+                <tr><td colspan="8" class="center">Aucune matière.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -98,11 +98,11 @@
                 <tr>
                     <th style="width:28px" class="center">No</th>
                     <th style="width:90px">Anonymat</th>
-                    <th>Nom et prenom(s)</th>
+                    <th>Nom et prénom(s)</th>
                     <th style="width:80px">Classe</th>
                     <th style="width:80px">Present</th>
                     <th style="width:80px">Absent</th>
-                    <th style="width:110px">Emargement</th>
+                    <th style="width:110px">Émargement</th>
                 </tr>
             </thead>
             <tbody>

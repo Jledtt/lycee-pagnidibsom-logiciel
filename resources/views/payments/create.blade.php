@@ -1,15 +1,15 @@
 @extends('layouts.app', [
-    'title' => 'Nouveau paiement - Lycee Prive Pagnidibsom',
+    'title' => 'Nouveau paiement - Lycée Privé Pagnidibsom',
     'active' => 'payments',
     'pageTitle' => 'Nouveau paiement',
-    'pageSubtitle' => 'Enregistrer un encaissement et generer un recu',
+    'pageSubtitle' => 'Enregistrer un encaissement et générér un reçu',
 ])
 
 @section('content')
     @if ($students->isEmpty())
-        <div class="empty">Aucun eleve inscrit disponible pour enregistrer un paiement.</div>
+        <div class="empty">Aucun élève inscrit disponible pour enregistrér un paiement.</div>
     @elseif ($feeTypes->isEmpty())
-        <div class="empty">Aucun type de frais configure.</div>
+        <div class="empty">Aucun type de frais configur?.</div>
     @else
         <form method="POST" action="{{ route('payments.store') }}">
             @csrf
@@ -17,9 +17,9 @@
             <section class="panel">
                 <div class="form-grid">
                     <div class="field wide">
-                        <label for="student_id">Eleve</label>
+                        <label for="student_id">Élève</label>
                         <select id="student_id" name="student_id" required>
-                            <option value="">Choisir un eleve inscrit</option>
+                            <option value="">Choisir un élève inscrit</option>
                             @foreach ($students as $student)
                                 @php($enrollment = $student->enrollments->sortByDesc('id')->first())
                                 <option value="{{ $student->id }}" @selected((string) old('student_id', $selectedStudentId) === (string) $student->id)>
@@ -52,7 +52,7 @@
             <section class="panel" style="margin-top:16px">
                 <div class="panel-head">
                     <h2>Lignes de paiement</h2>
-                    <span class="badge">Jusqu'a 3 lignes</span>
+                    <span class="badge">Jusqu’a 3 lignes</span>
                 </div>
 
                 @error('lines') <p class="error">{{ $message }}</p> @enderror
@@ -63,7 +63,7 @@
                             <div class="field">
                                 <label for="lines_{{ $i }}_fee_schedule_id">Tranche / frais</label>
                                 <select id="lines_{{ $i }}_fee_schedule_id" name="lines[{{ $i }}][fee_schedule_id]" data-schedule-select data-old-value="{{ old("lines.$i.fee_schedule_id", $i === 0 ? $prefillFeeScheduleId : null) }}">
-                                    <option value="">Choisir d'abord un eleve</option>
+                                    <option value="">Choisir d’abord un élève</option>
                                 </select>
                             </div>
 
@@ -107,7 +107,7 @@
 
                 const emptyOption = document.createElement('option');
                 emptyOption.value = '';
-                emptyOption.textContent = schedules.length ? 'Choisir une tranche' : 'Aucune tranche configuree';
+                emptyOption.textContent = schedules.length ? 'Choisir une tranche' : 'Aucune tranche configurée';
                 select.appendChild(emptyOption);
 
                 schedules.forEach((schedule) => {

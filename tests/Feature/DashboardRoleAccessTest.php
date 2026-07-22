@@ -19,7 +19,7 @@ class DashboardRoleAccessTest extends TestCase
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Eleves actifs');
+        $response->assertSee('Élèves actifs');
         $response->assertSee('Inscriptions');
         $response->assertDontSee('Encaissements');
         $response->assertDontSee('Finances rapides');

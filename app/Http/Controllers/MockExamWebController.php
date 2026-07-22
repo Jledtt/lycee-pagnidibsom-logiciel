@@ -88,7 +88,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $exam->id])
-            ->with('success', 'Session d examen blanc creee avec candidats et matieres de base.');
+            ->with('success', 'Session d’examen blanc créée avec candidats et matières de base.');
     }
 
     public function updateResultStatus(Request $request, MockExam $mockExam): RedirectResponse
@@ -129,7 +129,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', 'Statut des resultats mis a jour.');
+            ->with('success', 'Statut des résultats mis à jour.');
     }
 
     public function syncCandidates(MockExam $mockExam): RedirectResponse
@@ -138,7 +138,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' candidat(s) synchronise(s).');
+            ->with('success', $count . ' candidat(s) synchronisé(s).');
     }
 
     public function generateAnonymousCodes(Request $request, MockExam $mockExam): RedirectResponse
@@ -151,7 +151,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' anonymat(s) genere(s).');
+            ->with('success', $count . ' anonymat(s) généré(s).');
     }
 
     public function distributeRooms(Request $request, MockExam $mockExam): RedirectResponse
@@ -164,7 +164,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' candidat(s) reparti(s) en salle.');
+            ->with('success', $count . ' candidat(s) réparti(s) en salle.');
     }
 
     public function updateSubjectTracking(Request $request, MockExamSubject $mockExamSubject): RedirectResponse
@@ -196,7 +196,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExamSubject->mock_exam_id])
-            ->with('success', 'Suivi de la matiere mis a jour.');
+            ->with('success', 'Suivi de la matière mis à jour.');
     }
 
     public function subjectScores(Request $request, MockExam $mockExam, MockExamSubject $mockExamSubject): View
@@ -261,7 +261,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.subjects.scores', [$mockExam, $mockExamSubject])
-            ->with('success', 'Notes de l epreuve enregistrees.');
+            ->with('success', 'Notes de l’épreuve enregistrées.');
     }
 
     public function updateJuryDecisions(Request $request, MockExam $mockExam): RedirectResponse
@@ -288,7 +288,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', 'Decisions du jury mises a jour.');
+            ->with('success', 'Décisions du jury mises à jour.');
     }
 
     public function candidatesPdf(MockExam $mockExam)
@@ -380,7 +380,7 @@ class MockExamWebController extends Controller
             'exam' => $mockExam,
             'school' => SchoolSetting::query()->first(),
             'subject' => $mockExamSubject,
-            'title' => 'Releve de notes',
+            'title' => 'Relev? de notes',
         ])
             ->setPaper('a4')
             ->stream('saisie-notes-' . Str::slug($mockExam->name . '-' . $mockExamSubject->subject?->name) . '.pdf');
@@ -400,7 +400,7 @@ class MockExamWebController extends Controller
             'candidates.scores.subject',
         ]);
 
-        $title = $status === 'definitif' ? 'Resultats definitifs' : 'Resultats provisoires';
+        $title = $status === 'definitif' ? 'Résultats définitifs' : 'Résultats provisoires';
 
         return Pdf::loadView('mock-exams.results-pdf', [
             'exam' => $mockExam,
@@ -434,7 +434,7 @@ class MockExamWebController extends Controller
             'rejected' => $results->where('decision', 'Ajourne')->count(),
             'results' => $results,
             'school' => SchoolSetting::query()->first(),
-            'title' => 'Decision du jury',
+            'title' => 'Décision du jury',
         ])
             ->setPaper('a4')
             ->stream('decision-jury-' . Str::slug($mockExam->name) . '.pdf');
@@ -530,7 +530,7 @@ class MockExamWebController extends Controller
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

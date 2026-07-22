@@ -60,7 +60,7 @@ class NumberingSettingWebController extends Controller
 
         return redirect()
             ->route('settings.numbering.index')
-            ->with('success', 'Parametres de numerotation mis a jour.');
+            ->with('success', 'Paramètres de numérotation mis à jour.');
     }
 
     private function activeAcademicYear(): ?AcademicYear

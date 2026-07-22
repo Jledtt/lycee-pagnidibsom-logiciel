@@ -1,30 +1,30 @@
 @extends('layouts.app', [
-    'title' => 'Donnees eleves incompletes - Lycee Prive Pagnidibsom',
+    'title' => 'Données élèves incomplètes - Lycée Privé Pagnidibsom',
     'active' => 'reports',
-    'pageTitle' => 'Donnees eleves incompletes',
-    'pageSubtitle' => 'Controle des informations a completer pour ' . ($academicYear?->name ?? 'l annee active'),
+    'pageTitle' => 'Données élèves incomplètes',
+    'pageSubtitle' => 'Contrôle des informations à compléter pour ' . ($academicYear?->name ?? 'l’année active'),
 ])
 
 @php
     $issueOptions = [
-        'gender' => 'Sexe non renseigne',
+        'gender' => 'Sexe non renseigné',
         'birth_date' => 'Date de naissance',
         'contact' => 'Contact parent/tuteur',
         'photo' => 'Photo',
-        'documents' => 'Pieces obligatoires',
+        'documents' => 'Pièces obligatoires',
     ];
 @endphp
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste eleves</a>
-    <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pieces manquantes</a>
-    <a class="btn btn-primary" href="{{ route('reports.incomplete-students.export', request()->query()) }}" data-download-feedback="Telechargement Excel des donnees incompletes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+    <a class="btn btn-subtle" href="{{ route('reports.class-list', ['school_class_id' => $schoolClass?->id]) }}">Liste élèves</a>
+    <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
+    <a class="btn btn-primary" href="{{ route('reports.incomplete-students.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des données incomplètes lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
 @endsection
 
 @section('content')
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('reports.incomplete-students') }}">
@@ -54,7 +54,7 @@
 
     <section class="summary-row" style="margin-top:16px">
         <div class="stat">
-            <span>Eleves suivis</span>
+            <span>Élèves suivis</span>
             <strong>{{ $summary['students'] }}</strong>
         </div>
         <div class="stat">
@@ -81,7 +81,7 @@
             <strong>{{ $summary['missing_photo'] }}</strong>
         </div>
         <div class="stat">
-            <span>Pieces obligatoires</span>
+            <span>Pi?ces obligatoires</span>
             <strong>{{ $summary['missing_documents'] }}</strong>
         </div>
         <div class="stat">
@@ -95,26 +95,26 @@
             <div>
                 <h2>{{ $schoolClass?->name ?? 'Toutes les classes' }}</h2>
                 <p style="margin:4px 0 0;color:var(--muted)">
-                    Les manques sont detectes a partir de la fiche eleve, des contacts parents, de la photo et des pieces obligatoires.
+                    Les manques sont détectés à partir de la fiche élève, des contacts parents, de la photo et des pièces obligatoires.
                 </p>
             </div>
             <span class="badge">{{ $rows->count() }} ligne(s)</span>
         </div>
 
         @if ($rows->isEmpty())
-            <div class="empty">Aucun eleve ne correspond a cette selection.</div>
+            <div class="empty">Aucun élève ne correspond à cette sélection.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:1120px">
                     <thead>
                         <tr>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Sexe</th>
                             <th>Naissance</th>
                             <th>Contact</th>
                             <th>Photo</th>
-                            <th>A completer</th>
+                            <th>À compléter</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -127,7 +127,7 @@
                                     <span class="badge">{{ $student?->matricule }}</span>
                                 </td>
                                 <td>{{ $row['class']?->name ?? '-' }}</td>
-                                <td>{{ $student?->gender_label ?? 'Non renseigne' }}</td>
+                                <td>{{ $student?->gender_label ?? 'Non renseigné' }}</td>
                                 <td>{{ $student?->birth_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>
                                     <span class="badge {{ $row['has_contact'] ? '' : 'badge-warning' }}">

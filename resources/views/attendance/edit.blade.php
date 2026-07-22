@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Pointage - Lycee Prive Pagnidibsom',
+    'title' => 'Pointage - Lycée Privé Pagnidibsom',
     'active' => 'attendance',
     'pageTitle' => 'Pointage ' . $session->schoolClass->name,
     'pageSubtitle' => 'Appel du ' . $session->session_date->format('d/m/Y'),
@@ -30,12 +30,12 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Liste des eleves</h2>
-            <span class="badge">{{ $rows->count() }} eleve(s)</span>
+            <h2>Liste des élèves</h2>
+            <span class="badge">{{ $rows->count() }} élève(s)</span>
         </div>
 
         @if ($rows->isEmpty())
-            <div class="empty">Aucun eleve actif dans cette classe.</div>
+            <div class="empty">Aucun élève actif dans cette classe.</div>
         @else
             <form method="POST" action="{{ route('attendance.sessions.update', $session) }}">
                 @csrf
@@ -50,7 +50,7 @@
                 <table class="table" style="min-width:980px">
                     <thead>
                         <tr>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Statut</th>
                             <th>Minutes retard</th>
                             <th>Motif / observation</th>
@@ -72,7 +72,7 @@
                                         <option value="present" @selected($status === 'present')>Present</option>
                                         <option value="absent" @selected($status === 'absent')>Absent</option>
                                         <option value="late" @selected($status === 'late')>Retard</option>
-                                        <option value="excused" @selected($status === 'excused')>Absence justifiee</option>
+                                        <option value="excused" @selected($status === 'excused')>Absence justifiée</option>
                                     </select>
                                 </td>
                                 <td>

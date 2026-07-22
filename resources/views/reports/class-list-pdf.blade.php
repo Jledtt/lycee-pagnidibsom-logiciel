@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Liste des eleves - {{ $schoolClass->name }}</title>
+    <title>Liste des élèves - {{ $schoolClass->name }}</title>
     <style>
         @page { margin: 18px 22px; }
         body {
@@ -61,20 +61,20 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:210px">
-                <strong>Annee scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Date : {{ now()->format('d/m/Y') }}
             </td>
         </tr>
     </table>
 
-    <div class="title">Liste des eleves par classe</div>
+    <div class="title">Liste des élèves par classe</div>
 
     <table class="summary">
         <tr>
@@ -90,7 +90,7 @@
             <tr>
                 <th style="width:32px" class="center">No</th>
                 <th style="width:96px">Matricule</th>
-                <th>Nom et prenom(s)</th>
+                <th>Nom et prénom(s)</th>
                 <th style="width:58px" class="center">Sexe</th>
                 <th style="width:80px">Naissance</th>
                 <th style="width:170px">Tuteur</th>
@@ -112,7 +112,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="center">Aucun eleve actif inscrit dans cette classe.</td>
+                    <td colspan="7" class="center">Aucun élève actif inscrit dans cette classe.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -120,7 +120,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

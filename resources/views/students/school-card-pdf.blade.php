@@ -149,8 +149,8 @@
 
     <div class="sheet">
         <div class="card">
-            <div class="top-title">{{ str($school?->school_name ?? 'Lycee Prive Pagnidibsom')->upper() }}</div>
-            <div class="motto">- {{ trim($school?->motto ?? 'Batir l excellence', '"') }} -</div>
+            <div class="top-title">{{ str($school?->school_name ?? 'Lycée Privé Pagnidibsom')->upper() }}</div>
+            <div class="motto">- {{ trim($school?->motto ?? 'B?tir l?excellence', '"') }} -</div>
 
             <table class="school-row">
                 <tr>
@@ -183,11 +183,11 @@
 
                 <div class="info">
                     <div><span class="label">Nom:</span> {{ str($student->last_name)->upper() }}</div>
-                    <div><span class="label">Prenom(s):</span> {{ $student->first_name }}</div>
+                    <div><span class="label">Prénom(s):</span> {{ $student->first_name }}</div>
                     <div><span class="label">Ne(e) le:</span> {{ $student->birth_date?->format('d/m/Y') ?? '-' }}</div>
                     <div><span class="label">A:</span> {{ $student->birth_place ?? '-' }}</div>
                     <div><span class="label">Classe:</span> {{ $className ?? '-' }}</div>
-                    <div><span class="label">Annee scolaire:</span> {{ $academicYear?->name ?? '-' }}</div>
+                    <div><span class="label">Année scolaire:</span> {{ $academicYear?->name ?? '-' }}</div>
                 </div>
 
                 <div class="photo-box">

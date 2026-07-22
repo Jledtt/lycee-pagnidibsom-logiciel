@@ -94,7 +94,7 @@ class Student extends Model
         return match ($this->gender) {
             'female' => 'Fille',
             'male' => 'Garcon',
-            default => 'Non renseigne',
+            default => 'Non renseign?',
         };
     }
 

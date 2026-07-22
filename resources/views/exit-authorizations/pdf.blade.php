@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Autorisation d entree et de sortie</title>
+    <title>Autorisation d’entrée et de sortie</title>
     <style>
         @page { margin: 34px 48px; }
         body {
@@ -43,9 +43,9 @@
         </tr>
     </table>
 
-    <h1 class="title">AUTORISATION D'ENTREE ET DE SORTIE</h1>
+    <h1 class="title">AUTORISATION d’ENTREE ET DE SORTIE</h1>
 
-    <div class="row"><span class="label">Nom et prenom(s) de l'eleve</span><span class="line">{{ $authorization->student?->full_name }}</span></div>
+    <div class="row"><span class="label">Nom et prénom(s) de l’élève</span><span class="line">{{ $authorization->student?->full_name }}</span></div>
     <div class="row">
         <span class="label">Date de sortie et de retour</span>
         <span class="line">
@@ -55,10 +55,10 @@
             @endif
         </span>
     </div>
-    <div class="row"><span class="label">Matiere concernee</span><span class="line">{{ $authorization->subject_name ?: '-' }}</span></div>
-    <div class="row"><span class="label">Classe de l'eleve</span><span class="line">{{ $authorization->schoolClass?->name ?? '-' }}</span></div>
+    <div class="row"><span class="label">Matière concernee</span><span class="line">{{ $authorization->subject_name ?: '-' }}</span></div>
+    <div class="row"><span class="label">Classe de l’élève</span><span class="line">{{ $authorization->schoolClass?->name ?? '-' }}</span></div>
     <div class="row"><span class="label">Indication du lieu</span><span class="line">{{ $authorization->destination ?: '-' }}</span></div>
-    <div class="row"><span class="label">Motif de l'absence</span><span class="line">{{ $authorization->reason }}</span></div>
+    <div class="row"><span class="label">Motif de l’absence</span><span class="line">{{ $authorization->reason }}</span></div>
     <div class="row">
         A
         <span class="small-line">{{ $authorization->departure_at?->format('H') ?? '' }}</span>

@@ -30,7 +30,7 @@ class StudentImportTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString('Nom', $sheetXml);
-        $this->assertStringContainsString('Prenom', $sheetXml);
+        $this->assertStringContainsString('Prénom', $sheetXml);
         $this->assertStringContainsString('Date naissance', $sheetXml);
         $this->assertStringContainsString('Ouedraogo', $sheetXml);
         $this->assertStringContainsString('Awa', $sheetXml);
@@ -52,7 +52,7 @@ class StudentImportTest extends TestCase
         ]);
 
         $file = UploadedFile::fake()->createWithContent('eleves.csv', implode("\n", [
-            'Nom;Prenom;Sexe;Date naissance;Lieu naissance;Classe souhaitee;Pere nom;Pere prenom;Pere telephone',
+            'Nom;Prénom;Sexe;Date naissance;Lieu naissance;Classe souhaitee;Pere nom;Pere prenom;Pere telephone',
             'Ouedraogo;Awa;Fille;15/09/2012;Ouagadougou;5e A;Ouedraogo;Adama;71000000',
         ]));
 
@@ -65,7 +65,7 @@ class StudentImportTest extends TestCase
             ->get(route('students.import'))
             ->assertOk()
             ->assertSee('Awa Ouedraogo')
-            ->assertSee('Classe trouvee')
+            ->assertSee('Classe trouvée')
             ->assertSee('Valide');
 
         $this->actingAs($user)
@@ -111,7 +111,7 @@ class StudentImportTest extends TestCase
         ]);
 
         $file = UploadedFile::fake()->createWithContent('eleves.csv', implode("\n", [
-            'Nom;Prenom;Sexe;Date naissance',
+            'Nom;Prénom;Sexe;Date naissance',
             'Ouedraogo;Awa;Fille;15/09/2012',
         ]));
 
@@ -124,7 +124,7 @@ class StudentImportTest extends TestCase
             ->get(route('students.import'))
             ->assertOk()
             ->assertSee('Doublon')
-            ->assertSee('Eleve deja present');
+            ->assertSee('Élève déjà présent');
 
         $this->actingAs($user)
             ->post(route('students.import.store'))
@@ -149,7 +149,7 @@ class StudentImportTest extends TestCase
         ]);
 
         $pdfContent = Pdf::loadHTML(
-            '<pre>Nom;Prenom;Sexe;Date naissance;Lieu naissance;Classe souhaitee
+            '<pre>Nom;Prénom;Sexe;Date naissance;Lieu naissance;Classe souhaitee
 Kabre;Issa;Garcon;20/05/2011;Ouagadougou;6e A</pre>'
         )->output();
 

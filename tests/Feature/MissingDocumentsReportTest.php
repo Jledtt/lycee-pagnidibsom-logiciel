@@ -35,7 +35,7 @@ class MissingDocumentsReportTest extends TestCase
         $this->actingAs($user)
             ->get(route('reports.missing-documents', ['school_class_id' => $class->id]))
             ->assertOk()
-            ->assertSee('Pieces manquantes')
+            ->assertSee('Pièces manquantes')
             ->assertSee($student->full_name)
             ->assertSee('Acte de naissance')
             ->assertSee('Ancien bulletin')
@@ -65,7 +65,7 @@ class MissingDocumentsReportTest extends TestCase
             ->assertOk()
             ->assertSee($student->full_name)
             ->assertSee('Complet')
-            ->assertSee('Aucune piece manquante');
+            ->assertSee('Aucune pièce manquante');
     }
 
     public function test_comptable_cannot_open_missing_documents_report(): void
@@ -91,7 +91,7 @@ class MissingDocumentsReportTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString($student->matricule, $sheetXml);
-        $this->assertStringContainsString('Pieces manquantes', $sheetXml);
+        $this->assertStringContainsString('Pièces manquantes', $sheetXml);
         $this->assertStringContainsString('Acte de naissance', $sheetXml);
     }
 

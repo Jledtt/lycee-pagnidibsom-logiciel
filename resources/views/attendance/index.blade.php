@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Absences - Lycee Prive Pagnidibsom',
+    'title' => 'Absences - Lycée Privé Pagnidibsom',
     'active' => 'attendance',
     'pageTitle' => 'Absences',
     'pageSubtitle' => 'Pointage par classe, absences et retards',
@@ -8,7 +8,7 @@
 @section('page_actions')
     @if ($schoolClass)
         @can('attendance.reports')
-            <a class="btn btn-subtle" href="{{ route('attendance.export', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}" data-download-feedback="Telechargement Excel des absences lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+            <a class="btn btn-subtle" href="{{ route('attendance.export', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}" data-download-feedback="Téléchargement Excel des absences lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
             <a class="btn btn-subtle" href="{{ $selectedSession ? route('attendance.sessions.pdf', $selectedSession) : route('attendance.pdf', ['school_class_id' => $schoolClass->id, 'date' => $date->toDateString()]) }}">PDF</a>
         @endcan
     @endif
@@ -69,7 +69,7 @@
             </div>
 
             @if ($sessions->isEmpty())
-                <div class="empty">Aucun pointage cree pour cette date.</div>
+                <div class="empty">Aucun pointage créé pour cette date.</div>
             @else
                 <div class="subject-list-scroll">
                 <table class="table" style="min-width:680px">
@@ -112,13 +112,13 @@
             </div>
 
             @if ($recentRecords->isEmpty())
-                <div class="empty">Aucune absence ou retard enregistre pour le moment.</div>
+                <div class="empty">Aucune absence ou retard enregistré pour le moment.</div>
             @else
                 <div class="subject-list-scroll">
                 <table class="table" style="min-width:760px">
                     <thead>
                         <tr>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Date</th>
                             <th>Statut</th>

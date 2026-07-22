@@ -1,15 +1,15 @@
 @extends('layouts.app', [
-    'title' => 'Tableau de bord - Lycee Prive Pagnidibsom',
+    'title' => 'Tableau de bord - Lycée Privé Pagnidibsom',
     'active' => 'dashboard',
     'pageTitle' => 'Tableau de bord',
-    'pageSubtitle' => "Vue administrative de l'annee " . ($academicYear?->name ?? 'active'),
+    'pageSubtitle' => "Vue administrative de l’année " . ($academicYear?->name ?? 'active'),
 ])
 
 @section('content')
             <section class="grid stats">
                 @can('students.view')
                     <div class="stat">
-                        <span>Eleves actifs</span>
+                        <span>Élèves actifs</span>
                         <strong>{{ number_format($stats['students'], 0, ',', ' ') }}</strong>
                     </div>
                 @endcan
@@ -43,7 +43,7 @@
                 <section class="grid stats" style="margin-top:16px">
                     @can('payments.reports')
                         <div class="stat">
-                            <span>Encaisse aujourd'hui</span>
+                            <span>Encaisse aujourd’hui</span>
                             <strong class="money">{{ number_format($financeAlerts['today_paid'], 0, ',', ' ') }} FCFA</strong>
                         </div>
                         <div class="stat">
@@ -79,14 +79,14 @@
                     <div class="grid modules">
                         @can('students.view')
                             <a class="module" href="{{ route('students.index') }}">
-                                <strong>Eleves</strong>
+                                <strong>Élèves</strong>
                                 <span>Dossiers, parents, documents et historique.</span>
                             </a>
                         @endcan
                         @can('classes.manage')
                             <a class="module" href="{{ route('classes.index') }}">
                                 <strong>Classes</strong>
-                                <span>Niveaux, capacites, effectifs et affectation des eleves.</span>
+                                <span>Niveaux, capacités, effectifs et affectation des élèves.</span>
                             </a>
                         @endcan
                         @can('enrollments.view')
@@ -98,7 +98,7 @@
                         @can('payments.view')
                             <a class="module" href="{{ route('payments.index') }}">
                                 <strong>Paiements</strong>
-                                <span>Scolarite, recus, impayes et rapports de caisse.</span>
+                                <span>Scolarité, reçus, impayés et rapports de caisse.</span>
                             </a>
                         @endcan
                         @can('attendance.view')
@@ -116,13 +116,13 @@
                         @can('report_cards.view')
                             <a class="module" href="{{ route('report-cards.index') }}">
                                 <strong>Bulletins</strong>
-                                <span>Moyennes, rangs et bulletins imprimables par eleve.</span>
+                                <span>Moyennes, rangs et bulletins imprimables par élève.</span>
                             </a>
                         @endcan
                         @can('payments.reports')
                             <a class="module" href="{{ route('accounting.cash-journal') }}">
-                                <strong>Comptabilite</strong>
-                                <span>Journal de caisse, depenses, bilan et controles.</span>
+                                <strong>Comptabilité</strong>
+                                <span>Journal de caisse, d?penses, bilan et contrôles.</span>
                             </a>
                         @endcan
                         @can('settings.manage')
@@ -131,8 +131,8 @@
                                 <span>Montants par classe, tranches et frais annexes.</span>
                             </a>
                             <a class="module" href="{{ route('subjects.index') }}">
-                                <strong>Matieres</strong>
-                                <span>Matieres enseignees, coefficients et activation par classe.</span>
+                                <strong>Matières</strong>
+                                <span>Matières enseignees, coefficients et activation par classe.</span>
                             </a>
                         @endcan
                         @can('students.export')
@@ -150,13 +150,13 @@
                         @can('users.manage')
                             <a class="module" href="{{ route('staff.index') }}">
                                 <strong>Personnel</strong>
-                                <span>Comptes utilisateurs, roles et acces internes.</span>
+                                <span>Comptes utilisateurs, rôles et accès internes.</span>
                             </a>
                         @endcan
                         @can('academic_years.manage')
                             <a class="module" href="{{ route('academic-years.index') }}">
-                                <strong>Annees scolaires</strong>
-                                <span>Activation des annees, trimestres et clotures.</span>
+                                <strong>Années scolaires</strong>
+                                <span>Activation des années, trimestres et clotures.</span>
                             </a>
                         @endcan
                     </div>
@@ -166,7 +166,7 @@
                     <div class="panel">
                         <div class="panel-head">
                             <h2>Finances rapides</h2>
-                            <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayes</a>
+                            <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayés</a>
                         </div>
 
                         <div class="summary-row">
@@ -179,7 +179,7 @@
                                 <strong class="money">{{ number_format($financeAlerts['paid'], 0, ',', ' ') }} FCFA</strong>
                             </div>
                             <div class="detail-item">
-                                <span>Eleves avec reste</span>
+                                <span>Élèves avec reste</span>
                                 <strong>{{ number_format($financeAlerts['unpaid_count'], 0, ',', ' ') }}</strong>
                             </div>
                         </div>
@@ -189,12 +189,12 @@
                         </div>
 
                         @if ($financeAlerts['top_unpaid']->isEmpty())
-                            <div class="empty">Aucun impaye detecte sur les tarifs configures.</div>
+                            <div class="empty">Aucun impayé detecte sur les tarifs configurés.</div>
                         @else
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Eleve</th>
+                                        <th>Élève</th>
                                         <th>Classe</th>
                                         <th>Reste</th>
                                         <th></th>
@@ -225,7 +225,7 @@
                     @can('attendance.view')
                     <div class="panel">
                         <div class="panel-head">
-                            <h2>Vie scolaire aujourd'hui</h2>
+                            <h2>Vie scolaire aujourd’hui</h2>
                             <a class="btn btn-subtle" href="{{ route('attendance.index') }}">Absences</a>
                         </div>
 
@@ -282,7 +282,7 @@
                             @endcan
                             @can('report_cards.view')
                                 <div class="detail-item">
-                                    <span>Bulletins generes</span>
+                                    <span>Bulletins générés</span>
                                     <strong>{{ number_format($academicAlerts['bulletins_generated'], 0, ',', ' ') }}</strong>
                                 </div>
                             @endcan
@@ -294,7 +294,7 @@
                             </div>
 
                             @if ($configurationAlerts['classes_without_tariffs']->isEmpty() && $configurationAlerts['classes_without_subjects']->isEmpty())
-                                <div class="empty">Tarifs et matieres semblent configures pour les classes actives.</div>
+                                <div class="empty">Tarifs et matières semblent configurés pour les classes actives.</div>
                             @else
                                 <table class="table">
                                     <thead>
@@ -316,7 +316,7 @@
                                         @endforeach
                                         @foreach ($configurationAlerts['classes_without_subjects'] as $class)
                                             <tr>
-                                                <td><span class="badge badge-warning">Matieres manquantes</span></td>
+                                                <td><span class="badge badge-warning">Matières manquantes</span></td>
                                                 <td><strong>{{ $class->name }}</strong></td>
                                                 <td>
                                                 <a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $class->id]) }}">Configurer</a>
@@ -340,12 +340,12 @@
                         </div>
 
                         @if ($recentPayments->isEmpty())
-                            <div class="empty">Aucun paiement enregistre pour le moment.</div>
+                            <div class="empty">Aucun paiement enregistré pour le moment.</div>
                         @else
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Eleve</th>
+                                        <th>Élève</th>
                                         <th>Montant</th>
                                     </tr>
                                 </thead>
@@ -369,7 +369,7 @@
                         </div>
 
                         @if ($classes->isEmpty())
-                            <div class="empty">Aucune classe configuree pour l'annee active.</div>
+                            <div class="empty">Aucune classe configurée pour l’année active.</div>
                         @else
                             <table class="table">
                                 <thead>

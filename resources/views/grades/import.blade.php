@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Import notes - Lycee Prive Pagnidibsom',
+    'title' => 'Import notes - Lycée Privé Pagnidibsom',
     'active' => 'grades',
     'pageTitle' => 'Import des notes',
     'pageSubtitle' => $assessment->schoolClass->name . ' - ' . $assessment->subject->name . ' - ' . $assessment->title,
@@ -27,7 +27,7 @@
             <strong>{{ $assessment->schoolClass->name }}</strong>
         </div>
         <div class="stat">
-            <span>Matiere</span>
+            <span>Matière</span>
             <strong>{{ $assessment->subject->name }}</strong>
         </div>
         <div class="stat">
@@ -52,13 +52,13 @@
                     <strong>Matricule, note</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Mise a jour</span>
+                    <span>Mise à jour</span>
                     <strong>Les notes existantes seront remplacees</strong>
                 </div>
             </div>
 
             <p class="notice" style="margin-top:16px">
-                Utilise le modele Excel pour garder les matricules exacts. Pour un PDF, il doit etre un PDF texte exporte depuis Excel, Word ou un logiciel scolaire.
+                Utilise le modele Excel pour garder les matricules exacts. Pour un PDF, il doit être un PDF texte exporte depuis Excel, Word ou un logiciel scolaire.
             </p>
         </div>
 
@@ -85,7 +85,7 @@
         @php($summary = $preview['summary'])
         <section class="summary-row" style="margin-top:16px">
             <div class="stat">
-                <span>Lignes trouvees</span>
+                <span>Lignes trouvées</span>
                 <strong>{{ $summary['total'] }}</strong>
             </div>
             <div class="stat">
@@ -93,19 +93,19 @@
                 <strong>{{ $summary['valid'] }}</strong>
             </div>
             <div class="stat">
-                <span>Erreurs / mises a jour</span>
+                <span>Erreurs / mises à jour</span>
                 <strong>{{ $summary['invalid'] }} / {{ $summary['updates'] }}</strong>
             </div>
         </section>
 
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
-                <h2>3. Previsualisation</h2>
+                <h2>3. Prévisualisation</h2>
                 <span class="badge">{{ $summary['valid'] }} importable(s)</span>
             </div>
 
             @if (empty($preview['rows']))
-                <div class="empty">Aucune ligne de note trouvee dans le fichier.</div>
+                <div class="empty">Aucune ligne de note trouvée dans le fichier.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:860px">
@@ -113,7 +113,7 @@
                             <tr>
                                 <th>Ligne</th>
                                 <th>Matricule</th>
-                                <th>Eleve</th>
+                                <th>Élève</th>
                                 <th>Note</th>
                                 <th>Absent</th>
                                 <th>Commentaire</th>
@@ -133,7 +133,7 @@
                                     <td>{{ $data['comment'] ?: '-' }}</td>
                                     <td>
                                         <span class="badge {{ $row['status'] === 'valid' ? '' : 'badge-danger' }}">
-                                            {{ $row['status'] === 'valid' ? ($row['will_update'] ? 'Mise a jour' : 'Valide') : 'Erreur' }}
+                                            {{ $row['status'] === 'valid' ? ($row['will_update'] ? 'Mise à jour' : 'Valide') : 'Erreur' }}
                                         </span>
                                     </td>
                                     <td>

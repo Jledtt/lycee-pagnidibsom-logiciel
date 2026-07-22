@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Nouvel eleve - Lycee Prive Pagnidibsom',
+    'title' => 'Nouvel élève - Lycée Privé Pagnidibsom',
     'active' => 'students',
-    'pageTitle' => 'Nouvel eleve',
+    'pageTitle' => 'Nouvel élève',
     'pageSubtitle' => 'Creation du dossier administratif et du contact tuteur',
 ])
 

@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Mon profil - Lycee Prive Pagnidibsom',
+    'title' => 'Mon profil - Lycée Privé Pagnidibsom',
     'active' => 'profile',
     'pageTitle' => 'Mon profil',
     'pageSubtitle' => 'Informations de connexion et securite du compte',
@@ -31,7 +31,7 @@
                     <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required>
                 </div>
                 <div class="field">
-                    <label for="phone">Telephone</label>
+                    <label for="phone">Téléphone</label>
                     <input id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
                 </div>
                 <div class="detail-item">
@@ -43,7 +43,7 @@
                     <strong>{{ $role ?: '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Derniere connexion</span>
+                    <span>Dernière connexion</span>
                     <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? '-' }}</strong>
                 </div>
             </div>
@@ -77,12 +77,12 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Mes dernieres connexions</h2>
+            <h2>Mes dernières connexions</h2>
             <span class="badge">{{ $user->loginHistories->count() }} ligne(s)</span>
         </div>
 
         @if ($user->loginHistories->isEmpty())
-            <div class="empty">Aucune connexion enregistree.</div>
+            <div class="empty">Aucune connexion enregistrée.</div>
         @else
             <table class="table">
                 <thead>

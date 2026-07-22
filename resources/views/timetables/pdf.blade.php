@@ -23,8 +23,8 @@
 </head>
 <body>
     <div class="header">
-        <div class="school">Lycee Prive Pagnidibsom</div>
-        <div class="meta">Annee scolaire : {{ $timetable->academicYear?->name }} | Classe : {{ $timetable->schoolClass?->name }}</div>
+        <div class="school">Lycée Privé Pagnidibsom</div>
+        <div class="meta">Année scolaire : {{ $timetable->academicYear?->name }} | Classe : {{ $timetable->schoolClass?->name }}</div>
     </div>
 
     <h1>{{ $timetable->title }}</h1>

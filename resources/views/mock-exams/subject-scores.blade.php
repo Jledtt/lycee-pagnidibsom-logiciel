@@ -1,14 +1,14 @@
 @extends('layouts.app', [
-    'title' => 'Saisie notes examen - Lycee Prive Pagnidibsom',
+    'title' => 'Saisie notes examen - Lycée Privé Pagnidibsom',
     'active' => 'mock-exams',
     'pageTitle' => 'Saisie des notes',
-    'pageSubtitle' => $exam->name . ' - ' . ($subject->subject?->name ?? 'Matiere'),
+    'pageSubtitle' => $exam->name . ' - ' . ($subject->subject?->name ?? 'Matière'),
 ])
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('mock-exams.index', ['mock_exam_id' => $exam->id]) }}">Retour examens</a>
     @can('mock_exams.print')
-        <a class="btn btn-primary" href="{{ route('mock-exams.subjects.scores.pdf', [$exam, $subject]) }}" data-download-feedback="Telechargement de la feuille de notes lance.">PDF saisie</a>
+        <a class="btn btn-primary" href="{{ route('mock-exams.subjects.scores.pdf', [$exam, $subject]) }}" data-download-feedback="Téléchargement de la feuille de notes lancé.">PDF saisie</a>
     @endcan
 @endsection
 
@@ -23,7 +23,7 @@
             <strong>{{ $exam->name }}</strong>
         </div>
         <div class="stat">
-            <span>Matiere</span>
+            <span>Matière</span>
             <strong>{{ $subject->subject?->name }}</strong>
         </div>
         <div class="stat">
@@ -37,7 +37,7 @@
     </section>
 
     @if ($exam->is_locked)
-        <p class="notice" style="margin-top:16px">Session verrouillee : seul l'administrateur peut encore corriger les notes.</p>
+        <p class="notice" style="margin-top:16px">Session verrouillee : seul l’administrateur peut encore corriger les notes.</p>
     @endif
 
     <section class="panel" style="margin-top:16px">
@@ -57,7 +57,7 @@
                             <th>No</th>
                             <th>Anonymat</th>
                             <th>PV / Matricule</th>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Classe</th>
                             <th>Note</th>
                             <th>Absent</th>
@@ -100,7 +100,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">Aucun candidat. Synchronise d'abord les candidats de la session.</td>
+                                <td colspan="8">Aucun candidat. Synchronise d’abord les candidats de la session.</td>
                             </tr>
                         @endforelse
                     </tbody>

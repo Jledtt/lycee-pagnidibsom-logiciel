@@ -152,7 +152,7 @@ class AccountingWebController extends Controller
 
         return redirect()
             ->route('accounting.expenses.show', $expense)
-            ->with('success', 'Depense enregistree avec succes.');
+            ->with('success', 'Dépense enregistrée avec succès.');
     }
 
     public function showExpense(Expense $expense): View
@@ -184,7 +184,7 @@ class AccountingWebController extends Controller
 
         return redirect()
             ->route('accounting.expenses.show', $expense)
-            ->with('success', 'Depense annulee.');
+            ->with('success', 'Dépense annulée.');
     }
 
     public function expensesPdf(Request $request)
@@ -195,7 +195,7 @@ class AccountingWebController extends Controller
             ->latest('spent_at')
             ->latest()
             ->get();
-        $filename = 'depenses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+        $filename = 'd?penses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
 
         return Pdf::loadView('accounting.expenses.pdf', [
             'academicYear' => $academicYear,

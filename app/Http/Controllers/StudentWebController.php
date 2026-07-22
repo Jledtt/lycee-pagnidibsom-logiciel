@@ -64,12 +64,12 @@ class StudentWebController extends Controller
         return $xlsxExport->download('eleves-'.now()->format('Ymd-His').'.xlsx', [
             'Matricule',
             'Nom',
-            'Prenom',
+            'Prénom',
             'Sexe',
             'Classe',
             'Date naissance',
             'Lieu naissance',
-            'Telephone domicile',
+            'Téléphone domicile',
             'Tuteur',
             'Contact tuteur',
             'Statut',
@@ -113,7 +113,7 @@ class StudentWebController extends Controller
 
         return redirect()
             ->route('students.show', $student)
-            ->with('success', 'Eleve ajoute avec succes.');
+            ->with('success', 'Élève ajouté avec succès.');
     }
 
     public function show(Student $student, RequiredStudentDocumentService $requiredDocuments): View
@@ -180,7 +180,7 @@ class StudentWebController extends Controller
 
         return redirect()
             ->route('students.show', $student)
-            ->with('success', 'Fiche eleve mise a jour.');
+            ->with('success', 'Fiche élève mise à jour.');
     }
 
     public function destroy(Student $student): RedirectResponse
@@ -189,7 +189,7 @@ class StudentWebController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Eleve archive avec succes.');
+            ->with('success', 'Élève archivé avec succès.');
     }
 
     private function activeAcademicYear(): ?AcademicYear

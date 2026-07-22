@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Depense - Lycee Prive Pagnidibsom',
+    'title' => 'Dépense - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
-    'pageTitle' => 'Depense',
+    'pageTitle' => 'Dépense',
     'pageSubtitle' => ($categoryLabels[$expense->category] ?? $expense->category) . ' - ' . $expense->spent_at?->format('d/m/Y'),
 ])
 
@@ -56,11 +56,11 @@
                     <strong>{{ $expense->creator?->name ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Annee scolaire</span>
+                    <span>Année scolaire</span>
                     <strong>{{ $expense->academicYear?->name ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Cree le</span>
+                    <span>Créée le</span>
                     <strong>{{ $expense->created_at?->format('d/m/Y H:i') ?? '-' }}</strong>
                 </div>
             </div>
@@ -75,7 +75,7 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Controle</h2>
+                <h2>Contrôle</h2>
             </div>
 
             @if ($expense->status === 'cancelled')
@@ -101,7 +101,7 @@
                         @csrf
                         @method('PUT')
                         <div class="field">
-                            <label for="reason">Motif d'annulation</label>
+                            <label for="reason">Motif d’annulation</label>
                             <textarea id="reason" name="reason" required></textarea>
                         </div>
                         <button class="btn btn-danger" type="submit">Annuler la depense</button>

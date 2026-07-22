@@ -90,15 +90,15 @@ class PaymentWebController extends Controller
             ->get();
 
         return $xlsxExport->download('paiements-'.now()->format('Ymd-His').'.xlsx', [
-            'Recu',
+            'Reçu',
             'Date',
-            'Eleve',
+            'Élève',
             'Matricule',
             'Classe',
             'Frais',
             'Tranche',
             'Montant ligne',
-            'Montant recu',
+            'Montant reçu',
             'Mode',
             'Statut',
             'Encaisse par',
@@ -151,7 +151,7 @@ class PaymentWebController extends Controller
 
         return redirect()
             ->route('payments.show', $payment)
-            ->with('success', 'Paiement enregistre avec succes.');
+            ->with('success', 'Paiement enregistré avec succès.');
     }
 
     public function show(Payment $payment): View
@@ -223,7 +223,7 @@ class PaymentWebController extends Controller
 
         return $xlsxExport->download('impayes-'.now()->format('Ymd-His').'.xlsx', [
             'Matricule',
-            'Eleve',
+            'Élève',
             'Classe',
             'Attendu',
             'Paye',
@@ -238,9 +238,9 @@ class PaymentWebController extends Controller
                 $student->matricule,
                 $student->full_name,
                 $row['enrollment']->schoolClass?->name,
-                $summary['expected'] ?? 'A configurer',
+                $summary['expected'] ?? 'À configurer',
                 $summary['paid'],
-                $summary['balance'] ?? 'A configurer',
+                $summary['balance'] ?? 'À configurer',
                 $guardian?->phone_primary ?? $student->home_phone,
             ];
         }));
@@ -254,7 +254,7 @@ class PaymentWebController extends Controller
 
         return redirect()
             ->route('payments.show', $payment)
-            ->with('success', 'Paiement annule.');
+            ->with('success', 'Paiement annulé.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -284,7 +284,7 @@ class PaymentWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

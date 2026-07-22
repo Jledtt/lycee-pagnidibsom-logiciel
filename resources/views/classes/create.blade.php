@@ -1,13 +1,13 @@
 @extends('layouts.app', [
-    'title' => 'Nouvelle classe - Lycee Prive Pagnidibsom',
+    'title' => 'Nouvelle classe - Lycée Privé Pagnidibsom',
     'active' => 'classes',
     'pageTitle' => 'Nouvelle classe',
-    'pageSubtitle' => 'Creation d\'une classe pour l\'annee ' . ($academicYear?->name ?? 'active'),
+    'pageSubtitle' => 'Creation d\'une classe pour l\'année ' . ($academicYear?->name ?? 'active'),
 ])
 
 @section('content')
     <form method="POST" action="{{ route('classes.store') }}">
         @csrf
-        @include('classes._form', ['submitLabel' => 'Creer la classe'])
+        @include('classes._form', ['submitLabel' => 'Créer la classe'])
     </form>
 @endsection

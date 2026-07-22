@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Nouvel utilisateur - Lycee Prive Pagnidibsom',
+    'title' => 'Nouvel utilisateur - Lycée Privé Pagnidibsom',
     'active' => 'staff',
     'pageTitle' => 'Nouvel utilisateur',
     'pageSubtitle' => 'Creation d un compte pour le personnel de l etablissement',
@@ -9,6 +9,6 @@
     <form method="POST" action="{{ route('staff.store') }}">
         @csrf
 
-        @include('staff._form', ['submitLabel' => 'Creer le compte'])
+        @include('staff._form', ['submitLabel' => 'Créer le compte'])
     </form>
 @endsection

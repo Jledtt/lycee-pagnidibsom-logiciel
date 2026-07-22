@@ -59,7 +59,7 @@ class StaffUserWebController extends Controller
 
         return redirect()
             ->route('staff.show', $user)
-            ->with('success', 'Compte personnel cree avec succes.');
+            ->with('success', 'Compte personnel créé avec succès.');
     }
 
     public function show(User $user): View
@@ -91,7 +91,7 @@ class StaffUserWebController extends Controller
 
         return redirect()
             ->route('staff.show', $user)
-            ->with('success', 'Compte personnel mis a jour.');
+            ->with('success', 'Compte personnel mis à jour.');
     }
 
     public function destroy(Request $request, User $user, StaffUserService $staffUserService): RedirectResponse
@@ -101,7 +101,7 @@ class StaffUserWebController extends Controller
 
         return redirect()
             ->route('staff.index')
-            ->with('success', 'Compte personnel desactive.');
+            ->with('success', 'Compte personnel désactivé.');
     }
 
     public function resetPassword(ResetStaffPasswordRequest $request, User $user, UserAuditService $userAuditService): RedirectResponse
@@ -118,7 +118,7 @@ class StaffUserWebController extends Controller
 
         return redirect()
             ->route('staff.show', $user)
-            ->with('success', 'Mot de passe reinitialise. Nouveau mot de passe temporaire : ' . $password);
+            ->with('success', 'Mot de passe réinitialisé. Nouveau mot de passe temporaire : ' . $password);
     }
 
     private function roleLabels(): array
@@ -127,7 +127,7 @@ class StaffUserWebController extends Controller
             'admin' => 'Admin',
             'direction' => 'Direction',
             'secretariat' => 'Secretariat',
-            'comptable' => 'Comptabilite',
+            'comptable' => 'Comptabilité',
             'enseignant' => 'Enseignant',
             'surveillant' => 'Surveillant',
         ];

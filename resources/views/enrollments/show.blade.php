@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Inscription - Lycee Prive Pagnidibsom',
+    'title' => 'Inscription - Lycée Privé Pagnidibsom',
     'active' => 'enrollments',
     'pageTitle' => 'Inscription',
-    'pageSubtitle' => $enrollment->student->full_name . ' - ' . ($enrollment->academicYear?->name ?? 'Annee scolaire'),
+    'pageSubtitle' => $enrollment->student->full_name . ' - ' . ($enrollment->academicYear?->name ?? 'Année scolaire'),
 ])
 
 @section('page_actions')
@@ -20,13 +20,13 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Details de l'inscription</h2>
+                <h2>Details de l’inscription</h2>
                 <span class="badge {{ $enrollment->status === 'active' ? '' : 'badge-warning' }}">{{ $enrollment->status }}</span>
             </div>
 
             <div class="detail-grid">
                 <div class="detail-item">
-                    <span>Eleve</span>
+                    <span>Élève</span>
                     <strong>{{ $enrollment->student->full_name }}</strong>
                 </div>
                 <div class="detail-item">
@@ -42,7 +42,7 @@
                     <strong>{{ $enrollment->schoolClass?->level?->name ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Annee scolaire</span>
+                    <span>Année scolaire</span>
                     <strong>{{ $enrollment->academicYear?->name ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
@@ -54,7 +54,7 @@
                     <strong>{{ $enrollment->type }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Ecole precedente</span>
+                    <span>École precedente</span>
                     <strong>{{ $enrollment->previous_school ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
@@ -70,12 +70,12 @@
             </div>
 
             <div class="grid" style="grid-template-columns:1fr">
-                <a class="btn btn-subtle" href="{{ route('students.show', $enrollment->student) }}">Ouvrir le dossier eleve</a>
+                <a class="btn btn-subtle" href="{{ route('students.show', $enrollment->student) }}">Ouvrir le dossier élève</a>
                 @can('classes.manage')
                     <a class="btn btn-subtle" href="{{ route('classes.show', $enrollment->schoolClass) }}">Ouvrir la classe</a>
                 @endcan
                 @can('students.export')
-                    <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">Telecharger la fiche PDF</a>
+                    <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $enrollment->student) }}">Télécharger la fiche PDF</a>
                 @endcan
             </div>
 
@@ -90,7 +90,7 @@
                 <form method="POST" action="{{ route('enrollments.destroy', $enrollment) }}" style="margin-top:16px" onsubmit="return confirm('Annuler cette inscription ?')">
                     @csrf
                     @method('DELETE')
-                    <button class="btn btn-danger" type="submit">Annuler l'inscription</button>
+                    <button class="btn btn-danger" type="submit">Annuler l’inscription</button>
                 </form>
             @endif
         </div>

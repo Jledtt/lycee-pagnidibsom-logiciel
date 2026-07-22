@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Generer un certificat - Lycee Prive Pagnidibsom',
+    'title' => 'Générer un certificat - Lycée Privé Pagnidibsom',
     'active' => 'certificates',
-    'pageTitle' => 'Generer un certificat',
-    'pageSubtitle' => 'Certificat de scolarite, certificat d inscription ou non redevance',
+    'pageTitle' => 'Générer un certificat',
+    'pageSubtitle' => 'Certificat de scolarité, certificat d inscription ou non redevance',
 ])
 
 @section('content')
@@ -15,12 +15,12 @@
             </div>
 
             @if ($students->isEmpty())
-                <div class="empty">Aucun eleve inscrit disponible. Inscris d'abord un eleve dans une classe.</div>
+                <div class="empty">Aucun élève inscrit disponible. Inscris d’abord un élève dans une classe.</div>
             @else
                 <div class="field">
-                    <label for="student_id">Eleve</label>
+                    <label for="student_id">Élève</label>
                     <select id="student_id" name="student_id" required>
-                        <option value="">Choisir un eleve</option>
+                        <option value="">Choisir un élève</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}" @selected((string) old('student_id', $selectedStudentId) === (string) $student->id)>
                                 {{ $student->matricule }} - {{ $student->full_name }}
@@ -48,7 +48,7 @@
 
                 <div class="form-actions">
                     <a class="btn btn-subtle" href="{{ route('certificates.index') }}">Annuler</a>
-                    <button class="btn btn-primary" type="submit">Generer</button>
+                    <button class="btn btn-primary" type="submit">Générer</button>
                 </div>
             @endif
         </form>
@@ -65,11 +65,11 @@
                 </div>
                 <div class="detail-item">
                     <span>Pedagogique</span>
-                    <strong>Bulletins, releves de notes, listes de classe, convocations aux examens.</strong>
+                    <strong>Bulletins, relevés de notes, listes de classe, convocations aux examens.</strong>
                 </div>
                 <div class="detail-item">
                     <span>Finances</span>
-                    <strong>Quitus, situation de scolarite, etat des impayes, recus par periode.</strong>
+                    <strong>Quitus, situation de scolarité, etat des impayés, reçus par période.</strong>
                 </div>
                 <div class="detail-item">
                     <span>Vie scolaire</span>

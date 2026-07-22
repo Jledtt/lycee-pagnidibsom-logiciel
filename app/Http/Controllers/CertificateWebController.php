@@ -19,7 +19,7 @@ use Illuminate\View\View;
 class CertificateWebController extends Controller
 {
     public const TYPES = [
-        'school_certificate' => 'Certificat de scolarite',
+        'school_certificate' => 'Certificat de scolarité',
         'enrollment_certificate' => 'Certificat d inscription',
         'no_debt_certificate' => 'Certificat de non redevance',
     ];
@@ -77,7 +77,7 @@ class CertificateWebController extends Controller
 
         if (! $enrollment) {
             return back()
-                ->withErrors(['student_id' => 'Cet eleve doit etre inscrit dans une classe avant de generer un certificat.'])
+                ->withErrors(['student_id' => 'Cet élève doit être inscrit dans une classe avant de générer un certificat.'])
                 ->withInput();
         }
 
@@ -86,7 +86,7 @@ class CertificateWebController extends Controller
 
             if (! is_null($summary['balance']) && $summary['balance'] > 0) {
                 return back()
-                    ->withErrors(['document_type' => 'Impossible de generer un certificat de non redevance: cet eleve a encore un reste a payer.'])
+                    ->withErrors(['document_type' => 'Impossible de générer un certificat de non-redevance : cet élève a encore un reste à payer.'])
                     ->withInput();
             }
         }
@@ -107,7 +107,7 @@ class CertificateWebController extends Controller
 
         return redirect()
             ->route('certificates.show', $document)
-            ->with('success', 'Certificat genere avec succes.');
+            ->with('success', 'Certificat généré avec succès.');
     }
 
     public function show(StudentDocument $certificate): View
@@ -159,7 +159,7 @@ class CertificateWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

@@ -29,7 +29,7 @@ class NumberingSettingTest extends TestCase
         $this->actingAs($admin)
             ->get(route('settings.numbering.index'))
             ->assertOk()
-            ->assertSee('Parametres de numerotation')
+            ->assertSee('Paramètres de numérotation')
             ->assertSee('{NUMBER}');
 
         $payload = $this->numberingPayload([

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Releves - {{ $period->name }}</title>
+    <title>Rélèves - {{ $period->name }}</title>
     <style>
         @page { margin: 16px 22px; }
         body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
@@ -32,26 +32,26 @@
                 <tr>
                     <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
                     <td class="school">
-                        <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                        <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                         <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                         <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                         <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
                     </td>
                     <td class="meta" style="width:220px">
-                        <strong>Annee scolaire : {{ $term->academicYear?->name ?? '-' }}</strong><br>
+                        <strong>Année scolaire : {{ $term->academicYear?->name ?? '-' }}</strong><br>
                         Classe : {{ $schoolClass->name }}<br>
                         Trimestre : {{ $term->name }}<br>
-                        Periode : {{ $period->name }}
+                        Période : {{ $period->name }}
                     </td>
                 </tr>
             </table>
 
-            <div class="title">Releve de notes - {{ $period->name }}</div>
+            <div class="title">Rélève de notes - {{ $period->name }}</div>
 
             <table class="identity">
                 <tr>
                     <td>Matricule : {{ $item['student']->matricule }}</td>
-                    <td>Eleve : {{ $item['student']->full_name }}</td>
+                    <td>Élève : {{ $item['student']->full_name }}</td>
                     <td>Classe : {{ $schoolClass->name }}</td>
                 </tr>
             </table>
@@ -59,7 +59,7 @@
             <table class="list" style="margin-top:10px">
                 <thead>
                     <tr>
-                        <th>Matiere</th>
+                        <th>Matière</th>
                         <th style="width:70px" class="center">Coeff.</th>
                         <th style="width:80px" class="center">Moy. /20</th>
                         <th style="width:80px" class="center">Points</th>
@@ -82,14 +82,14 @@
             <table class="summary" style="margin-top:10px">
                 <tr>
                     <td>Moyenne {{ $period->name }} : {{ $item['average'] === null ? '-' : number_format($item['average'], 2, ',', ' ') . ' / 20' }}</td>
-                    <td>Rang periode : {{ $item['rank'] ? $item['rank'].' / '.$item['classSize'] : '-' }}</td>
+                    <td>Rang période : {{ $item['rank'] ? $item['rank'].' / '.$item['classSize'] : '-' }}</td>
                     <td>Appreciation : {{ $item['average'] === null ? 'Non note' : ($item['average'] >= 10 ? 'Travail acceptable' : 'Doit fournir plus d efforts') }}</td>
                 </tr>
             </table>
 
             <table class="footer">
                 <tr>
-                    <td>Ce releve concerne uniquement {{ $period->name }}. Il est inclus dans le calcul du {{ $term->name }}.</td>
+                    <td>Ce relevé concerne uniquement {{ $period->name }}. Il est inclus dans le calcul du {{ $term->name }}.</td>
                     <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
                 </tr>
             </table>

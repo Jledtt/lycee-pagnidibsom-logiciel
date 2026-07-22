@@ -1,15 +1,15 @@
 @extends('layouts.app', [
-    'title' => 'Fiche d emargement - Lycee Prive Pagnidibsom',
+    'title' => 'Fiche d’émargement - Lycée Privé Pagnidibsom',
     'active' => 'teacher-attendance-sheets',
-    'pageTitle' => 'Fiche d emargement des professeurs',
-    'pageSubtitle' => 'Document de controle journalier des heures de cours effectuees',
+    'pageTitle' => 'Fiche d’émargement des professeurs',
+    'pageSubtitle' => 'Document de contrôle journalier des heures de cours effectuées',
 ])
 
 @section('content')
     <section class="grid two-col">
         <form class="panel" method="GET" action="{{ route('teacher-attendance-sheets.pdf') }}">
             <div class="panel-head">
-                <h2>Generer une fiche</h2>
+                <h2>Générer une fiche</h2>
                 <span class="badge">{{ $academicYear?->name }}</span>
             </div>
 
@@ -25,7 +25,7 @@
 
             <div class="grid two-col">
                 <div class="field">
-                    <label for="start_date">Debut</label>
+                    <label for="start_date">Début</label>
                     <input id="start_date" name="start_date" type="date" value="{{ $filters['start_date'] }}" required>
                 </div>
                 <div class="field">
@@ -35,7 +35,7 @@
             </div>
 
             <div class="form-actions">
-                <button class="btn btn-primary" type="submit" data-download-feedback="Telechargement de la fiche d emargement lance.">Telecharger PDF</button>
+                <button class="btn btn-primary" type="submit" data-download-feedback="Téléchargement de la fiche d’émargement lancé.">Télécharger PDF</button>
             </div>
         </form>
 
@@ -45,11 +45,11 @@
             </div>
             <div class="detail-item">
                 <span>Vie scolaire</span>
-                <strong>Le logiciel genere la fiche, puis le professeur passe a la vie scolaire apres le cours pour signer sur papier.</strong>
+                <strong>Le logiciel génère la fiche, puis le professeur passe à la vie scolaire après le cours pour signer sur papier.</strong>
             </div>
             <div class="detail-item">
-                <span>Controle</span>
-                <strong>Sans signature sur la fiche imprimee, l administration peut considerer que le cours n a pas ete effectue.</strong>
+                <span>Contrôle</span>
+                <strong>Sans signature sur la fiche imprimée, l’administration peut considérer que le cours n’a pas été effectué.</strong>
             </div>
             <div class="detail-item">
                 <span>Source</span>

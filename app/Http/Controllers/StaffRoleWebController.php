@@ -68,30 +68,30 @@ class StaffRoleWebController extends Controller
 
             return redirect()
                 ->route('staff.roles.index')
-                ->with('success', 'Le role Admin conserve tous les acces.');
+                ->with('success', 'Le rôle Admin conserve tous les accès.');
         }
 
         $role->syncPermissions($data['permissions'] ?? []);
 
         return redirect()
             ->route('staff.roles.index')
-            ->with('success', 'Acces du role mis a jour.');
+            ->with('success', 'Accès du rôle mis à jour.');
     }
 
     private function permissionGroups(): array
     {
         return [
-            'Eleves' => [
-                'students.view' => 'Voir les dossiers eleves',
-                'students.create' => 'Ajouter un eleve',
-                'students.update' => 'Modifier un eleve',
-                'students.delete' => 'Archiver un eleve',
+            'Élèves' => [
+                'students.view' => 'Voir les dossiers élèves',
+                'students.create' => 'Ajouter un élève',
+                'students.update' => 'Modifier un élève',
+                'students.delete' => 'Archiver un élève',
                 'students.export' => 'Imprimer fiches et certificats',
-                'students.import' => 'Importer des eleves en masse',
+                'students.import' => 'Importer des élèves en masse',
             ],
             'Inscriptions' => [
                 'enrollments.view' => 'Voir les inscriptions',
-                'enrollments.create' => 'Creer une inscription',
+                'enrollments.create' => 'Créer une inscription',
                 'enrollments.update' => 'Modifier une inscription',
                 'enrollments.cancel' => 'Annuler une inscription',
             ],
@@ -99,17 +99,17 @@ class StaffRoleWebController extends Controller
                 'payments.view' => 'Voir les paiements',
                 'payments.create' => 'Enregistrer un paiement',
                 'payments.cancel' => 'Annuler un paiement',
-                'payments.print_receipt' => 'Imprimer les recus',
-                'payments.reports' => 'Voir encaissements, impayes et rapports financiers',
+                'payments.print_receipt' => 'Imprimer les reçus',
+                'payments.reports' => 'Voir encaissements, impayés et rapports financiers',
             ],
             'Notes et bulletins' => [
                 'grades.view' => 'Voir les notes',
                 'grades.create' => 'Saisir les notes',
                 'grades.update' => 'Modifier les notes',
                 'grades.lock' => 'Verrouiller les notes',
-                'grades.unlock' => 'Deverrouiller les notes',
+                'grades.unlock' => 'Déverrouiller les notes',
                 'report_cards.view' => 'Voir les bulletins',
-                'report_cards.generate' => 'Generer les bulletins',
+                'report_cards.generate' => 'Générer les bulletins',
                 'report_cards.validate' => 'Valider les bulletins',
                 'report_cards.publish' => 'Publier les bulletins',
                 'report_cards.print' => 'Imprimer les bulletins',
@@ -119,21 +119,21 @@ class StaffRoleWebController extends Controller
                 'attendance.create' => 'Saisir les absences',
                 'attendance.update' => 'Modifier les absences',
                 'attendance.justify' => 'Justifier les absences',
-                'attendance.reports' => 'Voir les rapports d absences',
+                'attendance.reports' => 'Voir les rapports d’absences',
             ],
             'Emplois du temps' => [
                 'timetables.view' => 'Voir les emplois du temps',
-                'timetables.manage' => 'Creer et modifier les emplois du temps',
+                'timetables.manage' => 'Créer et modifier les emplois du temps',
                 'timetables.print' => 'Imprimer les emplois du temps',
             ],
             'Administration' => [
-                'users.manage' => 'Gerer les comptes du personnel',
-                'roles.manage' => 'Modifier les roles et acces',
-                'activity_logs.view' => 'Consulter le journal d activite',
-                'settings.manage' => 'Modifier les parametres et tarifs',
-                'academic_years.manage' => 'Gerer les annees scolaires',
-                'classes.manage' => 'Gerer les classes',
-                'subjects.manage' => 'Gerer les matieres',
+                'users.manage' => 'Gérer les comptes du personnel',
+                'roles.manage' => 'Modifier les rôles et accès',
+                'activity_logs.view' => 'Consulter le journal d’activité',
+                'settings.manage' => 'Modifier les paramètres et tarifs',
+                'academic_years.manage' => 'Gérer les années scolaires',
+                'classes.manage' => 'Gérer les classes',
+                'subjects.manage' => 'Gérer les matières',
             ],
         ];
     }
@@ -220,7 +220,7 @@ class StaffRoleWebController extends Controller
             'admin' => 'Admin',
             'direction' => 'Direction',
             'secretariat' => 'Secretariat',
-            'comptable' => 'Comptabilite',
+            'comptable' => 'Comptabilité',
             'enseignant' => 'Enseignant',
             'surveillant' => 'Surveillant',
         ];
@@ -229,10 +229,10 @@ class StaffRoleWebController extends Controller
     private function roleDescriptions(): array
     {
         return [
-            'admin' => 'Controle complet du logiciel, des utilisateurs, des parametres et des corrections.',
+            'admin' => 'Contrôle complet du logiciel, des utilisateurs, des paramètres et des corrections.',
             'direction' => 'Suivi global de l etablissement, rapports, bulletins et controles sans saisie financiere.',
-            'secretariat' => 'Gestion quotidienne des dossiers eleves, inscriptions, imports et documents administratifs.',
-            'comptable' => 'Paiements, recus, impayes et rapports financiers, sans acces aux notes ni aux parametres.',
+            'secretariat' => 'Gestion quotidienne des dossiers élèves, inscriptions, imports et documents administratifs.',
+            'comptable' => 'Paiements, reçus, impayés et rapports financiers, sans accès aux notes ni aux paramètres.',
             'enseignant' => 'Saisie pedagogique: notes, absences et consultation des dossiers utiles.',
             'surveillant' => 'Suivi de presence: absences, retards, justificatifs et rapports d assiduite.',
         ];

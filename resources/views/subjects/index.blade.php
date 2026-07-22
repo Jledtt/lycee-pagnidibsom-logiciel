@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Matieres et coefficients - Lycee Prive Pagnidibsom',
+    'title' => 'Matières et coefficients - Lycée Privé Pagnidibsom',
     'active' => 'subjects',
-    'pageTitle' => 'Matieres et coefficients',
+    'pageTitle' => 'Matières et coefficients',
     'pageSubtitle' => 'Parametrage par classe pour les notes et bulletins',
 ])
 
@@ -25,7 +25,7 @@
         </div>
 
         @if ($classes->isEmpty())
-            <div class="empty">Aucune classe active pour l'annee scolaire.</div>
+            <div class="empty">Aucune classe active pour l’année scolaire.</div>
         @else
             <form class="searchbar" method="GET" action="{{ route('subjects.index') }}">
                 <select name="school_class_id">
@@ -43,7 +43,7 @@
     @if ($selectedClass)
         <section class="grid stats" style="margin-top:16px">
             <div class="stat">
-                <span>Matieres actives</span>
+                <span>Matières actives</span>
                 <strong>{{ $classSubjects->where('is_active', true)->count() }}</strong>
             </div>
             <div class="stat">
@@ -51,7 +51,7 @@
                 <strong>{{ number_format($classSubjects->where('is_active', true)->sum('coefficient'), 2, ',', ' ') }}</strong>
             </div>
             <div class="stat">
-                <span>Matieres globales</span>
+                <span>Matières globales</span>
                 <strong>{{ $subjects->count() }}</strong>
             </div>
             <div class="stat">
@@ -59,7 +59,7 @@
                 <strong>{{ count($suggestedSubjects) }}</strong>
             </div>
             <div class="stat">
-                <span>Annee</span>
+                <span>Année</span>
                 <strong>{{ $academicYear?->name ?? '-' }}</strong>
             </div>
         </section>
@@ -67,7 +67,7 @@
         <section class="grid two-col">
             <div class="panel">
                 <div class="panel-head">
-                    <h2>Matieres de {{ $selectedClass->name }}</h2>
+                    <h2>Matières de {{ $selectedClass->name }}</h2>
                     <form method="POST" action="{{ route('subjects.defaults') }}">
                         @csrf
                         <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
@@ -76,7 +76,7 @@
                 </div>
 
                 @if ($classSubjects->isEmpty())
-                    <div class="empty">Aucune matiere affectee a cette classe.</div>
+                    <div class="empty">Aucune matière affectée à cette classe.</div>
                 @else
                     <div class="subject-list-scroll">
                         <div class="subject-list-inner ledger-list">
@@ -121,17 +121,17 @@
 
                 <div class="panel" style="margin-top:16px">
                     <div class="panel-head">
-                        <h2>Affecter une matiere</h2>
+                        <h2>Affecter une matière</h2>
                     </div>
                     @if ($availableSubjects->isEmpty())
-                        <div class="empty">Toutes les matieres actives sont deja affectees a cette classe.</div>
+                        <div class="empty">Toutes les matières actives sont déjà affectées à cette classe.</div>
                     @else
                         <form class="form-grid" method="POST" action="{{ route('subjects.class-subjects.store') }}">
                             @csrf
                             <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
 
                             <div class="field">
-                                <label>Matiere</label>
+                                <label>Matière</label>
                                 <select name="subject_id" required>
                                     @foreach ($availableSubjects as $subject)
                                         <option value="{{ $subject->id }}">{{ $subject->name }}{{ $subject->code ? ' (' . $subject->code . ')' : '' }}</option>
@@ -145,7 +145,7 @@
                             </div>
 
                             <div class="form-actions wide">
-                                <button class="btn btn-primary" type="submit">Ajouter a la classe</button>
+                                <button class="btn btn-primary" type="submit">Ajouter à la classe</button>
                             </div>
                         </form>
                     @endif
@@ -161,7 +161,7 @@
                     @csrf
                     <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                     <div class="field">
-                        <label>Nouvelle matiere</label>
+                        <label>Nouvelle matière</label>
                         <input name="name" placeholder="Ex: Espagnol" required>
                     </div>
                     <div class="field">
@@ -176,7 +176,7 @@
                         </select>
                     </div>
                     <div class="form-actions">
-                        <button class="btn btn-primary" type="submit">Creer</button>
+                        <button class="btn btn-primary" type="submit">Créer</button>
                     </div>
                 </form>
 

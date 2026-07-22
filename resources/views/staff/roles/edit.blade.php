@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Modifier les acces - Lycee Prive Pagnidibsom',
+    'title' => 'Modifier les accès - Lycée Privé Pagnidibsom',
     'active' => 'staff',
-    'pageTitle' => 'Modifier les acces',
+    'pageTitle' => 'Modifier les accès',
     'pageSubtitle' => 'Role : ' . ($roleLabels[$role->name] ?? $role->name),
 ])
 
@@ -15,7 +15,7 @@
     @endif
 
     @if ($role->name === 'admin')
-        <div class="notice">Le role Admin conserve tous les acces pour eviter de bloquer la gestion du logiciel.</div>
+        <div class="notice">Le rôle Admin conserve tous les accès pour éviter de bloquer la gestion du logiciel.</div>
     @endif
 
     @php($visiblePermissions = $role->name === 'admin' ? collect($permissionGroups)->flatMap(fn ($items) => array_keys($items))->all() : $selectedPermissions)
@@ -25,9 +25,9 @@
         <div class="panel-head">
             <div>
                 <h2>{{ $roleLabels[$role->name] ?? $role->name }}</h2>
-                <p style="margin:6px 0 0;color:var(--muted)">{{ $roleDescriptions[$role->name] ?? 'Role interne configure.' }}</p>
+                <p style="margin:6px 0 0;color:var(--muted)">{{ $roleDescriptions[$role->name] ?? 'R?le interne configur?.' }}</p>
             </div>
-            <span class="badge">{{ count($visiblePermissions) }} acces actif(s)</span>
+            <span class="badge">{{ count($visiblePermissions) }} accès actif(s)</span>
         </div>
 
         <div class="grid modules">
@@ -49,7 +49,7 @@
                 <div class="panel">
                     <div class="panel-head">
                         <h2>{{ $group }}</h2>
-                        <span class="badge">{{ count($items) }} acces</span>
+                        <span class="badge">{{ count($items) }} accès</span>
                     </div>
 
                     <div class="grid" style="grid-template-columns:1fr;gap:10px">
@@ -64,7 +64,7 @@
                                     @disabled($role->name === 'admin')
                                 >
                                 <span>
-                                    <span class="badge">{{ $actionLabels[$action] ?? 'Acces' }}</span><br>
+                                    <span class="badge">{{ $actionLabels[$action] ?? 'Accès' }}</span><br>
                                     <strong>{{ $label }}</strong><br>
                                     <small style="color:var(--muted)">{{ $permission }}</small>
                                 </span>
@@ -77,7 +77,7 @@
 
         <div class="form-actions">
             <a class="btn btn-subtle" href="{{ route('staff.roles.index') }}">Annuler</a>
-            <button class="btn btn-primary" type="submit">Enregistrer les acces</button>
+            <button class="btn btn-primary" type="submit">Enregistrer les accès</button>
         </div>
     </form>
 @endsection

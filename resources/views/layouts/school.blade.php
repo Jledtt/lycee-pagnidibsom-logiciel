@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Lycee Prive Pagnidibsom' }}</title>
+    <title>{{ $title ?? 'Lycée Privé Pagnidibsom' }}</title>
     <style>
         :root {
             --ink: #1d1718;
@@ -820,7 +820,7 @@
                     return;
                 }
 
-                toast.textContent = trigger.dataset.downloadFeedback || 'Telechargement lance.';
+                toast.textContent = trigger.dataset.downloadFeedback || 'Téléchargement lancé.';
                 toast.classList.add('is-visible');
 
                 clearTimeout(toastTimer);

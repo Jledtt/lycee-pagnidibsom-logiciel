@@ -30,16 +30,16 @@
                 <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
             </td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $assessment->academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $assessment->academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $assessment->schoolClass->name }}<br>
                 Trimestre : {{ $assessment->term->name }}<br>
-                Periode : {{ $assessment->termPeriod?->name ?? '-' }}<br>
+                Période : {{ $assessment->termPeriod?->name ?? '-' }}<br>
                 Date : {{ $assessment->assessment_date?->format('d/m/Y') ?? '-' }}
             </td>
         </tr>
@@ -49,13 +49,13 @@
 
     <table class="summary">
         <tr>
-            <td>Matiere : {{ $assessment->subject->name }}</td>
+            <td>Matière : {{ $assessment->subject->name }}</td>
             <td>Evaluation : {{ $assessment->title }}</td>
             <td>Type : {{ $assessment->assessmentType->name }}</td>
             <td>Note sur : {{ number_format($assessment->max_score, 0, ',', ' ') }}</td>
         </tr>
         <tr>
-            <td>Eleves : {{ $students->count() }}</td>
+            <td>Élèves : {{ $students->count() }}</td>
             <td>Notes saisies : {{ $enteredCount }}</td>
             <td>Absents : {{ $absentCount }}</td>
             <td>Moyenne /20 : {{ $average === null ? '-' : number_format($average, 2, ',', ' ') }}</td>
@@ -67,7 +67,7 @@
             <tr>
                 <th style="width:34px" class="center">No</th>
                 <th style="width:105px">Matricule</th>
-                <th>Eleve</th>
+                <th>Élève</th>
                 <th style="width:90px" class="center">Note</th>
                 <th style="width:70px" class="center">Absent</th>
                 <th>Commentaire</th>
@@ -94,7 +94,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="center">Aucun eleve actif dans cette classe.</td>
+                    <td colspan="6" class="center">Aucun élève actif dans cette classe.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -102,7 +102,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

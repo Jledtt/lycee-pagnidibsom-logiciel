@@ -74,7 +74,7 @@ class SubjectWebController extends Controller
         ]);
 
         return $this->backToIndex($data['school_class_id'] ?? null)
-            ->with('success', 'Matiere ajoutee.');
+            ->with('success', 'Matière ajoutée.');
     }
 
     public function updateSubject(Request $request, Subject $subject): RedirectResponse
@@ -93,7 +93,7 @@ class SubjectWebController extends Controller
         ]);
 
         return $this->backToIndex($data['school_class_id'] ?? null)
-            ->with('success', 'Matiere mise a jour.');
+            ->with('success', 'Matière mise à jour.');
     }
 
     public function storeClassSubject(Request $request): RedirectResponse
@@ -114,11 +114,11 @@ class SubjectWebController extends Controller
             ]);
         } catch (QueryException) {
             return $this->backToIndex($data['school_class_id'])
-                ->withErrors(['subject_id' => 'Cette matiere est deja affectee a cette classe.']);
+                ->withErrors(['subject_id' => 'Cette matière est déjà affectée à cette classe.']);
         }
 
         return $this->backToIndex($data['school_class_id'])
-            ->with('success', 'Matiere affectee a la classe.');
+            ->with('success', 'Matière affectée à la classe.');
     }
 
     public function updateClassSubject(Request $request, ClassSubject $classSubject): RedirectResponse
@@ -131,7 +131,7 @@ class SubjectWebController extends Controller
         $classSubject->update($data);
 
         return $this->backToIndex($classSubject->school_class_id)
-            ->with('success', 'Coefficient mis a jour.');
+            ->with('success', 'Coefficient mis à jour.');
     }
 
     public function destroyClassSubject(ClassSubject $classSubject): RedirectResponse
@@ -140,7 +140,7 @@ class SubjectWebController extends Controller
         $classSubject->delete();
 
         return $this->backToIndex($schoolClassId)
-            ->with('success', 'Matiere retiree de la classe.');
+            ->with('success', 'Matière retirée de la classe.');
     }
 
     public function applyDefaults(Request $request): RedirectResponse
@@ -192,7 +192,7 @@ class SubjectWebController extends Controller
         }
 
         return $this->backToIndex($schoolClass->id)
-            ->with('success', $created.' matiere(s) proposees appliquees a '.$schoolClass->name.'.');
+            ->with('success', $created.' matière(s) proposées appliquées à '.$schoolClass->name.'.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -224,8 +224,8 @@ class SubjectWebController extends Controller
 
         if (str_contains($name, 'bep') || str_contains($name, 'genie') || str_contains($name, 'electro')) {
             return [
-                ['name' => 'Francais', 'code' => 'FR', 'coefficient' => 4],
-                ['name' => 'Mathematiques appliquees', 'code' => 'MATH_APP', 'coefficient' => 4],
+                ['name' => 'Français', 'code' => 'FR', 'coefficient' => 4],
+                ['name' => 'Mathématiques appliquées', 'code' => 'MATH_APP', 'coefficient' => 4],
                 ['name' => 'Anglais', 'code' => 'ANG', 'coefficient' => 2],
                 ['name' => 'Sciences physiques', 'code' => 'SP', 'coefficient' => 3],
                 ['name' => 'Technologie', 'code' => 'TECH', 'coefficient' => 4],
@@ -236,40 +236,40 @@ class SubjectWebController extends Controller
 
         if (str_contains($name, '2nde') || str_contains($name, '1re') || str_contains($name, 'terminale')) {
             return [
-                ['name' => 'Francais', 'code' => 'FR', 'coefficient' => 4],
-                ['name' => 'Mathematiques', 'code' => 'MATH', 'coefficient' => 4],
+                ['name' => 'Français', 'code' => 'FR', 'coefficient' => 4],
+                ['name' => 'Mathématiques', 'code' => 'MATH', 'coefficient' => 4],
                 ['name' => 'Anglais', 'code' => 'ANG', 'coefficient' => 3],
-                ['name' => 'Histoire-Geographie', 'code' => 'HG', 'coefficient' => 3],
+                ['name' => 'Histoire-Géographie', 'code' => 'HG', 'coefficient' => 3],
                 ['name' => 'SVT', 'code' => 'SVT', 'coefficient' => 3],
                 ['name' => 'Physique-Chimie', 'code' => 'PC', 'coefficient' => 3],
                 ['name' => 'Philosophie', 'code' => 'PHILO', 'coefficient' => 2],
                 ['name' => 'EPS', 'code' => 'EPS', 'coefficient' => 2],
-                ['name' => 'Education civique et morale', 'code' => 'ECM', 'coefficient' => 1],
+                ['name' => 'Éducation civique et morale', 'code' => 'ECM', 'coefficient' => 1],
             ];
         }
 
         if (str_contains($name, '4') || str_contains($name, '3')) {
             return [
-                ['name' => 'Francais', 'code' => 'FR', 'coefficient' => 5],
-                ['name' => 'Mathematiques', 'code' => 'MATH', 'coefficient' => 5],
+                ['name' => 'Français', 'code' => 'FR', 'coefficient' => 5],
+                ['name' => 'Mathématiques', 'code' => 'MATH', 'coefficient' => 5],
                 ['name' => 'Anglais', 'code' => 'ANG', 'coefficient' => 3],
-                ['name' => 'Histoire-Geographie', 'code' => 'HG', 'coefficient' => 3],
+                ['name' => 'Histoire-Géographie', 'code' => 'HG', 'coefficient' => 3],
                 ['name' => 'SVT', 'code' => 'SVT', 'coefficient' => 2],
                 ['name' => 'Physique-Chimie', 'code' => 'PC', 'coefficient' => 2],
                 ['name' => 'EPS', 'code' => 'EPS', 'coefficient' => 2],
-                ['name' => 'Education civique et morale', 'code' => 'ECM', 'coefficient' => 1],
+                ['name' => 'Éducation civique et morale', 'code' => 'ECM', 'coefficient' => 1],
                 ['name' => 'Allemand', 'code' => 'ALL', 'coefficient' => 1],
             ];
         }
 
         return [
-            ['name' => 'Francais', 'code' => 'FR', 'coefficient' => 5],
-            ['name' => 'Mathematiques', 'code' => 'MATH', 'coefficient' => 5],
+            ['name' => 'Français', 'code' => 'FR', 'coefficient' => 5],
+            ['name' => 'Mathématiques', 'code' => 'MATH', 'coefficient' => 5],
             ['name' => 'Anglais', 'code' => 'ANG', 'coefficient' => 3],
-            ['name' => 'Histoire-Geographie', 'code' => 'HG', 'coefficient' => 3],
+            ['name' => 'Histoire-Géographie', 'code' => 'HG', 'coefficient' => 3],
             ['name' => 'SVT', 'code' => 'SVT', 'coefficient' => 2],
             ['name' => 'EPS', 'code' => 'EPS', 'coefficient' => 2],
-            ['name' => 'Education civique et morale', 'code' => 'ECM', 'coefficient' => 1],
+            ['name' => 'Éducation civique et morale', 'code' => 'ECM', 'coefficient' => 1],
             ['name' => 'Technologie', 'code' => 'TECH', 'coefficient' => 1],
             ['name' => 'Art et culture', 'code' => 'ART', 'coefficient' => 1],
         ];

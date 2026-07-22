@@ -1,16 +1,16 @@
 @extends('layouts.app', [
-    'title' => 'Historique de connexion - Lycee Prive Pagnidibsom',
+    'title' => 'Historique de connexion - Lycée Privé Pagnidibsom',
     'active' => 'activity-logs',
     'pageTitle' => 'Historique de connexion',
-    'pageSubtitle' => 'Connexions, echecs et deconnexions du personnel',
+    'pageSubtitle' => 'Connexions, échecs et déconnexions du personnel',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('activity-logs.index') }}">Journal d activite</a>
+    <a class="btn btn-subtle" href="{{ route('activity-logs.index') }}">Journal d’activité</a>
 @endsection
 
 @section('content')
-    @php($statusLabels = ['success' => 'Connexion reussie', 'failed' => 'Connexion refusee', 'logout' => 'Deconnexion'])
+    @php($statusLabels = ['success' => 'Connexion réussie', 'failed' => 'Connexion refusée', 'logout' => 'Déconnexion'])
 
     <section class="panel">
         <div class="panel-head">
@@ -33,18 +33,18 @@
                 @endforeach
             </select>
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('login-histories.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('login-histories.index') }}">Réinitialiser</a>
         </form>
     </section>
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Connexions recentes</h2>
+            <h2>Connexions récentes</h2>
             <span class="badge">{{ $histories->count() }} ligne(s)</span>
         </div>
 
         @if ($histories->isEmpty())
-            <div class="empty">Aucune connexion trouvee.</div>
+            <div class="empty">Aucune connexion trouvée.</div>
         @else
             <div class="subject-list-scroll">
                 <table class="table" style="min-width:980px">

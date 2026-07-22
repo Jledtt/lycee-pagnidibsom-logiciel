@@ -65,7 +65,7 @@ class AttendanceWebController extends Controller
 
         return redirect()
             ->route('attendance.sessions.edit', $session)
-            ->with('success', 'Seance d appel prete.');
+            ->with('success', 'Séance d’appel prête.');
     }
 
     public function pdf(Request $request)
@@ -118,7 +118,7 @@ class AttendanceWebController extends Controller
             'Date',
             'Classe',
             'Matricule',
-            'Eleve',
+            'Élève',
             'Statut',
             'Minutes retard',
             'Motif',
@@ -185,7 +185,7 @@ class AttendanceWebController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'Absence supprimee. L eleve est marque present.');
+            ->with('success', 'Absence supprimée. L’élève est marqué présent.');
     }
 
     private function attendancePdfResponse(?AttendanceSession $session, SchoolClass $schoolClass, ?AcademicYear $academicYear, $date)
@@ -241,7 +241,7 @@ class AttendanceWebController extends Controller
 
         return redirect()
             ->route('attendance.sessions.edit', $attendanceSession)
-            ->with('success', 'Pointage enregistre.');
+            ->with('success', 'Pointage enregistré.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -253,7 +253,7 @@ class AttendanceWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Detail journal - Lycee Prive Pagnidibsom',
+    'title' => 'Detail journal - Lycée Privé Pagnidibsom',
     'active' => 'activity-logs',
-    'pageTitle' => 'Detail du journal',
-    'pageSubtitle' => 'Lecture claire de l action enregistree',
+    'pageTitle' => 'Détail du journal',
+    'pageSubtitle' => 'Lecture claire de l action enregistrée',
 ])
 
 @section('page_actions')
@@ -59,7 +59,7 @@
                 <h2>Description</h2>
             </div>
 
-            <div class="empty" style="text-align:left">{{ $log->description ?: 'Action enregistree.' }}</div>
+            <div class="empty" style="text-align:left">{{ $log->description ?: 'Action enregistrée.' }}</div>
             <div class="detail-item" style="margin-top:16px">
                 <span>Navigateur</span>
                 <strong style="overflow-wrap:anywhere">{{ $log->user_agent ?: '-' }}</strong>

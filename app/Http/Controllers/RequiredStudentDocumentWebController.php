@@ -37,7 +37,7 @@ class RequiredStudentDocumentWebController extends Controller
 
         return redirect()
             ->route('settings.required-documents.index')
-            ->with('success', 'Piece obligatoire ajoutee.');
+            ->with('success', 'Pièce obligatoire ajoutée.');
     }
 
     public function update(Request $request, RequiredStudentDocument $requiredDocument): RedirectResponse
@@ -46,7 +46,7 @@ class RequiredStudentDocumentWebController extends Controller
 
         return redirect()
             ->route('settings.required-documents.index')
-            ->with('success', 'Piece obligatoire mise a jour.');
+            ->with('success', 'Pièce obligatoire mise à jour.');
     }
 
     public function destroy(RequiredStudentDocument $requiredDocument): RedirectResponse
@@ -55,7 +55,7 @@ class RequiredStudentDocumentWebController extends Controller
 
         return redirect()
             ->route('settings.required-documents.index')
-            ->with('success', 'Piece obligatoire supprimee.');
+            ->with('success', 'Pièce obligatoire supprimée.');
     }
 
     private function validatedData(Request $request, ?RequiredStudentDocument $requiredDocument = null): array
@@ -105,7 +105,7 @@ class RequiredStudentDocumentWebController extends Controller
             ->exists();
 
         if ($duplicate) {
-            throw ValidationException::withMessages(['document_type' => 'Cette piece existe deja pour cette portee.']);
+            throw ValidationException::withMessages(['document_type' => 'Cette pièce existe déjà pour cette portée.']);
         }
 
         return $data;

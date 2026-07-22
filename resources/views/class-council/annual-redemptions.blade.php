@@ -1,15 +1,15 @@
 @extends('layouts.app', [
-    'title' => 'Rachats conseil - Lycee Prive Pagnidibsom',
+    'title' => 'Rachats conseil - Lycée Privé Pagnidibsom',
     'active' => 'report-cards',
     'pageTitle' => 'Rachats conseil',
-    'pageSubtitle' => 'Eleves proches de 10/20 pouvant etre rachetes apres conseil',
+    'pageSubtitle' => 'Élèves proches de 10/20 pouvant être rachetes après conseil',
 ])
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('class-council.index', ['school_class_id' => $selectedClass?->id]) }}">Conseil de classe</a>
     @if ($selectedClass)
         @can('report_cards.print')
-            <a class="btn btn-primary" href="{{ route('class-council.annual-redemptions-pdf', ['school_class_id' => $selectedClass->id, 'threshold' => $threshold]) }}" data-download-feedback="Telechargement de la liste des rachats lance.">PDF rachats</a>
+            <a class="btn btn-primary" href="{{ route('class-council.annual-redemptions-pdf', ['school_class_id' => $selectedClass->id, 'threshold' => $threshold]) }}" data-download-feedback="Téléchargement de la liste des rachats lancé.">PDF rachats</a>
         @endcan
     @endif
 @endsection
@@ -17,7 +17,7 @@
 @section('content')
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
             <span class="badge">{{ $academicYear->name }}</span>
         </div>
 
@@ -58,8 +58,8 @@
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <div>
-                    <h2>Eleves eligibles au rachat</h2>
-                    <p style="margin:4px 0 0;color:var(--muted)">Le conseil peut relever ces eleves a 10/20 pour passage en classe superieure.</p>
+                    <h2>Élèves eligibles au rachat</h2>
+                    <p style="margin:4px 0 0;color:var(--muted)">Le conseil peut relevér ces élèves a 10/20 pour passage en classe superieure.</p>
                 </div>
                 <span class="badge">{{ $eligibleRows->count() }} ligne(s)</span>
             </div>
@@ -69,13 +69,13 @@
                     <thead>
                         <tr>
                             <th>Rang</th>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             @foreach ($terms as $term)
                                 <th>{{ $term->name }}</th>
                             @endforeach
                             <th>Moyenne annuelle</th>
                             <th>Apres rachat</th>
-                            <th>Decision proposee</th>
+                            <th>Décision proposée</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,7 +96,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ 5 + $terms->count() }}">Aucun eleve eligible avec ce seuil.</td>
+                                <td colspan="{{ 5 + $terms->count() }}">Aucun élève eligible avec ce seuil.</td>
                             </tr>
                         @endforelse
                     </tbody>

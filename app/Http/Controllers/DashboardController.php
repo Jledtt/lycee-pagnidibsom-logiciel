@@ -17,7 +17,7 @@ class DashboardController extends Controller
 
         if ($academicYear === null) {
             return response()->json([
-                'message' => 'Aucune annee scolaire active.',
+                'message' => 'Aucune année scolaire active.',
             ], 422);
         }
 

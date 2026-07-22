@@ -49,7 +49,7 @@ class GradeImportWebController extends Controller
 
         return redirect()
             ->route('grades.import', $assessment)
-            ->with('success', 'Fichier analyse. Verifie les notes avant de lancer l import.');
+            ->with('success', 'Fichier analysé. Vérifie les notes avant de lancer l’import.');
     }
 
     public function store(Request $request, Assessment $assessment, GradeImportService $gradeImport): RedirectResponse
@@ -73,7 +73,7 @@ class GradeImportWebController extends Controller
                 'term_id' => $assessment->term_id,
                 'assessment_id' => $assessment->id,
             ])
-            ->with('success', $result['created'] . ' note(s) creee(s), ' . $result['updated'] . ' note(s) mise(s) a jour.');
+            ->with('success', $result['created'] . ' note(s) créée(s), ' . $result['updated'] . ' note(s) mise(s) à jour.');
     }
 
     public function destroy(Assessment $assessment): RedirectResponse
@@ -82,7 +82,7 @@ class GradeImportWebController extends Controller
 
         return redirect()
             ->route('grades.import', $assessment)
-            ->with('success', 'Previsualisation annulee.');
+            ->with('success', 'Prévisualisation annulée.');
     }
 
     private function sessionKey(Assessment $assessment): string

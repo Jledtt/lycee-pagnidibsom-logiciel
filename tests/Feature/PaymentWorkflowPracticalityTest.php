@@ -64,7 +64,7 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $this->assertStringContainsString('Montant ligne', $sheetXml);
         $this->assertStringContainsString('Tranche', $sheetXml);
         $this->assertStringContainsString('Motif annulation', $sheetXml);
-        $this->assertStringContainsString('Scolarite novembre', $sheetXml);
+        $this->assertStringContainsString('Scolarité novembre', $sheetXml);
     }
 
     public function test_payment_cancellation_requires_reason(): void
@@ -101,7 +101,7 @@ class PaymentWorkflowPracticalityTest extends TestCase
         ]);
 
         $feeType = FeeType::query()->create([
-            'name' => 'Scolarite novembre test',
+            'name' => 'Scolarité novembre test',
             'code' => 'SCNOV-TEST',
             'is_required' => true,
             'status' => 'active',

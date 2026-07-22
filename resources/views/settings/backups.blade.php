@@ -1,12 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Sauvegardes - Lycee Prive Pagnidibsom',
+    'title' => 'Sauvegardes - Lycée Privé Pagnidibsom',
     'active' => 'settings',
     'pageTitle' => 'Sauvegardes',
-    'pageSubtitle' => 'Exporter la base et preparer une restauration en cas de panne',
+    'pageSubtitle' => 'Exporter la base et préparer une restauration en cas de panne',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Parametres ecole</a>
+    <a class="btn btn-subtle" href="{{ route('settings.edit') }}">Paramètres école</a>
     <a class="btn btn-subtle" href="{{ route('help.index') }}">Guide utilisateur</a>
 @endsection
 
@@ -18,7 +18,7 @@
             </div>
 
             <p style="margin:0 0 16px;color:var(--muted)">
-                La sauvegarde cree un fichier JSON portable. Avec MySQL/Laragon, un fichier SQL est aussi genere si
+                La sauvegarde créé un fichier JSON portable. Avec MySQL/Laragon, un fichier SQL est aussi généré si
                 <strong>mysqldump</strong> est disponible.
             </p>
 
@@ -78,7 +78,7 @@
                                 <td>{{ number_format($backup['size'] / 1024, 1, ',', ' ') }} Ko</td>
                                 <td>{{ \Carbon\Carbon::createFromTimestamp($backup['created_at'])->format('d/m/Y H:i') }}</td>
                                 <td>
-                                    <a class="btn btn-subtle" href="{{ route('settings.backups.download', $backup['name']) }}">Telecharger</a>
+                                    <a class="btn btn-subtle" href="{{ route('settings.backups.download', $backup['name']) }}">Télécharger</a>
                                 </td>
                             </tr>
                         @endforeach

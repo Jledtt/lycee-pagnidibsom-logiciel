@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Classes - Lycee Prive Pagnidibsom',
+    'title' => 'Classes - Lycée Privé Pagnidibsom',
     'active' => 'classes',
     'pageTitle' => 'Classes',
-    'pageSubtitle' => 'Niveaux, effectifs et capacites de l\'annee ' . ($academicYear?->name ?? 'active'),
+    'pageSubtitle' => 'Niveaux, effectifs et capacités de l\'année ' . ($academicYear?->name ?? 'active'),
 ])
 
 @section('page_actions')
@@ -26,7 +26,7 @@
                 <option value="archived" @selected(($filters['status'] ?? '') === 'archived')>Archivees</option>
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('classes.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('classes.index') }}">Réinitialiser</a>
         </form>
     </section>
 
@@ -37,7 +37,7 @@
         </div>
 
         @if ($classes->isEmpty())
-            <div class="empty">Aucune classe configuree. Cree la premiere classe avec le bouton "Nouvelle classe".</div>
+            <div class="empty">Aucune classe configurée. Crée la première classe avec le bouton "Nouvelle classe".</div>
         @else
             <table class="table">
                 <thead>

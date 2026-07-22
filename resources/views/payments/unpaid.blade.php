@@ -1,14 +1,14 @@
 @extends('layouts.app', [
-    'title' => 'Impayes - Lycee Prive Pagnidibsom',
+    'title' => 'Impayés - Lycée Privé Pagnidibsom',
     'active' => 'payments',
-    'pageTitle' => 'Impayes',
-    'pageSubtitle' => 'Eleves avec reste a payer ou frais non configures',
+    'pageTitle' => 'Impayés',
+    'pageSubtitle' => 'Élèves avec reste à payer ou frais non configurés',
 ])
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Paiements</a>
     @can('payments.reports')
-        <a class="btn btn-subtle" href="{{ route('payments.unpaid.export') }}" data-download-feedback="Telechargement Excel des impayes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+        <a class="btn btn-subtle" href="{{ route('payments.unpaid.export') }}" data-download-feedback="Téléchargement Excel des impayés lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
@@ -18,18 +18,18 @@
 @section('content')
     <section class="panel">
         <div class="panel-head">
-            <h2>Liste des impayes</h2>
-            <span class="badge">{{ $rows->count() }} eleve(s)</span>
+            <h2>Liste des impayés</h2>
+            <span class="badge">{{ $rows->count() }} élève(s)</span>
         </div>
 
         @if ($rows->isEmpty())
-            <div class="empty">Aucun impaye detecte pour les frais configures.</div>
+            <div class="empty">Aucun impayé detecte pour les frais configurés.</div>
         @else
             <div class="subject-list-scroll">
             <table class="table" style="min-width:920px">
                 <thead>
                     <tr>
-                        <th>Eleve</th>
+                        <th>Élève</th>
                         <th>Classe</th>
                         <th>Attendu</th>
                         <th>Paye</th>
@@ -47,9 +47,9 @@
                                 <span class="badge">{{ $enrollment->student->matricule }}</span>
                             </td>
                             <td>{{ $enrollment->schoolClass?->name ?? '-' }}</td>
-                            <td class="money">{{ is_null($summary['expected']) ? 'A configurer' : number_format($summary['expected'], 0, ',', ' ') . ' FCFA' }}</td>
+                            <td class="money">{{ is_null($summary['expected']) ? 'À configurer' : number_format($summary['expected'], 0, ',', ' ') . ' FCFA' }}</td>
                             <td class="money">{{ number_format($summary['paid'], 0, ',', ' ') }} FCFA</td>
-                            <td class="money">{{ is_null($summary['balance']) ? 'A configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</td>
+                            <td class="money">{{ is_null($summary['balance']) ? 'À configurer' : number_format($summary['balance'], 0, ',', ' ') . ' FCFA' }}</td>
                             <td>
                                 @can('payments.create')
                                     <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $enrollment->student_id, 'amount' => is_null($summary['balance']) ? null : (int) $summary['balance']]) }}">Payer</a>

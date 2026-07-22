@@ -40,7 +40,7 @@ class AdministrativeDocumentWorkflowTest extends TestCase
                 'document_date' => '2026-07-21',
                 'departure_at' => '2026-07-21T10:30',
                 'return_at' => '2026-07-21T15:00',
-                'subject_name' => 'Cours de la journee',
+                'subject_name' => 'Cours de la journée',
                 'destination' => 'Centre de sante',
                 'reason' => 'Maladie',
                 'notes' => 'Autorisation remise a la vie scolaire.',
@@ -73,7 +73,7 @@ class AdministrativeDocumentWorkflowTest extends TestCase
         $this->actingAs($user)
             ->get(route('teacher-attendance-sheets.index'))
             ->assertOk()
-            ->assertSee('Fiche d emargement')
+            ->assertSee('Fiche d’émargement')
             ->assertSee('KEREGUE Sompeguea');
 
         $this->actingAs($user)
@@ -96,7 +96,7 @@ class AdministrativeDocumentWorkflowTest extends TestCase
         $certificate = StudentDocument::query()->create([
             'student_id' => $student->id,
             'academic_year_id' => $academicYear->id,
-            'name' => 'Certificat de scolarite - '.$student->full_name,
+            'name' => 'Certificat de scolarité - '.$student->full_name,
             'document_type' => 'school_certificate',
             'document_number' => 'CERT-TEST-001',
             'status' => 'received',
@@ -229,7 +229,7 @@ class AdministrativeDocumentWorkflowTest extends TestCase
                 'starts_at' => '07:00',
                 'ends_at' => '08:00',
                 'day_of_week' => 'monday',
-                'subject_name' => 'Histoire-Geographie',
+                'subject_name' => 'Histoire-Géographie',
                 'teacher_name' => 'KEREGUE Sompeguea',
             ],
             [
@@ -238,7 +238,7 @@ class AdministrativeDocumentWorkflowTest extends TestCase
                 'starts_at' => '15:00',
                 'ends_at' => '16:00',
                 'day_of_week' => 'wednesday',
-                'subject_name' => 'Francais',
+                'subject_name' => 'Français',
                 'teacher_name' => 'KEREGUE Sompeguea',
             ],
         ]);

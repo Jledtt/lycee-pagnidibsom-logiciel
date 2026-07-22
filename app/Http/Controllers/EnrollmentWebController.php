@@ -71,7 +71,7 @@ class EnrollmentWebController extends Controller
 
         return redirect()
             ->route('enrollments.show', $enrollment)
-            ->with('success', 'Inscription enregistree avec succes.');
+            ->with('success', 'Inscription enregistrée avec succès.');
     }
 
     public function show(Enrollment $enrollment): View
@@ -103,7 +103,7 @@ class EnrollmentWebController extends Controller
 
         return redirect()
             ->route('enrollments.show', $enrollment)
-            ->with('success', 'Inscription mise a jour.');
+            ->with('success', 'Inscription mise à jour.');
     }
 
     public function destroy(Enrollment $enrollment): RedirectResponse
@@ -112,7 +112,7 @@ class EnrollmentWebController extends Controller
 
         return redirect()
             ->route('enrollments.index')
-            ->with('success', 'Inscription annulee.');
+            ->with('success', 'Inscription annulée.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -124,7 +124,7 @@ class EnrollmentWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

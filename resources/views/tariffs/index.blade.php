@@ -1,12 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Tarifs scolaires - Lycee Prive Pagnidibsom',
+    'title' => 'Tarifs scolaires - Lycée Privé Pagnidibsom',
     'active' => 'tariffs',
     'pageTitle' => 'Tarifs scolaires',
-    'pageSubtitle' => 'Montants modifiables par classe pour ' . ($academicYear?->name ?? 'l\'annee active'),
+    'pageSubtitle' => 'Montants modifiables par classe pour ' . ($academicYear?->name ?? 'l\'année active'),
 ])
 
 @section('page_actions')
-    <form method="POST" action="{{ route('tariffs.defaults') }}" onsubmit="return confirm('Initialiser les tarifs depuis l affiche ? Les lignes existantes avec les memes periodes seront mises a jour.')">
+    <form method="POST" action="{{ route('tariffs.defaults') }}" onsubmit="return confirm('Initialiser les tarifs depuis l’affiche ? Les lignes existantes avec les mêmes périodes seront mises à jour.')">
         @csrf
         <button class="btn btn-subtle" type="submit">Initialiser affiche</button>
     </form>
@@ -23,7 +23,7 @@
             <strong class="money">{{ number_format($totalExpected, 0, ',', ' ') }} FCFA</strong>
         </div>
         <div class="stat">
-            <span>Annee scolaire</span>
+            <span>Année scolaire</span>
             <strong>{{ $academicYear?->name ?? '-' }}</strong>
         </div>
     </section>
@@ -35,7 +35,7 @@
         </div>
 
         @if ($classes->isEmpty())
-            <div class="empty">Aucune classe active. Cree d'abord les classes, puis configure les tarifs.</div>
+            <div class="empty">Aucune classe active. Crée d’abord les classes, puis configure les tarifs.</div>
         @else
             <table class="table">
                 <thead>
@@ -44,7 +44,7 @@
                         <th>Niveau</th>
                         <th>Effectif</th>
                         <th>Lignes</th>
-                        <th>Total par eleve</th>
+                        <th>Total par élève</th>
                         <th>Total classe</th>
                         <th></th>
                     </tr>
@@ -68,7 +68,7 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Tarifs de l'affiche</h2>
+            <h2>Tarifs de l’affiche</h2>
         </div>
 
         <table class="table">
@@ -78,7 +78,7 @@
                     <th>Classes</th>
                     <th>Inscription</th>
                     <th>Novembre</th>
-                    <th>Fevrier</th>
+                    <th>Février</th>
                     <th>Total</th>
                 </tr>
             </thead>

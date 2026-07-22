@@ -77,7 +77,7 @@ class ReportCardService
     public function decisionForAverage(?float $average): string
     {
         if ($average === null) {
-            return 'A completer';
+            return 'À compléter';
         }
 
         return $average >= 10 ? 'Admis' : 'A deliberer';

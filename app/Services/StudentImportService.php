@@ -22,17 +22,17 @@ class StudentImportService
     {
         return [
             'Nom',
-            'Prenom',
+            'Prénom',
             'Sexe',
             'Date naissance',
             'Lieu naissance',
             'Classe souhaitee',
-            'Ecole origine',
+            'École origine',
             'Classe frequentee',
             'Classe redoublee',
             'Secteur',
             'Quartier',
-            'Telephone domicile',
+            'Téléphone domicile',
             'Nationalite',
             'Ethnie',
             'Religion',
@@ -62,7 +62,7 @@ class StudentImportService
             '15/09/2012',
             'Ouagadougou',
             '5e A',
-            'Ecole primaire exemple',
+            'École primaire exemple',
             'CM2',
             'Aucune',
             '04',
@@ -166,7 +166,7 @@ class StudentImportService
         $duplicateKey = $this->duplicateKey($data);
 
         if (($data['desired_class'] ?? null) && blank($data['school_class_id'])) {
-            $warnings[] = 'Classe non trouvee: l eleve sera cree sans inscription automatique.';
+            $warnings[] = 'Classe non trouvée : l’élève sera créé sans inscription automatique.';
         }
 
         if (isset($seen[$duplicateKey])) {
@@ -178,7 +178,7 @@ class StudentImportService
         $isExistingDuplicate = $this->existingDuplicate($data);
 
         if ($isExistingDuplicate) {
-            $warnings[] = 'Eleve deja present dans la base, ligne ignoree.';
+            $warnings[] = 'Élève déjà présent dans la base, ligne ignorée.';
         }
 
         $status = filled($errors)
@@ -243,7 +243,7 @@ class StudentImportService
         }
 
         if (blank($data['first_name'])) {
-            $errors[] = 'Prenom obligatoire.';
+            $errors[] = 'Prénom obligatoire.';
         }
 
         if (($data['birth_date'] ?? null) === false) {

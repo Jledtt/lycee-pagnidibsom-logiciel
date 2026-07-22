@@ -39,13 +39,13 @@ class TermPeriodGradeTest extends TestCase
                 'term_period_id' => $firstPeriod->id,
                 'subject_id' => $subject->id,
                 'assessment_type_id' => $assessmentType->id,
-                'title' => '1er devoir - Francais',
+                'title' => '1er devoir - Français',
                 'max_score' => 20,
                 'assessment_date' => now()->toDateString(),
             ])
             ->assertRedirect();
 
-        $firstAssessment = Assessment::query()->where('title', '1er devoir - Francais')->firstOrFail();
+        $firstAssessment = Assessment::query()->where('title', '1er devoir - Français')->firstOrFail();
 
         Grade::query()->create([
             'assessment_id' => $firstAssessment->id,
@@ -62,7 +62,7 @@ class TermPeriodGradeTest extends TestCase
             'school_class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'assessment_type_id' => $assessmentType->id,
-            'title' => '2e devoir - Francais',
+            'title' => '2e devoir - Français',
             'max_score' => 20,
             'assessment_date' => now()->toDateString(),
             'teacher_id' => $user->id,
@@ -82,7 +82,7 @@ class TermPeriodGradeTest extends TestCase
             'school_class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'assessment_type_id' => $compositionType->id,
-            'title' => 'Composition - Francais',
+            'title' => 'Composition - Français',
             'max_score' => 20,
             'assessment_date' => now()->toDateString(),
             'teacher_id' => $user->id,
@@ -99,7 +99,7 @@ class TermPeriodGradeTest extends TestCase
         $calculator = app(GradeCalculationService::class);
 
         $this->assertDatabaseHas('assessments', [
-            'title' => '1er devoir - Francais',
+            'title' => '1er devoir - Français',
             'term_period_id' => $firstPeriod->id,
         ]);
         $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));
@@ -121,7 +121,7 @@ class TermPeriodGradeTest extends TestCase
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $term = Term::query()->where('academic_year_id', $academicYear->id)->where('position', 1)->firstOrFail();
         $level = Level::query()->where('name', 'Terminale')->firstOrFail();
-        $subject = Subject::query()->where('name', 'Francais')->firstOrFail();
+        $subject = Subject::query()->where('name', 'Français')->firstOrFail();
         $assessmentType = AssessmentType::query()->where('name', 'Devoir')->firstOrFail();
         $compositionType = AssessmentType::query()->where('name', 'Composition')->firstOrFail();
 

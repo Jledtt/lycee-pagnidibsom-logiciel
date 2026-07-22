@@ -60,7 +60,7 @@ class SchoolClassWebController extends Controller
 
         return redirect()
             ->route('classes.show', $schoolClass)
-            ->with('success', 'Classe creee avec succes.');
+            ->with('success', 'Classe créée avec succès.');
     }
 
     public function show(SchoolClass $schoolClass): View
@@ -108,7 +108,7 @@ class SchoolClassWebController extends Controller
 
         return redirect()
             ->route('classes.show', $schoolClass)
-            ->with('success', 'Classe mise a jour.');
+            ->with('success', 'Classe mise à jour.');
     }
 
     public function destroy(SchoolClass $schoolClass): RedirectResponse
@@ -117,7 +117,7 @@ class SchoolClassWebController extends Controller
 
         return redirect()
             ->route('classes.index')
-            ->with('success', 'Classe archivee.');
+            ->with('success', 'Classe archivée.');
     }
 
     public function attachStudent(Request $request, SchoolClass $schoolClass): RedirectResponse
@@ -148,7 +148,7 @@ class SchoolClassWebController extends Controller
 
         return redirect()
             ->route('classes.show', $schoolClass)
-            ->with('success', 'Eleve rattache a la classe.');
+            ->with('success', 'Élève rattaché à la classe.');
     }
 
     public function detachStudent(SchoolClass $schoolClass, Enrollment $enrollment): RedirectResponse
@@ -159,7 +159,7 @@ class SchoolClassWebController extends Controller
 
         return redirect()
             ->route('classes.show', $schoolClass)
-            ->with('success', 'Eleve retire de la classe.');
+            ->with('success', 'Élève retiré de la classe.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -171,7 +171,7 @@ class SchoolClassWebController extends Controller
     {
         $academicYear = $this->activeAcademicYear();
 
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

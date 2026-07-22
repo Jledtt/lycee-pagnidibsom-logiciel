@@ -51,7 +51,7 @@
             <div class="page-break"></div>
         @endif
     @empty
-        <p>Aucun bulletin genere pour cette classe.</p>
+        <p>Aucun bulletin généré pour cette classe.</p>
     @endforelse
 </body>
 </html>

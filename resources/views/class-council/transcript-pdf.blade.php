@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Releve de notes</title>
+    <title>Rélève de notes</title>
     <style>
         @page { margin: 20px 24px; }
         body { margin: 0; color: #111; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
@@ -29,39 +29,39 @@
         <tr>
             <td style="width:72px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $reportCard->academicYear?->name ?? '-' }}</strong><br>
+                <strong>Année scolaire : {{ $reportCard->academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $reportCard->schoolClass->name }}<br>
                 Trimestre : {{ $reportCard->term->name }}
             </td>
         </tr>
     </table>
 
-    <div class="title">Releve de notes</div>
+    <div class="title">Rélève de notes</div>
 
     <table class="summary">
         <tr>
-            <td>Eleve : {{ $reportCard->student->full_name }}</td>
+            <td>Élève : {{ $reportCard->student->full_name }}</td>
             <td>Matricule : {{ $reportCard->student->matricule }}</td>
             <td>Moyenne generale : {{ $reportCard->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') . ' / 20' }}</td>
         </tr>
         <tr>
             <td>Rang : {{ $reportCard->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}</td>
             <td>Appreciation : {{ $reportCard->appreciation ?: '-' }}</td>
-            <td>Decision : {{ $reportCard->decision ?: '-' }}</td>
+            <td>Décision : {{ $reportCard->decision ?: '-' }}</td>
         </tr>
     </table>
 
-    <div class="section-title">Synthese par matiere</div>
+    <div class="section-title">Synthese par matière</div>
     <table>
         <thead>
             <tr>
-                <th>Matiere</th>
+                <th>Matière</th>
                 <th style="width:12%" class="center">Coef.</th>
                 <th style="width:14%" class="center">Moyenne / 20</th>
                 <th style="width:14%" class="center">Points</th>
@@ -78,7 +78,7 @@
                     <td>{{ $row['appreciation'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5">Aucune matiere active.</td></tr>
+                <tr><td colspan="5">Aucune matière active.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -87,7 +87,7 @@
     <table>
         <thead>
             <tr>
-                <th>Matiere</th>
+                <th>Matière</th>
                 <th>Evaluation</th>
                 <th style="width:12%" class="center">Note</th>
                 <th style="width:12%" class="center">Sur</th>
@@ -114,7 +114,7 @@
 
     <table class="footer">
         <tr>
-            <td>Document genere par le logiciel de gestion scolaire.</td>
+            <td>Document généré par le logiciel de gestion scolaire.</td>
             <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>

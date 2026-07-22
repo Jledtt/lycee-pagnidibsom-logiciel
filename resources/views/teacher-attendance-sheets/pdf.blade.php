@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Fiche d emargement des professeurs</title>
+    <title>Fiche d’émargement des professeurs</title>
     <style>
         @page { margin: 24px 28px; }
         body {
@@ -35,7 +35,7 @@
         <tr>
             <td style="width:86px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <strong>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</strong><br>
+                <strong>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</strong><br>
                 {{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }} -
                 Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}<br>
                 E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}
@@ -46,9 +46,9 @@
 
     <table class="meta">
         <tr>
-            <td><strong>FICHE D'EMARGEMENT DES PROFESSEURS</strong></td>
-            <td style="text-align:center">Periode : {{ $start->format('d/m/Y') }} au {{ $end->format('d/m/Y') }}</td>
-            <td style="text-align:right">Annee scolaire : {{ $academicYear?->name ?? '-' }}</td>
+            <td><strong>FICHE d’EMARGEMENT DES PROFESSEURS</strong></td>
+            <td style="text-align:center">Période : {{ $start->format('d/m/Y') }} au {{ $end->format('d/m/Y') }}</td>
+            <td style="text-align:right">Année scolaire : {{ $academicYear?->name ?? '-' }}</td>
         </tr>
         <tr>
             <td colspan="3">Professeur : <strong>{{ $teacherName ?: '........................................................' }}</strong></td>
@@ -61,7 +61,7 @@
                 <th rowspan="2" class="date">Dates</th>
                 <th colspan="{{ count($periods) }}">Classes tenues</th>
                 <th rowspan="2" class="hours">Cumule des heures</th>
-                <th rowspan="2" class="sign">Emargement</th>
+                <th rowspan="2" class="sign">Émargement</th>
             </tr>
             <tr>
                 @foreach ($periods as $label)
@@ -71,7 +71,7 @@
         </thead>
         <tbody>
             <tr class="section-row">
-                <td colspan="{{ count($periods) + 3 }}">DEROULEMENT DES COURS ORDINAIRES SELON L'EMPLOI DU TEMPS</td>
+                <td colspan="{{ count($periods) + 3 }}">DEROULEMENT DES COURS ORDINAIRES SELON l’EMPLOI DU TEMPS</td>
             </tr>
             @foreach ($rows as $row)
                 <tr>
@@ -87,7 +87,7 @@
     </table>
 
     <div class="footer">
-        Note : cette fiche est generee par le logiciel. A chaque fin de cours, le professeur passe a la vie scolaire pour signer le nombre d heures effectuees.
+        Note : cette fiche est générée par le logiciel. À chaque fin de cours, le professeur passe à la vie scolaire pour signer le nombre d’heures effectuées.
     </div>
 </body>
 </html>

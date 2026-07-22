@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => 'Modifier tarifs - Lycee Prive Pagnidibsom',
+    'title' => 'Modifier tarifs - Lycée Privé Pagnidibsom',
     'active' => 'tariffs',
     'pageTitle' => 'Tarifs ' . $schoolClass->name,
-    'pageSubtitle' => ($schoolClass->level?->name ?? 'Niveau') . ' - ' . ($academicYear?->name ?? 'Annee active'),
+    'pageSubtitle' => ($schoolClass->level?->name ?? 'Niveau') . ' - ' . ($academicYear?->name ?? 'Année active'),
 ])
 
 @section('page_actions')
@@ -24,7 +24,7 @@
                 <thead>
                     <tr>
                         <th>Type de frais</th>
-                        <th>Periode</th>
+                        <th>Période</th>
                         <th>Montant</th>
                         <th>Echeance</th>
                         <th>Supprimer</th>
@@ -72,7 +72,7 @@
 
             <div class="form-grid" style="margin-top:16px">
                 <div class="field wide">
-                    <label for="new_fee_type_name">Creer un nouveau type de frais</label>
+                    <label for="new_fee_type_name">Créer un nouveau type de frais</label>
                     <input id="new_fee_type_name" name="new_fee_type_name" placeholder="Ex: Assurance scolaire">
                     @error('new_fee_type_name') <small class="error">{{ $message }}</small> @enderror
                 </div>
@@ -89,6 +89,6 @@
         <div class="panel-head">
             <h2>Conseil</h2>
         </div>
-        <div class="empty">Pour modifier les tarifs plus tard, reviens ici, change les montants, puis enregistre. Les restes a payer et les non-redevances utiliseront automatiquement les nouveaux montants.</div>
+        <div class="empty">Pour modifier les tarifs plus tard, reviens ici, change les montants, puis enregistre. Les restes à payer et les non-redevances utiliseront automatiquement les nouveaux montants.</div>
     </section>
 @endsection

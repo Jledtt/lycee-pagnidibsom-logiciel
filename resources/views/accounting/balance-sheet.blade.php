@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Bilan de caisse - Lycee Prive Pagnidibsom',
+    'title' => 'Bilan de caisse - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
     'pageTitle' => 'Bilan de caisse',
     'pageSubtitle' => 'Synthese des entrees, sorties et solde net',
@@ -7,7 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal</a>
-    <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Depenses</a>
+    <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Dépenses</a>
     <a class="btn btn-primary" href="{{ route('accounting.balance-sheet.pdf', $filters) }}">PDF</a>
 @endsection
 
@@ -16,14 +16,14 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Periode</h2>
+            <h2>Période</h2>
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('accounting.balance-sheet') }}">
             <input type="date" name="date_from" value="{{ $filters['date_from'] }}">
             <input type="date" name="date_to" value="{{ $filters['date_to'] }}">
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('accounting.balance-sheet') }}">Aujourd'hui</a>
+            <a class="btn btn-subtle" href="{{ route('accounting.balance-sheet') }}">Aujourd’hui</a>
         </form>
     </section>
 
@@ -33,7 +33,7 @@
             <strong class="money">{{ number_format($summary['income'], 0, ',', ' ') }} {{ $currency }}</strong>
         </div>
         <div class="stat">
-            <span>Depenses</span>
+            <span>Dépenses</span>
             <strong class="money">{{ number_format($summary['expenses'], 0, ',', ' ') }} {{ $currency }}</strong>
         </div>
         <div class="stat">
@@ -45,11 +45,11 @@
     <section class="grid modules" style="margin-top:16px">
         <div class="module">
             <strong>{{ $summary['payment_count'] }}</strong>
-            <span>Paiements valides sur la periode</span>
+            <span>Paiements valides sur la période</span>
         </div>
         <div class="module">
             <strong>{{ $summary['expense_count'] }}</strong>
-            <span>Depenses valides sur la periode</span>
+            <span>Dépenses validées sur la période</span>
         </div>
         <div class="module">
             <strong>{{ $summary['balance'] >= 0 ? 'Positif' : 'Negatif' }}</strong>
@@ -64,7 +64,7 @@
             </div>
 
             @if ($paymentSummary['by_method']->isEmpty())
-                <div class="empty">Aucune entree valide sur cette periode.</div>
+                <div class="empty">Aucune entree valide sur cette période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -87,11 +87,11 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Depenses par categorie</h2>
+                <h2>Dépenses par catégorie</h2>
             </div>
 
             @if ($expenseSummary['by_category']->isEmpty())
-                <div class="empty">Aucune depense valide sur cette periode.</div>
+                <div class="empty">Aucune depense valide sur cette période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -121,14 +121,14 @@
         <div class="detail-grid">
             <div class="detail-item">
                 <span>Formule</span>
-                <strong>Entrees - depenses = solde net</strong>
+                <strong>Entrees - d?penses = solde net</strong>
             </div>
             <div class="detail-item">
                 <span>Calcul</span>
                 <strong>{{ number_format($summary['income'], 0, ',', ' ') }} - {{ number_format($summary['expenses'], 0, ',', ' ') }} = {{ number_format($summary['balance'], 0, ',', ' ') }} {{ $currency }}</strong>
             </div>
             <div class="detail-item">
-                <span>Periode</span>
+                <span>Période</span>
                 <strong>{{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }} au {{ \Illuminate\Support\Carbon::parse($filters['date_to'])->format('d/m/Y') }}</strong>
             </div>
         </div>

@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Journal de caisse - Lycee Prive Pagnidibsom',
+    'title' => 'Journal de caisse - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
     'pageTitle' => 'Journal de caisse',
     'pageSubtitle' => 'Encaissements, annulations et total de caisse',
@@ -7,7 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('accounting.balance-sheet') }}">Bilan</a>
-    <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Depenses</a>
+    <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Dépenses</a>
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Paiements</a>
     <a class="btn btn-primary" href="{{ route('accounting.cash-journal.pdf', $filters) }}">PDF</a>
 @endsection
@@ -52,7 +52,7 @@
             </select>
 
             <button class="btn btn-subtle" type="submit">Afficher</button>
-            <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Aujourd'hui</a>
+            <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Aujourd’hui</a>
         </form>
     </section>
 
@@ -78,7 +78,7 @@
             </div>
 
             @if ($summary['by_method']->isEmpty())
-                <div class="empty">Aucun encaissement valide sur la periode.</div>
+                <div class="empty">Aucun encaissement valide sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -105,7 +105,7 @@
             </div>
 
             @if ($summary['by_fee_type']->isEmpty())
-                <div class="empty">Aucune ligne de frais sur la periode.</div>
+                <div class="empty">Aucune ligne de frais sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -140,8 +140,8 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Recu</th>
-                        <th>Eleve</th>
+                        <th>Reçu</th>
+                        <th>Élève</th>
                         <th>Classe</th>
                         <th>Mode</th>
                         <th>Caissier</th>

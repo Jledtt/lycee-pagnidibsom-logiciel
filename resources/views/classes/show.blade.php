@@ -1,8 +1,8 @@
 @extends('layouts.app', [
-    'title' => $schoolClass->name . ' - Lycee Prive Pagnidibsom',
+    'title' => $schoolClass->name . ' - Lycée Privé Pagnidibsom',
     'active' => 'classes',
     'pageTitle' => $schoolClass->name,
-    'pageSubtitle' => ($schoolClass->level?->name ?? 'Niveau non defini') . ' - ' . ($academicYear?->name ?? 'Annee active'),
+    'pageSubtitle' => ($schoolClass->level?->name ?? 'Niveau non défini') . ' - ' . ($academicYear?->name ?? 'Année active'),
 ])
 
 @section('page_actions')
@@ -14,18 +14,18 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Eleves rattaches</h2>
-                <span class="badge">{{ $schoolClass->enrollments->count() }} eleve(s)</span>
+                <h2>Élèves rattaches</h2>
+                <span class="badge">{{ $schoolClass->enrollments->count() }} élève(s)</span>
             </div>
 
             @if ($schoolClass->enrollments->isEmpty())
-                <div class="empty">Aucun eleve rattache a cette classe pour le moment.</div>
+                <div class="empty">Aucun élève rattaché à cette classe pour le moment.</div>
             @else
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Matricule</th>
-                            <th>Eleve</th>
+                            <th>Élève</th>
                             <th>Inscription</th>
                             <th>Contact</th>
                             <th></th>
@@ -44,7 +44,7 @@
                                 <td>{{ $enrollment->enrollment_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>{{ $guardian?->phone_primary ?? '-' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('classes.students.detach', [$schoolClass, $enrollment]) }}" onsubmit="return confirm('Retirer cet eleve de la classe ?')">
+                                    <form method="POST" action="{{ route('classes.students.detach', [$schoolClass, $enrollment]) }}" onsubmit="return confirm('Retirer cet élève de la classe ?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-danger" type="submit">Retirer</button>
@@ -59,19 +59,19 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Rattacher un eleve</h2>
+                <h2>Rattacher un élève</h2>
             </div>
 
             @if ($availableStudents->isEmpty())
-                <div class="empty">Tous les eleves actifs sont deja rattaches a une classe pour cette annee.</div>
+                <div class="empty">Tous les élèves actifs sont déjà rattachés à une classe pour cette année.</div>
             @else
                 <form method="POST" action="{{ route('classes.students.attach', $schoolClass) }}">
                     @csrf
 
                     <div class="field">
-                        <label for="student_id">Eleve</label>
+                        <label for="student_id">Élève</label>
                         <select id="student_id" name="student_id" required>
-                            <option value="">Choisir un eleve</option>
+                            <option value="">Choisir un élève</option>
                             @foreach ($availableStudents as $student)
                                 <option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>
                                     {{ $student->matricule }} - {{ $student->full_name }}
@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="field">
-                        <label for="enrollment_date">Date d'inscription</label>
+                        <label for="enrollment_date">Date d’inscription</label>
                         <input id="enrollment_date" name="enrollment_date" type="date" value="{{ old('enrollment_date', now()->toDateString()) }}">
                         @error('enrollment_date') <small class="error">{{ $message }}</small> @enderror
                     </div>
@@ -91,7 +91,7 @@
                         <label for="type">Type</label>
                         <select id="type" name="type" required>
                             <option value="new" @selected(old('type') === 'new')>Nouvelle inscription</option>
-                            <option value="renewal" @selected(old('type') === 'renewal')>Reinscription</option>
+                            <option value="renewal" @selected(old('type') === 'renewal')>R?inscription</option>
                             <option value="transfer" @selected(old('type') === 'transfer')>Transfert</option>
                         </select>
                         @error('type') <small class="error">{{ $message }}</small> @enderror
@@ -103,7 +103,7 @@
                         @error('notes') <small class="error">{{ $message }}</small> @enderror
                     </div>
 
-                    <button class="btn btn-primary" type="submit">Rattacher a la classe</button>
+                    <button class="btn btn-primary" type="submit">Rattacher à la classe</button>
                 </form>
             @endif
         </div>

@@ -26,7 +26,7 @@
         </div>
 
         <div class="field">
-            <label for="phone">Telephone</label>
+            <label for="phone">Téléphone</label>
             <input id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
         </div>
 

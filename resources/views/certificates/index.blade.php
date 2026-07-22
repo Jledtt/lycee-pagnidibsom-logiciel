@@ -1,13 +1,13 @@
 @extends('layouts.app', [
-    'title' => 'Documents - Lycee Prive Pagnidibsom',
+    'title' => 'Documents - Lycée Privé Pagnidibsom',
     'active' => 'certificates',
     'pageTitle' => 'Documents',
-    'pageSubtitle' => 'Certificats et documents administratifs des eleves',
+    'pageSubtitle' => 'Certificats et documents administratifs des élèves',
 ])
 
 @section('page_actions')
     @can('students.export')
-        <a class="btn btn-primary" href="{{ route('certificates.create') }}">Generer un certificat</a>
+        <a class="btn btn-primary" href="{{ route('certificates.create') }}">Générer un certificat</a>
     @endcan
 @endsection
 
@@ -18,7 +18,7 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('certificates.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prenom ou matricule">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, prénom ou matricule">
             <select name="type">
                 <option value="">Tous les types</option>
                 @foreach ($types as $value => $label)
@@ -26,26 +26,26 @@
                 @endforeach
             </select>
             <button class="btn btn-subtle" type="submit">Filtrer</button>
-            <a class="btn btn-subtle" href="{{ route('certificates.index') }}">Reinitialiser</a>
+            <a class="btn btn-subtle" href="{{ route('certificates.index') }}">Réinitialiser</a>
         </form>
     </section>
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Certificats generes</h2>
+            <h2>Certificats générés</h2>
             <span class="badge">{{ $documents->total() }} document(s)</span>
         </div>
 
         @if ($documents->isEmpty())
-            <div class="empty">Aucun certificat genere pour le moment.</div>
+            <div class="empty">Aucun certificat généré pour le moment.</div>
         @else
             <table class="table">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Eleve</th>
+                        <th>Élève</th>
                         <th>Type</th>
-                        <th>Annee</th>
+                        <th>Année</th>
                         <th></th>
                     </tr>
                 </thead>

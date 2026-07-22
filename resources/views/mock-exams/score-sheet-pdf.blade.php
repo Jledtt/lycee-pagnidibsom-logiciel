@@ -28,13 +28,13 @@
         <tr>
             <td style="width:74px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
             <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycee Prive Pagnidibsom' }}</h1>
+                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
             <td class="meta" style="width:220px">
-                <strong>Annee scolaire : {{ $exam->academicYear?->name }}</strong><br>
+                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
                 Session : {{ $exam->name }}<br>
                 Epreuve : {{ $subject->subject?->name }}<br>
                 Note / {{ number_format($subject->max_score, 0, ',', ' ') }}
@@ -42,7 +42,7 @@
         </tr>
     </table>
 
-    <div class="title">Releve de notes</div>
+    <div class="title">Rélève de notes</div>
     <div class="subtitle">Epreuve : {{ $subject->subject?->name }} - Correcteur : {{ $subject->correction_teacher_name ?: '................................' }}</div>
 
     <table class="list">

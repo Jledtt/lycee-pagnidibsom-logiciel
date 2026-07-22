@@ -238,17 +238,17 @@ class PagnidibsomClassSubjectSetupService
     private function subjects(): array
     {
         return [
-            'FR' => ['name' => 'Francais'],
-            'MATH' => ['name' => 'Mathematiques'],
+            'FR' => ['name' => 'Français'],
+            'MATH' => ['name' => 'Mathématiques'],
             'ANG' => ['name' => 'Anglais'],
             'SVT' => ['name' => 'SVT'],
-            'HG' => ['name' => 'Histoire-Geographie'],
+            'HG' => ['name' => 'Histoire-Géographie'],
             'EPS' => ['name' => 'EPS'],
-            'ECM' => ['name' => 'Education civique et morale'],
+            'ECM' => ['name' => 'Éducation civique et morale'],
             'PC' => ['name' => 'Physique-Chimie'],
             'ALL' => ['name' => 'Allemand'],
             'PHILO' => ['name' => 'Philosophie'],
-            'TIC' => ['name' => 'Technologies de l information et de la communication'],
+            'TIC' => ['name' => 'Technologies de l’information et de la communication'],
         ];
     }
 }

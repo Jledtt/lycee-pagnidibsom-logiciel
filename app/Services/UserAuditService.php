@@ -16,7 +16,7 @@ class UserAuditService
 
     public function recordPasswordReset(Request $request, User $actor, User $target): ActivityLog
     {
-        return $this->record($request, $actor, $target, 'password_reset', 'Reinitialisation du mot de passe');
+        return $this->record($request, $actor, $target, 'password_reset', 'Réinitialisation du mot de passe');
     }
 
     private function record(Request $request, User $actor, User $target, string $action, string $label): ActivityLog

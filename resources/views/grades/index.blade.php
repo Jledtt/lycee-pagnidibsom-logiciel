@@ -1,12 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Notes - Lycee Prive Pagnidibsom',
+    'title' => 'Notes - Lycée Privé Pagnidibsom',
     'active' => 'grades',
     'pageTitle' => 'Notes',
     'pageSubtitle' => 'Creation des evaluations et saisie des notes',
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $selectedClass?->id]) }}">Matieres</a>
+    <a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $selectedClass?->id]) }}">Matières</a>
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
 
     <section class="panel">
         <div class="panel-head">
-            <h2>Selection</h2>
+            <h2>Sélection</h2>
             <span class="badge">{{ $academicYear->name }}</span>
         </div>
 
@@ -64,15 +64,15 @@
                 <strong>{{ $selectedTerm->name }}</strong>
             </div>
             <div class="stat">
-                <span>Periode</span>
-                <strong>{{ $selectedTermPeriod?->name ?? 'Non definie' }}</strong>
+                <span>Période</span>
+                <strong>{{ $selectedTermPeriod?->name ?? 'Non définie' }}</strong>
             </div>
             <div class="stat">
-                <span>Eleves</span>
+                <span>Élèves</span>
                 <strong>{{ $students->count() }}</strong>
             </div>
             <div class="stat">
-                <span>Matieres actives</span>
+                <span>Matières actives</span>
                 <strong>{{ $classSubjects->count() }}</strong>
             </div>
             <div class="stat">
@@ -88,7 +88,7 @@
                 </div>
 
                 @if ($classSubjects->isEmpty())
-                    <div class="empty">Aucune matiere active pour cette classe. Ajoute d'abord les matieres et coefficients.</div>
+                    <div class="empty">Aucune matière active pour cette classe. Ajoute d’abord les matières et coefficients.</div>
                 @else
                     <form class="form-grid" method="POST" action="{{ route('grades.assessments.store') }}">
                         @csrf
@@ -97,7 +97,7 @@
                         <input type="hidden" name="term_period_id" value="{{ $selectedTermPeriod?->id }}">
 
                         <div class="field">
-                            <label>Matiere</label>
+                            <label>Matière</label>
                             <select name="subject_id" required>
                                 @foreach ($classSubjects as $classSubject)
                                     <option value="{{ $classSubject->subject_id }}">{{ $classSubject->subject->name }}</option>
@@ -116,7 +116,7 @@
 
                         <div class="field wide">
                             <label>Titre</label>
-                            <input name="title" placeholder="Ex: {{ $selectedTermPeriod?->name ?? 'Devoir' }} - Francais" required>
+                            <input name="title" placeholder="Ex: {{ $selectedTermPeriod?->name ?? 'Devoir' }} - Français" required>
                         </div>
 
                         <div class="field">
@@ -130,7 +130,7 @@
                         </div>
 
                         <div class="form-actions wide">
-                            <button class="btn btn-primary" type="submit">Creer l'evaluation</button>
+                            <button class="btn btn-primary" type="submit">Créer l’evaluation</button>
                         </div>
                     </form>
                 @endif
@@ -169,11 +169,11 @@
                                                 @can('grades.update')
                                                     <a class="btn btn-subtle" href="{{ route('grades.import', $assessment) }}">Importer</a>
                                                 @endcan
-                                                <a class="btn btn-subtle" href="{{ route('grades.assessments.export', $assessment) }}" data-download-feedback="Telechargement Excel des notes lance. Regarde l'icone de telechargement du navigateur.">Excel</a>
+                                                <a class="btn btn-subtle" href="{{ route('grades.assessments.export', $assessment) }}" data-download-feedback="Téléchargement Excel des notes lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
                                                 <a class="btn btn-primary" href="{{ route('grades.assessments.pdf', $assessment) }}">PDF</a>
                                                 @if ($assessment->is_locked)
                                                     @can('grades.unlock')
-                                                        <button class="btn btn-subtle" type="submit" form="unlock-assessment-{{ $assessment->id }}">Deverrouiller</button>
+                                                        <button class="btn btn-subtle" type="submit" form="unlock-assessment-{{ $assessment->id }}">Déverrouiller</button>
                                                     @endcan
                                                 @else
                                                     @can('grades.lock')
@@ -212,9 +212,9 @@
                 </div>
 
                 @if (! $selectedAssessment)
-                    <div class="empty">Choisis ou cree une evaluation pour saisir les notes.</div>
+                    <div class="empty">Choisis ou créé une evaluation pour saisir les notes.</div>
                 @elseif ($students->isEmpty())
-                    <div class="empty">Aucun eleve actif dans cette classe.</div>
+                    <div class="empty">Aucun élève actif dans cette classe.</div>
                 @else
                     @if ($selectedTerm->is_closed || $selectedAssessment->is_locked)
                         <p class="notice">
@@ -234,7 +234,7 @@
                             <table class="table" style="min-width:720px">
                                 <thead>
                                     <tr>
-                                        <th>Eleve</th>
+                                        <th>Élève</th>
                                         <th>Note / {{ number_format($selectedAssessment->max_score, 0, ',', ' ') }}</th>
                                         <th>Absent</th>
                                         <th>Commentaire</th>

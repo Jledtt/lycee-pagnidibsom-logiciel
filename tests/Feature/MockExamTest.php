@@ -26,7 +26,7 @@ class MockExamTest extends TestCase
         $user = $this->userWithRole('secretariat');
         $thirdClass = $this->classWithStudent('3e A', 'Troisieme', 'LP-3E-001', 'Awa', 'Ouedraogo');
         $terminalClass = $this->classWithStudent('Terminale A', 'Terminale', 'LP-TA-001', 'Issa', 'Kabre');
-        $subject = Subject::query()->firstOrCreate(['name' => 'Francais'], ['code' => 'FR', 'status' => 'active']);
+        $subject = Subject::query()->firstOrCreate(['name' => 'Français'], ['code' => 'FR', 'status' => 'active']);
 
         ClassSubject::query()->create([
             'school_class_id' => $thirdClass->id,
@@ -136,7 +136,7 @@ class MockExamTest extends TestCase
             ->get(route('mock-exams.subjects.scores', [$exam, $examSubject]))
             ->assertOk()
             ->assertSee('Saisie des notes')
-            ->assertSee('Francais');
+            ->assertSee('Français');
 
         $this->actingAs($user)
             ->put(route('mock-exams.subjects.scores.update', [$exam, $examSubject]), [
@@ -171,7 +171,7 @@ class MockExamTest extends TestCase
         $this->actingAs($user)
             ->get(route('print-center.index'))
             ->assertOk()
-            ->assertSee('Centre d impression')
+            ->assertSee('Centre d’impression')
             ->assertSee('PV surveillance');
 
         foreach ([

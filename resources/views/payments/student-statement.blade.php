@@ -6,7 +6,7 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('students.show', $student) }}">Fiche eleve</a>
+    <a class="btn btn-subtle" href="{{ route('students.show', $student) }}">Fiche élève</a>
     @can('payments.reports')
         <a class="btn btn-subtle" href="{{ route('payments.students.statement.pdf', $student) }}">PDF</a>
     @endcan
@@ -19,7 +19,7 @@
     <section class="summary-row">
         <div class="stat">
             <span>Total attendu</span>
-            <strong class="money">{{ is_null($profile['expected']) ? 'A configurer' : number_format($profile['expected'], 0, ',', ' ') . ' FCFA' }}</strong>
+            <strong class="money">{{ is_null($profile['expected']) ? 'À configurer' : number_format($profile['expected'], 0, ',', ' ') . ' FCFA' }}</strong>
         </div>
         <div class="stat">
             <span>Total paye</span>
@@ -27,7 +27,7 @@
         </div>
         <div class="stat">
             <span>Reste</span>
-            <strong class="money">{{ is_null($profile['balance']) ? 'A configurer' : number_format($profile['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
+            <strong class="money">{{ is_null($profile['balance']) ? 'À configurer' : number_format($profile['balance'], 0, ',', ' ') . ' FCFA' }}</strong>
         </div>
     </section>
 
@@ -39,7 +39,7 @@
             </div>
 
             @if ($profile['scheduled_rows']->isEmpty())
-                <div class="empty">Aucun tarif configure pour la classe actuelle.</div>
+                <div class="empty">Aucun tarif configur? pour la classe actuelle.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:900px">
@@ -57,7 +57,7 @@
                             @foreach ($profile['scheduled_rows'] as $row)
                                 <tr>
                                     <td>
-                                        <strong>{{ $row['schedule']->period ?: 'Sans periode' }}</strong><br>
+                                        <strong>{{ $row['schedule']->period ?: 'Sans période' }}</strong><br>
                                         <span style="color:var(--muted)">{{ $row['schedule']->feeType?->name ?? '-' }}</span>
                                     </td>
                                     <td class="money">{{ number_format($row['expected'], 0, ',', ' ') }} FCFA</td>
@@ -65,7 +65,7 @@
                                     <td class="money">{{ number_format($row['remaining'], 0, ',', ' ') }} FCFA</td>
                                     <td>
                                         <span class="badge {{ $row['status'] === 'paid' ? '' : 'badge-warning' }}">
-                                            {{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impaye') }}
+                                            {{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impayé') }}
                                         </span>
                                     </td>
                                     <td>
@@ -87,12 +87,12 @@
 
         <div class="panel">
             <div class="panel-head">
-                <h2>Historique des recus</h2>
+                <h2>Historique des reçus</h2>
                 <span class="badge">{{ $profile['payments']->count() }} paiement(s)</span>
             </div>
 
             @if ($profile['payments']->isEmpty())
-                <div class="empty">Aucun paiement enregistre pour cet eleve.</div>
+                <div class="empty">Aucun paiement enregistré pour cet élève.</div>
             @else
                 <div class="ledger-list">
                     @foreach ($profile['payments'] as $payment)
@@ -130,7 +130,7 @@
                     <tr>
                         <th>Date</th>
                         <th>Frais</th>
-                        <th>Recu</th>
+                        <th>Reçu</th>
                         <th>Montant</th>
                     </tr>
                 </thead>
