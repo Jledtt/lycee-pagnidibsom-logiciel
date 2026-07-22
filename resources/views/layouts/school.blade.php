@@ -27,8 +27,7 @@
             margin: 0;
             min-height: 100vh;
             color: var(--ink);
-            background:
-                linear-gradient(90deg, var(--forest) 0 292px, var(--paper) 292px);
+            background: var(--paper);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             letter-spacing: 0;
         }
@@ -210,10 +209,23 @@
         }
 
         .app-shell {
+            position: relative;
+            isolation: isolate;
             min-height: 100vh;
             display: grid;
             grid-template-columns: 292px minmax(0, 1fr);
             align-items: stretch;
+            background: var(--paper);
+        }
+
+        .app-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 292px;
+            background: var(--forest);
+            z-index: -1;
+            pointer-events: none;
         }
 
         .sidebar {
@@ -225,6 +237,7 @@
             border-right: 1px solid rgba(255,255,255,.12);
             background: linear-gradient(180deg, var(--forest-2), var(--forest));
             color: #fff;
+            z-index: 1;
         }
 
         .sidebar .brand {
@@ -302,6 +315,8 @@
         }
 
         .main {
+            position: relative;
+            z-index: 0;
             min-width: 0;
             padding: 26px;
             background:
@@ -876,6 +891,10 @@
         @media (max-width: 980px) {
             body {
                 background: var(--paper);
+            }
+
+            .app-shell::before {
+                display: none;
             }
 
             .auth-shell,
