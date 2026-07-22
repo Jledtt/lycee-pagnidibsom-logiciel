@@ -6,6 +6,10 @@
 ])
 
 @section('page_actions')
+    <form method="POST" action="{{ route('tariffs.class-defaults', $schoolClass) }}" onsubmit="return confirm('Appliquer les tarifs officiels pour cette classe ? Les lignes existantes avec les mêmes périodes seront mises à jour.')">
+        @csrf
+        <button class="btn btn-primary" type="submit">Appliquer les tarifs officiels</button>
+    </form>
     <a class="btn btn-subtle" href="{{ route('tariffs.index') }}">Retour</a>
 @endsection
 

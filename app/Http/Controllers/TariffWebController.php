@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\FeeSchedule;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
+use App\Services\TariffDefaultService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -139,7 +140,26 @@ class TariffWebController extends Controller
             ->with('success', 'Tarifs mis à jour.');
     }
 
-    public function applyDefaults(): RedirectResponse
+    public function applyDefaults(TariffDefaultService $tariffDefaults): RedirectResponse
+    {
+        $result = $tariffDefaults->applyToActiveAcademicYear();
+
+        return redirect()
+            ->route('tariffs.index')
+            ->with('success', $result['lines'] . ' ligne(s) de tarifs initialisées depuis l’affiche.');
+    }
+
+    public function applyClassDefaults(SchoolClass $schoolClass, TariffDefaultService $tariffDefaults): RedirectResponse
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+        $lines = $tariffDefaults->applyToClass($academicYear, $schoolClass);
+
+        return redirect()
+            ->route('tariffs.edit', $schoolClass)
+            ->with('success', $lines . ' ligne(s) de tarifs officiels appliquées.');
+    }
+
+    private function applyDefaultsLegacy(): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
         $feeTypes = $this->ensureDefaultFeeTypes();

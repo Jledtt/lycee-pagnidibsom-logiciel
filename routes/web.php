@@ -688,6 +688,10 @@ Route::post('/tariffs/defaults', [TariffWebController::class, 'applyDefaults'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.defaults');
 
+Route::post('/tariffs/classes/{schoolClass}/defaults', [TariffWebController::class, 'applyClassDefaults'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('tariffs.class-defaults');
+
 Route::get('/tariffs/classes/{schoolClass}/edit', [TariffWebController::class, 'edit'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('tariffs.edit');

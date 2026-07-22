@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use App\Services\DatabaseBackupService;
 use App\Services\PagnidibsomClassSubjectSetupService;
+use App\Services\TariffDefaultService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
@@ -94,6 +95,14 @@ Artisan::command('lpp:setup-classes-subjects', function () {
         $this->line('- ' . $line['class'] . ' : ' . $line['subjects'] . ' matiere(s)');
     }
 })->purpose('Creer les classes et rattacher les matieres LPP');
+
+Artisan::command('lpp:setup-tariffs', function () {
+    $result = app(TariffDefaultService::class)->applyToActiveAcademicYear();
+
+    $this->info('Tarifs appliques pour ' . $result['academic_year'] . '.');
+    $this->line('- Classes traitees : ' . $result['classes']);
+    $this->line('- Lignes creees ou mises a jour : ' . $result['lines']);
+})->purpose('Appliquer les tarifs officiels LPP aux classes actives');
 
 Schedule::command('lpp:backup-database')
     ->dailyAt(env('LPP_BACKUP_TIME', '22:00'))
