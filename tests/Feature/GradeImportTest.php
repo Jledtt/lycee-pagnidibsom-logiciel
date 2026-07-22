@@ -44,8 +44,8 @@ class GradeImportTest extends TestCase
         $user = $this->userWithRole('enseignant');
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
-            'Matricule;Nom et prenom;Note;Absent;Commentaire',
-            $student->matricule . ';' . $student->full_name . ';15,5;Non;Bon travail',
+            'Matricule;Nom et prenom;Note;Statut;Commentaire',
+            $student->matricule . ';' . $student->full_name . ';15,5;Note saisie;Bon travail',
         ]));
 
         $this->actingAs($user)
@@ -72,7 +72,44 @@ class GradeImportTest extends TestCase
             'student_id' => $student->id,
             'score' => 15.5,
             'is_absent' => false,
+            'status' => Grade::STATUS_GRADED,
             'comment' => 'Bon travail',
+        ]);
+    }
+
+    public function test_teacher_can_import_non_counted_grade_status(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        [$assessment, $student] = $this->assessmentWithStudent();
+        $user = $this->userWithRole('enseignant');
+
+        $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
+            'Matricule;Note;Statut;Commentaire',
+            $student->matricule . ';;Dispense;Certificat medical',
+        ]));
+
+        $this->actingAs($user)
+            ->post(route('grades.import.preview', $assessment), ['grades_file' => $file])
+            ->assertRedirect(route('grades.import', $assessment));
+
+        $this->followingRedirects()
+            ->actingAs($user)
+            ->get(route('grades.import', $assessment))
+            ->assertOk()
+            ->assertSee('Dispense')
+            ->assertSee('Valide');
+
+        $this->actingAs($user)
+            ->post(route('grades.import.store', $assessment))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('grades', [
+            'assessment_id' => $assessment->id,
+            'student_id' => $student->id,
+            'score' => null,
+            'is_absent' => false,
+            'status' => Grade::STATUS_DISPENSED,
+            'comment' => 'Certificat medical',
         ]);
     }
 

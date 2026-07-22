@@ -104,6 +104,8 @@ class GradeWebController extends Controller
             'students' => $students,
             'termPeriods' => $termPeriods,
             'gradesByStudent' => $gradesByStudent,
+            'entryModeLabels' => Assessment::entryModeLabels(),
+            'gradeStatusLabels' => Grade::statusLabels(),
         ]);
     }
 
@@ -154,8 +156,13 @@ class GradeWebController extends Controller
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
         $validGrades = $assessment->grades
-            ->filter(fn (Grade $grade) => ! $grade->is_absent && $grade->score !== null);
-        $absentCount = $assessment->grades->where('is_absent', true)->count();
+            ->filter(fn (Grade $grade) => $grade->isCounted() && $grade->score !== null);
+        $absentCount = $assessment->grades
+            ->filter(fn (Grade $grade) => $grade->resolvedStatus() === Grade::STATUS_ABSENT)
+            ->count();
+        $excludedCount = $assessment->grades
+            ->filter(fn (Grade $grade) => ! $grade->isCounted())
+            ->count();
         $enteredCount = $validGrades->count();
 
         $average = $validGrades->isEmpty()
@@ -167,10 +174,12 @@ class GradeWebController extends Controller
         return Pdf::loadView('grades.assessment-pdf', [
             'assessment' => $assessment,
             'absentCount' => $absentCount,
+            'excludedCount' => $excludedCount,
             'average' => $average,
             'enteredCount' => $enteredCount,
             'gradesByStudent' => $gradesByStudent,
             'school' => SchoolSetting::query()->first(),
+            'statusLabels' => Grade::statusLabels(),
             'students' => $students,
         ])
             ->setPaper('a4')
@@ -195,11 +204,12 @@ class GradeWebController extends Controller
             'Note',
             'Note sur',
             'Note / 20',
-            'Absent',
+            'Statut',
             'Commentaire',
         ], $students->map(function (Student $student) use ($assessment, $gradesByStudent) {
             $grade = $gradesByStudent->get($student->id);
-            $score = $grade?->score;
+            $status = $grade?->resolvedStatus() ?? Grade::STATUS_GRADED;
+            $score = ($grade && $grade->isCounted()) ? $grade->score : null;
             $scoreOnTwenty = $score === null ? null : round(((float) $score / (float) $assessment->max_score) * 20, 2);
 
             return [
@@ -212,7 +222,7 @@ class GradeWebController extends Controller
                 $score,
                 $assessment->max_score,
                 $scoreOnTwenty,
-                (bool) $grade?->is_absent,
+                Grade::statusLabels()[$status] ?? $status,
                 $grade?->comment,
             ];
         }));

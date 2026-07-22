@@ -104,7 +104,7 @@ class TermPeriodGradeTest extends TestCase
         ]);
         $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));
         $this->assertSame(18.0, $calculator->generalAverage($student, $schoolClass, $term, $secondPeriod->id));
-        $this->assertSame(17.6, $calculator->generalAverage($student, $schoolClass, $term));
+        $this->assertSame(16.0, $calculator->generalAverage($student, $schoolClass, $term));
 
         $this->actingAs($user)
             ->get(route('report-cards.period-class-pdf', [
@@ -114,6 +114,81 @@ class TermPeriodGradeTest extends TestCase
             ]))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_non_counted_grade_statuses_do_not_reduce_average(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('admin');
+        [$academicYear, $schoolClass, $term, $subject, $assessmentType, , $student] = $this->classWithStudentAndSubject();
+
+        $counted = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $assessmentType->id,
+            'title' => 'Devoir note',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $counted->id,
+            'student_id' => $student->id,
+            'score' => 16,
+            'is_absent' => false,
+            'status' => Grade::STATUS_GRADED,
+            'entered_by' => $user->id,
+        ]);
+
+        $dispensed = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $assessmentType->id,
+            'title' => 'Devoir dispense',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $dispensed->id,
+            'student_id' => $student->id,
+            'score' => null,
+            'is_absent' => false,
+            'status' => Grade::STATUS_DISPENSED,
+            'entered_by' => $user->id,
+        ]);
+
+        $absent = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $assessmentType->id,
+            'title' => 'Devoir absent',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $absent->id,
+            'student_id' => $student->id,
+            'score' => null,
+            'is_absent' => true,
+            'status' => Grade::STATUS_ABSENT,
+            'entered_by' => $user->id,
+        ]);
+
+        $calculator = app(GradeCalculationService::class);
+
+        $this->assertSame(16.0, $calculator->generalAverage($student, $schoolClass, $term));
     }
 
     private function classWithStudentAndSubject(): array

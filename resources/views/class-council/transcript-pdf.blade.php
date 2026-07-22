@@ -101,7 +101,13 @@
                 <tr>
                     <td><strong>{{ $row['assessment']->subject?->name }}</strong></td>
                     <td>{{ $row['assessment']->title }}<br>{{ $row['assessment']->assessmentType?->name }}</td>
-                    <td class="center">{{ $grade?->is_absent ? 'Absent' : ($grade?->score ?? '-') }}</td>
+                    <td class="center">
+                        @if ($grade && ! $grade->isCounted())
+                            {{ \App\Models\Grade::statusLabels()[$grade->resolvedStatus()] ?? '-' }}
+                        @else
+                            {{ $grade?->score ?? '-' }}
+                        @endif
+                    </td>
                     <td class="center">{{ number_format($row['assessment']->max_score, 0, ',', ' ') }}</td>
                     <td class="center">{{ $row['normalized_score'] === null ? '-' : number_format($row['normalized_score'], 2, ',', ' ') }}</td>
                     <td>{{ $row['appreciation'] }}</td>

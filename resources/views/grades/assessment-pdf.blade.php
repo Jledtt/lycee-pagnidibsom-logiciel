@@ -23,6 +23,7 @@
 </head>
 <body>
     @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    @php($statusLabels = $statusLabels ?? \App\Models\Grade::statusLabels())
 
     <table class="header">
         <tr>
@@ -57,7 +58,7 @@
         <tr>
             <td>Élèves : {{ $students->count() }}</td>
             <td>Notes saisies : {{ $enteredCount }}</td>
-            <td>Absents : {{ $absentCount }}</td>
+            <td>Absents : {{ $absentCount }} / non comptes : {{ $excludedCount ?? $absentCount }}</td>
             <td>Moyenne /20 : {{ $average === null ? '-' : number_format($average, 2, ',', ' ') }}</td>
         </tr>
     </table>
@@ -69,19 +70,20 @@
                 <th style="width:105px">Matricule</th>
                 <th>Élève</th>
                 <th style="width:90px" class="center">Note</th>
-                <th style="width:70px" class="center">Absent</th>
+                <th style="width:90px" class="center">Statut</th>
                 <th>Commentaire</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($students as $student)
                 @php($grade = $gradesByStudent->get($student->id))
+                @php($status = $grade?->resolvedStatus() ?? \App\Models\Grade::STATUS_GRADED)
                 <tr>
                     <td class="center">{{ $loop->iteration }}</td>
                     <td>{{ $student->matricule }}</td>
                     <td><strong>{{ $student->full_name }}</strong></td>
                     <td class="center">
-                        @if ($grade?->is_absent)
+                        @if ($grade && ! $grade->isCounted())
                             -
                         @elseif ($grade?->score !== null)
                             {{ number_format($grade->score, 2, ',', ' ') }}
@@ -89,7 +91,7 @@
                             -
                         @endif
                     </td>
-                    <td class="center">{{ $grade?->is_absent ? 'Oui' : 'Non' }}</td>
+                    <td class="center">{{ $statusLabels[$status] ?? $status }}</td>
                     <td>{{ $grade?->comment ?: '-' }}</td>
                 </tr>
             @empty

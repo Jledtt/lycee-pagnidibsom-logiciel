@@ -115,7 +115,7 @@
                                 <th>Matricule</th>
                                 <th>Élève</th>
                                 <th>Note</th>
-                                <th>Absent</th>
+                                <th>Statut note</th>
                                 <th>Commentaire</th>
                                 <th>Statut</th>
                                 <th>Details</th>
@@ -129,7 +129,7 @@
                                     <td>{{ $row['matricule'] ?: '-' }}</td>
                                     <td><strong>{{ $row['student_label'] ?: '-' }}</strong></td>
                                     <td>{{ is_null($data['score']) ? '-' : number_format((float) $data['score'], 2, ',', ' ') }}</td>
-                                    <td>{{ $data['is_absent'] ? 'Oui' : 'Non' }}</td>
+                                    <td>{{ $data['status_label'] ?? ($data['is_absent'] ? 'Absent' : 'Note saisie') }}</td>
                                     <td>{{ $data['comment'] ?: '-' }}</td>
                                     <td>
                                         <span class="badge {{ $row['status'] === 'valid' ? '' : 'badge-danger' }}">

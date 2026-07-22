@@ -351,8 +351,7 @@ class ReportCardWebController extends Controller
                 return collect($typeNames)->contains(fn (string $name) => str_contains($typeName, $name));
             });
 
-        $weightedTotal = 0.0;
-        $weights = 0.0;
+        $scores = [];
 
         foreach ($assessments as $assessment) {
             if ($assessment->assessmentType?->status !== 'active') {
@@ -361,21 +360,19 @@ class ReportCardWebController extends Controller
 
             $grade = $assessment->grades->first();
 
-            if ($grade === null || $grade->is_absent || $grade->score === null) {
+            if ($grade === null || ! $grade->isCounted() || $grade->score === null) {
                 continue;
             }
 
             $normalizedScore = ((float) $grade->score / (float) $assessment->max_score) * 20;
-            $weight = (float) $assessment->assessmentType->weight;
-            $weightedTotal += $normalizedScore * $weight;
-            $weights += $weight;
+            $scores[] = $normalizedScore;
         }
 
-        if ($weights <= 0) {
+        if (empty($scores)) {
             return null;
         }
 
-        return round($weightedTotal / $weights, 2);
+        return round(array_sum($scores) / count($scores), 2);
     }
 
     private function teacherName(ReportCard $reportCard, int $subjectId): string

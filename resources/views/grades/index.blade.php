@@ -10,6 +10,14 @@
 @endsection
 
 @section('content')
+    @php
+        $gradeStatusLabels = $gradeStatusLabels ?? \App\Models\Grade::statusLabels();
+        $entryModeLabels = $entryModeLabels ?? \App\Models\Assessment::entryModeLabels();
+        $selectedEntryMode = ($selectedAssessment ?? null)?->entry_mode ?? \App\Models\Assessment::ENTRY_MODE_STANDARD;
+        $isWrittenMode = $selectedEntryMode === \App\Models\Assessment::ENTRY_MODE_WRITTEN;
+        $isOralSportMode = $selectedEntryMode === \App\Models\Assessment::ENTRY_MODE_ORAL_SPORT;
+    @endphp
+
     @if ($errors->any())
         <div class="error">
             {{ $errors->first() }}
@@ -109,7 +117,16 @@
                             <label>Type</label>
                             <select name="assessment_type_id" required>
                                 @foreach ($assessmentTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }} - {{ number_format($type->weight, 0, ',', ' ') }}%</option>
+                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Mode de saisie</label>
+                            <select name="entry_mode" required>
+                                @foreach ($entryModeLabels as $mode => $label)
+                                    <option value="{{ $mode }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -152,6 +169,9 @@
                                             <div class="ledger-person">
                                                 <strong>{{ $assessment->title }}</strong>
                                                 <span>{{ $assessment->subject->name }} - {{ $assessment->assessmentType->name }}</span>
+                                                <span class="badge" style="margin-top:6px">
+                                                    {{ $entryModeLabels[$assessment->entry_mode] ?? 'Standard' }}
+                                                </span>
                                                 <span class="badge {{ $assessment->is_locked ? 'badge-warning' : '' }}" style="margin-top:6px">
                                                     {{ $assessment->is_locked ? 'Verrouillee' : 'Ouverte' }}
                                                 </span>
@@ -226,6 +246,17 @@
                         </p>
                     @endif
 
+                    <p class="notice">
+                        Mode de saisie : <strong>{{ $entryModeLabels[$selectedEntryMode] ?? 'Standard' }}</strong>.
+                        @if ($isWrittenMode)
+                            Les copies ecrites sont saisies par anonymat, puis rattachees aux eleves.
+                        @elseif ($isOralSportMode)
+                            Les matieres orales et sportives sont saisies directement par eleve.
+                        @else
+                            Saisie classique des notes par eleve.
+                        @endif
+                    </p>
+
                     <form method="POST" action="{{ route('grades.assessments.grades.update', $selectedAssessment) }}">
                         @csrf
                         @method('PUT')
@@ -234,28 +265,38 @@
                             <table class="table" style="min-width:720px">
                                 <thead>
                                     <tr>
-                                        <th>Élève</th>
+                                        <th>{{ $isWrittenMode ? 'Anonymat' : 'Eleve' }}</th>
                                         <th>Note / {{ number_format($selectedAssessment->max_score, 0, ',', ' ') }}</th>
-                                        <th>Absent</th>
+                                        <th>Statut</th>
                                         <th>Commentaire</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($students as $student)
-                                        @php($grade = $gradesByStudent->get($student->id))
+                                        @php
+                                            $grade = $gradesByStudent->get($student->id);
+                                            $rowStatus = old('grades.' . $student->id . '.status', $grade?->resolvedStatus() ?? \App\Models\Grade::STATUS_GRADED);
+                                            $anonymousCode = 'X' . str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT);
+                                        @endphp
                                         <tr>
                                             <td>
-                                                <strong>{{ $student->full_name }}</strong><br>
-                                                <span class="badge">{{ $student->matricule }}</span>
+                                                @if ($isWrittenMode)
+                                                    <strong>{{ $anonymousCode }}</strong><br>
+                                                    <span class="badge">{{ $student->matricule }}</span>
+                                                @else
+                                                    <strong>{{ $student->full_name }}</strong><br>
+                                                    <span class="badge">{{ $student->matricule }}</span>
+                                                @endif
                                             </td>
                                             <td>
-                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}" @disabled($selectedAssessment->is_locked)>
+                                                <input type="number" name="grades[{{ $student->id }}][score]" min="0" max="{{ $selectedAssessment->max_score }}" step="0.25" value="{{ old('grades.' . $student->id . '.score', $grade?->score) }}" @disabled($selectedAssessment->is_locked || $rowStatus !== \App\Models\Grade::STATUS_GRADED)>
                                             </td>
                                             <td>
-                                                <label class="check">
-                                                    <input type="checkbox" name="grades[{{ $student->id }}][is_absent]" value="1" @checked(old('grades.' . $student->id . '.is_absent', $grade?->is_absent)) @disabled($selectedAssessment->is_locked)>
-                                                    Oui
-                                                </label>
+                                                <select name="grades[{{ $student->id }}][status]" @disabled($selectedAssessment->is_locked)>
+                                                    @foreach ($gradeStatusLabels as $status => $label)
+                                                        <option value="{{ $status }}" @selected($rowStatus === $status)>{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
                                             </td>
                                             <td>
                                                 <input name="grades[{{ $student->id }}][comment]" value="{{ old('grades.' . $student->id . '.comment', $grade?->comment) }}" placeholder="Facultatif" @disabled($selectedAssessment->is_locked)>

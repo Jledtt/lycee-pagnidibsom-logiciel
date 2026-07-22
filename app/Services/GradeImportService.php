@@ -20,7 +20,7 @@ class GradeImportService
             'Matricule',
             'Nom et prenom',
             'Note',
-            'Absent',
+            'Statut',
             'Commentaire',
         ];
     }
@@ -37,11 +37,13 @@ class GradeImportService
             ->map(function (Student $student) use ($gradesByStudent) {
                 $grade = $gradesByStudent->get($student->id);
 
+                $status = $grade?->resolvedStatus() ?? Grade::STATUS_GRADED;
+
                 return [
                     $student->matricule,
                     $student->full_name,
-                    $grade?->score,
-                    $grade?->is_absent ? 'Oui' : 'Non',
+                    ($grade && $grade->isCounted()) ? $grade->score : null,
+                    $this->gradeStatusLabel($status),
                     $grade?->comment,
                 ];
             })
@@ -88,14 +90,18 @@ class GradeImportService
         DB::transaction(function () use ($rows, $assessment, $enteredBy, &$created, &$updated) {
             foreach ($rows as $row) {
                 $data = $row['data'];
+                $status = $data['status'] ?? Grade::STATUS_GRADED;
+                $isAbsent = $status === Grade::STATUS_ABSENT;
+
                 $grade = Grade::query()->updateOrCreate(
                     [
                         'assessment_id' => $assessment->id,
                         'student_id' => $data['student_id'],
                     ],
                     [
-                        'score' => $data['is_absent'] ? null : $data['score'],
-                        'is_absent' => $data['is_absent'],
+                        'score' => $status === Grade::STATUS_GRADED ? $data['score'] : null,
+                        'is_absent' => $isAbsent,
+                        'status' => $status,
                         'comment' => $data['comment'],
                         'entered_by' => $enteredBy,
                     ],
@@ -124,7 +130,8 @@ class GradeImportService
         }
 
         $student = $this->findStudent($raw, $studentsByMatricule, $studentsByName);
-        $isAbsent = $this->normalizeBoolean($raw['is_absent'] ?? null) ?? false;
+        $status = $this->normalizeGradeStatus($raw['status'] ?? $raw['is_absent'] ?? null);
+        $isAbsent = $status === Grade::STATUS_ABSENT;
         $score = $this->normalizeScore($raw['score'] ?? null);
         $errors = [];
         $warnings = [];
@@ -143,12 +150,16 @@ class GradeImportService
             $errors[] = 'Note invalide.';
         }
 
-        if (! $isAbsent && $score === null) {
-            $errors[] = 'Note obligatoire si l’élève n’est pas marqué absent.';
+        if ($status === Grade::STATUS_GRADED && $score === null) {
+            $errors[] = 'Note obligatoire lorsque le statut est "Note saisie".';
         }
 
         if (is_numeric($score) && ((float) $score < 0 || (float) $score > (float) $assessment->max_score)) {
             $errors[] = 'Note hors barème. Maximum autorise: ' . number_format((float) $assessment->max_score, 0, ',', ' ') . '.';
+        }
+
+        if ($status !== Grade::STATUS_GRADED) {
+            $score = null;
         }
 
         $existingGrade = $student
@@ -171,6 +182,8 @@ class GradeImportService
                 'student_id' => $student?->id,
                 'score' => $score === false ? null : $score,
                 'is_absent' => $isAbsent,
+                'status' => $status,
+                'status_label' => $this->gradeStatusLabel($status),
                 'comment' => $this->clean($raw['comment'] ?? null),
             ],
         ];
@@ -367,6 +380,11 @@ class GradeImportService
             'score' => 'score',
             'absent' => 'is_absent',
             'absence' => 'is_absent',
+            'statut' => 'status',
+            'status' => 'status',
+            'dispense' => 'status',
+            'dispensee' => 'status',
+            'malade' => 'status',
             'commentaire' => 'comment',
             'observation' => 'comment',
         ];
@@ -398,6 +416,29 @@ class GradeImportService
             'non', 'n', 'no', 'false', '0', 'present' => false,
             default => null,
         };
+    }
+
+    private function normalizeGradeStatus(?string $value): string
+    {
+        if (blank($value)) {
+            return Grade::STATUS_GRADED;
+        }
+
+        return match ($this->normalizeKey($value)) {
+            'oui', 'o', 'yes', 'true', '1', 'absent', 'absence', 'a' => Grade::STATUS_ABSENT,
+            'dispense', 'dispensee', 'dispense_e', 'd' => Grade::STATUS_DISPENSED,
+            'malade', 'maladie', 'm' => Grade::STATUS_SICK,
+            'non', 'n', 'no', 'false', '0', 'present', 'presente', 'note', 'note_saisie', 'graded' => Grade::STATUS_GRADED,
+            Grade::STATUS_ABSENT => Grade::STATUS_ABSENT,
+            Grade::STATUS_DISPENSED => Grade::STATUS_DISPENSED,
+            Grade::STATUS_SICK => Grade::STATUS_SICK,
+            default => Grade::STATUS_GRADED,
+        };
+    }
+
+    private function gradeStatusLabel(string $status): string
+    {
+        return Grade::statusLabels()[$status] ?? $status;
     }
 
     private function detectDelimiter(string $line): string

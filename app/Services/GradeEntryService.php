@@ -32,8 +32,9 @@ class GradeEntryService
 
         foreach ($studentIds as $studentId) {
             $line = $grades[$studentId] ?? [];
-            $isAbsent = (bool) ($line['is_absent'] ?? false);
-            $score = $isAbsent ? null : ($line['score'] ?? null);
+            $status = $this->statusFromLine($line);
+            $isAbsent = $status === Grade::STATUS_ABSENT;
+            $score = $status === Grade::STATUS_GRADED ? ($line['score'] ?? null) : null;
 
             Grade::query()->updateOrCreate(
                 [
@@ -43,6 +44,7 @@ class GradeEntryService
                 [
                     'score' => $score,
                     'is_absent' => $isAbsent,
+                    'status' => $status,
                     'comment' => $line['comment'] ?? null,
                     'entered_by' => $user->id,
                 ],
@@ -93,5 +95,16 @@ class GradeEntryService
             ->where('term_id', $termId)
             ->where('is_locked', true)
             ->count() === $total;
+    }
+
+    private function statusFromLine(array $line): string
+    {
+        $status = $line['status'] ?? null;
+
+        if ($status && array_key_exists($status, Grade::statusLabels())) {
+            return $status;
+        }
+
+        return (bool) ($line['is_absent'] ?? false) ? Grade::STATUS_ABSENT : Grade::STATUS_GRADED;
     }
 }

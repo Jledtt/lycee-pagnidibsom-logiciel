@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Assessment extends Model
 {
+    public const ENTRY_MODE_STANDARD = 'standard';
+    public const ENTRY_MODE_WRITTEN = 'written';
+    public const ENTRY_MODE_ORAL_SPORT = 'oral_sport';
+
     protected $fillable = [
         'academic_year_id',
         'term_id',
@@ -19,6 +23,7 @@ class Assessment extends Model
         'title',
         'max_score',
         'assessment_date',
+        'entry_mode',
         'is_locked',
     ];
 
@@ -27,6 +32,15 @@ class Assessment extends Model
         'assessment_date' => 'date',
         'is_locked' => 'boolean',
     ];
+
+    public static function entryModeLabels(): array
+    {
+        return [
+            self::ENTRY_MODE_STANDARD => 'Standard',
+            self::ENTRY_MODE_WRITTEN => 'Ecrit / anonymat',
+            self::ENTRY_MODE_ORAL_SPORT => 'Oral / sport',
+        ];
+    }
 
     public function academicYear(): BelongsTo
     {

@@ -20,7 +20,7 @@ class GradeCalculationService
             ->when($termPeriodId, fn ($query) => $query->where('term_period_id', $termPeriodId))
             ->get();
 
-        $scoresByType = [];
+        $scores = [];
 
         foreach ($assessments as $assessment) {
             if ($assessment->assessmentType?->status !== 'active') {
@@ -29,36 +29,19 @@ class GradeCalculationService
 
             $grade = $assessment->grades->first();
 
-            if ($grade === null || $grade->is_absent || $grade->score === null) {
+            if ($grade === null || ! $grade->isCounted() || $grade->score === null) {
                 continue;
             }
 
             $normalizedScore = ((float) $grade->score / (float) $assessment->max_score) * 20;
-            $weight = (float) $assessment->assessmentType->weight;
-            $typeId = (int) $assessment->assessment_type_id;
-
-            $scoresByType[$typeId]['weight'] = $weight;
-            $scoresByType[$typeId]['scores'][] = $normalizedScore;
+            $scores[] = $normalizedScore;
         }
 
-        $weightedTotal = 0.0;
-        $weights = 0.0;
-
-        foreach ($scoresByType as $typeData) {
-            if (($typeData['weight'] ?? 0) <= 0 || empty($typeData['scores'])) {
-                continue;
-            }
-
-            $typeAverage = array_sum($typeData['scores']) / count($typeData['scores']);
-            $weightedTotal += $typeAverage * $typeData['weight'];
-            $weights += $typeData['weight'];
-        }
-
-        if ($weights <= 0) {
+        if (empty($scores)) {
             return null;
         }
 
-        return round($weightedTotal / $weights, 2);
+        return round(array_sum($scores) / count($scores), 2);
     }
 
     public function generalAverage(Student $student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): ?float
