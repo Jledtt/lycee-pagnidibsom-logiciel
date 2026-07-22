@@ -27,7 +27,8 @@
             margin: 0;
             min-height: 100vh;
             color: var(--ink);
-            background: var(--paper);
+            background:
+                linear-gradient(90deg, var(--forest) 0 292px, var(--paper) 292px);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             letter-spacing: 0;
         }
@@ -212,11 +213,13 @@
             min-height: 100vh;
             display: grid;
             grid-template-columns: 292px minmax(0, 1fr);
+            align-items: stretch;
         }
 
         .sidebar {
-            min-height: 100vh;
-            max-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
             overflow-y: auto;
             padding: 22px 16px;
             border-right: 1px solid rgba(255,255,255,.12);
@@ -871,6 +874,10 @@
         }
 
         @media (max-width: 980px) {
+            body {
+                background: var(--paper);
+            }
+
             .auth-shell,
             .app-shell,
             .two-col {
@@ -883,7 +890,8 @@
             }
 
             .sidebar {
-                max-height: none;
+                position: static;
+                height: auto;
                 min-height: auto;
                 border-right: 0;
                 border-bottom: 1px solid var(--line);
