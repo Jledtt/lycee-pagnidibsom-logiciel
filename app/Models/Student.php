@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Student extends Model
+class Student extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     use SoftDeletes;
 
     protected $fillable = [
@@ -84,6 +87,25 @@ class Student extends Model
         return $this->hasMany(StudentDocument::class);
     }
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('student_photo')
+            ->singleFile()
+            ->useDisk('public');
+
+        $this->addMediaCollection('birth_certificate')
+            ->useDisk('public');
+
+        $this->addMediaCollection('medical_certificate')
+            ->useDisk('public');
+
+        $this->addMediaCollection('previous_school_record')
+            ->useDisk('public');
+
+        $this->addMediaCollection('scanned_documents')
+            ->useDisk('public');
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name.' '.$this->last_name);
@@ -93,8 +115,8 @@ class Student extends Model
     {
         return match ($this->gender) {
             'female' => 'Fille',
-            'male' => 'Garcon',
-            default => 'Non renseign?',
+            'male' => 'Garçon',
+            default => 'Non renseigné',
         };
     }
 

@@ -40,6 +40,21 @@
             <span class="badge">{{ $student->status }}</span>
         </div>
 
+        @php($studentPhoto = $student->getFirstMedia('student_photo'))
+        <div class="student-profile-strip">
+            <div class="student-photo-frame">
+                @if ($studentPhoto || $student->photo_path)
+                    <img src="{{ $studentPhoto?->getUrl() ?? $student->photo_path }}" alt="Photo de {{ $student->full_name }}">
+                @else
+                    <span>PHOTO</span>
+                @endif
+            </div>
+            <div>
+                <h3>{{ $student->full_name }}</h3>
+                <p>{{ $currentEnrollment?->schoolClass?->name ?? $student->desired_class ?? 'Non inscrit' }} · {{ $student->matricule }}</p>
+            </div>
+        </div>
+
         <div class="detail-grid">
             <div class="detail-item">
                 <span>Matricule</span>

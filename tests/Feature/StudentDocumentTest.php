@@ -39,7 +39,13 @@ class StudentDocumentTest extends TestCase
 
         $this->assertSame($student->id, $document->student_id);
         $this->assertSame('birth_certificate', $document->document_type);
-        Storage::disk('public')->assertExists($document->file_path);
+        $this->assertStringStartsWith('media:', (string) $document->file_path);
+        $this->assertDatabaseHas('media', [
+            'model_type' => Student::class,
+            'model_id' => $student->id,
+            'collection_name' => 'birth_certificate',
+            'name' => 'Acte de naissance',
+        ]);
         $this->assertDatabaseHas('activity_logs', [
             'auditable_type' => StudentDocument::class,
             'auditable_id' => (string) $document->id,
@@ -50,6 +56,35 @@ class StudentDocumentTest extends TestCase
             ->get(route('student-documents.download', $document))
             ->assertOk()
             ->assertDownload('lpp-2026-0001-acte-de-naissance.pdf');
+    }
+
+    public function test_secretariat_can_upload_student_photo(): void
+    {
+        Storage::fake('public');
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $student = $this->student();
+
+        $this->actingAs($user)
+            ->post(route('students.documents.store', $student), [
+                'name' => 'Photo élève',
+                'document_type' => 'photo',
+                'status' => 'received',
+                'received_at' => '2026-07-18',
+                'document_file' => UploadedFile::fake()->image('photo.jpg'),
+            ])
+            ->assertRedirect(route('students.show', $student));
+
+        $document = StudentDocument::query()->where('document_type', 'photo')->firstOrFail();
+
+        $this->assertStringStartsWith('media:', (string) $document->file_path);
+        $this->assertDatabaseHas('media', [
+            'model_type' => Student::class,
+            'model_id' => $student->id,
+            'collection_name' => 'student_photo',
+            'name' => 'Photo élève',
+        ]);
+        $this->assertNotNull($student->fresh()->photo_path);
     }
 
     public function test_secretariat_can_mark_missing_document_without_file(): void

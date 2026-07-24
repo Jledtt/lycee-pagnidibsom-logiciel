@@ -431,6 +431,43 @@
             gap: 12px;
         }
 
+        .quick-action {
+            min-height: 76px;
+            display: grid;
+            align-content: center;
+            gap: 5px;
+            padding: 13px;
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--gold);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--forest);
+            text-decoration: none;
+        }
+
+        .quick-action:hover {
+            border-color: rgba(139,30,45,.32);
+            background: #fffaf2;
+        }
+
+        .quick-action strong {
+            color: var(--brand);
+            font-size: 14px;
+        }
+
+        .quick-action span {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+            gap: 12px;
+            align-items: end;
+        }
+
         .action-card {
             min-height: 86px;
             display: grid;
@@ -646,6 +683,49 @@
             display: block;
             font-size: 15px;
             overflow-wrap: anywhere;
+        }
+
+        .student-profile-strip {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .student-profile-strip h3 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .student-profile-strip p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-weight: 750;
+        }
+
+        .student-photo-frame {
+            width: 92px;
+            height: 110px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            border: 2px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .student-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .pagination {
@@ -923,7 +1003,8 @@
 
             .stats,
             .modules,
-            .quick-actions {
+            .quick-actions,
+            .filters-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
@@ -949,6 +1030,7 @@
             .modules,
             .nav,
             .quick-actions,
+            .filters-grid,
             .form-grid,
             .detail-grid,
             .summary-row {

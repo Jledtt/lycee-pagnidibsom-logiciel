@@ -51,11 +51,14 @@ class RequiredStudentDocumentService
         return [
             'birth_certificate' => 'Acte de naissance',
             'photo' => 'Photo',
+            'medical_certificate' => 'Certificat médical',
+            'previous_school_record' => 'Ancienne fiche scolaire',
             'previous_report_card' => 'Ancien bulletin',
             'certificate' => 'Certificat',
             'receipt' => 'Reçu',
             'parent_authorization' => 'Autorisation parentale',
-            'identity' => 'Piece d identite',
+            'identity' => "Pièce d'identité",
+            'scanned_document' => 'Document scanné',
             'other' => 'Autre document',
         ];
     }
@@ -121,7 +124,8 @@ class RequiredStudentDocumentService
         return [
             'birth_certificate' => 'Acte de naissance',
             'photo' => 'Photo',
-            'previous_report_card' => 'Ancien bulletin',
+            'medical_certificate' => 'Certificat médical',
+            'previous_school_record' => 'Ancienne fiche scolaire',
             'parent_authorization' => 'Autorisation parentale',
         ];
     }
