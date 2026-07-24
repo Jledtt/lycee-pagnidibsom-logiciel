@@ -42,7 +42,7 @@ class TeacherAttendanceSheetWebController extends Controller
         $start = Carbon::parse($filters['start_date'])->startOfDay();
         $end = Carbon::parse($filters['end_date'])->startOfDay();
         $teacherName = $filters['teacher_name'] ?? null;
-        $rows = $this->rows($academicYear, $start, $end, $teacherName);
+        $rows = $this->blankRows($start, $end);
         $filename = 'fiche-emargement-' . Str::slug(($teacherName ?: 'professeurs') . '-' . $start->format('Y-m-d') . '-' . $end->format('Y-m-d')) . '.pdf';
 
         return Pdf::loadView('teacher-attendance-sheets.pdf', [
@@ -106,66 +106,27 @@ class TeacherAttendanceSheetWebController extends Controller
             ->values();
     }
 
-    private function rows(?AcademicYear $academicYear, Carbon $start, Carbon $end, ?string $teacherName): Collection
+    private function blankRows(Carbon $start, Carbon $end): Collection
     {
-        $entries = TimetableEntry::query()
-            ->with('timetable.schoolClass')
-            ->whereHas('timetable', fn ($query) => $query->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id)))
-            ->when($teacherName, fn ($query) => $query->where('teacher_name', $teacherName))
-            ->whereNotNull('subject_name')
-            ->get();
-
-        $byDayAndHour = $entries->groupBy(fn (TimetableEntry $entry) => $entry->day_of_week . '-' . $this->hourKey($entry));
         $rows = collect();
         $date = $start->copy();
 
         while ($date->lte($end)) {
             $cells = [];
 
-            foreach (self::PERIODS as $hour => $label) {
-                $dayKey = $this->dayKey($date);
-                $cells[$label] = $byDayAndHour->get($dayKey . '-' . $hour, collect())
-                    ->map(fn (TimetableEntry $entry) => trim(($entry->timetable?->schoolClass?->name ?? '') . ' ' . ($entry->subject_name ?? '')))
-                    ->filter()
-                    ->unique()
-                    ->join(' / ');
+            foreach (self::PERIODS as $label) {
+                $cells[$label] = '';
             }
 
             $rows->push([
                 'date' => $date->copy(),
                 'cells' => $cells,
-                'hours' => collect($cells)->filter()->count(),
+                'hours' => '',
             ]);
 
             $date->addDay();
         }
 
         return $rows;
-    }
-
-    private function hourKey(TimetableEntry $entry): string
-    {
-        if ($entry->starts_at) {
-            return substr((string) $entry->starts_at, 0, 2);
-        }
-
-        if (preg_match('/^(\d{1,2})h/', $entry->period_label, $matches)) {
-            return str_pad($matches[1], 2, '0', STR_PAD_LEFT);
-        }
-
-        return '';
-    }
-
-    private function dayKey(Carbon $date): string
-    {
-        return [
-            1 => 'monday',
-            2 => 'tuesday',
-            3 => 'wednesday',
-            4 => 'thursday',
-            5 => 'friday',
-            6 => 'saturday',
-            7 => 'sunday',
-        ][$date->dayOfWeekIso];
     }
 }

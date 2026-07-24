@@ -53,7 +53,7 @@
             </div>
             <div class="detail-item">
                 <span>Source</span>
-                <strong>Les cases sont pre-remplies depuis les emplois du temps; la vie scolaire imprime puis archive la fiche signee.</strong>
+                <strong>Les cases restent vierges. La vie scolaire imprime la fiche, le professeur renseigne les heures effectuees et signe sur papier.</strong>
             </div>
         </div>
     </section>
