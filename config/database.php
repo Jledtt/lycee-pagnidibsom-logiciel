@@ -42,6 +42,9 @@ return [
             'journal_mode' => null,
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
+            'dump' => array_filter([
+                'dump_binary_path' => env('SQLITE_DUMP_BINARY_PATH', env('DB_DUMP_BINARY_PATH', '')),
+            ]),
         ],
 
         'mysql' => [
@@ -62,6 +65,10 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => array_filter([
+                'dump_binary_path' => env('MYSQL_DUMP_BINARY_PATH', env('DB_DUMP_BINARY_PATH', '')),
+                'useSingleTransaction',
+            ]),
         ],
 
         'mariadb' => [
@@ -82,6 +89,10 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => array_filter([
+                'dump_binary_path' => env('MARIADB_DUMP_BINARY_PATH', env('MYSQL_DUMP_BINARY_PATH', env('DB_DUMP_BINARY_PATH', ''))),
+                'useSingleTransaction',
+            ]),
         ],
 
         'pgsql' => [
@@ -97,6 +108,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'dump' => array_filter([
+                'dump_binary_path' => env('PGSQL_DUMP_BINARY_PATH', env('DB_DUMP_BINARY_PATH', '')),
+            ]),
         ],
 
         'sqlsrv' => [

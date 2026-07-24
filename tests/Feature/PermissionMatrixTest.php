@@ -19,6 +19,7 @@ class PermissionMatrixTest extends TestCase
 
         $this->actingAs($user)->get(route('staff.roles.index'))->assertOk();
         $this->actingAs($user)->get(route('settings.edit'))->assertOk();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertOk();
         $this->actingAs($user)->get(route('payments.create'))->assertOk();
         $this->actingAs($user)->get(route('grades.index'))->assertOk();
         $this->actingAs($user)->get(route('attendance.index'))->assertOk();
@@ -38,6 +39,8 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('accounting.cash-journal'))->assertForbidden();
         $this->actingAs($user)->get(route('grades.index'))->assertForbidden();
         $this->actingAs($user)->get(route('activity-logs.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
     public function test_comptable_access_is_limited_to_financial_work(): void
@@ -54,6 +57,8 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('grades.index'))->assertForbidden();
         $this->actingAs($user)->get(route('attendance.index'))->assertForbidden();
         $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
     public function test_surveillant_access_is_limited_to_attendance_work(): void
@@ -68,6 +73,7 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('grades.index'))->assertForbidden();
         $this->actingAs($user)->get(route('report-cards.index'))->assertForbidden();
         $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
     }
 
     public function test_enseignant_access_is_limited_to_pedagogical_work(): void
@@ -83,6 +89,8 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('accounting.cash-journal'))->assertForbidden();
         $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
         $this->actingAs($user)->get(route('settings.edit'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
     public function test_direction_can_consult_reports_without_operational_mutations(): void
@@ -99,6 +107,8 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('grades.index'))->assertOk();
         $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
         $this->actingAs($user)->get(route('settings.edit'))->assertForbidden();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
     public function test_roles_screen_explains_what_roles_can_view_modify_and_print(): void
@@ -150,6 +160,19 @@ class PermissionMatrixTest extends TestCase
         $this->assertTrue($secretariat->hasPermissionTo('enrollments.view'));
         $this->assertFalse($secretariat->hasPermissionTo('students.create'));
         $this->assertFalse($secretariat->hasPermissionTo('classes.manage'));
+        $this->assertDatabaseHas('activity_logs', [
+            'user_id' => $user->id,
+            'action' => 'permissions_updated',
+            'auditable_type' => Role::class,
+            'auditable_id' => (string) $secretariat->id,
+        ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'lpp',
+            'event' => 'permissions_updated',
+            'subject_type' => Role::class,
+            'subject_id' => $secretariat->id,
+            'causer_id' => $user->id,
+        ]);
     }
 
     private function userWithRole(string $role): User

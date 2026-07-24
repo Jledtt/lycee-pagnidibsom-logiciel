@@ -108,6 +108,10 @@ Artisan::command('lpp:setup-tariffs', function () {
     $this->line('- Lignes creees ou mises a jour : ' . $result['lines']);
 })->purpose('Appliquer les tarifs officiels LPP aux classes actives');
 
-Schedule::command('lpp:backup-database')
+Schedule::command('backup:run --only-db --disable-notifications')
     ->dailyAt(env('LPP_BACKUP_TIME', '22:00'))
+    ->withoutOverlapping();
+
+Schedule::command('backup:clean --disable-notifications')
+    ->dailyAt(env('LPP_BACKUP_CLEAN_TIME', '22:30'))
     ->withoutOverlapping();

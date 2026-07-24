@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Services\AuditTrailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -64,14 +65,28 @@ class StaffRoleWebController extends Controller
         $this->ensurePermissionsExist();
 
         if ($role->name === 'admin') {
-            $role->syncPermissions($availablePermissions);
+            $oldPermissions = $role->permissions()->pluck('name')->sort()->values()->all();
+            $newPermissions = collect($availablePermissions)->sort()->values()->all();
+            $role->syncPermissions($newPermissions);
+            app(AuditTrailService::class)->record('permissions_updated', $role, [
+                'permissions' => $oldPermissions,
+            ], [
+                'permissions' => $newPermissions,
+            ]);
 
             return redirect()
                 ->route('staff.roles.index')
                 ->with('success', 'Le rôle Admin conserve tous les accès.');
         }
 
-        $role->syncPermissions($data['permissions'] ?? []);
+        $oldPermissions = $role->permissions()->pluck('name')->sort()->values()->all();
+        $newPermissions = collect($data['permissions'] ?? [])->sort()->values()->all();
+        $role->syncPermissions($newPermissions);
+        app(AuditTrailService::class)->record('permissions_updated', $role, [
+            'permissions' => $oldPermissions,
+        ], [
+            'permissions' => $newPermissions,
+        ]);
 
         return redirect()
             ->route('staff.roles.index')
@@ -221,8 +236,8 @@ class StaffRoleWebController extends Controller
             'direction' => 'Direction',
             'secretariat' => 'Secretariat',
             'comptable' => 'Comptabilité',
-            'enseignant' => 'Enseignant',
-            'surveillant' => 'Surveillant',
+            'enseignant' => 'Professeur',
+            'surveillant' => 'Vie scolaire',
         ];
     }
 
@@ -234,7 +249,7 @@ class StaffRoleWebController extends Controller
             'secretariat' => 'Gestion quotidienne des dossiers élèves, inscriptions, imports et documents administratifs.',
             'comptable' => 'Paiements, reçus, impayés et rapports financiers, sans accès aux notes ni aux paramètres.',
             'enseignant' => 'Saisie pedagogique: notes, absences et consultation des dossiers utiles.',
-            'surveillant' => 'Suivi de presence: absences, retards, justificatifs et rapports d assiduite.',
+            'surveillant' => 'Vie scolaire: absences, retards, justificatifs et rapports d assiduite.',
         ];
     }
 

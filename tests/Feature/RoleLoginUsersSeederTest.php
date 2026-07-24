@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RoleLoginUsersSeederTest extends TestCase
@@ -44,6 +45,17 @@ class RoleLoginUsersSeederTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['username' => 'parent']);
         $this->assertDatabaseMissing('users', ['username' => 'eleve']);
+    }
+
+    public function test_old_parent_and_student_roles_are_removed(): void
+    {
+        Role::findOrCreate('parent');
+        Role::findOrCreate('eleve');
+
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertDatabaseMissing('roles', ['name' => 'parent']);
+        $this->assertDatabaseMissing('roles', ['name' => 'eleve']);
     }
 
     public function test_admin_password_stays_on_existing_school_password(): void

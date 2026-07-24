@@ -60,6 +60,14 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::findOrCreate($permission);
         }
 
+        Role::query()
+            ->whereIn('name', ['parent', 'eleve'])
+            ->get()
+            ->each(function (Role $role): void {
+                $role->users()->detach();
+                $role->delete();
+            });
+
         $roles = [
             'admin' => $permissions,
             'direction' => [
@@ -125,16 +133,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'mock_exams.view',
                 'mock_exams.print',
                 'timetables.view',
-            ],
-            'parent' => [
-                'report_cards.view',
-                'attendance.view',
-                'payments.view',
-            ],
-            'eleve' => [
-                'report_cards.view',
-                'grades.view',
-                'attendance.view',
             ],
         ];
 

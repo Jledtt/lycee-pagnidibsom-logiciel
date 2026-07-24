@@ -2,11 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\ActivityLog;
+use App\Services\AuditTrailService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class ActivityLogObserver
 {
@@ -48,22 +46,7 @@ class ActivityLogObserver
 
     private function record(string $action, Model $model, array $oldValues, array $newValues): void
     {
-        if (! Auth::check()) {
-            return;
-        }
-
-        ActivityLog::query()->create([
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'auditable_type' => $model::class,
-            'auditable_id' => (string) $model->getKey(),
-            'auditable_label' => $this->label($model),
-            'description' => $this->description($action, $model),
-            'old_values' => $oldValues ?: null,
-            'new_values' => $newValues ?: null,
-            'ip_address' => request()?->ip(),
-            'user_agent' => Str::limit((string) request()?->userAgent(), 500, ''),
-        ]);
+        app(AuditTrailService::class)->record($action, $model, $oldValues, $newValues);
     }
 
     private function clean(array $values): array
@@ -71,27 +54,4 @@ class ActivityLogObserver
         return Arr::except($values, self::IGNORED_FIELDS);
     }
 
-    private function label(Model $model): string
-    {
-        foreach (['full_name', 'name', 'receipt_number', 'matricule', 'title', 'code'] as $field) {
-            $value = data_get($model, $field);
-
-            if (filled($value)) {
-                return (string) $value;
-            }
-        }
-
-        return class_basename($model) . ' #' . $model->getKey();
-    }
-
-    private function description(string $action, Model $model): string
-    {
-        $labels = [
-            'created' => 'Creation',
-            'updated' => 'Modification',
-            'deleted' => 'Suppression',
-        ];
-
-        return ($labels[$action] ?? ucfirst($action)) . ' - ' . class_basename($model) . ' - ' . $this->label($model);
-    }
 }

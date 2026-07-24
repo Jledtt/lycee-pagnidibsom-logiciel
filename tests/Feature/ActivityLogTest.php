@@ -33,6 +33,13 @@ class ActivityLogTest extends TestCase
             'auditable_type' => Student::class,
             'auditable_id' => (string) $student->id,
         ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'lpp',
+            'event' => 'created',
+            'subject_type' => Student::class,
+            'subject_id' => $student->id,
+            'causer_id' => $user->id,
+        ]);
     }
 
     public function test_only_authorized_roles_can_open_activity_log(): void

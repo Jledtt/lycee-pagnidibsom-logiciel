@@ -19,6 +19,9 @@ class StaffUserService
         ]);
 
         $user->syncRoles([$data['role']]);
+        app(AuditTrailService::class)->record('roles_updated', $user, [], [
+            'role' => $data['role'],
+        ]);
 
         return $user;
     }
@@ -43,8 +46,18 @@ class StaffUserService
             $payload['password'] = $data['password'];
         }
 
+        $oldRole = $user->roles()->pluck('name')->first();
+
         $user->update($payload);
         $user->syncRoles([$data['role']]);
+
+        if ($oldRole !== $data['role']) {
+            app(AuditTrailService::class)->record('roles_updated', $user, [
+                'role' => $oldRole,
+            ], [
+                'role' => $data['role'],
+            ]);
+        }
 
         return $user;
     }
