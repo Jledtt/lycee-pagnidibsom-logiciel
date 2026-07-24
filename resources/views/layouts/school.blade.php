@@ -210,22 +210,15 @@
 
         .app-shell {
             position: relative;
-            isolation: isolate;
             min-height: 100vh;
             display: grid;
             grid-template-columns: 292px minmax(0, 1fr);
             align-items: stretch;
-            background: var(--paper);
+            background: linear-gradient(90deg, var(--forest) 0 292px, var(--paper) 292px 100%);
         }
 
         .app-shell::before {
-            content: "";
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 292px;
-            background: var(--forest);
-            z-index: -1;
-            pointer-events: none;
+            display: none;
         }
 
         .sidebar {
@@ -981,6 +974,10 @@
             .app-shell,
             .two-col {
                 grid-template-columns: 1fr;
+            }
+
+            .app-shell {
+                background: var(--paper);
             }
 
             .auth-brand {
