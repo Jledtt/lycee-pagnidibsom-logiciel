@@ -22,10 +22,11 @@ class DatabaseBackupWebController extends Controller
     public function store(Request $request, DatabaseBackupService $backupService): RedirectResponse
     {
         $backup = $backupService->create();
+        $recommendedPath = $backup['archive_path'] ?: $backup['native_path'] ?: $backup['json_path'];
 
         return redirect()
             ->route('settings.backups.index')
-            ->with('success', 'Sauvegarde créée : ' . basename($backup['json_path']));
+            ->with('success', 'Sauvegarde créée : ' . basename($recommendedPath));
     }
 
     public function download(string $filename, DatabaseBackupService $backupService): BinaryFileResponse|Response

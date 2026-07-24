@@ -19,6 +19,10 @@ Artisan::command('lpp:backup-database {--path=}', function () {
     if ($backup['native_path']) {
         $this->info('Sauvegarde native creee : ' . $backup['native_path']);
     }
+
+    if ($backup['archive_path']) {
+        $this->info('Archive telechargeable creee : ' . $backup['archive_path']);
+    }
 })->purpose('Sauvegarder la base de donnees LPP');
 
 Artisan::command('lpp:clean-demo-data', function () {

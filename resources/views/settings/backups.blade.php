@@ -18,13 +18,13 @@
             </div>
 
             <p style="margin:0 0 16px;color:var(--muted)">
-                La sauvegarde créé un fichier JSON portable. Avec MySQL/Laragon, un fichier SQL est aussi généré si
-                <strong>mysqldump</strong> est disponible.
+                La sauvegarde crée une archive ZIP facile à télécharger. Elle contient un export JSON portable et,
+                selon la base utilisée, une copie SQLite ou un fichier SQL MySQL/PostgreSQL.
             </p>
 
             <form method="POST" action="{{ route('settings.backups.store') }}">
                 @csrf
-                <button class="btn btn-primary" type="submit">Exporter une sauvegarde</button>
+                <button class="btn btn-primary" type="submit">Créer une sauvegarde maintenant</button>
             </form>
         </div>
 
@@ -44,7 +44,11 @@
                 </div>
                 <div class="detail-item">
                     <span>Planification</span>
-                    <strong>LPP_BACKUP_TIME / LPP_BACKUP_KEEP_DAYS dans .env</strong>
+                    <strong>Chaque jour à {{ env('LPP_BACKUP_TIME', '22:00') }} si le planificateur Laravel est actif</strong>
+                </div>
+                <div class="detail-item">
+                    <span>Conservation</span>
+                    <strong>{{ max((int) env('LPP_BACKUP_KEEP_DAYS', 14), 1) }} jour(s), réglable dans .env</strong>
                 </div>
             </div>
         </div>
@@ -67,6 +71,7 @@
                             <th>Type</th>
                             <th>Taille</th>
                             <th>Date</th>
+                            <th>Conseil</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -77,6 +82,13 @@
                                 <td>{{ strtoupper($backup['extension']) }}</td>
                                 <td>{{ number_format($backup['size'] / 1024, 1, ',', ' ') }} Ko</td>
                                 <td>{{ \Carbon\Carbon::createFromTimestamp($backup['created_at'])->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    @if ($backup['extension'] === 'zip')
+                                        <span class="badge">Recommandé</span>
+                                    @else
+                                        <span class="muted">Technique</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a class="btn btn-subtle" href="{{ route('settings.backups.download', $backup['name']) }}">Télécharger</a>
                                 </td>
@@ -96,7 +108,11 @@
         <div class="ledger-list">
             <div class="detail-item">
                 <span>Avant toute restauration</span>
-                <strong>Faire une copie de la base actuelle et mettre le site en maintenance.</strong>
+                <strong>Faire une nouvelle sauvegarde, prévenir les utilisateurs et mettre le site en maintenance.</strong>
+            </div>
+            <div class="detail-item">
+                <span>Archive ZIP</span>
+                <strong>Décompresser l'archive, puis utiliser le fichier .sql ou .sqlite adapté à la base installée.</strong>
             </div>
             <div class="detail-item">
                 <span>MySQL / MariaDB</span>
@@ -104,7 +120,7 @@
             </div>
             <div class="detail-item">
                 <span>SQLite</span>
-                <strong>Remplacer database/database.sqlite par la copie .sqlite sauvegardee.</strong>
+                <strong>Remplacer database/database.sqlite par la copie .sqlite sauvegardée.</strong>
             </div>
         </div>
     </section>

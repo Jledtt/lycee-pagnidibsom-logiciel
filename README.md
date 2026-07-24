@@ -74,7 +74,7 @@ Par defaut, les sauvegardes sont creees dans :
 storage/app/backups
 ```
 
-La commande cree un export JSON portable. En SQLite, elle ajoute aussi une copie du fichier `.sqlite`. En MySQL/MariaDB, elle genere aussi un fichier `.sql` si `mysqldump` est disponible. En PostgreSQL, elle fait pareil avec `pg_dump`.
+La commande cree une archive `.zip` telechargeable. Cette archive contient un export JSON portable et, selon la base utilisee, une copie `.sqlite` ou un fichier `.sql`. En MySQL/MariaDB, le fichier SQL est genere si `mysqldump` est disponible. En PostgreSQL, il est genere avec `pg_dump`.
 
 Parametres disponibles dans `.env` :
 
@@ -109,10 +109,12 @@ php artisan lpp:backup-database
 
 Restaurer MySQL/MariaDB avec HeidiSQL :
 
-1. Creer ou vider la base `lpp_gestion`.
-2. Ouvrir le fichier `.sql` de sauvegarde dans HeidiSQL.
-3. Executer le script.
-4. Lancer :
+1. Telecharger la sauvegarde `.zip` depuis l'application.
+2. Decompresser l'archive.
+3. Creer ou vider la base `lpp_gestion`.
+4. Ouvrir le fichier `.sql` de sauvegarde dans HeidiSQL.
+5. Executer le script.
+6. Lancer :
 
 ```powershell
 php artisan config:clear

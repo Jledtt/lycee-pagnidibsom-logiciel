@@ -36,6 +36,7 @@ class TechnicalMaintenanceTest extends TestCase
             ->assertExitCode(0);
 
         $this->assertNotEmpty(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.json'));
+        $this->assertNotEmpty(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.zip'));
 
         File::deleteDirectory($path);
     }
@@ -63,7 +64,7 @@ class TechnicalMaintenanceTest extends TestCase
             ->post(route('settings.backups.store'))
             ->assertRedirect(route('settings.backups.index'));
 
-        $backup = collect(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.json'))->first();
+        $backup = collect(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.zip'))->first();
 
         $this->assertNotNull($backup);
 

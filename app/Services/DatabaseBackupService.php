@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 use Symfony\Component\Process\Process;
+use ZipArchive;
 
 class DatabaseBackupService
 {
@@ -32,6 +33,7 @@ class DatabaseBackupService
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         $nativePath = $this->createNativeBackup($driver, $config, $directory, $timestamp);
+        $archivePath = $this->createArchive($directory, $driver, $timestamp, array_filter([$jsonPath, $nativePath]));
 
         $this->prune($directory);
 
@@ -40,6 +42,7 @@ class DatabaseBackupService
             'driver' => $driver,
             'json_path' => $jsonPath,
             'native_path' => $nativePath,
+            'archive_path' => $archivePath,
         ];
     }
 
@@ -211,6 +214,46 @@ class DatabaseBackupService
         File::put($path, $process->getOutput());
 
         return $path;
+    }
+
+    private function createArchive(string $directory, string $driver, string $timestamp, array $paths): ?string
+    {
+        if (! class_exists(ZipArchive::class) || $paths === []) {
+            return null;
+        }
+
+        $archivePath = $directory . DIRECTORY_SEPARATOR . "lpp-{$driver}-{$timestamp}.zip";
+        $zip = new ZipArchive();
+
+        if ($zip->open($archivePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return null;
+        }
+
+        $manifest = [
+            'application' => 'LPP Gestion Scolaire',
+            'driver' => $driver,
+            'generated_at' => now()->toIso8601String(),
+            'files' => [],
+        ];
+
+        foreach ($paths as $path) {
+            if (! is_string($path) || ! File::isFile($path)) {
+                continue;
+            }
+
+            $name = basename($path);
+            $zip->addFile($path, $name);
+            $manifest['files'][] = [
+                'name' => $name,
+                'size' => File::size($path),
+                'type' => strtolower(pathinfo($path, PATHINFO_EXTENSION)),
+            ];
+        }
+
+        $zip->addFromString('manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $zip->close();
+
+        return File::isFile($archivePath) ? $archivePath : null;
     }
 
     private function findExecutable(string $envName, array $names, array $extraGlobs = []): ?string
