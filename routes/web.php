@@ -9,6 +9,7 @@ use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\DatabaseBackupWebController;
 use App\Http\Controllers\EnrollmentWebController;
+use App\Http\Controllers\ExportCenterWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
 use App\Http\Controllers\LoginHistoryWebController;
@@ -52,6 +53,38 @@ Route::view('/help', 'help.index')
 Route::get('/print-center', PrintCenterWebController::class)
     ->middleware('auth')
     ->name('print-center.index');
+
+Route::get('/exports', [ExportCenterWebController::class, 'index'])
+    ->middleware(['auth', 'permission:students.import|students.export|payments.reports|grades.view|report_cards.view|attendance.reports|attendance.view|mock_exams.view|mock_exams.print'])
+    ->name('exports.index');
+
+Route::get('/exports/students', [ExportCenterWebController::class, 'students'])
+    ->middleware(['auth', 'permission:students.export'])
+    ->name('exports.students');
+
+Route::get('/exports/payments', [ExportCenterWebController::class, 'payments'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('exports.payments');
+
+Route::get('/exports/unpaid', [ExportCenterWebController::class, 'unpaid'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('exports.unpaid');
+
+Route::get('/exports/grades', [ExportCenterWebController::class, 'grades'])
+    ->middleware(['auth', 'permission:grades.view|report_cards.view'])
+    ->name('exports.grades');
+
+Route::get('/exports/attendance', [ExportCenterWebController::class, 'attendance'])
+    ->middleware(['auth', 'permission:attendance.reports|attendance.view'])
+    ->name('exports.attendance');
+
+Route::get('/exports/mock-exams', [ExportCenterWebController::class, 'mockExams'])
+    ->middleware(['auth', 'permission:mock_exams.view|mock_exams.print'])
+    ->name('exports.mock-exams');
+
+Route::get('/exports/teacher-fees', [ExportCenterWebController::class, 'teacherFees'])
+    ->middleware(['auth', 'permission:payments.reports'])
+    ->name('exports.teacher-fees');
 
 Route::get('/activity-logs', [ActivityLogWebController::class, 'index'])
     ->middleware(['auth', 'permission:activity_logs.view'])

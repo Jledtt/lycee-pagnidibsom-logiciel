@@ -91,8 +91,8 @@
                     </div>
                 @endcan
 
-                @canany(['students.export', 'payments.reports', 'mock_exams.print', 'report_cards.print', 'attendance.reports'])
-                    <div class="nav-section {{ $activeIn(['certificates', 'reports', 'print-center']) ? 'active-section' : '' }}">
+                @canany(['students.import', 'students.export', 'payments.reports', 'grades.view', 'report_cards.view', 'mock_exams.view', 'mock_exams.print', 'attendance.reports', 'attendance.view'])
+                    <div class="nav-section {{ $activeIn(['certificates', 'reports', 'print-center', 'exports']) ? 'active-section' : '' }}">
                         <p class="nav-section-title">Documents</p>
                         @can('students.export')
                             <a class="{{ $activeKey === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Certificats</a>
@@ -102,6 +102,9 @@
                         @endcanany
                         @canany(['students.export', 'payments.reports', 'mock_exams.print', 'report_cards.print', 'attendance.reports'])
                             <a class="{{ $activeKey === 'print-center' ? 'active' : '' }}" href="{{ route('print-center.index') }}"><span class="nav-dot"></span>Centre d’impression</a>
+                        @endcanany
+                        @canany(['students.import', 'students.export', 'payments.reports', 'grades.view', 'report_cards.view', 'mock_exams.view', 'mock_exams.print', 'attendance.reports', 'attendance.view'])
+                            <a class="{{ $activeKey === 'exports' ? 'active' : '' }}" href="{{ route('exports.index') }}"><span class="nav-dot"></span>Imports / Exports</a>
                         @endcanany
                     </div>
                 @endcanany
