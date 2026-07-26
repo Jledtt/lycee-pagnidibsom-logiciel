@@ -11,6 +11,10 @@ use ZipArchive;
 
 class DatabaseBackupService
 {
+    private const DIRECTORY_MODE = 0750;
+
+    private const FILE_MODE = 0640;
+
     public function create(?string $directory = null): array
     {
         $connection = config('database.default');
@@ -20,9 +24,9 @@ class DatabaseBackupService
         $directory = $directory ?: $this->directory();
         $timestamp = now()->format('Ymd-His');
 
-        File::ensureDirectoryExists($directory);
+        $this->secureDirectory($directory);
 
-        $jsonPath = $directory . DIRECTORY_SEPARATOR . "lpp-{$driver}-{$timestamp}.json";
+        $jsonPath = $directory.DIRECTORY_SEPARATOR."lpp-{$driver}-{$timestamp}.json";
         File::put($jsonPath, json_encode([
             'application' => 'LPP Gestion Scolaire',
             'connection' => $connection,
@@ -34,6 +38,10 @@ class DatabaseBackupService
 
         $nativePath = $this->createNativeBackup($driver, $config, $directory, $timestamp);
         $archivePath = $this->createArchive($directory, $driver, $timestamp, array_filter([$jsonPath, $nativePath]));
+
+        foreach (array_filter([$jsonPath, $nativePath, $archivePath]) as $path) {
+            $this->secureFile($path);
+        }
 
         $this->prune($directory);
 
@@ -48,9 +56,9 @@ class DatabaseBackupService
 
     public function list(): Collection
     {
-        File::ensureDirectoryExists($this->directory());
+        $this->secureDirectory($this->directory());
 
-        return collect(File::glob($this->directory() . DIRECTORY_SEPARATOR . 'lpp-*') ?: [])
+        return collect(File::glob($this->directory().DIRECTORY_SEPARATOR.'lpp-*') ?: [])
             ->filter(fn (string $path) => File::isFile($path))
             ->map(fn (string $path) => [
                 'name' => basename($path),
@@ -66,7 +74,7 @@ class DatabaseBackupService
     public function pathForDownload(string $filename): ?string
     {
         $filename = basename($filename);
-        $path = $this->directory() . DIRECTORY_SEPARATOR . $filename;
+        $path = $this->directory().DIRECTORY_SEPARATOR.$filename;
 
         if (! str_starts_with($filename, 'lpp-') || ! File::exists($path) || ! File::isFile($path)) {
             return null;
@@ -143,7 +151,7 @@ class DatabaseBackupService
             return null;
         }
 
-        $path = $directory . DIRECTORY_SEPARATOR . "lpp-sqlite-{$timestamp}.sqlite";
+        $path = $directory.DIRECTORY_SEPARATOR."lpp-sqlite-{$timestamp}.sqlite";
         File::copy($database, $path);
 
         return $path;
@@ -159,21 +167,23 @@ class DatabaseBackupService
             return null;
         }
 
-        $path = $directory . DIRECTORY_SEPARATOR . "lpp-mysql-{$timestamp}.sql";
+        $path = $directory.DIRECTORY_SEPARATOR."lpp-mysql-{$timestamp}.sql";
         $command = [
             $binary,
             '--single-transaction',
             '--routines',
             '--triggers',
+            '--no-tablespaces',
             '--default-character-set=utf8mb4',
-            '--host=' . ($config['host'] ?? '127.0.0.1'),
-            '--port=' . ($config['port'] ?? 3306),
-            '--user=' . ($config['username'] ?? 'root'),
-            '--password=' . ($config['password'] ?? ''),
+            '--host='.($config['host'] ?? '127.0.0.1'),
+            '--port='.($config['port'] ?? 3306),
+            '--user='.($config['username'] ?? 'root'),
             $config['database'],
         ];
 
-        return $this->runDump($command, $path);
+        return $this->runDump($command, $path, [
+            'MYSQL_PWD' => $config['password'] ?? '',
+        ]);
     }
 
     private function dumpPostgres(array $config, string $directory, string $timestamp): ?string
@@ -184,12 +194,12 @@ class DatabaseBackupService
             return null;
         }
 
-        $path = $directory . DIRECTORY_SEPARATOR . "lpp-pgsql-{$timestamp}.sql";
+        $path = $directory.DIRECTORY_SEPARATOR."lpp-pgsql-{$timestamp}.sql";
         $command = [
             $binary,
-            '--host=' . ($config['host'] ?? '127.0.0.1'),
-            '--port=' . ($config['port'] ?? 5432),
-            '--username=' . ($config['username'] ?? 'postgres'),
+            '--host='.($config['host'] ?? '127.0.0.1'),
+            '--port='.($config['port'] ?? 5432),
+            '--username='.($config['username'] ?? 'postgres'),
             '--format=plain',
             '--clean',
             '--if-exists',
@@ -222,8 +232,8 @@ class DatabaseBackupService
             return null;
         }
 
-        $archivePath = $directory . DIRECTORY_SEPARATOR . "lpp-{$driver}-{$timestamp}.zip";
-        $zip = new ZipArchive();
+        $archivePath = $directory.DIRECTORY_SEPARATOR."lpp-{$driver}-{$timestamp}.zip";
+        $zip = new ZipArchive;
 
         if ($zip->open($archivePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             return null;
@@ -280,7 +290,7 @@ class DatabaseBackupService
         foreach ($paths as $path) {
             foreach ($names as $name) {
                 foreach ($extensions as $extension) {
-                    $candidate = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $name . $extension;
+                    $candidate = rtrim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$name.$extension;
 
                     if (File::exists($candidate)) {
                         return $candidate;
@@ -296,10 +306,23 @@ class DatabaseBackupService
     {
         $keepDays = max((int) env('LPP_BACKUP_KEEP_DAYS', 14), 1);
 
-        foreach (File::glob($directory . DIRECTORY_SEPARATOR . 'lpp-*') ?: [] as $file) {
+        foreach (File::glob($directory.DIRECTORY_SEPARATOR.'lpp-*') ?: [] as $file) {
             if (File::lastModified($file) < now()->subDays($keepDays)->timestamp) {
                 File::delete($file);
             }
+        }
+    }
+
+    private function secureDirectory(string $directory): void
+    {
+        File::ensureDirectoryExists($directory, self::DIRECTORY_MODE, true);
+        @chmod($directory, self::DIRECTORY_MODE);
+    }
+
+    private function secureFile(string $path): void
+    {
+        if (File::isFile($path)) {
+            @chmod($path, self::FILE_MODE);
         }
     }
 }

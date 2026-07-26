@@ -35,8 +35,9 @@ class TechnicalMaintenanceTest extends TestCase
         $this->artisan('lpp:backup-database', ['--path' => $path])
             ->assertExitCode(0);
 
-        $this->assertNotEmpty(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.json'));
-        $this->assertNotEmpty(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.zip'));
+        $this->assertNotEmpty(File::glob($path.DIRECTORY_SEPARATOR.'lpp-sqlite-*.json'));
+        $this->assertNotEmpty(File::glob($path.DIRECTORY_SEPARATOR.'lpp-sqlite-*.zip'));
+        $this->assertSecureBackupPermissions($path);
 
         File::deleteDirectory($path);
     }
@@ -49,7 +50,7 @@ class TechnicalMaintenanceTest extends TestCase
         $admin->assignRole('admin');
 
         $this->app['config']->set('app.env', 'testing');
-        putenv('LPP_BACKUP_PATH=' . $path);
+        putenv('LPP_BACKUP_PATH='.$path);
         $_ENV['LPP_BACKUP_PATH'] = $path;
         $_SERVER['LPP_BACKUP_PATH'] = $path;
 
@@ -64,9 +65,10 @@ class TechnicalMaintenanceTest extends TestCase
             ->post(route('settings.backups.store'))
             ->assertRedirect(route('settings.backups.index'));
 
-        $backup = collect(File::glob($path . DIRECTORY_SEPARATOR . 'lpp-sqlite-*.zip'))->first();
+        $backup = collect(File::glob($path.DIRECTORY_SEPARATOR.'lpp-sqlite-*.zip'))->first();
 
         $this->assertNotNull($backup);
+        $this->assertSecureBackupPermissions($path);
 
         $this->actingAs($admin)
             ->get(route('settings.backups.download', basename($backup)))
@@ -75,5 +77,18 @@ class TechnicalMaintenanceTest extends TestCase
         File::deleteDirectory($path);
         putenv('LPP_BACKUP_PATH');
         unset($_ENV['LPP_BACKUP_PATH'], $_SERVER['LPP_BACKUP_PATH']);
+    }
+
+    private function assertSecureBackupPermissions(string $directory): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $this->assertSame('0750', substr(sprintf('%o', fileperms($directory)), -4));
+
+        foreach (File::files($directory) as $file) {
+            $this->assertSame('0640', substr(sprintf('%o', $file->getPerms()), -4));
+        }
     }
 }
