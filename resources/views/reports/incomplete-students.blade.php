@@ -81,7 +81,7 @@
             <strong>{{ $summary['missing_photo'] }}</strong>
         </div>
         <div class="stat">
-            <span>Pi?ces obligatoires</span>
+            <span>Pièces obligatoires</span>
             <strong>{{ $summary['missing_documents'] }}</strong>
         </div>
         <div class="stat">

@@ -25,7 +25,7 @@
         <div class="panel-head">
             <div>
                 <h2>{{ $roleLabels[$role->name] ?? $role->name }}</h2>
-                <p style="margin:6px 0 0;color:var(--muted)">{{ $roleDescriptions[$role->name] ?? 'R?le interne configur?.' }}</p>
+                <p style="margin:6px 0 0;color:var(--muted)">{{ $roleDescriptions[$role->name] ?? 'Rôle interne configuré.' }}</p>
             </div>
             <span class="badge">{{ count($visiblePermissions) }} accès actif(s)</span>
         </div>

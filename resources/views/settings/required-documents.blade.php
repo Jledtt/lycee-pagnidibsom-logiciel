@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Pi?ces obligatoires - Lycée Privé Pagnidibsom',
+    'title' => 'Pièces obligatoires - Lycée Privé Pagnidibsom',
     'active' => 'settings',
-    'pageTitle' => 'Pi?ces obligatoires',
+    'pageTitle' => 'Pièces obligatoires',
     'pageSubtitle' => 'Parametrage des documents exiges dans les dossiers élèves',
 ])
 
@@ -32,7 +32,7 @@
 
                     <div class="field wide">
                         <label>Type / code</label>
-                        <input name="document_type" value="{{ old('document_type') }}" placeholder="Laisse vide pour générér automatiquement">
+                        <input name="document_type" value="{{ old('document_type') }}" placeholder="Laisse vide pour générer automatiquement">
                     </div>
 
                     <div class="field">

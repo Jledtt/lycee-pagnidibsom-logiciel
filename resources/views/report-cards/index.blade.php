@@ -24,7 +24,7 @@
         </div>
 
         @if ($classes->isEmpty() || $terms->isEmpty())
-            <div class="empty">Il faut au moins une classe active et un trimestre pour générér les bulletins.</div>
+            <div class="empty">Il faut au moins une classe active et un trimestre pour générer les bulletins.</div>
         @else
             <form class="searchbar" method="GET" action="{{ route('report-cards.index') }}">
                 <select name="school_class_id">
@@ -136,7 +136,7 @@
                                     </td>
                                     <td>
                                         @if (! $reportCard)
-                                            <span class="badge badge-warning">A générér</span>
+                                            <span class="badge badge-warning">A générer</span>
                                         @elseif ($reportCard->general_average === null)
                                             <span class="badge badge-warning">Non note</span>
                                         @elseif ($reportCard->status === 'validated')

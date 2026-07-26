@@ -85,7 +85,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $student?->matricule }}</td>
                                 <td><strong>{{ $student?->full_name }}</strong></td>
-                                <td>{{ $student?->gender_label ?? 'Non renseign?' }}</td>
+                                <td>{{ $student?->gender_label ?? 'Non renseigné' }}</td>
                                 <td>{{ $student?->birth_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>{{ $guardian?->full_name ?? '-' }}</td>
                                 <td>{{ $guardian?->phone_primary ?? $student?->home_phone ?? '-' }}</td>

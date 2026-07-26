@@ -7,7 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('settings.numbering.index') }}">Numérotation</a>
-    <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pi?ces obligatoires</a>
+    <a class="btn btn-subtle" href="{{ route('settings.required-documents.index') }}">Pièces obligatoires</a>
     <a class="btn btn-subtle" href="{{ route('settings.backups.index') }}">Sauvegardes</a>
 @endsection
 

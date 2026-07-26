@@ -106,7 +106,7 @@
                 <div class="form-grid">
                     <div class="field">
                         <label for="password">Nouveau mot de passe</label>
-                        <input id="password" name="password" type="password" placeholder="Laisse vide pour générér automatiquement">
+                        <input id="password" name="password" type="password" placeholder="Laisse vide pour générer automatiquement">
                     </div>
                     <div class="field">
                         <label for="password_confirmation">Confirmation</label>

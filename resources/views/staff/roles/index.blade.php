@@ -56,7 +56,7 @@
                             <span style="color:var(--muted)">{{ count($permissions) }} permission(s)</span>
                         </td>
                         <td>
-                            <strong>{{ $roleDescriptions[$role->name] ?? 'R?le interne configur?.' }}</strong>
+                            <strong>{{ $roleDescriptions[$role->name] ?? 'Rôle interne configuré.' }}</strong>
                         </td>
                         <td>
                             <div class="searchbar">

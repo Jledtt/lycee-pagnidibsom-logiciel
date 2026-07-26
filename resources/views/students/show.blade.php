@@ -122,7 +122,7 @@
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
             <div>
-                <h2>Pi?ces obligatoires</h2>
+                <h2>Pièces obligatoires</h2>
                 <p style="margin:4px 0 0;color:var(--muted)">
                     {{ count($missingRequiredDocuments) === 0 ? 'Dossier administratif complet.' : count($missingRequiredDocuments) . ' pièce(s) encore manquante(s).' }}
                 </p>

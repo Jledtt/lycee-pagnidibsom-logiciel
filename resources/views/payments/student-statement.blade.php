@@ -39,7 +39,7 @@
             </div>
 
             @if ($profile['scheduled_rows']->isEmpty())
-                <div class="empty">Aucun tarif configur? pour la classe actuelle.</div>
+                <div class="empty">Aucun tarif configuré pour la classe actuelle.</div>
             @else
                 <div class="subject-list-scroll">
                     <table class="table" style="min-width:900px">

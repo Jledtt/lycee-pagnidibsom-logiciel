@@ -75,7 +75,7 @@
                     <td>{{ $row['status'] === 'paid' ? 'Paye' : ($row['status'] === 'partial' ? 'Partiel' : 'Impayé') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5">Aucun tarif configur?.</td></tr>
+                <tr><td colspan="5">Aucun tarif configuré.</td></tr>
             @endforelse
         </tbody>
     </table>

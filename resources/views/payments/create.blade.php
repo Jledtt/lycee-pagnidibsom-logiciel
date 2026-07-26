@@ -2,14 +2,14 @@
     'title' => 'Nouveau paiement - Lycée Privé Pagnidibsom',
     'active' => 'payments',
     'pageTitle' => 'Nouveau paiement',
-    'pageSubtitle' => 'Enregistrer un encaissement et générér un reçu',
+    'pageSubtitle' => 'Enregistrer un encaissement et générer un reçu',
 ])
 
 @section('content')
     @if ($students->isEmpty())
         <div class="empty">Aucun élève inscrit disponible pour enregistrér un paiement.</div>
     @elseif ($feeTypes->isEmpty())
-        <div class="empty">Aucun type de frais configur?.</div>
+        <div class="empty">Aucun type de frais configuré.</div>
     @else
         <form method="POST" action="{{ route('payments.store') }}">
             @csrf
