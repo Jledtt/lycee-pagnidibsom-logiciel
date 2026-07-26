@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Services\EnrollmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
 {
@@ -25,16 +26,21 @@ class EnrollmentController extends Controller
 
     public function store(Request $request, EnrollmentService $enrollmentService): JsonResponse
     {
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
         $data = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
             'type' => ['nullable', 'in:new,renewal,transfer'],
             'enrollment_date' => ['nullable', 'date'],
             'previous_school' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
         ]);
 
-        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $student = Student::findOrFail($data['student_id']);
         $schoolClass = SchoolClass::findOrFail($data['school_class_id']);
 

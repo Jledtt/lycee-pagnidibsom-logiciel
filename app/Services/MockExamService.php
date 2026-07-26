@@ -9,13 +9,39 @@ use App\Models\MockExam;
 use App\Models\MockExamCandidate;
 use App\Models\MockExamSubject;
 use App\Models\SchoolClass;
+use App\Models\Term;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class MockExamService
 {
     public function createExam(AcademicYear $academicYear, array $data): MockExam
     {
+        $classIds = collect($data['school_class_ids'])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $validClassCount = SchoolClass::query()
+            ->whereIn('id', $classIds)
+            ->where('academic_year_id', $academicYear->id)
+            ->count();
+
+        if ($validClassCount !== $classIds->count()) {
+            throw ValidationException::withMessages([
+                'school_class_ids' => 'Toutes les classes doivent appartenir à cette année scolaire.',
+            ]);
+        }
+
+        if (! empty($data['term_id']) && ! Term::query()
+            ->whereKey($data['term_id'])
+            ->where('academic_year_id', $academicYear->id)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'term_id' => 'Le trimestre choisi n’appartient pas à cette année scolaire.',
+            ]);
+        }
+
         return DB::transaction(function () use ($academicYear, $data) {
             $exam = MockExam::query()->create([
                 'academic_year_id' => $academicYear->id,

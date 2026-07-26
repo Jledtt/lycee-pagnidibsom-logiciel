@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
+use App\Models\FeeSchedule;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
@@ -35,7 +36,49 @@ class PaymentService
             $enrollment = Enrollment::query()
                 ->where('academic_year_id', $academicYear->id)
                 ->where('student_id', $student->id)
+                ->where('status', 'active')
                 ->first();
+
+            if (! $enrollment) {
+                throw ValidationException::withMessages([
+                    'student_id' => 'Cet élève n’est pas inscrit pour l’année scolaire active.',
+                ]);
+            }
+
+            $scheduleIds = collect($lines)
+                ->pluck('fee_schedule_id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+            $schedules = FeeSchedule::query()
+                ->whereIn('id', $scheduleIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($lines as $index => $line) {
+                $scheduleId = (int) ($line['fee_schedule_id'] ?? 0);
+
+                if (! $scheduleId) {
+                    continue;
+                }
+
+                $schedule = $schedules->get($scheduleId);
+
+                if (! $schedule
+                    || (int) $schedule->academic_year_id !== (int) $academicYear->id
+                    || (int) $schedule->school_class_id !== (int) $enrollment->school_class_id) {
+                    throw ValidationException::withMessages([
+                        "lines.{$index}.fee_schedule_id" => 'Cet échéancier ne correspond pas à l’année et à la classe de l’élève.',
+                    ]);
+                }
+
+                if ((int) $schedule->fee_type_id !== (int) ($line['fee_type_id'] ?? 0)) {
+                    throw ValidationException::withMessages([
+                        "lines.{$index}.fee_type_id" => 'Le type de frais ne correspond pas à l’échéancier choisi.',
+                    ]);
+                }
+            }
 
             $payment = Payment::create([
                 'receipt_number' => $this->receiptNumberService->generate(),

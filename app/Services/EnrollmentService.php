@@ -17,6 +17,12 @@ class EnrollmentService
         AcademicYear $academicYear,
         array $data = []
     ): Enrollment {
+        if ((int) $schoolClass->academic_year_id !== (int) $academicYear->id) {
+            throw ValidationException::withMessages([
+                'school_class_id' => 'La classe choisie n’appartient pas à cette année scolaire.',
+            ]);
+        }
+
         return DB::transaction(function () use ($student, $schoolClass, $academicYear, $data) {
             $exists = Enrollment::query()
                 ->where('academic_year_id', $academicYear->id)

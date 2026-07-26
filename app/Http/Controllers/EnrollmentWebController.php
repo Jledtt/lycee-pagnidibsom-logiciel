@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Services\EnrollmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EnrollmentWebController extends Controller
@@ -60,7 +61,7 @@ class EnrollmentWebController extends Controller
     public function store(Request $request, EnrollmentService $enrollmentService): RedirectResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
-        $data = $this->validateEnrollment($request);
+        $data = $this->validateEnrollment($request, $academicYear->id);
 
         $student = Student::findOrFail($data['student_id']);
         $schoolClass = SchoolClass::findOrFail($data['school_class_id']);
@@ -86,7 +87,7 @@ class EnrollmentWebController extends Controller
 
     public function edit(Enrollment $enrollment): View
     {
-        $academicYear = $this->activeAcademicYear();
+        $academicYear = $enrollment->academicYear;
 
         return view('enrollments.edit', [
             'academicYear' => $academicYear,
@@ -98,7 +99,7 @@ class EnrollmentWebController extends Controller
 
     public function update(Request $request, Enrollment $enrollment): RedirectResponse
     {
-        $data = $this->validateEnrollment($request, true);
+        $data = $this->validateEnrollment($request, $enrollment->academic_year_id, true);
         $enrollment->update($data);
 
         return redirect()
@@ -152,11 +153,15 @@ class EnrollmentWebController extends Controller
             ->get();
     }
 
-    private function validateEnrollment(Request $request, bool $updating = false): array
+    private function validateEnrollment(Request $request, int $academicYearId, bool $updating = false): array
     {
         return $request->validate([
             'student_id' => [$updating ? 'sometimes' : 'required', 'exists:students,id'],
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYearId),
+            ],
             'enrollment_date' => ['nullable', 'date'],
             'type' => ['required', 'in:new,renewal,transfer'],
             'status' => ['required', 'in:active,pending,cancelled,completed'],

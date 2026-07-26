@@ -7,13 +7,44 @@ use App\Models\Assessment;
 use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Grade;
+use App\Models\SchoolClass;
+use App\Models\Term;
+use App\Models\TermPeriod;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class GradeEntryService
 {
     public function createAssessment(AcademicYear $academicYear, array $data, User $teacher): Assessment
     {
+        $errors = [];
+
+        if (! SchoolClass::query()
+            ->whereKey($data['school_class_id'])
+            ->where('academic_year_id', $academicYear->id)
+            ->exists()) {
+            $errors['school_class_id'] = 'La classe choisie n’appartient pas à cette année scolaire.';
+        }
+
+        if (! Term::query()
+            ->whereKey($data['term_id'])
+            ->where('academic_year_id', $academicYear->id)
+            ->exists()) {
+            $errors['term_id'] = 'Le trimestre choisi n’appartient pas à cette année scolaire.';
+        }
+
+        if (! empty($data['term_period_id']) && ! TermPeriod::query()
+            ->whereKey($data['term_period_id'])
+            ->where('term_id', $data['term_id'])
+            ->exists()) {
+            $errors['term_period_id'] = 'La période choisie ne correspond pas au trimestre.';
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
         return Assessment::query()->create([
             ...$data,
             'academic_year_id' => $academicYear->id,

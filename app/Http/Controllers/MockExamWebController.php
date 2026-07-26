@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MockExamWebController extends Controller
@@ -76,11 +77,20 @@ class MockExamWebController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'exam_type' => ['required', 'in:trimestriel,bepc_blanc,bac_blanc'],
-            'term_id' => ['nullable', 'integer', 'exists:terms,id'],
+            'term_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('terms', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'school_class_ids' => ['required', 'array', 'min:1'],
-            'school_class_ids.*' => ['integer', 'exists:school_classes,id'],
+            'school_class_ids.*' => [
+                'integer',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 

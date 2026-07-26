@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Payment;
 
+use App\Models\AcademicYear;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePaymentRequest extends FormRequest
 {
@@ -13,6 +15,10 @@ class StorePaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $academicYearId = AcademicYear::query()
+            ->where('is_active', true)
+            ->value('id');
+
         return [
             'student_id' => ['required', 'exists:students,id'],
             'payment_method' => ['required', 'in:cash,mobile_money,bank_transfer,other'],
@@ -20,7 +26,11 @@ class StorePaymentRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'lines' => ['required', 'array'],
             'lines.*.fee_type_id' => ['nullable', 'exists:fee_types,id'],
-            'lines.*.fee_schedule_id' => ['nullable', 'exists:fee_schedules,id'],
+            'lines.*.fee_schedule_id' => [
+                'nullable',
+                Rule::exists('fee_schedules', 'id')
+                    ->where('academic_year_id', $academicYearId ?? 0),
+            ],
             'lines.*.amount' => ['nullable', 'numeric', 'min:1'],
         ];
     }

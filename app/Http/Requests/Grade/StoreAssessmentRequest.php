@@ -28,14 +28,22 @@ class StoreAssessmentRequest extends FormRequest
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
 
         return [
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear?->id ?? 0),
+            ],
             'term_id' => [
                 'required',
                 $academicYear
                     ? Rule::exists('terms', 'id')->where('academic_year_id', $academicYear->id)
                     : 'exists:terms,id',
             ],
-            'term_period_id' => ['nullable', 'exists:term_periods,id'],
+            'term_period_id' => [
+                'nullable',
+                Rule::exists('term_periods', 'id')
+                    ->where('term_id', $this->integer('term_id')),
+            ],
             'subject_id' => ['required', 'exists:subjects,id'],
             'assessment_type_id' => ['required', Rule::exists('assessment_types', 'id')->where('status', 'active')],
             'entry_mode' => ['required', Rule::in(array_keys(Assessment::entryModeLabels()))],

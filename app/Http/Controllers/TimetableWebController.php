@@ -9,6 +9,7 @@ use App\Services\TimetableTemplateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TimetableWebController extends Controller
@@ -52,7 +53,11 @@ class TimetableWebController extends Controller
         $academicYear = $this->requireActiveAcademicYear();
 
         $data = $request->validate([
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
             'title' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -143,7 +148,11 @@ class TimetableWebController extends Controller
         $academicYear = $this->requireActiveAcademicYear();
 
         $data = $request->validate([
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_id' => [
+                'required',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
         ]);
 
         $timetable = Timetable::query()->updateOrCreate(

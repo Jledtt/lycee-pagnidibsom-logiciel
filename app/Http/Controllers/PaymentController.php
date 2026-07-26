@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {
@@ -24,6 +25,8 @@ class PaymentController extends Controller
 
     public function store(Request $request, PaymentService $paymentService): JsonResponse
     {
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
         $data = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'payment_method' => ['nullable', 'in:cash,mobile_money,bank_transfer,other'],
@@ -31,11 +34,14 @@ class PaymentController extends Controller
             'notes' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.fee_type_id' => ['required', 'exists:fee_types,id'],
-            'lines.*.fee_schedule_id' => ['nullable', 'exists:fee_schedules,id'],
+            'lines.*.fee_schedule_id' => [
+                'nullable',
+                Rule::exists('fee_schedules', 'id')
+                    ->where('academic_year_id', $academicYear->id),
+            ],
             'lines.*.amount' => ['required', 'numeric', 'min:1'],
         ]);
 
-        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $student = Student::findOrFail($data['student_id']);
 
         $payment = $paymentService->createPayment(
