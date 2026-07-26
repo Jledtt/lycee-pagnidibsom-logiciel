@@ -14,7 +14,8 @@ use Illuminate\Validation\ValidationException;
 class PaymentService
 {
     public function __construct(
-        private readonly ReceiptNumberService $receiptNumberService
+        private readonly ReceiptNumberService $receiptNumberService,
+        private readonly CommunicationService $communicationService,
     ) {
     }
 
@@ -31,7 +32,7 @@ class PaymentService
             ]);
         }
 
-        return DB::transaction(function () use ($student, $academicYear, $receiver, $lines, $data) {
+        $payment = DB::transaction(function () use ($student, $academicYear, $receiver, $lines, $data) {
             $amount = collect($lines)->sum(fn (array $line) => (float) $line['amount']);
             $enrollment = Enrollment::query()
                 ->where('academic_year_id', $academicYear->id)
@@ -103,6 +104,10 @@ class PaymentService
 
             return $payment->load(['student', 'lines.feeType', 'receiver']);
         });
+
+        $this->communicationService->queuePayment($payment, $receiver);
+
+        return $payment;
     }
 
     public function cancel(Payment $payment, User $user, string $reason): Payment

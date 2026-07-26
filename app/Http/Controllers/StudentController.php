@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Student;
+use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,11 @@ class StudentController extends Controller
         );
     }
 
-    public function update(Request $request, Student $student): JsonResponse
+    public function update(
+        Request $request,
+        Student $student,
+        CommunicationService $communicationService,
+    ): JsonResponse
     {
         $data = $request->validate([
             'first_name' => ['sometimes', 'required', 'string', 'max:255'],
@@ -69,7 +74,15 @@ class StudentController extends Controller
             'status' => ['sometimes', 'required', 'in:active,transferred,dropped,graduated,suspended'],
         ]);
 
+        $oldStatus = (string) $student->status;
         $student->update($data);
+
+        $communicationService->queueStudentStatusChange(
+            $student,
+            $oldStatus,
+            (string) $student->status,
+            $request->user(),
+        );
 
         return response()->json($student);
     }

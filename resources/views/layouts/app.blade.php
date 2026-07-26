@@ -14,9 +14,12 @@
                     <strong>{{ $schoolSettings?->school_name ?? 'Lycée Privé Pagnidibsom' }}</strong>
                     <span>{{ $academicYear?->name ?? 'Année non configurée' }}</span>
                 </div>
+                <button class="sidebar-toggle" type="button" aria-controls="sidebar-navigation" aria-expanded="false" title="Afficher le menu">
+                    <span aria-hidden="true">&#9776;</span>
+                </button>
             </div>
 
-            <nav class="nav">
+            <nav class="nav" id="sidebar-navigation">
                 <div class="nav-section {{ $activeIn(['dashboard', 'help']) ? 'active-section' : '' }}">
                     <p class="nav-section-title">Accueil</p>
                     <a class="{{ $activeKey === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
@@ -109,6 +112,13 @@
                     </div>
                 @endcanany
 
+                @can('communications.view')
+                    <div class="nav-section {{ $activeIn(['communications']) ? 'active-section' : '' }}">
+                        <p class="nav-section-title">Communication</p>
+                        <a class="{{ $activeKey === 'communications' ? 'active' : '' }}" href="{{ route('communications.index') }}"><span class="nav-dot"></span>Notifications</a>
+                    </div>
+                @endcan
+
                 @canany(['users.manage', 'activity_logs.view', 'settings.manage', 'academic_years.manage'])
                     <div class="nav-section {{ $activeIn(['staff', 'activity-logs', 'settings', 'academic-years', 'profile']) ? 'active-section' : '' }}">
                         <p class="nav-section-title">Administration</p>
@@ -153,4 +163,21 @@
             @yield('content')
         </main>
     </div>
+
+    <script>
+        (() => {
+            const sidebar = document.querySelector('.sidebar');
+            const toggle = document.querySelector('.sidebar-toggle');
+
+            if (! sidebar || ! toggle) {
+                return;
+            }
+
+            toggle.addEventListener('click', () => {
+                const open = sidebar.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.title = open ? 'Masquer le menu' : 'Afficher le menu';
+            });
+        })();
+    </script>
 @endsection

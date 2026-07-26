@@ -7,6 +7,7 @@ use App\Http\Controllers\AttendanceWebController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\ClassCouncilWebController;
+use App\Http\Controllers\CommunicationWebController;
 use App\Http\Controllers\DatabaseBackupWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\ExportCenterWebController;
@@ -45,6 +46,26 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::get('/dashboard', SchoolDashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
+
+Route::get('/communications', [CommunicationWebController::class, 'index'])
+    ->middleware(['auth', 'permission:communications.view'])
+    ->name('communications.index');
+
+Route::post('/communications/announcements', [CommunicationWebController::class, 'storeAnnouncement'])
+    ->middleware(['auth', 'permission:communications.send'])
+    ->name('communications.announcements.store');
+
+Route::post('/communications/messages/{message}/retry', [CommunicationWebController::class, 'retry'])
+    ->middleware(['auth', 'permission:communications.send'])
+    ->name('communications.messages.retry');
+
+Route::put('/communications/templates/{template}', [CommunicationWebController::class, 'updateTemplate'])
+    ->middleware(['auth', 'permission:communications.templates.manage'])
+    ->name('communications.templates.update');
+
+Route::post('/communications/templates/{template}/reset', [CommunicationWebController::class, 'resetTemplate'])
+    ->middleware(['auth', 'permission:communications.templates.manage'])
+    ->name('communications.templates.reset');
 
 Route::view('/help', 'help.index')
     ->middleware('auth')

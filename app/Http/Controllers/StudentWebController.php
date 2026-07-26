@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
 use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
@@ -167,16 +168,29 @@ class StudentWebController extends Controller
         ]);
     }
 
-    public function update(Request $request, Student $student): RedirectResponse
+    public function update(
+        Request $request,
+        Student $student,
+        CommunicationService $communicationService,
+    ): RedirectResponse
     {
         $data = $this->validateStudent($request, true);
         $guardianData = $this->validateGuardians($request);
+        $oldStatus = (string) $student->status;
 
         DB::transaction(function () use ($student, $data, $guardianData) {
             $student->update($data);
             $this->attachGuardianIfPresent($student, $guardianData, 'father', 'father');
             $this->attachGuardianIfPresent($student, $guardianData, 'mother', 'mother');
         });
+
+        $student->refresh();
+        $communicationService->queueStudentStatusChange(
+            $student,
+            $oldStatus,
+            (string) $student->status,
+            $request->user(),
+        );
 
         return redirect()
             ->route('students.show', $student)

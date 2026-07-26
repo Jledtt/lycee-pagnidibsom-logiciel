@@ -252,6 +252,21 @@
             font-size: 13px;
         }
 
+        .sidebar-toggle {
+            display: none;
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 8px;
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
         .nav {
             display: grid;
             gap: 10px;
@@ -989,13 +1004,35 @@
                 position: static;
                 height: auto;
                 min-height: auto;
+                padding: 12px 16px;
                 border-right: 0;
                 border-bottom: 1px solid var(--line);
             }
 
+            .sidebar .brand {
+                margin-bottom: 0;
+                padding-bottom: 8px;
+                border-bottom: 0;
+            }
+
+            .sidebar .brand > div:nth-child(2) {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .sidebar-toggle {
+                display: inline-flex;
+            }
+
             .nav {
+                display: none;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 align-items: start;
+                margin-top: 10px;
+            }
+
+            .sidebar.is-open .nav {
+                display: grid;
             }
 
             .stats,

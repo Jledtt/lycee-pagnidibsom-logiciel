@@ -9,6 +9,11 @@ use App\Models\User;
 
 class AttendanceSessionService
 {
+    public function __construct(
+        private readonly CommunicationService $communicationService,
+    ) {
+    }
+
     public function firstOrCreateSession(AcademicYear $academicYear, int $schoolClassId, string $date, User $creator): AttendanceSession
     {
         return AttendanceSession::query()->firstOrCreate(
@@ -25,24 +30,34 @@ class AttendanceSessionService
 
     public function updateRecords(AttendanceSession $session, array $records, User $user): void
     {
+        $notifications = collect();
+
         foreach ($records as $row) {
             $status = $row['status'];
             $isExcused = $status === 'excused';
 
-            AttendanceRecord::query()->updateOrCreate(
-                [
-                    'attendance_session_id' => $session->id,
-                    'student_id' => $row['student_id'],
-                ],
-                [
-                    'status' => $status,
-                    'minutes_late' => $status === 'late' ? ($row['minutes_late'] ?? null) : null,
-                    'reason' => $row['reason'] ?? null,
-                    'justified_at' => $isExcused ? now() : null,
-                    'justified_by' => $isExcused ? $user->id : null,
-                ],
-            );
+            $record = AttendanceRecord::query()->firstOrNew([
+                'attendance_session_id' => $session->id,
+                'student_id' => $row['student_id'],
+            ]);
+            $previousStatus = $record->exists ? $record->status : null;
+
+            $record->fill([
+                'status' => $status,
+                'minutes_late' => $status === 'late' ? ($row['minutes_late'] ?? null) : null,
+                'reason' => $row['reason'] ?? null,
+                'justified_at' => $isExcused ? now() : null,
+                'justified_by' => $isExcused ? $user->id : null,
+            ])->save();
+
+            if ($previousStatus !== $status && in_array($status, ['absent', 'late'], true)) {
+                $notifications->push($record);
+            }
         }
+
+        $notifications->each(
+            fn (AttendanceRecord $record) => $this->communicationService->queueAttendance($record, $user),
+        );
     }
 
     public function clearRecord(AttendanceRecord $record): void

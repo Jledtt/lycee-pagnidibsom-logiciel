@@ -141,6 +141,11 @@ class StaffRoleWebController extends Controller
                 'timetables.manage' => 'Créer et modifier les emplois du temps',
                 'timetables.print' => 'Imprimer les emplois du temps',
             ],
+            'Communication' => [
+                'communications.view' => 'Voir les annonces et l’historique des emails',
+                'communications.send' => 'Envoyer des annonces et relancer les échecs',
+                'communications.templates.manage' => 'Modifier les modèles automatiques',
+            ],
             'Administration' => [
                 'users.manage' => 'Gérer les comptes du personnel',
                 'roles.manage' => 'Modifier les rôles et accès',
@@ -197,6 +202,9 @@ class StaffRoleWebController extends Controller
             'timetables.view' => 'view',
             'timetables.manage' => 'modify',
             'timetables.print' => 'print',
+            'communications.view' => 'view',
+            'communications.send' => 'modify',
+            'communications.templates.manage' => 'manage',
             'users.manage' => 'manage',
             'roles.manage' => 'manage',
             'activity_logs.view' => 'view',
