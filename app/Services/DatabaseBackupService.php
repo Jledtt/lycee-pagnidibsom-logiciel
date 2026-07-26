@@ -11,7 +11,7 @@ use ZipArchive;
 
 class DatabaseBackupService
 {
-    private const DIRECTORY_MODE = 0750;
+    private const DIRECTORY_MODE = 02750;
 
     private const FILE_MODE = 0640;
 

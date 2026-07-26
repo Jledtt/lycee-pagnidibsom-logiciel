@@ -85,7 +85,7 @@ class TechnicalMaintenanceTest extends TestCase
             return;
         }
 
-        $this->assertSame('0750', substr(sprintf('%o', fileperms($directory)), -4));
+        $this->assertSame('2750', substr(sprintf('%o', fileperms($directory)), -4));
 
         foreach (File::files($directory) as $file) {
             $this->assertSame('0640', substr(sprintf('%o', $file->getPerms()), -4));
