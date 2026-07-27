@@ -58,3 +58,30 @@ test('un administrateur ouvre les modules principaux puis se déconnecte', async
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
 });
+
+test('les grands montants financiers restent dans leurs cartes', async ({ page }) => {
+    await login(page);
+
+    await page.locator('.finance-stats .money-amount').evaluateAll((amounts) => {
+        amounts.forEach((amount) => {
+            amount.textContent = '100 000 000';
+        });
+    });
+
+    const overflowingCards = await page.locator('.finance-stats .stat').evaluateAll((cards) =>
+        cards
+            .map((card, index) => ({
+                index,
+                overflow: card.scrollWidth - card.clientWidth,
+            }))
+            .filter(({ overflow }) => overflow > 1),
+    );
+    const documentOverflows = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+
+    expect(overflowingCards).toEqual([]);
+    expect(documentOverflows).toBe(false);
+    await expect(page.locator('.finance-stats .money-amount').first()).toHaveText('100 000 000');
+    await expect(page.locator('.finance-stats .money-currency').first()).toHaveText('FCFA');
+});

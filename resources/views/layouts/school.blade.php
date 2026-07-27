@@ -374,7 +374,7 @@
         }
 
         .stats {
-            grid-template-columns: repeat(5, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
         }
 
         .stat,
@@ -386,11 +386,12 @@
         }
 
         .stat {
+            min-width: 0;
             padding: 16px;
             border-top: 4px solid var(--gold);
         }
 
-        .stat span {
+        .stat > span {
             color: var(--muted);
             font-size: 13px;
             font-weight: 700;
@@ -398,9 +399,32 @@
 
         .stat strong {
             display: block;
+            max-width: 100%;
             margin-top: 8px;
             font-size: 26px;
             line-height: 1.1;
+            overflow-wrap: anywhere;
+        }
+
+        .stat .money {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 7px;
+            font-size: 22px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .money-amount {
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .money-currency {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1;
+            white-space: nowrap;
         }
 
         .two-col {

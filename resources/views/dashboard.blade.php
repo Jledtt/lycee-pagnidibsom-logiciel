@@ -215,18 +215,27 @@
     @endcanany
 
     @can('payments.reports')
-        <section class="grid stats" style="margin-top:16px">
+        <section class="grid stats finance-stats" style="margin-top:16px">
             <div class="stat">
                 <span>Total attendu</span>
-                <strong class="money">{{ number_format($financeAlerts['expected'], 0, ',', ' ') }} FCFA</strong>
+                <strong class="money">
+                    <span class="money-amount">{{ number_format($financeAlerts['expected'], 0, ',', ' ') }}</span>
+                    <span class="money-currency">FCFA</span>
+                </strong>
             </div>
             <div class="stat">
                 <span>Total payé</span>
-                <strong class="money">{{ number_format($financeAlerts['paid'], 0, ',', ' ') }} FCFA</strong>
+                <strong class="money">
+                    <span class="money-amount">{{ number_format($financeAlerts['paid'], 0, ',', ' ') }}</span>
+                    <span class="money-currency">FCFA</span>
+                </strong>
             </div>
             <div class="stat">
                 <span>Reste estimé</span>
-                <strong class="money">{{ number_format($financeAlerts['remaining'], 0, ',', ' ') }} FCFA</strong>
+                <strong class="money">
+                    <span class="money-amount">{{ number_format($financeAlerts['remaining'], 0, ',', ' ') }}</span>
+                    <span class="money-currency">FCFA</span>
+                </strong>
             </div>
             <div class="stat">
                 <span>Paiements du jour</span>
