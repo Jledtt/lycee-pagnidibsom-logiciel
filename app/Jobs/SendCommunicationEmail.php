@@ -73,10 +73,14 @@ class SendCommunicationEmail implements ShouldQueue
                     $message->recipient_name,
                     $message->body,
                 ));
+            $originalMessage = $sent?->getOriginalMessage();
+            $providerMessageId = $originalMessage && method_exists($originalMessage, 'getHeaders')
+                ? $originalMessage->getHeaders()->get('X-Resend-Email-ID')?->getBodyAsString()
+                : null;
 
             $message->forceFill([
                 'status' => 'sent',
-                'provider_message_id' => $sent?->getMessageId(),
+                'provider_message_id' => $providerMessageId,
                 'error_message' => null,
                 'sent_at' => now(),
                 'failed_at' => null,
