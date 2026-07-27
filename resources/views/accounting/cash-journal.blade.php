@@ -71,7 +71,7 @@
         </div>
     </section>
 
-    <section class="grid two-col" style="margin-top:16px">
+    <section class="grid two-col accounting-breakdown" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">
                 <h2>Par mode de paiement</h2>
@@ -80,7 +80,7 @@
             @if ($summary['by_method']->isEmpty())
                 <div class="empty">Aucun encaissement valide sur la période.</div>
             @else
-                <table class="table">
+                <table class="table table-compact">
                     <thead>
                         <tr>
                             <th>Mode</th>
@@ -107,7 +107,7 @@
             @if ($summary['by_fee_type']->isEmpty())
                 <div class="empty">Aucune ligne de frais sur la période.</div>
             @else
-                <table class="table">
+                <table class="table table-compact">
                     <thead>
                         <tr>
                             <th>Frais</th>

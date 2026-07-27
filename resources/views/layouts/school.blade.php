@@ -337,9 +337,15 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
+            flex-wrap: wrap;
             margin-bottom: 24px;
             padding-bottom: 18px;
             border-bottom: 1px solid var(--line);
+        }
+
+        .topbar > div:first-child {
+            min-width: min(100%, 240px);
+            flex: 1 1 240px;
         }
 
         .topbar h1 {
@@ -356,7 +362,10 @@
         .top-actions {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 10px;
+            flex: 1 1 520px;
+            flex-wrap: wrap;
         }
 
         .user-pill {
@@ -435,6 +444,7 @@
         .panel {
             padding: 18px;
             min-width: 0;
+            overflow-x: auto;
         }
 
         .panel-head {
@@ -848,6 +858,10 @@
             width: 100%;
             border-collapse: collapse;
             min-width: 680px;
+        }
+
+        .table-compact {
+            min-width: 0;
         }
 
         .table th,
@@ -1398,6 +1412,16 @@
             }
         }
 
+        @media (max-width: 1280px) {
+            .accounting-breakdown {
+                grid-template-columns: 1fr;
+            }
+
+            .top-actions {
+                justify-content: flex-start;
+            }
+        }
+
         @media (max-width: 620px) {
             .main {
                 padding: 18px;
@@ -1424,10 +1448,6 @@
 
             .alert-item {
                 grid-template-columns: 1fr;
-            }
-
-            .panel {
-                overflow-x: auto;
             }
 
             .doc-intro,
