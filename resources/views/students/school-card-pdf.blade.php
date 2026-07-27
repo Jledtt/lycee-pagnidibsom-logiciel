@@ -150,7 +150,7 @@
     <div class="sheet">
         <div class="card">
             <div class="top-title">{{ str($school?->school_name ?? 'Lycée Privé Pagnidibsom')->upper() }}</div>
-            <div class="motto">- {{ trim($school?->motto ?? 'B?tir l?excellence', '"') }} -</div>
+            <div class="motto">- {{ trim($school?->motto ?? 'Bâtir l’excellence', '"') }} -</div>
 
             <table class="school-row">
                 <tr>

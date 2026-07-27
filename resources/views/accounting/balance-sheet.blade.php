@@ -121,7 +121,7 @@
         <div class="detail-grid">
             <div class="detail-item">
                 <span>Formule</span>
-                <strong>Entrees - d?penses = solde net</strong>
+                <strong>Entrées - dépenses = solde net</strong>
             </div>
             <div class="detail-item">
                 <span>Calcul</span>

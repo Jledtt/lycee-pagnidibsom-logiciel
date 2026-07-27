@@ -48,7 +48,7 @@
         </div>
 
         @if ($users->isEmpty())
-            <div class="empty">Aucun compte trouv?. Cr?e le premier compte avec le bouton "Nouvel utilisateur".</div>
+            <div class="empty">Aucun compte trouvé. Crée le premier compte avec le bouton "Nouvel utilisateur".</div>
         @else
             <table class="table">
                 <thead>

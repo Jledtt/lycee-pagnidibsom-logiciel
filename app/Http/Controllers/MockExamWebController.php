@@ -390,7 +390,7 @@ class MockExamWebController extends Controller
             'exam' => $mockExam,
             'school' => SchoolSetting::query()->first(),
             'subject' => $mockExamSubject,
-            'title' => 'Relev? de notes',
+            'title' => 'Relevé de notes',
         ])
             ->setPaper('a4')
             ->stream('saisie-notes-' . Str::slug($mockExam->name . '-' . $mockExamSubject->subject?->name) . '.pdf');

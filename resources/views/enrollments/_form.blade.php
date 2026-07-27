@@ -39,7 +39,7 @@
             <label for="type">Type</label>
             <select id="type" name="type" required>
                 <option value="new" @selected(old('type', $enrollment->type) === 'new')>Nouvelle inscription</option>
-                <option value="renewal" @selected(old('type', $enrollment->type) === 'renewal')>R?inscription</option>
+                <option value="renewal" @selected(old('type', $enrollment->type) === 'renewal')>Réinscription</option>
                 <option value="transfer" @selected(old('type', $enrollment->type) === 'transfer')>Transfert</option>
             </select>
             @error('type') <small class="error">{{ $message }}</small> @enderror

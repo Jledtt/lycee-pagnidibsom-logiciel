@@ -195,7 +195,7 @@ class AccountingWebController extends Controller
             ->latest('spent_at')
             ->latest()
             ->get();
-        $filename = 'd?penses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+        $filename = 'depenses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
 
         return Pdf::loadView('accounting.expenses.pdf', [
             'academicYear' => $academicYear,

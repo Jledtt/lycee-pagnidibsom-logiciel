@@ -210,7 +210,7 @@ class TariffWebController extends Controller
     private function ensureDefaultFeeTypes(): array
     {
         $items = [
-            'inscription' => ['Inscription / R?inscription', 'INS_REINS'],
+            'inscription' => ['Inscription / Réinscription', 'INS_REINS'],
             'novembre' => ['Scolarité novembre', 'SCO_NOV'],
             'fevrier' => ['Scolarité février', 'SCO_FEV'],
             'conseil' => ['Conseil de l ecole', 'CONSEIL'],

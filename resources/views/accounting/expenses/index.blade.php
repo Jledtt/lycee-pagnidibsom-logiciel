@@ -53,7 +53,7 @@
 
     <section class="summary-row" style="margin-top:16px">
         <div class="stat">
-            <span>Total d?penses</span>
+            <span>Total dépenses</span>
             <strong class="money">{{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</strong>
         </div>
         <div class="stat">
@@ -124,7 +124,7 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Liste des d?penses</h2>
+            <h2>Liste des dépenses</h2>
             <span class="badge">{{ $expenses->total() }} depense(s)</span>
         </div>
 

@@ -47,11 +47,11 @@
         </tr>
     </table>
 
-    <div class="title">Etat des d?penses</div>
+    <div class="title">État des dépenses</div>
 
     <table class="summary">
         <tr>
-            <td>Total d?penses : {{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</td>
+            <td>Total dépenses : {{ number_format($summary['total_valid'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Dépenses validées : {{ $summary['valid_count'] }}</td>
             <td>Annulations : {{ $summary['cancelled_count'] }}</td>
             <td>Montant annule : {{ number_format($summary['total_cancelled'], 0, ',', ' ') }} {{ $currency }}</td>

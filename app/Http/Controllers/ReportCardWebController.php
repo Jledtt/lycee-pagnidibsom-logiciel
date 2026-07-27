@@ -160,7 +160,7 @@ class ReportCardWebController extends Controller
         $schoolClass = SchoolClass::query()->with('level')->findOrFail($data['school_class_id']);
         $term = Term::query()->findOrFail($data['term_id']);
         $period = TermPeriod::query()->findOrFail($data['term_period_id']);
-        abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette p?riode ne correspond pas au trimestre s?lectionn?.');
+        abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette période ne correspond pas au trimestre sélectionné.');
 
         $students = $this->studentsForClass($schoolClass->academic_year_id, $schoolClass->id);
         $rows = $students
