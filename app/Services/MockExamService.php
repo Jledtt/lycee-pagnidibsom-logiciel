@@ -123,7 +123,7 @@ class MockExamService
 
         foreach ($candidates as $index => $candidate) {
             $candidate->update([
-                'anonymous_code' => $prefix . ($index + 1),
+                'anonymous_code' => $prefix.($index + 1),
             ]);
         }
 
@@ -137,7 +137,7 @@ class MockExamService
 
         foreach ($candidates as $index => $candidate) {
             $candidate->update([
-                'room_name' => 'Salle ' . (($index % $roomCount) + 1),
+                'room_name' => 'Salle '.(($index % $roomCount) + 1),
             ]);
         }
 

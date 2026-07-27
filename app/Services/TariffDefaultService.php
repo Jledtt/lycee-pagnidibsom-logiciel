@@ -95,7 +95,7 @@ class TariffDefaultService
 
     private function defaultLinesForClass(SchoolClass $schoolClass, array $feeTypes): array
     {
-        $name = Str::lower($schoolClass->name . ' ' . ($schoolClass->level?->name ?? ''));
+        $name = Str::lower($schoolClass->name.' '.($schoolClass->level?->name ?? ''));
 
         if (str_contains($name, 'bep1') || str_contains($name, 'génie civil') || str_contains($name, 'genie civil') || str_contains($name, 'électrotechnique') || str_contains($name, 'electrotechnique')) {
             return $this->secondaryLines($feeTypes, 120000, 40000, 40000);

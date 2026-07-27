@@ -181,7 +181,7 @@ class UserSecurityTest extends TestCase
     private function userWithRole(string $role, array $attributes = []): User
     {
         $user = User::factory()->create(array_merge([
-            'username' => $role . '-security-test-' . uniqid(),
+            'username' => $role.'-security-test-'.uniqid(),
             'status' => 'active',
         ], $attributes));
 

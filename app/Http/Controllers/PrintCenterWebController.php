@@ -50,9 +50,9 @@ class PrintCenterWebController extends Controller
             ->where('status', 'active')
             ->when($studentSearch !== '', fn ($query) => $query->where(function ($searchQuery) use ($studentSearch) {
                 $searchQuery
-                    ->where('first_name', 'like', '%' . $studentSearch . '%')
-                    ->orWhere('last_name', 'like', '%' . $studentSearch . '%')
-                    ->orWhere('matricule', 'like', '%' . $studentSearch . '%');
+                    ->where('first_name', 'like', '%'.$studentSearch.'%')
+                    ->orWhere('last_name', 'like', '%'.$studentSearch.'%')
+                    ->orWhere('matricule', 'like', '%'.$studentSearch.'%');
             }))
             ->when($selectedClass, fn ($query) => $query->whereHas('enrollments', function ($enrollmentQuery) use ($selectedClass, $academicYear) {
                 $enrollmentQuery

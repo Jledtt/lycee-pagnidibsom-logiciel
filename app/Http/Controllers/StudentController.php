@@ -61,8 +61,7 @@ class StudentController extends Controller
         Request $request,
         Student $student,
         CommunicationService $communicationService,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $data = $request->validate([
             'first_name' => ['sometimes', 'required', 'string', 'max:255'],
             'last_name' => ['sometimes', 'required', 'string', 'max:255'],

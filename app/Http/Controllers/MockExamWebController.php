@@ -22,8 +22,7 @@ class MockExamWebController extends Controller
 {
     public function __construct(
         private readonly MockExamService $mockExamService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -148,7 +147,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' candidat(s) synchronisé(s).');
+            ->with('success', $count.' candidat(s) synchronisé(s).');
     }
 
     public function generateAnonymousCodes(Request $request, MockExam $mockExam): RedirectResponse
@@ -161,7 +160,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' anonymat(s) généré(s).');
+            ->with('success', $count.' anonymat(s) généré(s).');
     }
 
     public function distributeRooms(Request $request, MockExam $mockExam): RedirectResponse
@@ -174,7 +173,7 @@ class MockExamWebController extends Controller
 
         return redirect()
             ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id])
-            ->with('success', $count . ' candidat(s) réparti(s) en salle.');
+            ->with('success', $count.' candidat(s) réparti(s) en salle.');
     }
 
     public function updateSubjectTracking(Request $request, MockExamSubject $mockExamSubject): RedirectResponse
@@ -245,7 +244,7 @@ class MockExamWebController extends Controller
 
         $data = $request->validate([
             'scores' => ['nullable', 'array'],
-            'scores.*.score' => ['nullable', 'numeric', 'min:0', 'max:' . (float) $mockExamSubject->max_score],
+            'scores.*.score' => ['nullable', 'numeric', 'min:0', 'max:'.(float) $mockExamSubject->max_score],
             'scores.*.is_absent' => ['nullable', 'boolean'],
             'scores.*.observation' => ['nullable', 'string', 'max:255'],
         ]);
@@ -311,7 +310,7 @@ class MockExamWebController extends Controller
             'title' => 'Liste des candidats',
         ])
             ->setPaper('a4')
-            ->stream('candidats-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('candidats-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function roomsPdf(MockExam $mockExam)
@@ -324,7 +323,7 @@ class MockExamWebController extends Controller
             'title' => 'Repartition par salle',
         ])
             ->setPaper('a4')
-            ->stream('repartition-salles-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('repartition-salles-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function anonymityPdf(MockExam $mockExam)
@@ -337,7 +336,7 @@ class MockExamWebController extends Controller
             'title' => 'Liste des anonymats',
         ])
             ->setPaper('a4')
-            ->stream('anonymats-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('anonymats-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function surveillancePvPdf(MockExam $mockExam)
@@ -350,7 +349,7 @@ class MockExamWebController extends Controller
             'title' => 'PV de surveillance',
         ])
             ->setPaper('a4')
-            ->stream('pv-surveillance-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('pv-surveillance-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function copyReceiptPdf(MockExam $mockExam)
@@ -363,7 +362,7 @@ class MockExamWebController extends Controller
             'title' => 'Bordereau de reception des copies',
         ])
             ->setPaper('a4')
-            ->stream('bordereau-copies-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('bordereau-copies-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function scoreSheetPdf(MockExam $mockExam, MockExamSubject $mockExamSubject)
@@ -393,7 +392,7 @@ class MockExamWebController extends Controller
             'title' => 'Relevé de notes',
         ])
             ->setPaper('a4')
-            ->stream('saisie-notes-' . Str::slug($mockExam->name . '-' . $mockExamSubject->subject?->name) . '.pdf');
+            ->stream('saisie-notes-'.Str::slug($mockExam->name.'-'.$mockExamSubject->subject?->name).'.pdf');
     }
 
     public function resultsPdf(MockExam $mockExam, string $status = 'provisoire')
@@ -420,7 +419,7 @@ class MockExamWebController extends Controller
             'title' => $title,
         ])
             ->setPaper('a4')
-            ->stream(Str::slug($title . '-' . $mockExam->name) . '.pdf');
+            ->stream(Str::slug($title.'-'.$mockExam->name).'.pdf');
     }
 
     public function juryDecisionPdf(MockExam $mockExam)
@@ -447,7 +446,7 @@ class MockExamWebController extends Controller
             'title' => 'Décision du jury',
         ])
             ->setPaper('a4')
-            ->stream('decision-jury-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('decision-jury-'.Str::slug($mockExam->name).'.pdf');
     }
 
     public function teacherFeesPdf(MockExam $mockExam)
@@ -460,7 +459,7 @@ class MockExamWebController extends Controller
             'title' => 'Honoraires professeurs',
         ])
             ->setPaper('a4')
-            ->stream('honoraires-professeurs-' . Str::slug($mockExam->name) . '.pdf');
+            ->stream('honoraires-professeurs-'.Str::slug($mockExam->name).'.pdf');
     }
 
     private function resultRows(MockExam $mockExam): Collection
@@ -480,6 +479,7 @@ class MockExamWebController extends Controller
 
                     if (! $score || $score->is_absent || $score->score === null) {
                         $missing++;
+
                         continue;
                     }
 

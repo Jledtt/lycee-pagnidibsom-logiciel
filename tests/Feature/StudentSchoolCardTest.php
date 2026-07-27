@@ -79,7 +79,7 @@ class StudentSchoolCardTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-student-card-test',
+            'username' => $role.'-student-card-test',
             'status' => 'active',
         ]);
 

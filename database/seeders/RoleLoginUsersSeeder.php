@@ -33,7 +33,7 @@ class RoleLoginUsersSeeder extends Seeder
                 ['username' => $roleName],
                 [
                     'name' => $displayName,
-                    'email' => $roleName . '@lyceepagnidibsom.local',
+                    'email' => $roleName.'@lyceepagnidibsom.local',
                     'password' => Hash::make($roleName),
                     'status' => 'active',
                 ]

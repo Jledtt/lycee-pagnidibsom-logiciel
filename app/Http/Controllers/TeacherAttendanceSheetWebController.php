@@ -43,7 +43,7 @@ class TeacherAttendanceSheetWebController extends Controller
         $end = Carbon::parse($filters['end_date'])->startOfDay();
         $teacherName = $filters['teacher_name'] ?? null;
         $rows = $this->blankRows($start, $end);
-        $filename = 'fiche-emargement-' . Str::slug(($teacherName ?: 'professeurs') . '-' . $start->format('Y-m-d') . '-' . $end->format('Y-m-d')) . '.pdf';
+        $filename = 'fiche-emargement-'.Str::slug(($teacherName ?: 'professeurs').'-'.$start->format('Y-m-d').'-'.$end->format('Y-m-d')).'.pdf';
 
         return Pdf::loadView('teacher-attendance-sheets.pdf', [
             'academicYear' => $academicYear,

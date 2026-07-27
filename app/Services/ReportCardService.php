@@ -10,8 +10,7 @@ class ReportCardService
 {
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService
-    ) {
-    }
+    ) {}
 
     public function generateForClass(SchoolClass $schoolClass, Term $term): array
     {

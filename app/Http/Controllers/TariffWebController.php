@@ -100,6 +100,7 @@ class TariffWebController extends Controller
                     ->where('academic_year_id', $academicYear->id)
                     ->where('school_class_id', $schoolClass->id)
                     ->delete();
+
                 continue;
             }
 
@@ -146,7 +147,7 @@ class TariffWebController extends Controller
 
         return redirect()
             ->route('tariffs.index')
-            ->with('success', $result['lines'] . ' ligne(s) de tarifs initialisées depuis l’affiche.');
+            ->with('success', $result['lines'].' ligne(s) de tarifs initialisées depuis l’affiche.');
     }
 
     public function applyClassDefaults(SchoolClass $schoolClass, TariffDefaultService $tariffDefaults): RedirectResponse
@@ -156,7 +157,7 @@ class TariffWebController extends Controller
 
         return redirect()
             ->route('tariffs.edit', $schoolClass)
-            ->with('success', $lines . ' ligne(s) de tarifs officiels appliquées.');
+            ->with('success', $lines.' ligne(s) de tarifs officiels appliquées.');
     }
 
     private function applyDefaultsLegacy(): RedirectResponse
@@ -190,7 +191,7 @@ class TariffWebController extends Controller
 
         return redirect()
             ->route('tariffs.index')
-            ->with('success', $created . ' ligne(s) de tarifs initialisées depuis l’affiche.');
+            ->with('success', $created.' ligne(s) de tarifs initialisées depuis l’affiche.');
     }
 
     private function activeAcademicYear(): ?AcademicYear
@@ -245,7 +246,7 @@ class TariffWebController extends Controller
 
     private function defaultLinesForClass(SchoolClass $schoolClass, array $feeTypes): array
     {
-        $name = Str::lower($schoolClass->name . ' ' . ($schoolClass->level?->name ?? ''));
+        $name = Str::lower($schoolClass->name.' '.($schoolClass->level?->name ?? ''));
 
         if (str_contains($name, 'bep1') || str_contains($name, 'genie civil') || str_contains($name, 'electrotechnique')) {
             return $this->secondaryLines($feeTypes, 120000, 40000, 40000);

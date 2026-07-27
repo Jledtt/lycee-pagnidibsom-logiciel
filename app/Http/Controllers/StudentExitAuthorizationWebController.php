@@ -99,7 +99,7 @@ class StudentExitAuthorizationWebController extends Controller
     public function pdf(StudentExitAuthorization $exitAuthorization)
     {
         $exitAuthorization->load(['student', 'schoolClass', 'academicYear', 'creator']);
-        $filename = 'autorisation-sortie-' . Str::slug($exitAuthorization->student->matricule . '-' . $exitAuthorization->document_date?->format('Y-m-d')) . '.pdf';
+        $filename = 'autorisation-sortie-'.Str::slug($exitAuthorization->student->matricule.'-'.$exitAuthorization->document_date?->format('Y-m-d')).'.pdf';
 
         return Pdf::loadView('exit-authorizations.pdf', [
             'authorization' => $exitAuthorization,

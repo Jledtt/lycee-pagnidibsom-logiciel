@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Grade extends Model
 {
     public const STATUS_GRADED = 'graded';
+
     public const STATUS_ABSENT = 'absent';
+
     public const STATUS_DISPENSED = 'dispensed';
+
     public const STATUS_SICK = 'sick';
 
     protected $fillable = [

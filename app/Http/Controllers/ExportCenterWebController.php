@@ -14,8 +14,7 @@ class ExportCenterWebController extends Controller
     public function __construct(
         private ExportCenterService $exports,
         private XlsxExportService $xlsx,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {

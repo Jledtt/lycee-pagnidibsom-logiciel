@@ -73,7 +73,7 @@ class AuditTrailService
             }
         }
 
-        return class_basename($model) . ' #' . $model->getKey();
+        return class_basename($model).' #'.$model->getKey();
     }
 
     public function description(string $action, Model $model, ?string $label = null): string
@@ -86,7 +86,7 @@ class AuditTrailService
             'roles_updated' => 'Modification du role',
         ];
 
-        return ($labels[$action] ?? ucfirst($action)) . ' - ' . class_basename($model) . ' - ' . ($label ?? $this->label($model));
+        return ($labels[$action] ?? ucfirst($action)).' - '.class_basename($model).' - '.($label ?? $this->label($model));
     }
 
     private function relatedStudent(Model $model): ?Student
@@ -123,6 +123,6 @@ class AuditTrailService
         $name = trim((string) ($student->full_name ?? ''));
         $matricule = trim((string) ($student->matricule ?? ''));
 
-        return trim($name . ($matricule !== '' ? ' - ' . $matricule : '')) ?: 'Eleve #' . $student->getKey();
+        return trim($name.($matricule !== '' ? ' - '.$matricule : '')) ?: 'Eleve #'.$student->getKey();
     }
 }

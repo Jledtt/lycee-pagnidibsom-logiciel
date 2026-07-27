@@ -27,8 +27,7 @@ class ClassCouncilWebController extends Controller
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly ReportCardService $reportCardService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -65,7 +64,7 @@ class ClassCouncilWebController extends Controller
         $this->reportCardService->generateForClass($schoolClass, $term);
 
         $reportCards = $this->reportCards($academicYear, $schoolClass, $term);
-        $filename = 'pv-conseil-' . Str::slug($schoolClass->name . '-' . $term->name) . '.pdf';
+        $filename = 'pv-conseil-'.Str::slug($schoolClass->name.'-'.$term->name).'.pdf';
 
         return Pdf::loadView('class-council.pv-pdf', [
             'academicYear' => $academicYear,
@@ -83,7 +82,7 @@ class ClassCouncilWebController extends Controller
     public function transcriptPdf(ReportCard $reportCard)
     {
         $reportCard->load(['academicYear', 'term', 'student', 'schoolClass.level']);
-        $filename = 'releve-notes-' . Str::slug($reportCard->student->matricule . '-' . $reportCard->term->name) . '.pdf';
+        $filename = 'releve-notes-'.Str::slug($reportCard->student->matricule.'-'.$reportCard->term->name).'.pdf';
 
         return Pdf::loadView('class-council.transcript-pdf', [
             'assessmentRows' => $this->assessmentRows($reportCard),
@@ -133,7 +132,7 @@ class ClassCouncilWebController extends Controller
             'threshold' => $threshold,
         ])
             ->setPaper('a4')
-            ->stream('liste-rachats-' . Str::slug($selectedClass->name . '-' . $academicYear->name) . '.pdf');
+            ->stream('liste-rachats-'.Str::slug($selectedClass->name.'-'.$academicYear->name).'.pdf');
     }
 
     public function lock(Request $request): RedirectResponse

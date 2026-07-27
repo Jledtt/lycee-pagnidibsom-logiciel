@@ -56,7 +56,7 @@ class StudentDocumentWebController extends Controller
                 ->toMediaCollection($this->mediaCollectionFor($data['document_type']));
 
             $document->forceFill([
-                'file_path' => 'media:' . $media->id,
+                'file_path' => 'media:'.$media->id,
             ])->save();
 
             if ($data['document_type'] === 'photo') {
@@ -93,9 +93,9 @@ class StudentDocumentWebController extends Controller
         if ($media = $this->mediaFromDocument($studentDocument)) {
             abort_unless(file_exists($media->getPath()), 404, 'Fichier introuvable.');
 
-            $filename = Str::slug($studentDocument->student?->matricule . '-' . $studentDocument->name)
-                . '.'
-                . $media->extension;
+            $filename = Str::slug($studentDocument->student?->matricule.'-'.$studentDocument->name)
+                .'.'
+                .$media->extension;
 
             return response()->download($media->getPath(), $filename);
         }
@@ -103,7 +103,7 @@ class StudentDocumentWebController extends Controller
         abort_unless(Storage::disk('public')->exists($studentDocument->file_path), 404, 'Fichier introuvable.');
 
         $extension = pathinfo($studentDocument->file_path, PATHINFO_EXTENSION);
-        $filename = Str::slug($studentDocument->student?->matricule . '-' . $studentDocument->name) . '.' . $extension;
+        $filename = Str::slug($studentDocument->student?->matricule.'-'.$studentDocument->name).'.'.$extension;
 
         return response()->download(Storage::disk('public')->path($studentDocument->file_path), $filename);
     }

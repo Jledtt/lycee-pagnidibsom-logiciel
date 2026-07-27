@@ -42,7 +42,7 @@ class PaymentFinancialProfileService
                     'fee_schedule_id' => $line->fee_schedule_id,
                     'amount' => (float) $line->amount,
                 ]))
-            ->groupBy(fn (array $row) => $row['student_id'] . ':' . $row['fee_schedule_id'])
+            ->groupBy(fn (array $row) => $row['student_id'].':'.$row['fee_schedule_id'])
             ->map(fn ($rows) => (float) $rows->sum('amount'));
 
         $classIds = $students
@@ -68,12 +68,12 @@ class PaymentFinancialProfileService
 
             return [
                 $student->id => $schedules->map(function (FeeSchedule $schedule) use ($student, $paidByStudentAndSchedule) {
-                    $paid = (float) ($paidByStudentAndSchedule[$student->id . ':' . $schedule->id] ?? 0);
+                    $paid = (float) ($paidByStudentAndSchedule[$student->id.':'.$schedule->id] ?? 0);
                     $amount = (float) $schedule->amount;
 
                     return [
                         'id' => $schedule->id,
-                        'label' => trim(($schedule->period ?: 'Sans periode') . ' - ' . ($schedule->feeType?->name ?? 'Frais')),
+                        'label' => trim(($schedule->period ?: 'Sans periode').' - '.($schedule->feeType?->name ?? 'Frais')),
                         'amount' => $amount,
                         'paid' => $paid,
                         'remaining' => max($amount - $paid, 0),

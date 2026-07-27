@@ -141,7 +141,7 @@ class GradeImportService
         }
 
         if ($student && isset($seenStudents[$student->id])) {
-            $errors[] = 'Doublon dans le fichier avec la ligne ' . $seenStudents[$student->id] . '.';
+            $errors[] = 'Doublon dans le fichier avec la ligne '.$seenStudents[$student->id].'.';
         } elseif ($student) {
             $seenStudents[$student->id] = $lineNumber;
         }
@@ -155,7 +155,7 @@ class GradeImportService
         }
 
         if (is_numeric($score) && ((float) $score < 0 || (float) $score > (float) $assessment->max_score)) {
-            $errors[] = 'Note hors barème. Maximum autorise: ' . number_format((float) $assessment->max_score, 0, ',', ' ') . '.';
+            $errors[] = 'Note hors barème. Maximum autorise: '.number_format((float) $assessment->max_score, 0, ',', ' ').'.';
         }
 
         if ($status !== Grade::STATUS_GRADED) {
@@ -251,7 +251,7 @@ class GradeImportService
 
     private function readXlsxRows(string $path): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         if ($zip->open($path) !== true) {
             return [];
@@ -298,7 +298,7 @@ class GradeImportService
     private function readPdfRows(string $path): array
     {
         try {
-            $text = (new PdfTextParser())->parseFile($path)->getText();
+            $text = (new PdfTextParser)->parseFile($path)->getText();
         } catch (\Throwable) {
             return [];
         }
@@ -354,6 +354,7 @@ class GradeImportService
         foreach ($document->si as $item) {
             if (isset($item->t)) {
                 $sharedStrings[] = (string) $item->t;
+
                 continue;
             }
 

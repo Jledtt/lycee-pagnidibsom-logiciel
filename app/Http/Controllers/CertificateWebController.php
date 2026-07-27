@@ -94,7 +94,7 @@ class CertificateWebController extends Controller
         $document = StudentDocument::create([
             'student_id' => $student->id,
             'academic_year_id' => $academicYear->id,
-            'name' => self::TYPES[$data['document_type']] . ' - ' . $student->full_name,
+            'name' => self::TYPES[$data['document_type']].' - '.$student->full_name,
             'document_type' => $data['document_type'],
             'document_number' => $officialNumberService->generate(
                 OfficialNumberService::STUDENT_CERTIFICATE,
@@ -133,7 +133,7 @@ class CertificateWebController extends Controller
         $certificate->load(['student.guardians', 'academicYear']);
         $student = $certificate->student;
         $enrollment = $this->currentEnrollment($student, $certificate->academicYear);
-        $filename = str($certificate->document_type . '-' . $student->matricule . '-' . $student->full_name)->slug() . '.pdf';
+        $filename = str($certificate->document_type.'-'.$student->matricule.'-'.$student->full_name)->slug().'.pdf';
 
         return Pdf::loadView('certificates.certificate-pdf', [
             'certificate' => $certificate,

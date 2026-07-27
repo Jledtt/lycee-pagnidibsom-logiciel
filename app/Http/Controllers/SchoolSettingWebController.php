@@ -47,9 +47,9 @@ class SchoolSettingWebController extends Controller
 
         if ($request->hasFile('logo')) {
             $logo = $request->file('logo');
-            $filename = 'school-logo-' . Str::random(8) . '.' . $logo->getClientOriginalExtension();
+            $filename = 'school-logo-'.Str::random(8).'.'.$logo->getClientOriginalExtension();
             $logo->move(public_path('images'), $filename);
-            $data['logo_path'] = 'images/' . $filename;
+            $data['logo_path'] = 'images/'.$filename;
         }
 
         DB::transaction(function () use ($settings, $data) {

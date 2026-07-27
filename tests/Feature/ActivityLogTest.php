@@ -100,7 +100,7 @@ class ActivityLogTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-activity-test',
+            'username' => $role.'-activity-test',
             'status' => 'active',
         ]);
 

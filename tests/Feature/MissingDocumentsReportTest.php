@@ -131,7 +131,7 @@ class MissingDocumentsReportTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-missing-documents-test',
+            'username' => $role.'-missing-documents-test',
             'status' => 'active',
         ]);
 
@@ -145,7 +145,7 @@ class MissingDocumentsReportTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
         file_put_contents($path, $content);
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($path);
         $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
         $zip->close();

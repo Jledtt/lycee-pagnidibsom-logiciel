@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
-use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\Level;
 use App\Models\SchoolClass;
@@ -189,7 +188,7 @@ Kabre;Issa;Garcon;20/05/2011;Ouagadougou;6e A</pre>'
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-student-import-test',
+            'username' => $role.'-student-import-test',
             'status' => 'active',
         ]);
 
@@ -203,7 +202,7 @@ Kabre;Issa;Garcon;20/05/2011;Ouagadougou;6e A</pre>'
         $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
         file_put_contents($path, $content);
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($path);
         $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
         $zip->close();

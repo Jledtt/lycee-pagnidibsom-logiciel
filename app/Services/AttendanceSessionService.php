@@ -11,8 +11,7 @@ class AttendanceSessionService
 {
     public function __construct(
         private readonly CommunicationService $communicationService,
-    ) {
-    }
+    ) {}
 
     public function firstOrCreateSession(AcademicYear $academicYear, int $schoolClassId, string $date, User $creator): AttendanceSession
     {

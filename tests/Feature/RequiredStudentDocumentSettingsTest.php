@@ -136,7 +136,7 @@ class RequiredStudentDocumentSettingsTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-required-documents-test',
+            'username' => $role.'-required-documents-test',
             'status' => 'active',
         ]);
 

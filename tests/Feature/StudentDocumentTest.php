@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\User;
@@ -119,7 +118,7 @@ class StudentDocumentTest extends TestCase
         $student = $this->student();
         $path = UploadedFile::fake()
             ->image('photo.jpg')
-            ->store('students/' . $student->id . '/documents', 'public');
+            ->store('students/'.$student->id.'/documents', 'public');
 
         $document = StudentDocument::query()->create([
             'student_id' => $student->id,
@@ -173,7 +172,7 @@ class StudentDocumentTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-student-document-test',
+            'username' => $role.'-student-document-test',
             'status' => 'active',
         ]);
 

@@ -98,7 +98,7 @@ class AcademicYearWebController extends Controller
 
         return redirect()
             ->route('academic-years.index')
-            ->with('success', $academicYear->name . ' est maintenant l’année active.');
+            ->with('success', $academicYear->name.' est maintenant l’année active.');
     }
 
     public function storeTerm(Request $request): RedirectResponse

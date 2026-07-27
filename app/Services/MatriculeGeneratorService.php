@@ -7,9 +7,7 @@ use App\Models\Student;
 
 class MatriculeGeneratorService
 {
-    public function __construct(private readonly OfficialNumberService $officialNumberService)
-    {
-    }
+    public function __construct(private readonly OfficialNumberService $officialNumberService) {}
 
     public function generate(?AcademicYear $academicYear = null): string
     {

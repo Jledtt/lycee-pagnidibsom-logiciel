@@ -8,7 +8,6 @@ use App\Models\Level;
 use App\Models\NumberingSetting;
 use App\Models\SchoolClass;
 use App\Models\Student;
-use App\Models\StudentDocument;
 use App\Models\User;
 use App\Services\MatriculeGeneratorService;
 use App\Services\OfficialNumberService;
@@ -194,7 +193,7 @@ class NumberingSettingTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-numbering-test',
+            'username' => $role.'-numbering-test',
             'status' => 'active',
         ]);
 

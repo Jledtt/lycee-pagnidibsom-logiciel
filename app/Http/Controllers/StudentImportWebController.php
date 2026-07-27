@@ -60,7 +60,7 @@ class StudentImportWebController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', $result['created'] . ' élève(s) importé(s). ' . $result['skipped'] . ' doublon(s) ignoré(s).');
+            ->with('success', $result['created'].' élève(s) importé(s). '.$result['skipped'].' doublon(s) ignoré(s).');
     }
 
     public function destroy(): RedirectResponse

@@ -56,7 +56,7 @@ class DashboardRoleAccessTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-test',
+            'username' => $role.'-test',
             'status' => 'active',
         ]);
 

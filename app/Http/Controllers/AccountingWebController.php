@@ -49,7 +49,7 @@ class AccountingWebController extends Controller
             ->latest('paid_at')
             ->get();
 
-        $filename = 'journal-caisse-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+        $filename = 'journal-caisse-'.Str::slug($filters['date_from'].'-'.$filters['date_to']).'.pdf';
 
         return Pdf::loadView('accounting.cash-journal-pdf', [
             'academicYear' => $academicYear,
@@ -87,7 +87,7 @@ class AccountingWebController extends Controller
         $filters = $this->balanceFilters($request);
         $payments = $this->balancePaymentQuery($filters, $academicYear)->get();
         $expenses = $this->balanceExpenseQuery($filters, $academicYear)->get();
-        $filename = 'bilan-caisse-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+        $filename = 'bilan-caisse-'.Str::slug($filters['date_from'].'-'.$filters['date_to']).'.pdf';
 
         return Pdf::loadView('accounting.balance-sheet-pdf', [
             'academicYear' => $academicYear,
@@ -195,7 +195,7 @@ class AccountingWebController extends Controller
             ->latest('spent_at')
             ->latest()
             ->get();
-        $filename = 'depenses-' . Str::slug($filters['date_from'] . '-' . $filters['date_to']) . '.pdf';
+        $filename = 'depenses-'.Str::slug($filters['date_from'].'-'.$filters['date_to']).'.pdf';
 
         return Pdf::loadView('accounting.expenses.pdf', [
             'academicYear' => $academicYear,

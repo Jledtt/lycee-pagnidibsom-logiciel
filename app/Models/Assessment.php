@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Assessment extends Model
 {
     public const ENTRY_MODE_STANDARD = 'standard';
+
     public const ENTRY_MODE_WRITTEN = 'written';
+
     public const ENTRY_MODE_ORAL_SPORT = 'oral_sport';
 
     protected $fillable = [

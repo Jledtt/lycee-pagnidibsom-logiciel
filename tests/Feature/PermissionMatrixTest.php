@@ -178,7 +178,7 @@ class PermissionMatrixTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-matrix-test',
+            'username' => $role.'-matrix-test',
             'status' => 'active',
         ]);
 

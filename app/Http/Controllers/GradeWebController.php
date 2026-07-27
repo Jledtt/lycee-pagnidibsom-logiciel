@@ -27,8 +27,7 @@ class GradeWebController extends Controller
     public function __construct(
         private readonly GradeEntryService $gradeEntryService,
         private readonly TermPeriodService $termPeriodService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -169,7 +168,7 @@ class GradeWebController extends Controller
             ? null
             : round($validGrades->avg(fn (Grade $grade) => ((float) $grade->score / (float) $assessment->max_score) * 20), 2);
 
-        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.pdf';
+        $filename = 'notes-'.Str::slug($assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.$assessment->title).'.pdf';
 
         return Pdf::loadView('grades.assessment-pdf', [
             'assessment' => $assessment,
@@ -192,7 +191,7 @@ class GradeWebController extends Controller
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
-        $filename = 'notes-' . Str::slug($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title) . '.xlsx';
+        $filename = 'notes-'.Str::slug($assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.$assessment->title).'.xlsx';
 
         return $xlsxExport->download($filename, [
             'Matricule',

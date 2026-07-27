@@ -118,7 +118,7 @@ class StaffUserWebController extends Controller
 
         return redirect()
             ->route('staff.show', $user)
-            ->with('success', 'Mot de passe réinitialisé. Nouveau mot de passe temporaire : ' . $password);
+            ->with('success', 'Mot de passe réinitialisé. Nouveau mot de passe temporaire : '.$password);
     }
 
     private function roleLabels(): array

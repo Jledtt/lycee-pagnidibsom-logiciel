@@ -6,9 +6,7 @@ use App\Models\Payment;
 
 class ReceiptNumberService
 {
-    public function __construct(private readonly OfficialNumberService $officialNumberService)
-    {
-    }
+    public function __construct(private readonly OfficialNumberService $officialNumberService) {}
 
     public function generate(): string
     {

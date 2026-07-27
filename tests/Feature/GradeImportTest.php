@@ -45,7 +45,7 @@ class GradeImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
             'Matricule;Nom et prenom;Note;Statut;Commentaire',
-            $student->matricule . ';' . $student->full_name . ';15,5;Note saisie;Bon travail',
+            $student->matricule.';'.$student->full_name.';15,5;Note saisie;Bon travail',
         ]));
 
         $this->actingAs($user)
@@ -85,7 +85,7 @@ class GradeImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
             'Matricule;Note;Statut;Commentaire',
-            $student->matricule . ';;Dispense;Certificat medical',
+            $student->matricule.';;Dispense;Certificat medical',
         ]));
 
         $this->actingAs($user)
@@ -128,7 +128,7 @@ class GradeImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
             'Matricule;Note;Absent',
-            $student->matricule . ';18;Non',
+            $student->matricule.';18;Non',
         ]));
 
         $this->actingAs($user)
@@ -156,7 +156,7 @@ class GradeImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
             'Matricule;Note;Absent',
-            $student->matricule . ';25;Non',
+            $student->matricule.';25;Non',
         ]));
 
         $this->actingAs($user)
@@ -187,7 +187,7 @@ class GradeImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('notes.csv', implode("\n", [
             'Matricule;Note;Absent',
-            $student->matricule . ';12;Non',
+            $student->matricule.';12;Non',
         ]));
 
         $this->actingAs($user)
@@ -253,7 +253,7 @@ class GradeImportTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-grade-import-test',
+            'username' => $role.'-grade-import-test',
             'status' => 'active',
         ]);
 
@@ -267,7 +267,7 @@ class GradeImportTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
         file_put_contents($path, $content);
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($path);
         $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
         $zip->close();

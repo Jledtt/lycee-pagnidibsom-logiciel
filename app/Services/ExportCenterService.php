@@ -20,9 +20,7 @@ use Illuminate\Support\Str;
 
 class ExportCenterService
 {
-    public function __construct(private PaymentFinancialProfileService $financialProfiles)
-    {
-    }
+    public function __construct(private PaymentFinancialProfileService $financialProfiles) {}
 
     public function activeAcademicYear(): ?AcademicYear
     {
@@ -308,12 +306,12 @@ class ExportCenterService
             $parts[] = $schoolClass->name;
         }
 
-        return Str::slug(implode('-', $parts), '-') . '.xlsx';
+        return Str::slug(implode('-', $parts), '-').'.xlsx';
     }
 
     private function studentName(?Student $student): string
     {
-        return trim(($student?->last_name ?? '') . ' ' . ($student?->first_name ?? ''));
+        return trim(($student?->last_name ?? '').' '.($student?->first_name ?? ''));
     }
 
     private function mockExamAverage(MockExamCandidate $candidate): ?float

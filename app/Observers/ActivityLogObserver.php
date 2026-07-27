@@ -53,5 +53,4 @@ class ActivityLogObserver
     {
         return Arr::except($values, self::IGNORED_FIELDS);
     }
-
 }

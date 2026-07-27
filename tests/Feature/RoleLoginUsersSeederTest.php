@@ -21,7 +21,7 @@ class RoleLoginUsersSeederTest extends TestCase
             $user = User::query()->where('username', $roleName)->firstOrFail();
 
             $this->assertSame('active', $user->status);
-            $this->assertSame($roleName . '@lyceepagnidibsom.local', $user->email);
+            $this->assertSame($roleName.'@lyceepagnidibsom.local', $user->email);
             $this->assertTrue($user->hasRole($roleName));
             $this->assertTrue(Hash::check($roleName, $user->password));
         }

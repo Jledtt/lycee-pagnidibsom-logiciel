@@ -29,7 +29,7 @@ class GradeImportWebController extends Controller
         $assessment->load(['schoolClass', 'subject']);
 
         return $xlsxExport->download(
-            'modele-notes-' . str($assessment->schoolClass->name . '-' . $assessment->subject->name . '-' . $assessment->title)->slug() . '.xlsx',
+            'modele-notes-'.str($assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.$assessment->title)->slug().'.xlsx',
             $gradeImport->templateHeaders(),
             $gradeImport->templateRows($assessment),
             'Notes',
@@ -73,7 +73,7 @@ class GradeImportWebController extends Controller
                 'term_id' => $assessment->term_id,
                 'assessment_id' => $assessment->id,
             ])
-            ->with('success', $result['created'] . ' note(s) créée(s), ' . $result['updated'] . ' note(s) mise(s) à jour.');
+            ->with('success', $result['created'].' note(s) créée(s), '.$result['updated'].' note(s) mise(s) à jour.');
     }
 
     public function destroy(Assessment $assessment): RedirectResponse
@@ -87,6 +87,6 @@ class GradeImportWebController extends Controller
 
     private function sessionKey(Assessment $assessment): string
     {
-        return self::SESSION_PREFIX . $assessment->id;
+        return self::SESSION_PREFIX.$assessment->id;
     }
 }

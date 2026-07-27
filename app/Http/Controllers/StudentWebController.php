@@ -172,8 +172,7 @@ class StudentWebController extends Controller
         Request $request,
         Student $student,
         CommunicationService $communicationService,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         $data = $this->validateStudent($request, true);
         $guardianData = $this->validateGuardians($request);
         $oldStatus = (string) $student->status;

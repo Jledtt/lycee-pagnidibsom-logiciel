@@ -261,7 +261,7 @@ class ClassCouncilTest extends TestCase
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create([
-            'username' => $role . '-class-council-test-' . Str::random(5),
+            'username' => $role.'-class-council-test-'.Str::random(5),
             'status' => 'active',
         ]);
 
@@ -275,7 +275,7 @@ class ClassCouncilTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'xlsx-test-');
         file_put_contents($path, $content);
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($path);
         $xml = $zip->getFromName('xl/worksheets/sheet1.xml') ?: '';
         $zip->close();

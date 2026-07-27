@@ -13,9 +13,9 @@ use App\Models\Student;
 use App\Services\AttendanceSessionService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -24,8 +24,7 @@ class AttendanceWebController extends Controller
 {
     public function __construct(
         private readonly AttendanceSessionService $attendanceSessionService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -114,7 +113,7 @@ class AttendanceWebController extends Controller
                 ->values()
             : collect();
 
-        return $xlsxExport->download('absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.xlsx', [
+        return $xlsxExport->download('absences-'.Str::slug($schoolClass->name.'-'.$date->format('Y-m-d')).'.xlsx', [
             'Date',
             'Classe',
             'Matricule',
@@ -165,7 +164,7 @@ class AttendanceWebController extends Controller
         $academicYear = $this->activeAcademicYear();
         [$month, $start, $end] = $this->monthPeriod($request);
         $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end);
-        $filename = 'assiduite-' . Str::slug($student->matricule . '-' . $month) . '.pdf';
+        $filename = 'assiduite-'.Str::slug($student->matricule.'-'.$month).'.pdf';
 
         return Pdf::loadView('attendance.student-history-pdf', [
             'academicYear' => $academicYear,
@@ -197,7 +196,7 @@ class AttendanceWebController extends Controller
                 ->values()
             : collect();
 
-        $filename = 'absences-' . Str::slug($schoolClass->name . '-' . $date->format('Y-m-d')) . '.pdf';
+        $filename = 'absences-'.Str::slug($schoolClass->name.'-'.$date->format('Y-m-d')).'.pdf';
 
         return Pdf::loadView('attendance.pdf', [
             'academicYear' => $academicYear,

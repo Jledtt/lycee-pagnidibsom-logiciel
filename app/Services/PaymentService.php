@@ -16,8 +16,7 @@ class PaymentService
     public function __construct(
         private readonly ReceiptNumberService $receiptNumberService,
         private readonly CommunicationService $communicationService,
-    ) {
-    }
+    ) {}
 
     public function createPayment(
         Student $student,
@@ -119,7 +118,7 @@ class PaymentService
         $payment->forceFill([
             'status' => 'cancelled',
             'cancelled_at' => now(),
-            'cancellation_reason' => $reason . ' | Annule par: ' . $user->name,
+            'cancellation_reason' => $reason.' | Annule par: '.$user->name,
         ])->save();
 
         return $payment;

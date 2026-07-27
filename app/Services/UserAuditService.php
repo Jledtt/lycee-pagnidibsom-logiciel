@@ -27,7 +27,7 @@ class UserAuditService
             'auditable_type' => User::class,
             'auditable_id' => (string) $target->id,
             'auditable_label' => $target->name,
-            'description' => $label . ' - User - ' . $target->name,
+            'description' => $label.' - User - '.$target->name,
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 500, ''),
         ]);

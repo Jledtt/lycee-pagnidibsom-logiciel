@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Schema;
 class OfficialNumberService
 {
     public const STUDENT_MATRICULE = 'student_matricule';
+
     public const PAYMENT_RECEIPT = 'payment_receipt';
+
     public const STUDENT_CERTIFICATE = 'student_certificate';
 
     public function generate(string $type, callable $exists, ?AcademicYear $academicYear = null): string
@@ -68,15 +70,15 @@ class OfficialNumberService
     private function fallbackNumber(string $type, callable $exists, ?AcademicYear $academicYear): string
     {
         $prefix = match ($type) {
-            self::PAYMENT_RECEIPT => 'REC-' . now()->format('Ymd') . '-',
-            self::STUDENT_CERTIFICATE => 'CERT-' . ($academicYear?->starts_at?->format('Y') ?? now()->format('Y')) . '-',
-            default => 'LPP-' . ($academicYear?->starts_at?->format('Y') ?? now()->format('Y')) . '-',
+            self::PAYMENT_RECEIPT => 'REC-'.now()->format('Ymd').'-',
+            self::STUDENT_CERTIFICATE => 'CERT-'.($academicYear?->starts_at?->format('Y') ?? now()->format('Y')).'-',
+            default => 'LPP-'.($academicYear?->starts_at?->format('Y') ?? now()->format('Y')).'-',
         };
 
         $nextNumber = 1;
 
         do {
-            $number = $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+            $number = $prefix.str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
             $nextNumber++;
         } while ($exists($number));
 

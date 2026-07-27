@@ -18,7 +18,7 @@ class StudentCardWebController extends Controller
         $student->load(['guardians', 'documents']);
         $enrollment = $this->currentEnrollment($student, $academicYear);
         $school = SchoolSetting::query()->first();
-        $filename = 'carte-scolaire-' . Str::slug($student->matricule . '-' . $student->full_name) . '.pdf';
+        $filename = 'carte-scolaire-'.Str::slug($student->matricule.'-'.$student->full_name).'.pdf';
 
         return Pdf::loadView('students.school-card-pdf', [
             'academicYear' => $academicYear,
@@ -52,7 +52,7 @@ class StudentCardWebController extends Controller
     private function emergencyContact(Student $student): string
     {
         if (filled($student->emergency_contact_phone)) {
-            return trim(($student->emergency_contact_name ? $student->emergency_contact_name . ' - ' : '') . $student->emergency_contact_phone);
+            return trim(($student->emergency_contact_name ? $student->emergency_contact_name.' - ' : '').$student->emergency_contact_phone);
         }
 
         $guardian = $student->guardians
@@ -60,7 +60,7 @@ class StudentCardWebController extends Controller
             ->first(fn ($guardian) => filled($guardian->phone_primary));
 
         return $guardian
-            ? trim($guardian->full_name . ' - ' . $guardian->phone_primary)
+            ? trim($guardian->full_name.' - '.$guardian->phone_primary)
             : '-';
     }
 
