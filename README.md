@@ -102,7 +102,7 @@ LPP_BACKUP_DISKS=local,s3
 
 Pour OVH Object Storage, `AWS_ENDPOINT` suit généralement le format `https://s3.<region>.io.cloud.ovh.net`. Le script `ops/scripts/verify-latest-backup-restore.sh` restaure chaque mois la dernière archive dans une base temporaire et déclenche une alerte en cas d'échec.
 
-Le workflow `Copie externe chiffree` conserve également chaque jour une archive chiffrée dans les artefacts privés GitHub pendant 30 jours. Il utilise une clé SSH dédiée et restreinte à l'export de la dernière sauvegarde.
+Le workflow `Copie externe chiffree` conserve également chaque jour une archive chiffrée dans les artefacts privés GitHub pendant 30 jours. Il utilise une clé SSH dédiée et restreinte à l'export de la dernière sauvegarde. L'export refuse une archive âgée de plus de quatre heures afin qu'un échec de la sauvegarde quotidienne ne soit pas masqué par la copie de l'archive de la veille.
 
 Pour que la sauvegarde automatique s'execute sur un serveur Linux, ajouter la tache cron Laravel :
 
