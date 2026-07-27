@@ -11,6 +11,14 @@ use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
+$backupDisks = array_values(array_filter(
+    array_map('trim', explode(',', (string) env('LPP_BACKUP_DISKS', 'local'))),
+));
+
+if ($backupDisks === []) {
+    $backupDisks = ['local'];
+}
+
 return [
 
     'backup' => [
@@ -170,9 +178,7 @@ return [
             /*
              * The disk names on which the backups will be stored.
              */
-            'disks' => [
-                'local',
-            ],
+            'disks' => $backupDisks,
 
             /*
              * Determines whether to allow backups to continue when some targets fail instead of failing completely.
@@ -205,18 +211,18 @@ return [
          * After creating the zip, verify it can be opened and contains files.
          * Recommended for critical backups but adds a small overhead.
          */
-        'verify_backup' => false,
+        'verify_backup' => env('LPP_BACKUP_VERIFY', true),
 
         /*
          * The number of attempts, in case the backup command encounters an exception
          */
-        'tries' => 1,
+        'tries' => (int) env('LPP_BACKUP_TRIES', 2),
 
         /*
          * The number of seconds to wait before attempting a new backup if the previous try failed
          * Set to `0` for none
          */
-        'retry_delay' => 0,
+        'retry_delay' => (int) env('LPP_BACKUP_RETRY_DELAY', 60),
     ],
 
     /*
@@ -304,7 +310,7 @@ return [
     'monitor_backups' => [
         [
             'name' => env('LPP_BACKUP_NAME', 'lpp-gestion-scolaire'),
-            'disks' => ['local'],
+            'disks' => $backupDisks,
             'health_checks' => [
                 MaximumAgeInDays::class => (int) env('LPP_BACKUP_MAX_AGE_DAYS', 2),
                 MaximumStorageInMegabytes::class => (int) env('LPP_BACKUP_MAX_STORAGE_MB', 5000),

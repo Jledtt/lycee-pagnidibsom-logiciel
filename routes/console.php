@@ -20,6 +20,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
+use Spatie\Backup\Events\BackupHasFailed;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -38,6 +39,26 @@ Artisan::command('lpp:backup-database {--path=}', function () {
         $this->info('Archive telechargeable creee : '.$backup['archive_path']);
     }
 })->purpose('Sauvegarder la base de donnees LPP');
+
+Artisan::command('lpp:test-backup-alert', function () {
+    event(new BackupHasFailed(
+        new RuntimeException('[TEST] Verification du canal d alerte des sauvegardes LPP.'),
+        'local',
+        config('backup.backup.name'),
+    ));
+
+    $this->info('Alerte de test transmise au canal de notification configure.');
+})->purpose('Tester l alerte mail des sauvegardes');
+
+Artisan::command('lpp:notify-backup-restore-failure', function () {
+    event(new BackupHasFailed(
+        new RuntimeException('La verification periodique de restauration LPP a echoue. Consultez storage/logs/backup-restore-check.log.'),
+        'local',
+        config('backup.backup.name'),
+    ));
+
+    $this->error('Alerte de restauration transmise.');
+})->purpose('Signaler un echec de verification de restauration');
 
 Artisan::command('lpp:clean-demo-data', function () {
     $matricules = ['TEST-2026-0001', 'TEST-2026-0002'];

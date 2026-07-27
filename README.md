@@ -87,10 +87,20 @@ Parametres disponibles dans `.env` :
 LPP_BACKUP_TIME=22:00
 LPP_BACKUP_MONITOR_TIME=22:15
 LPP_BACKUP_KEEP_DAYS=14
+LPP_BACKUP_DISKS=local
+BACKUP_ARCHIVE_PASSWORD=mot-de-passe-long-et-unique
 LPP_BACKUP_PATH=/chemin/vers/dossier/sauvegardes
 LPP_MYSQLDUMP_PATH=C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysqldump.exe
 LPP_PGDUMP_PATH=/usr/bin/pg_dump
 ```
+
+Pour ajouter une copie distante S3 compatible, renseigner les variables `AWS_*`, puis utiliser :
+
+```text
+LPP_BACKUP_DISKS=local,s3
+```
+
+Pour OVH Object Storage, `AWS_ENDPOINT` suit généralement le format `https://s3.<region>.io.cloud.ovh.net`. Le script `ops/scripts/verify-latest-backup-restore.sh` restaure chaque mois la dernière archive dans une base temporaire et déclenche une alerte en cas d'échec.
 
 Pour que la sauvegarde automatique s'execute sur un serveur Linux, ajouter la tache cron Laravel :
 

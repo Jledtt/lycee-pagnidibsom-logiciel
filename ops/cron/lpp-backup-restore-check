@@ -1,0 +1,1 @@
+17 3 1 * * root /usr/local/sbin/lpp-verify-latest-backup-restore >> /var/www/lycee-pagnidibsom-logiciel/app-source/storage/logs/backup-restore-check.log 2>&1
