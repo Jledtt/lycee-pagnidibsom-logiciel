@@ -1,163 +1,96 @@
 @extends('layouts.app', [
-    'title' => 'Aide - Lycée Privé Pagnidibsom',
+    'title' => 'Documentation - Lycée Privé Pagnidibsom',
     'active' => 'help',
-    'pageTitle' => 'Aide et guide utilisateur',
-    'pageSubtitle' => 'Reperes rapides pour utiliser le logiciel de gestion scolaire',
+    'pageTitle' => 'Documentation utilisateur',
+    'pageSubtitle' => 'Des guides simples, adaptés à votre rôle et aux écrans disponibles',
 ])
 
 @section('content')
-    <section class="grid two-col">
-        <div class="panel">
-            <div class="panel-head">
-                <h2>Démarrage rapide</h2>
-            </div>
-
-            <div class="ledger-list">
-                <div class="detail-item">
-                    <span>1. Paramêtrer l’année</span>
-                    <strong>Active l’année scolaire, les trimestres, les classes, les tarifs et les matières.</strong>
-                </div>
-                <div class="detail-item">
-                    <span>2. Créer les élèves</span>
-                    <strong>Ajoute les dossiers élèves, parents, contacts et informations medicales.</strong>
-                </div>
-                <div class="detail-item">
-                    <span>3. Inscrire dans une classe</span>
-                    <strong>Rattache chaque élève à une classe pour l’année active.</strong>
-                </div>
-                <div class="detail-item">
-                    <span>4. Suivre le quotidien</span>
-                    <strong>Enregistre paiements, absences, notes, bulletins et documents.</strong>
-                </div>
-            </div>
+    <section class="doc-intro">
+        <div>
+            <span class="doc-kicker">Centre d’aide LPP</span>
+            <h2>Que souhaitez-vous faire ?</h2>
+            <p>Recherchez une opération ou parcourez les guides accessibles avec votre compte.</p>
         </div>
-
-        <div class="panel help-roles-panel">
-            <div class="panel-head">
-                <h2>Rôles principaux</h2>
-            </div>
-
-            <table class="table help-role-table">
-                <thead>
-                    <tr>
-                        <th>Rôle</th>
-                        <th>Utilisation normale</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Direction</strong></td>
-                        <td>Suivi global, bulletins, rapports et contrôle.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Secretariat</strong></td>
-                        <td>Dossiers élèves, inscriptions, classes et documents.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Comptabilité</strong></td>
-                        <td>Paiements, reçus, impayés, journal et rapports financiers.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Enseignant</strong></td>
-                        <td>Notes et pointage selon les accès donnés.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Surveillant</strong></td>
-                        <td>Absences, retards, justifications et rapports d’assiduite.</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="doc-count">
+            <strong>{{ $topics->count() }}</strong>
+            <span>{{ Str::plural('guide', $topics->count()) }} disponible{{ $topics->count() > 1 ? 's' : '' }}</span>
         </div>
     </section>
 
-    <section class="panel" style="margin-top:16px">
-        <div class="panel-head">
-            <h2>Raccourcis de travail</h2>
-        </div>
+    <form class="doc-toolbar" method="GET" action="{{ route('help.index') }}">
+        <label class="doc-search" for="documentation-search">
+            <span>Rechercher dans la documentation</span>
+            <input
+                id="documentation-search"
+                name="search"
+                type="search"
+                value="{{ $search }}"
+                placeholder="Ex. enregistrer un paiement, importer des élèves..."
+            >
+        </label>
+        @if ($selectedCategory !== '')
+            <input type="hidden" name="category" value="{{ $selectedCategory }}">
+        @endif
+        <button class="button" type="submit">Rechercher</button>
+        @if ($search !== '' || $selectedCategory !== '')
+            <a class="button button-secondary" href="{{ route('help.index') }}">Effacer</a>
+        @endif
+    </form>
 
-        <div class="grid modules">
-            @can('students.view')
-                <a class="module" href="{{ route('students.index') }}">
-                    <strong>Rechercher un élève</strong>
-                    <span>Ouvre la liste, recherche par nom ou matricule, puis accède à la fiche.</span>
+    <nav class="doc-tabs" aria-label="Catégories de documentation">
+        <a class="{{ $selectedCategory === '' ? 'active' : '' }}" href="{{ route('help.index', array_filter(['search' => $search])) }}">
+            Tous
+            <span>{{ $topics->count() }}</span>
+        </a>
+        @foreach ($categories as $categoryKey => $category)
+            @php
+                $categoryCount = $topics->where('category', $categoryKey)->count();
+            @endphp
+            @if ($categoryCount > 0)
+                <a
+                    class="{{ $selectedCategory === $categoryKey ? 'active' : '' }}"
+                    href="{{ route('help.index', array_filter(['category' => $categoryKey, 'search' => $search])) }}"
+                >
+                    {{ $category['title'] }}
+                    <span>{{ $categoryCount }}</span>
                 </a>
-            @endcan
-            @can('students.export')
-                <a class="module" href="{{ route('certificates.index') }}">
-                    <strong>Documents officiels</strong>
-                    <span>Certificats, fiches d’inscription et impressions PDF.</span>
-                </a>
-            @endcan
-            @can('payments.view')
-                <a class="module" href="{{ route('payments.index') }}">
-                    <strong>Situation financiere</strong>
-                    <span>Consulte les paiements, impayés et reçus selon ton role.</span>
-                </a>
-            @endcan
-            @can('attendance.view')
-                <a class="module" href="{{ route('attendance.index') }}">
-                    <strong>Absences et retards</strong>
-                    <span>Faire l’appel, corriger une absence et exporter les rapports.</span>
-                </a>
-            @endcan
-            @can('grades.view')
-                <a class="module" href="{{ route('grades.index') }}">
-                    <strong>Notes</strong>
-                    <span>Saisir, verifier et verrouiller les evaluations.</span>
-                </a>
-            @endcan
-            @can('report_cards.view')
-                <a class="module" href="{{ route('report-cards.index') }}">
-                    <strong>Bulletins</strong>
-                    <span>Générer les moyennes, décisions et PDF de bulletins.</span>
-                </a>
-            @endcan
-        </div>
-    </section>
+            @endif
+        @endforeach
+    </nav>
 
-    <section class="panel" style="margin-top:16px">
-        <div class="panel-head">
-            <h2>Maintenance</h2>
+    @if ($filteredTopics->isEmpty())
+        <div class="empty doc-empty">
+            <strong>Aucun guide trouvé.</strong>
+            <span>Essayez un autre mot comme « paiement », « élève », « bulletin » ou « sauvegarde ».</span>
         </div>
+    @else
+        @foreach ($categories as $categoryKey => $category)
+            @php
+                $categoryTopics = $filteredTopics->where('category', $categoryKey);
+            @endphp
+            @if ($categoryTopics->isNotEmpty())
+                <section class="doc-category" aria-labelledby="doc-category-{{ $categoryKey }}">
+                    <div class="doc-category-head">
+                        <div>
+                            <h2 id="doc-category-{{ $categoryKey }}">{{ $category['title'] }}</h2>
+                            <p>{{ $category['description'] }}</p>
+                        </div>
+                        <span>{{ $categoryTopics->count() }} {{ Str::plural('guide', $categoryTopics->count()) }}</span>
+                    </div>
 
-        <div class="detail-grid">
-            <div class="detail-item">
-                <span>Sauvegarde manuelle</span>
-                <strong>Paramètres puis Sauvegardes, ou php artisan lpp:backup-database</strong>
-            </div>
-            <div class="detail-item">
-                <span>Verification technique</span>
-                <strong>php artisan test</strong>
-            </div>
-            <div class="detail-item">
-                <span>Gestion des accès</span>
-                <strong>Personnel puis Rôles et accès</strong>
-            </div>
-        </div>
-    </section>
-
-    <section class="panel" style="margin-top:16px">
-        <div class="panel-head">
-            <h2>Serveur reel et restauration</h2>
-        </div>
-
-        <div class="ledger-list">
-            <div class="detail-item">
-                <span>Avant de deployer</span>
-                <strong>Utiliser MySQL ou PostgreSQL, verifier APP_ENV=production, APP_DEBUG=false et proteger le dossier storage.</strong>
-            </div>
-            <div class="detail-item">
-                <span>Fichiers élèves</span>
-                <strong>Les documents scannes et logos doivent rester dans storage/app ou public/images avec une sauvegarde reguliere.</strong>
-            </div>
-            <div class="detail-item">
-                <span>Restauration MySQL</span>
-                <strong>Créer une base vide, importer le fichier .sql via HeidiSQL ou mysql, puis lancer php artisan config:clear.</strong>
-            </div>
-            <div class="detail-item">
-                <span>Restauration SQLite</span>
-                <strong>Arreter l’application, remplacer database/database.sqlite par la copie sauvegardee, puis redemarrer.</strong>
-            </div>
-        </div>
-    </section>
+                    <div class="doc-topic-grid">
+                        @foreach ($categoryTopics as $topic)
+                            <a class="doc-topic" href="{{ route('help.show', $topic['slug']) }}">
+                                <span class="doc-topic-role">{{ implode(' · ', $topic['roles']) }}</span>
+                                <strong>{{ $topic['title'] }}</strong>
+                                <p>{{ $topic['summary'] }}</p>
+                                <span class="doc-topic-link">Lire le guide <span aria-hidden="true">→</span></span>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        @endforeach
+    @endif
 @endsection

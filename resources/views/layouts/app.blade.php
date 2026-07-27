@@ -23,7 +23,7 @@
                 <div class="nav-section {{ $activeIn(['dashboard', 'help']) ? 'active-section' : '' }}">
                     <p class="nav-section-title">Accueil</p>
                     <a class="{{ $activeKey === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
-                    <a class="{{ $activeKey === 'help' ? 'active' : '' }}" href="{{ route('help.index') }}"><span class="nav-dot"></span>Aide</a>
+                    <a class="{{ $activeKey === 'help' ? 'active' : '' }}" href="{{ route('help.index') }}"><span class="nav-dot"></span>Documentation</a>
                 </div>
 
                 @can('students.view')

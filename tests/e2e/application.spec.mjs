@@ -86,23 +86,25 @@ test('les grands montants financiers restent dans leurs cartes', async ({ page }
     await expect(page.locator('.finance-stats .money-currency').first()).toHaveText('FCFA');
 });
 
-test('le tableau des roles reste dans son panneau d aide', async ({ page }) => {
+test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
     await login(page);
     await page.goto('/help');
 
-    const overflow = await page.locator('.help-roles-panel').evaluate((panel) => {
-        const table = panel.querySelector('.help-role-table');
+    await expect(page.locator('.topbar h1')).toHaveText('Documentation utilisateur');
+    await expect(page.locator('.doc-topic').first()).toBeVisible();
 
-        return {
-            panel: panel.scrollWidth - panel.clientWidth,
-            table: table.getBoundingClientRect().right - panel.getBoundingClientRect().right,
-        };
-    });
     const documentOverflows = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     );
 
-    expect(overflow.panel).toBeLessThanOrEqual(1);
-    expect(overflow.table).toBeLessThanOrEqual(1);
     expect(documentOverflows).toBe(false);
+
+    await page.locator('.doc-topic').first().click();
+    await expect(page).toHaveURL(/\/help\/[a-z0-9-]+$/);
+    await expect(page.getByRole('heading', { name: 'Étapes à suivre' })).toBeVisible();
+
+    const guideOverflows = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(guideOverflows).toBe(false);
 });

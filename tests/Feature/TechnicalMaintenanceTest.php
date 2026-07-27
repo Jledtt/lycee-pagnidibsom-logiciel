@@ -21,8 +21,8 @@ class TechnicalMaintenanceTest extends TestCase
         $response = $this->actingAs($user)->get(route('help.index'));
 
         $response->assertOk();
-        $response->assertSee('Aide et guide utilisateur');
-        $response->assertSee('Démarrage rapide');
+        $response->assertSee('Documentation utilisateur');
+        $response->assertSee('Que souhaitez-vous faire ?');
     }
 
     public function test_database_backup_command_creates_json_export(): void

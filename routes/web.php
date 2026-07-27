@@ -13,6 +13,7 @@ use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\ExportCenterWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
+use App\Http\Controllers\HelpWebController;
 use App\Http\Controllers\LoginHistoryWebController;
 use App\Http\Controllers\MockExamWebController;
 use App\Http\Controllers\NumberingSettingWebController;
@@ -67,9 +68,14 @@ Route::post('/communications/templates/{template}/reset', [CommunicationWebContr
     ->middleware(['auth', 'permission:communications.templates.manage'])
     ->name('communications.templates.reset');
 
-Route::view('/help', 'help.index')
+Route::get('/help', [HelpWebController::class, 'index'])
     ->middleware('auth')
     ->name('help.index');
+
+Route::get('/help/{topic}', [HelpWebController::class, 'show'])
+    ->middleware('auth')
+    ->where('topic', '[a-z0-9-]+')
+    ->name('help.show');
 
 Route::get('/print-center', PrintCenterWebController::class)
     ->middleware('auth')
