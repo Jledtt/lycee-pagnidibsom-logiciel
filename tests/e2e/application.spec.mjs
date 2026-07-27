@@ -85,3 +85,24 @@ test('les grands montants financiers restent dans leurs cartes', async ({ page }
     await expect(page.locator('.finance-stats .money-amount').first()).toHaveText('100 000 000');
     await expect(page.locator('.finance-stats .money-currency').first()).toHaveText('FCFA');
 });
+
+test('le tableau des roles reste dans son panneau d aide', async ({ page }) => {
+    await login(page);
+    await page.goto('/help');
+
+    const overflow = await page.locator('.help-roles-panel').evaluate((panel) => {
+        const table = panel.querySelector('.help-role-table');
+
+        return {
+            panel: panel.scrollWidth - panel.clientWidth,
+            table: table.getBoundingClientRect().right - panel.getBoundingClientRect().right,
+        };
+    });
+    const documentOverflows = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+
+    expect(overflow.panel).toBeLessThanOrEqual(1);
+    expect(overflow.table).toBeLessThanOrEqual(1);
+    expect(documentOverflows).toBe(false);
+});

@@ -873,6 +873,21 @@
             white-space: nowrap;
         }
 
+        .help-role-table {
+            min-width: 0;
+            table-layout: fixed;
+        }
+
+        .help-role-table th:first-child,
+        .help-role-table td:first-child {
+            width: 32%;
+        }
+
+        .help-role-table td:last-child {
+            overflow-wrap: anywhere;
+            white-space: normal;
+        }
+
         .panel > .table,
         .panel form + .table,
         .panel .searchbar + .table {

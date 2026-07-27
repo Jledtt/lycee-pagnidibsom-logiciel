@@ -32,15 +32,15 @@
             </div>
         </div>
 
-        <div class="panel">
+        <div class="panel help-roles-panel">
             <div class="panel-head">
-                <h2>Roles principaux</h2>
+                <h2>Rôles principaux</h2>
             </div>
 
-            <table class="table">
+            <table class="table help-role-table">
                 <thead>
                     <tr>
-                        <th>Role</th>
+                        <th>Rôle</th>
                         <th>Utilisation normale</th>
                     </tr>
                 </thead>
