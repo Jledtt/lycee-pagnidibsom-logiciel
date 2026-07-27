@@ -1,0 +1,53 @@
+name: Copie externe chiffree
+
+on:
+  schedule:
+    - cron: '20 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offsite-backup-production
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Exporter la derniere archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Configurer la cle SSH restreinte
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.LPP_BACKUP_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.LPP_BACKUP_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/lpp_backup"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/lpp_backup" "$HOME/.ssh/known_hosts"
+
+      - name: Telecharger et verifier l archive chiffree
+        id: backup
+        run: |
+          filename="lpp-backup-$(date -u +'%Y%m%d-%H%M%S').zip"
+          ssh -i "$HOME/.ssh/lpp_backup" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            lpp-backup-export@164.132.198.19 > "$filename"
+          test -s "$filename"
+          zipinfo -v "$filename" | grep -q 'file security status:.*encrypted'
+          sha256sum "$filename" > "$filename.sha256"
+          echo "filename=$filename" >> "$GITHUB_OUTPUT"
+
+      - name: Conserver la copie externe pendant 30 jours
+        uses: actions/upload-artifact@v7
+        with:
+          name: lpp-backup-${{ github.run_id }}
+          path: |
+            ${{ steps.backup.outputs.filename }}
+            ${{ steps.backup.outputs.filename }}.sha256
+          retention-days: 30
+          if-no-files-found: error
