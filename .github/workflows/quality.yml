@@ -1,0 +1,78 @@
+name: Qualite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: PHP, Vite et navigateur
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v7
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: curl, dom, fileinfo, intl, mbstring, pdo_sqlite, sqlite3
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Installer les dependances PHP
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Installer les dependances JavaScript
+        run: npm ci
+
+      - name: Preparer Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Verifier les vulnerabilites PHP
+        run: composer audit --locked --no-interaction
+
+      - name: Verifier les vulnerabilites npm
+        run: npm audit --audit-level=high
+
+      - name: Verifier le formatage PHP
+        run: vendor/bin/pint --test
+
+      - name: Construire les ressources Vite
+        run: npm run build
+
+      - name: Executer les tests Laravel
+        run: php artisan test
+
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Executer les tests navigateur
+        run: npm run test:e2e
+
+      - name: Publier le rapport Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

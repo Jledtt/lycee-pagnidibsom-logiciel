@@ -1,0 +1,43 @@
+name: Surveillance du site
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime-production
+  cancel-in-progress: true
+
+jobs:
+  uptime:
+    name: HTTPS et certificat
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DOMAIN: gestion.lyceepagnidibsom.com
+      HTTPS_URL: https://gestion.lyceepagnidibsom.com
+
+    steps:
+      - name: Verifier la page HTTPS
+        run: |
+          curl --fail --silent --show-error --location \
+            --max-time 20 --retry 2 --retry-delay 3 \
+            --output /tmp/lpp-home.html "$HTTPS_URL"
+          grep --quiet "Connexion" /tmp/lpp-home.html
+
+      - name: Verifier la redirection HTTP vers HTTPS
+        run: |
+          final_url="$(curl --silent --show-error --location \
+            --max-time 20 --output /dev/null \
+            --write-out '%{url_effective}' "http://$DOMAIN")"
+          test "$final_url" = "$HTTPS_URL/"
+
+      - name: Verifier le certificat TLS pour les 14 prochains jours
+        run: |
+          openssl s_client -servername "$DOMAIN" -connect "$DOMAIN:443" \
+            </dev/null 2>/dev/null \
+            | openssl x509 -noout -checkend 1209600

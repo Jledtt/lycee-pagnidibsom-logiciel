@@ -50,9 +50,14 @@ Lancer les tests automatises :
 
 ```powershell
 php artisan test
+vendor\bin\pint --test
+npm run build
+npm run test:e2e
 ```
 
-Les tests Feature servent a verifier les acces par role, les pages principales et les commandes techniques.
+Les tests Feature servent a verifier les acces par role, les pages principales et les commandes techniques. Les tests Playwright recreent une base SQLite isolee et controlent la connexion, le tableau de bord, les modules principaux et l'affichage mobile.
+
+Les workflows GitHub Actions executent automatiquement ces controles a chaque push et pull request sur `main`. Un second workflow verifie toutes les dix minutes la disponibilite HTTPS, la redirection HTTP et la validite du certificat de production.
 
 ## Sauvegarde de la base
 
