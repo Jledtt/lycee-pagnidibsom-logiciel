@@ -109,7 +109,7 @@
                                 <span class="badge {{ $payment->status === 'valid' ? '' : 'badge-warning' }}">{{ $payment->status }}</span>
                                 <a class="btn btn-subtle" href="{{ route('payments.show', $payment) }}">Voir</a>
                                 @can('payments.print_receipt')
-                                    <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">PDF</a>
+                                    <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}" target="_blank" rel="noopener">PDF</a>
                                 @endcan
                             </div>
                         </div>
