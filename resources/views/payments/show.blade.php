@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('payments.index') }}">Retour</a>
     @can('payments.print_receipt')
-        <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}" target="_blank" rel="noopener">Reçu PDF</a>
+        <a class="btn btn-subtle" href="{{ route('payments.receipt', $payment) }}">Reçu PDF</a>
     @endcan
     @can('payments.view')
         <a class="btn btn-subtle" href="{{ route('payments.students.statement', $payment->student) }}">Situation élève</a>

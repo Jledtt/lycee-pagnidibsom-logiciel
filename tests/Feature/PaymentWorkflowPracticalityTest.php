@@ -120,7 +120,8 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $this->actingAs($user)
             ->get(route('payments.receipt', $payment))
             ->assertOk()
-            ->assertHeader('content-type', 'application/pdf');
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'attachment; filename=recu-rec-partial-test-awa-paiement.pdf');
     }
 
     private function paymentScenario(): array

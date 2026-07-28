@@ -177,7 +177,7 @@ class PaymentWebController extends Controller
             'summary' => $this->financialProfileService->studentPaymentSummary($payment->student, $payment->academicYear),
         ])
             ->setPaper('a5', 'landscape')
-            ->stream($filename);
+            ->download($filename);
     }
 
     public function studentStatement(Student $student): View
