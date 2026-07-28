@@ -269,6 +269,7 @@
                         <select name="fee_status">
                             <option value="">Tous</option>
                             <option value="pending">À payer</option>
+                            <option value="approved">Validés</option>
                             <option value="paid">Payés</option>
                         </select>
                     </label>

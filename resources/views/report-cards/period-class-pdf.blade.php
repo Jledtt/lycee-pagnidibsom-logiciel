@@ -2,95 +2,141 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Rélèves - {{ $period->name }}</title>
+    <title>Relevés - {{ $period->name }}</title>
     <style>
-        @page { margin: 16px 22px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
+        @page { margin: 16px 20px; }
+    </style>
+    @include('pdf.partials.standard-styles')
+    <style>
         .page { page-break-after: always; }
         .page:last-child { page-break-after: auto; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 16px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 16px 0 10px; text-align: center; font-size: 16px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
-        .identity td { border: 1px solid #000; padding: 5px 7px; font-weight: bold; }
-        .list th, .list td { border: 1px solid #000; padding: 5px; vertical-align: top; }
-        .list th { background: #f1f1f1; text-align: left; font-size: 9px; text-transform: uppercase; }
-        .center { text-align: center; }
-        .summary td { border: 1px solid #000; padding: 7px; font-weight: bold; }
-        .footer { margin-top: 16px; }
+        .subject-list { margin-top: 7px; }
+        .subject-list th,
+        .subject-list td { padding: 3px 4px; }
+        .group-row td {
+            background: #e5e5e5;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .total-row td { background: #eeeeee; font-weight: bold; }
+        .observations {
+            margin-top: 7px;
+            border: 1px solid #555;
+            min-height: 34px;
+            padding: 5px 7px;
+        }
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
-
     @foreach ($items as $item)
+        @php
+            $rows = collect($item['subjectRows']);
+            $totalCoefficient = $rows->filter(fn ($row) => $row['average'] !== null)->sum('coefficient');
+            $totalPoints = $rows->sum(fn ($row) => $row['points'] ?? 0);
+            $groups = [
+                'Matières littéraires' => ['FR', 'ANG', 'ALL', 'HG', 'PHILO'],
+                'Matières scientifiques' => ['MATH', 'SVT', 'PC'],
+                'Matières complémentaires' => ['EPS', 'ECM', 'TIC', 'ART', 'TECH'],
+            ];
+            $knownCodes = collect($groups)->flatten()->all();
+            $ungrouped = $rows->reject(fn ($row) => in_array($row['subject']->code, $knownCodes, true));
+            if ($ungrouped->isNotEmpty()) {
+                $groups['Autres matières'] = $ungrouped->pluck('subject.code')->all();
+            }
+        @endphp
+
         <div class="page">
-            <table class="header">
+            @include('pdf.partials.school-header', [
+                'school' => $school,
+                'logoSize' => 58,
+                'marginBottom' => 4,
+                'rightLines' => [
+                    'Année '.$term->academicYear?->name,
+                    'Classe '.$schoolClass->name,
+                    $term->name,
+                    $period->name,
+                ],
+                'rightWidth' => 180,
+                'rightSize' => 9,
+                'schoolNameSize' => 15,
+                'schoolInfoSize' => 8,
+            ])
+
+            <div class="document-title">Relevé individuel de notes</div>
+            <div class="document-subtitle">{{ $term->name }} - {{ $period->name }}</div>
+
+            <table class="identity-grid">
                 <tr>
-                    <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
-                    <td class="school">
-                        <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                        <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                        <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                        <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-                    </td>
-                    <td class="meta" style="width:220px">
-                        <strong>Année scolaire : {{ $term->academicYear?->name ?? '-' }}</strong><br>
-                        Classe : {{ $schoolClass->name }}<br>
-                        Trimestre : {{ $term->name }}<br>
-                        Période : {{ $period->name }}
-                    </td>
+                    <td><strong>Matricule :</strong> {{ $item['student']->matricule }}</td>
+                    <td colspan="2"><strong>Nom et prénom(s) :</strong> {{ $item['student']->full_name }}</td>
+                    <td><strong>Classe :</strong> {{ $schoolClass->name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Né(e) le :</strong> {{ $item['student']->birth_date?->format('d/m/Y') ?? '-' }}</td>
+                    <td><strong>À :</strong> {{ $item['student']->birth_place ?: '-' }}</td>
+                    <td><strong>Statut :</strong> {{ $item['student']->status === 'active' ? 'Actif' : ucfirst($item['student']->status) }}</td>
+                    <td><strong>Classe redoublée :</strong> {{ $item['student']->repeated_class ?: '-' }}</td>
                 </tr>
             </table>
 
-            <div class="title">Rélève de notes - {{ $period->name }}</div>
-
-            <table class="identity">
-                <tr>
-                    <td>Matricule : {{ $item['student']->matricule }}</td>
-                    <td>Élève : {{ $item['student']->full_name }}</td>
-                    <td>Classe : {{ $schoolClass->name }}</td>
-                </tr>
-            </table>
-
-            <table class="list" style="margin-top:10px">
+            <table class="data-grid subject-list">
                 <thead>
                     <tr>
                         <th>Matière</th>
-                        <th style="width:70px" class="center">Coeff.</th>
-                        <th style="width:80px" class="center">Moy. /20</th>
-                        <th style="width:80px" class="center">Points</th>
-                        <th style="width:120px">Appreciation</th>
+                        <th class="center" style="width:54px">Moy. /20</th>
+                        <th class="center" style="width:48px">Coeff.</th>
+                        <th class="center" style="width:58px">Points</th>
+                        <th style="width:120px">Appréciation</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($item['subjectRows'] as $row)
-                        <tr>
-                            <td><strong>{{ $row['subject']->name }}</strong></td>
-                            <td class="center">{{ number_format($row['coefficient'], 2, ',', ' ') }}</td>
-                            <td class="center">{{ $row['average'] === null ? '-' : number_format($row['average'], 2, ',', ' ') }}</td>
-                            <td class="center">{{ $row['points'] === null ? '-' : number_format($row['points'], 2, ',', ' ') }}</td>
-                            <td>{{ $row['appreciation'] }}</td>
+                    @foreach ($groups as $groupName => $codes)
+                        @php($groupRows = $rows->filter(fn ($row) => in_array($row['subject']->code, $codes, true)))
+                        @continue($groupRows->isEmpty())
+                        <tr class="group-row">
+                            <td colspan="5">{{ $groupName }}</td>
                         </tr>
+                        @foreach ($groupRows as $row)
+                            <tr>
+                                <td><strong>{{ $row['subject']->name }}</strong></td>
+                                <td class="center">{{ $row['average'] === null ? '-' : number_format($row['average'], 2, ',', ' ') }}</td>
+                                <td class="center">{{ number_format($row['coefficient'], 2, ',', ' ') }}</td>
+                                <td class="center">{{ $row['points'] === null ? '-' : number_format($row['points'], 2, ',', ' ') }}</td>
+                                <td>{{ $row['appreciation'] }}</td>
+                            </tr>
+                        @endforeach
                     @endforeach
+                    <tr class="total-row">
+                        <td>Total pondéré</td>
+                        <td></td>
+                        <td class="center">{{ number_format($totalCoefficient, 2, ',', ' ') }}</td>
+                        <td class="center">{{ number_format($totalPoints, 2, ',', ' ') }}</td>
+                        <td></td>
+                    </tr>
                 </tbody>
             </table>
 
-            <table class="summary" style="margin-top:10px">
+            <table class="summary-grid" style="margin-top:7px">
                 <tr>
-                    <td>Moyenne {{ $period->name }} : {{ $item['average'] === null ? '-' : number_format($item['average'], 2, ',', ' ') . ' / 20' }}</td>
-                    <td>Rang période : {{ $item['rank'] ? $item['rank'].' / '.$item['classSize'] : '-' }}</td>
-                    <td>Appreciation : {{ $item['average'] === null ? 'Non note' : ($item['average'] >= 10 ? 'Travail acceptable' : 'Doit fournir plus d efforts') }}</td>
+                    <td><span class="summary-label">Moyenne</span>{{ $item['average'] === null ? '-' : number_format($item['average'], 2, ',', ' ').' / 20' }}</td>
+                    <td><span class="summary-label">Rang</span>{{ $item['rank'] ? $item['rank'].' / '.$item['classSize'] : '-' }}</td>
+                    <td><span class="summary-label">Moyenne de classe</span>{{ $classStats['average'] === null ? '-' : number_format($classStats['average'], 2, ',', ' ') }}</td>
+                    <td><span class="summary-label">Meilleure moyenne</span>{{ $classStats['best'] === null ? '-' : number_format($classStats['best'], 2, ',', ' ') }}</td>
+                    <td><span class="summary-label">Plus faible moyenne</span>{{ $classStats['weakest'] === null ? '-' : number_format($classStats['weakest'], 2, ',', ' ') }}</td>
                 </tr>
             </table>
 
-            <table class="footer">
+            <div class="observations">
+                <strong>Appréciation générale :</strong>
+                {{ $item['average'] === null ? 'Résultats incomplets.' : $item['appreciation'] }}
+            </div>
+
+            <table class="signature-grid">
                 <tr>
-                    <td>Ce relevé concerne uniquement {{ $period->name }}. Il est inclus dans le calcul du {{ $term->name }}.</td>
-                    <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
+                    <td>Signature des parents</td>
+                    <td>Responsable pédagogique</td>
+                    <td>{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
                 </tr>
             </table>
         </div>

@@ -7,6 +7,9 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('subjects.index', ['school_class_id' => $selectedClass?->id]) }}">Matières</a>
+    @if ($selectedAssessment)
+        <a class="btn btn-subtle" href="{{ route('grades.assessments.register-pdf', $selectedAssessment) }}">Registre PDF</a>
+    @endif
 @endsection
 
 @section('content')

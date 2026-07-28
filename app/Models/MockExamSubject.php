@@ -27,8 +27,15 @@ class MockExamSubject extends Model
         'copies_received_at',
         'copy_receiver_name',
         'correction_teacher_name',
+        'fee_quantity',
+        'fee_quantity_unit',
         'fee_rate',
         'fee_amount',
+        'fee_withholding_amount',
+        'fee_advance_amount',
+        'fee_other_deduction_amount',
+        'beneficiary_identity_type',
+        'beneficiary_identity_number',
         'fee_status',
         'fee_paid_at',
         'fee_payment_reference',
@@ -41,6 +48,10 @@ class MockExamSubject extends Model
         'copies_received_at' => 'datetime',
         'fee_rate' => 'decimal:2',
         'fee_amount' => 'decimal:2',
+        'fee_quantity' => 'decimal:2',
+        'fee_withholding_amount' => 'decimal:2',
+        'fee_advance_amount' => 'decimal:2',
+        'fee_other_deduction_amount' => 'decimal:2',
         'fee_paid_at' => 'datetime',
     ];
 
@@ -66,5 +77,33 @@ class MockExamSubject extends Model
             'sport' => 'Sport',
             default => 'Ecrit',
         };
+    }
+
+    public function calculatedFeeQuantity(): float
+    {
+        return (float) ($this->fee_quantity
+            ?? $this->received_copies
+            ?? $this->expected_copies
+            ?? 0);
+    }
+
+    public function calculatedFeeGrossAmount(): float
+    {
+        if ($this->fee_amount !== null) {
+            return (float) $this->fee_amount;
+        }
+
+        return round($this->calculatedFeeQuantity() * (float) ($this->fee_rate ?? 0), 2);
+    }
+
+    public function calculatedFeeNetAmount(): float
+    {
+        return max(0, round(
+            $this->calculatedFeeGrossAmount()
+            - (float) ($this->fee_withholding_amount ?? 0)
+            - (float) ($this->fee_advance_amount ?? 0)
+            - (float) ($this->fee_other_deduction_amount ?? 0),
+            2,
+        ));
     }
 }

@@ -150,7 +150,7 @@ class GradeWebController extends Controller
 
     public function assessmentPdf(Assessment $assessment)
     {
-        $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
+        $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'teacher', 'grades.student']);
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
         $gradesByStudent = $assessment->grades->keyBy('student_id');
@@ -160,7 +160,7 @@ class GradeWebController extends Controller
             ->filter(fn (Grade $grade) => $grade->resolvedStatus() === Grade::STATUS_ABSENT)
             ->count();
         $excludedCount = $assessment->grades
-            ->filter(fn (Grade $grade) => ! $grade->isCounted())
+            ->filter(fn (Grade $grade) => ! $grade->isCounted() && $grade->resolvedStatus() !== Grade::STATUS_ABSENT)
             ->count();
         $enteredCount = $validGrades->count();
 
@@ -169,12 +169,17 @@ class GradeWebController extends Controller
             : round($validGrades->avg(fn (Grade $grade) => ((float) $grade->score / (float) $assessment->max_score) * 20), 2);
 
         $filename = 'notes-'.Str::slug($assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.$assessment->title).'.pdf';
+        $coefficient = ClassSubject::query()
+            ->where('school_class_id', $assessment->school_class_id)
+            ->where('subject_id', $assessment->subject_id)
+            ->value('coefficient');
 
         return Pdf::loadView('grades.assessment-pdf', [
             'assessment' => $assessment,
             'absentCount' => $absentCount,
             'excludedCount' => $excludedCount,
             'average' => $average,
+            'coefficient' => $coefficient,
             'enteredCount' => $enteredCount,
             'gradesByStudent' => $gradesByStudent,
             'school' => SchoolSetting::query()->first(),
@@ -225,6 +230,69 @@ class GradeWebController extends Controller
                 $grade?->comment,
             ];
         }));
+    }
+
+    public function registerPdf(Assessment $assessment)
+    {
+        $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject']);
+
+        $assessments = Assessment::query()
+            ->with(['assessmentType', 'grades'])
+            ->where('academic_year_id', $assessment->academic_year_id)
+            ->where('school_class_id', $assessment->school_class_id)
+            ->where('term_id', $assessment->term_id)
+            ->where('subject_id', $assessment->subject_id)
+            ->when(
+                $assessment->term_period_id,
+                fn ($query) => $query->where('term_period_id', $assessment->term_period_id),
+                fn ($query) => $query->whereNull('term_period_id'),
+            )
+            ->orderBy('assessment_date')
+            ->orderBy('id')
+            ->get();
+        $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
+        $coefficient = (float) (ClassSubject::query()
+            ->where('school_class_id', $assessment->school_class_id)
+            ->where('subject_id', $assessment->subject_id)
+            ->value('coefficient') ?? 0);
+        $rows = $students->map(function (Student $student) use ($assessments, $coefficient) {
+            $grades = $assessments->mapWithKeys(fn (Assessment $item) => [
+                $item->id => $item->grades->firstWhere('student_id', $student->id),
+            ]);
+            $normalizedScores = $assessments
+                ->map(function (Assessment $item) use ($grades) {
+                    $grade = $grades->get($item->id);
+
+                    if (! $grade?->isCounted() || $grade->score === null || (float) $item->max_score <= 0) {
+                        return null;
+                    }
+
+                    return ((float) $grade->score / (float) $item->max_score) * 20;
+                })
+                ->filter(fn ($score) => $score !== null);
+            $average = $normalizedScores->isEmpty() ? null : round($normalizedScores->avg(), 2);
+
+            return [
+                'student' => $student,
+                'grades' => $grades,
+                'average' => $average,
+                'weighted' => $average === null ? null : round($average * $coefficient, 2),
+            ];
+        });
+        $orientation = $assessments->count() > 6 ? 'landscape' : 'portrait';
+        $filename = 'registre-notes-'.Str::slug(
+            $assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.($assessment->termPeriod?->name ?? $assessment->term->name)
+        ).'.pdf';
+
+        return Pdf::loadView('grades.register-pdf', [
+            'assessment' => $assessment,
+            'assessments' => $assessments,
+            'coefficient' => $coefficient,
+            'rows' => $rows,
+            'school' => SchoolSetting::query()->first(),
+        ])
+            ->setPaper('a4', $orientation)
+            ->stream($filename);
     }
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse

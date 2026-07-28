@@ -17,6 +17,7 @@ work/
 /.zed
 /auth.json
 /node_modules
+/output/
 /playwright-report
 /public/build
 /public/fonts-manifest.dev.json

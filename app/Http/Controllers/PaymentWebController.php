@@ -10,6 +10,7 @@ use App\Models\FeeType;
 use App\Models\Payment;
 use App\Models\SchoolSetting;
 use App\Models\Student;
+use App\Services\FrenchAmountInWordsService;
 use App\Services\PaymentFinancialProfileService;
 use App\Services\PaymentService;
 use App\Services\XlsxExportService;
@@ -23,6 +24,7 @@ use Illuminate\View\View;
 class PaymentWebController extends Controller
 {
     public function __construct(
+        private readonly FrenchAmountInWordsService $amountInWordsService,
         private readonly PaymentFinancialProfileService $financialProfileService,
     ) {}
 
@@ -169,10 +171,30 @@ class PaymentWebController extends Controller
     {
         $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
         $filename = 'recu-'.Str::slug($payment->receipt_number.'-'.$payment->student->full_name).'.pdf';
+        $receiptLines = $payment->lines
+            ->groupBy(fn ($line) => $line->fee_schedule_id ? 'schedule-'.$line->fee_schedule_id : 'fee-'.$line->fee_type_id)
+            ->map(function (Collection $lines) {
+                $line = $lines->first();
+                $feeName = $line->feeType?->name ?? 'Autres frais';
+                $period = $line->feeSchedule?->period;
+
+                return [
+                    'designation' => $period ? $feeName.' - '.$period : $feeName,
+                    'amount' => (float) $lines->sum('amount'),
+                ];
+            })
+            ->values();
 
         return Pdf::loadView('payments.receipt-pdf', [
+            'amountInWords' => $this->amountInWordsService->convert($payment->amount),
+            'methodLabels' => [
+                'cash' => 'Espèces',
+                'mobile_money' => 'Mobile money',
+                'bank_transfer' => 'Virement bancaire',
+                'other' => 'Autre',
+            ],
             'payment' => $payment,
-            'profile' => $this->financialProfileService->studentFinancialProfile($payment->student, $payment->academicYear),
+            'receiptLines' => $receiptLines,
             'school' => SchoolSetting::query()->first(),
             'summary' => $this->financialProfileService->studentPaymentSummary($payment->student, $payment->academicYear),
         ])

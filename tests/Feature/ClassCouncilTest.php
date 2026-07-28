@@ -145,6 +145,19 @@ class ClassCouncilTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', $response->getContent());
+
+        $thirdTerm = $terms->sortByDesc('position')->firstOrFail();
+        $annualReportCard = ReportCard::query()
+            ->where('student_id', $students->get('LPP-COUNCIL-001')->id)
+            ->where('term_id', $thirdTerm->id)
+            ->firstOrFail();
+
+        $bulletinResponse = $this->actingAs($user)
+            ->get(route('report-cards.pdf', $annualReportCard));
+
+        $bulletinResponse->assertOk();
+        $bulletinResponse->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $bulletinResponse->getContent());
     }
 
     public function test_council_lock_blocks_teacher_grade_updates_but_admin_can_correct(): void

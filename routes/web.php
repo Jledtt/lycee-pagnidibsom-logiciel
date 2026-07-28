@@ -415,6 +415,10 @@ Route::get('/grades/assessments/{assessment}/pdf', [GradeWebController::class, '
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.assessments.pdf');
 
+Route::get('/grades/assessments/{assessment}/register/pdf', [GradeWebController::class, 'registerPdf'])
+    ->middleware(['auth', 'permission:grades.view'])
+    ->name('grades.assessments.register-pdf');
+
 Route::get('/grades/assessments/{assessment}/import', [GradeImportWebController::class, 'create'])
     ->middleware(['auth', 'permission:grades.update'])
     ->name('grades.import');

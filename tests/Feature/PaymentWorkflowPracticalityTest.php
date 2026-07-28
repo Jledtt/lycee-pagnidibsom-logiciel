@@ -13,6 +13,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\FrenchAmountInWordsService;
 use App\Services\PaymentFinancialProfileService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,18 +105,26 @@ class PaymentWorkflowPracticalityTest extends TestCase
         ]);
 
         $profileService = app(PaymentFinancialProfileService::class);
+        $receiptLines = $payment->lines->map(fn (PaymentLine $line) => [
+            'designation' => ($line->feeType?->name ?? 'Autres frais')
+                .($line->feeSchedule?->period ? ' - '.$line->feeSchedule->period : ''),
+            'amount' => (float) $line->amount,
+        ]);
         $html = view('payments.receipt-pdf', [
+            'amountInWords' => app(FrenchAmountInWordsService::class)->convert($payment->amount),
+            'methodLabels' => ['cash' => 'Espèces'],
             'payment' => $payment,
-            'profile' => $profileService->studentFinancialProfile($student, $payment->academicYear),
+            'receiptLines' => $receiptLines,
             'school' => SchoolSetting::query()->first(),
             'summary' => $profileService->studentPaymentSummary($student, $payment->academicYear),
         ])->render();
 
-        $this->assertStringContainsString('REÇU DE PAIEMENT', $html);
-        $this->assertStringContainsString('Désignation', $html);
-        $this->assertStringContainsString('Déjà payé', $html);
+        $this->assertStringContainsString('Reçu de paiement', $html);
+        $this->assertStringContainsString('Désignation du frais payé', $html);
+        $this->assertStringContainsString('Total déjà payé', $html);
         $this->assertStringContainsString('Scolarité novembre test', $html);
-        $this->assertStringContainsString('Total payé sur ce reçu', $html);
+        $this->assertStringContainsString('Total de ce reçu', $html);
+        $this->assertStringContainsString('Dix mille francs CFA', $html);
 
         $this->actingAs($user)
             ->get(route('payments.receipt', $payment))

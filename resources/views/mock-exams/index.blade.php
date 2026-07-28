@@ -328,12 +328,49 @@
                             <input name="correction_teacher_name" value="{{ old('correction_teacher_name', $subject->correction_teacher_name) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
+                            <label>Quantité honoraire</label>
+                            <input type="number" min="0" step="0.01" name="fee_quantity" value="{{ old('fee_quantity', $subject->fee_quantity) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Unité</label>
+                            <select name="fee_quantity_unit" @disabled(! $canEditExam)>
+                                @foreach (['copies' => 'Copies', 'heures' => 'Heures', 'séances' => 'Séances'] as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('fee_quantity_unit', $subject->fee_quantity_unit) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
                             <label>Taux honoraire</label>
                             <input type="number" min="0" step="1" name="fee_rate" value="{{ old('fee_rate', $subject->fee_rate) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
                             <label>Montant</label>
                             <input type="number" min="0" step="1" name="fee_amount" value="{{ old('fee_amount', $subject->fee_amount) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Retenue à la source</label>
+                            <input type="number" min="0" step="1" name="fee_withholding_amount" value="{{ old('fee_withholding_amount', $subject->fee_withholding_amount) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Avance déjà versée</label>
+                            <input type="number" min="0" step="1" name="fee_advance_amount" value="{{ old('fee_advance_amount', $subject->fee_advance_amount) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Autre déduction</label>
+                            <input type="number" min="0" step="1" name="fee_other_deduction_amount" value="{{ old('fee_other_deduction_amount', $subject->fee_other_deduction_amount) }}" @disabled(! $canEditExam)>
+                        </div>
+                        <div class="field">
+                            <label>Type de pièce</label>
+                            <select name="beneficiary_identity_type" @disabled(! $canEditExam)>
+                                <option value="">Non renseigné</option>
+                                @foreach (['CNIB', 'Passeport', 'Autre'] as $identityType)
+                                    <option value="{{ $identityType }}" @selected(old('beneficiary_identity_type', $subject->beneficiary_identity_type) === $identityType)>{{ $identityType }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Numéro de pièce</label>
+                            <input name="beneficiary_identity_number" value="{{ old('beneficiary_identity_number', $subject->beneficiary_identity_number) }}" @disabled(! $canEditExam)>
                         </div>
                         <div class="field">
                             <label>Statut honoraire</label>

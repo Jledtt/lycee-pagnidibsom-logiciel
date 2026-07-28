@@ -106,6 +106,37 @@ class TermPeriodGradeTest extends TestCase
         $this->assertSame(18.0, $calculator->generalAverage($student, $schoolClass, $term, $secondPeriod->id));
         $this->assertSame(16.0, $calculator->generalAverage($student, $schoolClass, $term));
 
+        $interrogation = Assessment::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'term_period_id' => $firstPeriod->id,
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'assessment_type_id' => $assessmentType->id,
+            'title' => 'Interrogation - Français',
+            'max_score' => 20,
+            'assessment_date' => now()->toDateString(),
+            'teacher_id' => $user->id,
+        ]);
+
+        Grade::query()->create([
+            'assessment_id' => $interrogation->id,
+            'student_id' => $student->id,
+            'score' => 14,
+            'is_absent' => false,
+            'entered_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('grades.assessments.pdf', $firstAssessment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($user)
+            ->get(route('grades.assessments.register-pdf', $firstAssessment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
         $this->actingAs($user)
             ->get(route('report-cards.period-class-pdf', [
                 'school_class_id' => $schoolClass->id,

@@ -9,6 +9,7 @@ use App\Models\MockExamScore;
 use App\Models\MockExamSubject;
 use App\Models\SchoolSetting;
 use App\Models\Term;
+use App\Services\FrenchAmountInWordsService;
 use App\Services\MockExamService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +22,7 @@ use Illuminate\View\View;
 class MockExamWebController extends Controller
 {
     public function __construct(
+        private readonly FrenchAmountInWordsService $amountInWordsService,
         private readonly MockExamService $mockExamService,
     ) {}
 
@@ -194,8 +196,15 @@ class MockExamWebController extends Controller
             'copies_received_at' => ['nullable', 'date'],
             'copy_receiver_name' => ['nullable', 'string', 'max:120'],
             'correction_teacher_name' => ['nullable', 'string', 'max:120'],
+            'fee_quantity' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'fee_quantity_unit' => ['nullable', Rule::in(['heures', 'copies', 'séances'])],
             'fee_rate' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'fee_amount' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
+            'fee_withholding_amount' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
+            'fee_advance_amount' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
+            'fee_other_deduction_amount' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
+            'beneficiary_identity_type' => ['nullable', Rule::in(['CNIB', 'Passeport', 'Autre'])],
+            'beneficiary_identity_number' => ['nullable', 'string', 'max:80'],
             'fee_status' => ['required', 'in:pending,approved,paid'],
             'fee_paid_at' => ['nullable', 'date'],
             'fee_payment_reference' => ['nullable', 'string', 'max:120'],
@@ -452,13 +461,26 @@ class MockExamWebController extends Controller
     public function teacherFeesPdf(MockExam $mockExam)
     {
         $mockExam->load(['academicYear', 'classes.level', 'subjects.subject', 'subjects.scores', 'candidates']);
+        $feeRows = $mockExam->subjects
+            ->sortBy('position')
+            ->values()
+            ->map(fn (MockExamSubject $subject) => [
+                'subject' => $subject,
+                'quantity' => $subject->calculatedFeeQuantity(),
+                'gross' => $subject->calculatedFeeGrossAmount(),
+                'net' => $subject->calculatedFeeNetAmount(),
+            ]);
+        $totalNet = (float) $feeRows->sum('net');
 
         return Pdf::loadView('mock-exams.teacher-fees-pdf', [
+            'amountInWords' => $this->amountInWordsService->convert($totalNet),
             'exam' => $mockExam,
+            'feeRows' => $feeRows,
             'school' => SchoolSetting::query()->first(),
+            'totalNet' => $totalNet,
             'title' => 'Honoraires professeurs',
         ])
-            ->setPaper('a4')
+            ->setPaper('a4', 'landscape')
             ->stream('honoraires-professeurs-'.Str::slug($mockExam->name).'.pdf');
     }
 

@@ -102,8 +102,12 @@ class ReportCardWebController extends Controller
 
         $subjectRows = $this->subjectRows($reportCard);
         $filename = 'bulletin-'.Str::slug($reportCard->student->matricule.'-'.$reportCard->term->name).'.pdf';
+        $annualSummary = (int) $reportCard->term->position >= 3
+            ? $this->annualSummaries($reportCard->academic_year_id, $reportCard->school_class_id)->get($reportCard->student_id)
+            : null;
 
         return Pdf::loadView('report-cards.pdf', [
+            'annualSummary' => $annualSummary,
             'classStats' => $this->classStats($reportCard),
             'reportCard' => $reportCard,
             'school' => SchoolSetting::query()->first(),
@@ -122,6 +126,9 @@ class ReportCardWebController extends Controller
         $term = Term::query()->findOrFail($data['term_id']);
 
         $this->reportCardService->generateForClass($schoolClass, $term);
+        $annualSummaries = (int) $term->position >= 3
+            ? $this->annualSummaries($academicYear->id, $schoolClass->id)
+            : collect();
 
         $reportCards = ReportCard::query()
             ->with(['academicYear', 'term', 'student', 'schoolClass.level'])
@@ -134,6 +141,7 @@ class ReportCardWebController extends Controller
             ->select('report_cards.*')
             ->get()
             ->map(fn (ReportCard $reportCard) => [
+                'annualSummary' => $annualSummaries->get($reportCard->student_id),
                 'classStats' => $this->classStats($reportCard),
                 'reportCard' => $reportCard,
                 'subjectRows' => $this->subjectRows($reportCard),
@@ -165,9 +173,12 @@ class ReportCardWebController extends Controller
         $students = $this->studentsForClass($schoolClass->academic_year_id, $schoolClass->id);
         $rows = $students
             ->map(function ($student) use ($schoolClass, $term, $period) {
+                $average = $this->gradeCalculationService->generalAverage($student, $schoolClass, $term, $period->id);
+
                 return [
                     'student' => $student,
-                    'average' => $this->gradeCalculationService->generalAverage($student, $schoolClass, $term, $period->id),
+                    'average' => $average,
+                    'appreciation' => $this->appreciation($average),
                     'subjectRows' => $this->subjectRowsForStudent($student, $schoolClass, $term, $period->id),
                 ];
             })
@@ -179,10 +190,20 @@ class ReportCardWebController extends Controller
 
                 return $row;
             });
+        $ratedAverages = $rows
+            ->pluck('average')
+            ->filter(fn ($average) => $average !== null)
+            ->map(fn ($average) => (float) $average);
+        $classStats = [
+            'average' => $ratedAverages->isEmpty() ? null : round($ratedAverages->avg(), 2),
+            'best' => $ratedAverages->isEmpty() ? null : $ratedAverages->max(),
+            'weakest' => $ratedAverages->isEmpty() ? null : $ratedAverages->min(),
+        ];
 
         $filename = 'releves-'.Str::slug($schoolClass->name.'-'.$term->name.'-'.$period->name).'.pdf';
 
         return Pdf::loadView('report-cards.period-class-pdf', [
+            'classStats' => $classStats,
             'items' => $rows,
             'period' => $period,
             'school' => SchoolSetting::query()->first(),
@@ -402,6 +423,72 @@ class ReportCardWebController extends Controller
             'best' => $cards->sortByDesc(fn (ReportCard $card) => (float) $card->general_average)->first(),
             'weakest' => $cards->sortBy(fn (ReportCard $card) => (float) $card->general_average)->first(),
         ];
+    }
+
+    private function annualSummaries(int $academicYearId, int $schoolClassId): Collection
+    {
+        $terms = Term::query()
+            ->where('academic_year_id', $academicYearId)
+            ->orderBy('position')
+            ->get();
+        $schoolClass = SchoolClass::query()->findOrFail($schoolClassId);
+
+        $terms->each(fn (Term $term) => $this->reportCardService->generateForClass($schoolClass, $term));
+
+        $cardsByStudent = ReportCard::query()
+            ->where('academic_year_id', $academicYearId)
+            ->where('school_class_id', $schoolClassId)
+            ->whereIn('term_id', $terms->pluck('id'))
+            ->whereNotNull('general_average')
+            ->get()
+            ->groupBy('student_id');
+        $students = $this->studentsForClass($academicYearId, $schoolClassId);
+
+        $rows = $students
+            ->map(function ($student) use ($cardsByStudent, $terms) {
+                $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
+                $termAverages = $terms->map(fn (Term $term) => [
+                    'name' => $term->name,
+                    'average' => $cards->get($term->id)?->general_average === null
+                        ? null
+                        : (float) $cards->get($term->id)->general_average,
+                ]);
+                $knownAverages = $termAverages
+                    ->pluck('average')
+                    ->filter(fn ($average) => $average !== null);
+
+                return [
+                    'student_id' => $student->id,
+                    'term_averages' => $termAverages,
+                    'annual_average' => $knownAverages->isEmpty() ? null : round($knownAverages->avg(), 2),
+                    'terms_count' => $knownAverages->count(),
+                    'stored_decision' => $cards->get($terms->last()?->id)?->decision,
+                ];
+            })
+            ->sortByDesc(fn (array $row) => $row['annual_average'] ?? -1)
+            ->values()
+            ->map(function (array $row, int $index) {
+                $row['annual_rank'] = $row['annual_average'] === null ? null : $index + 1;
+                $row['decision'] = $row['stored_decision']
+                    ?: ($row['annual_average'] === null
+                        ? 'Résultats incomplets'
+                        : $this->reportCardService->decisionForAverage($row['annual_average']));
+
+                return $row;
+            });
+        $annualAverages = $rows
+            ->pluck('annual_average')
+            ->filter(fn ($average) => $average !== null);
+        $classAverage = $annualAverages->isEmpty() ? null : round($annualAverages->avg(), 2);
+
+        return $rows
+            ->map(function (array $row) use ($classAverage, $students) {
+                $row['annual_class_average'] = $classAverage;
+                $row['class_size'] = $students->count();
+
+                return $row;
+            })
+            ->keyBy('student_id');
     }
 
     private function appreciation(?float $average): string

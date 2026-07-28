@@ -4,74 +4,84 @@
     <meta charset="utf-8">
     <title>Notes - {{ $assessment->title }}</title>
     <style>
-        @page { margin: 18px 22px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 17px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 18px 0 12px; text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
-        .summary { margin-bottom: 10px; }
-        .summary td { border: 1px solid #000; padding: 6px 8px; font-weight: bold; }
-        .list th, .list td { border: 1px solid #000; padding: 6px 5px; vertical-align: top; }
-        .list th { background: #f1f1f1; text-align: left; font-size: 9px; text-transform: uppercase; }
-        .center { text-align: center; }
-        .footer { margin-top: 18px; font-size: 10px; }
+        @page { margin: 18px 22px 28px; }
+    </style>
+    @include('pdf.partials.standard-styles')
+    <style>
+        .assessment-meta { margin-bottom: 7px; }
+        .assessment-meta td { font-weight: bold; }
+        .student-list th,
+        .student-list td { padding: 4px; }
+        .student-list .student-name { font-weight: bold; }
+        .page-footer {
+            position: fixed;
+            right: 0;
+            bottom: -17px;
+            left: 0;
+            color: #555;
+            font-size: 8px;
+            text-align: center;
+        }
+        .page-number:after { content: counter(page); }
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     @php($statusLabels = $statusLabels ?? \App\Models\Grade::statusLabels())
 
-    <table class="header">
-        <tr>
-            <td style="width:78px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-            </td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td class="meta" style="width:220px">
-                <strong>Année scolaire : {{ $assessment->academicYear?->name ?? '-' }}</strong><br>
-                Classe : {{ $assessment->schoolClass->name }}<br>
-                Trimestre : {{ $assessment->term->name }}<br>
-                Période : {{ $assessment->termPeriod?->name ?? '-' }}<br>
-                Date : {{ $assessment->assessment_date?->format('d/m/Y') ?? '-' }}
-            </td>
-        </tr>
-    </table>
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 58,
+        'marginBottom' => 4,
+        'rightLines' => [
+            'Année '.$assessment->academicYear?->name,
+            'Classe '.$assessment->schoolClass->name,
+            $assessment->term->name,
+            $assessment->termPeriod?->name,
+        ],
+        'rightWidth' => 180,
+        'rightSize' => 9,
+        'schoolNameSize' => 15,
+        'schoolInfoSize' => 8,
+    ])
 
-    <div class="title">Feuille de notes</div>
+    <div class="document-title">Feuille de notes</div>
+    <div class="document-subtitle">
+        {{ $assessment->subject->name }} - {{ $assessment->title }}
+    </div>
 
-    <table class="summary">
+    <table class="identity-grid assessment-meta">
         <tr>
-            <td>Matière : {{ $assessment->subject->name }}</td>
-            <td>Evaluation : {{ $assessment->title }}</td>
             <td>Type : {{ $assessment->assessmentType->name }}</td>
-            <td>Note sur : {{ number_format($assessment->max_score, 0, ',', ' ') }}</td>
+            <td>Note maximale : {{ number_format((float) $assessment->max_score, 0, ',', ' ') }}</td>
+            <td>Coefficient : {{ $coefficient === null ? '-' : number_format((float) $coefficient, 2, ',', ' ') }}</td>
+            <td>Date : {{ $assessment->assessment_date?->format('d/m/Y') ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Élèves : {{ $students->count() }}</td>
-            <td>Notes saisies : {{ $enteredCount }}</td>
-            <td>Absents : {{ $absentCount }} / non comptes : {{ $excludedCount ?? $absentCount }}</td>
+            <td colspan="2">Enseignant : {{ $assessment->teacher?->name ?? '-' }}</td>
+            <td>Effectif : {{ $students->count() }}</td>
             <td>Moyenne /20 : {{ $average === null ? '-' : number_format($average, 2, ',', ' ') }}</td>
         </tr>
     </table>
 
-    <table class="list">
+    <table class="summary-grid" style="margin-bottom:7px">
+        <tr>
+            <td><span class="summary-label">Notes saisies</span>{{ $enteredCount }}</td>
+            <td><span class="summary-label">Absents</span>{{ $absentCount }}</td>
+            <td><span class="summary-label">Non comptés</span>{{ $excludedCount }}</td>
+            <td><span class="summary-label">À compléter</span>{{ max(0, $students->count() - $enteredCount - $absentCount - $excludedCount) }}</td>
+        </tr>
+    </table>
+
+    <table class="data-grid student-list">
         <thead>
             <tr>
-                <th style="width:34px" class="center">No</th>
-                <th style="width:105px">Matricule</th>
-                <th>Élève</th>
-                <th style="width:90px" class="center">Note</th>
-                <th style="width:90px" class="center">Statut</th>
-                <th>Commentaire</th>
+                <th class="center" style="width:28px">N°</th>
+                <th style="width:92px">Matricule</th>
+                <th>Nom et prénom(s)</th>
+                <th style="width:78px">Classe redoublée</th>
+                <th class="center" style="width:60px">Note</th>
+                <th class="center" style="width:68px">Statut</th>
+                <th style="width:125px">Commentaire</th>
             </tr>
         </thead>
         <tbody>
@@ -81,32 +91,38 @@
                 <tr>
                     <td class="center">{{ $loop->iteration }}</td>
                     <td>{{ $student->matricule }}</td>
-                    <td><strong>{{ $student->full_name }}</strong></td>
+                    <td class="student-name">{{ $student->full_name }}</td>
+                    <td>{{ $student->repeated_class ?: '-' }}</td>
                     <td class="center">
                         @if ($grade && ! $grade->isCounted())
                             -
                         @elseif ($grade?->score !== null)
-                            {{ number_format($grade->score, 2, ',', ' ') }}
+                            {{ number_format((float) $grade->score, 2, ',', ' ') }}
                         @else
                             -
                         @endif
                     </td>
-                    <td class="center">{{ $statusLabels[$status] ?? $status }}</td>
+                    <td class="center">{{ $grade ? ($statusLabels[$status] ?? $status) : 'À saisir' }}</td>
                     <td>{{ $grade?->comment ?: '-' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="center">Aucun élève actif dans cette classe.</td>
+                    <td colspan="7" class="center">Aucun élève actif dans cette classe.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
-    <table class="footer">
+    <table class="signature-grid">
         <tr>
-            <td>Document généré par le logiciel de gestion scolaire.</td>
-            <td style="text-align:right">{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
+            <td>Signature de l’enseignant</td>
+            <td>Contrôle pédagogique</td>
+            <td>{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
         </tr>
     </table>
+
+    <div class="page-footer">
+        {{ $assessment->schoolClass->name }} - {{ $assessment->subject->name }} - page <span class="page-number"></span>
+    </div>
 </body>
 </html>

@@ -4,98 +4,130 @@
     <meta charset="utf-8">
     <title>{{ $title }} - {{ $exam->name }}</title>
     <style>
-        @page { margin: 18px 22px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 16px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 18px 0 12px; text-align: center; font-size: 17px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
-        .list th, .list td { border: 1px solid #000; padding: 6px; vertical-align: top; }
-        .list th { background: #f1f1f1; text-align: left; text-transform: uppercase; font-size: 9px; }
-        .center { text-align: center; }
-        .right { text-align: right; }
-        .sign { height: 50px; }
-        .muted { color: #555; font-size: 9px; }
+        @page { margin: 16px 20px 26px; }
+    </style>
+    @include('pdf.partials.standard-styles')
+    <style>
+        body { font-size: 7.5px; }
+        .fees { margin-top: 7px; }
+        .fees th,
+        .fees td { padding: 3px; }
+        .fees tfoot td { background: #eeeeee; font-weight: bold; }
+        .amount-words { margin-top: 7px; font-size: 8px; }
+        .page-footer {
+            position: fixed;
+            right: 0;
+            bottom: -17px;
+            left: 0;
+            color: #555;
+            font-size: 7px;
+            text-align: center;
+        }
+        .page-number:after { content: counter(page); }
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    @php($currency = $school?->currency ?? 'FCFA')
+    @php($classNames = $exam->classes->pluck('name')->join(', '))
 
-    <table class="header">
-        <tr>
-            <td style="width:78px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td class="meta" style="width:220px">
-                <strong>Année scolaire : {{ $exam->academicYear?->name }}</strong><br>
-                Session : {{ $exam->name }}<br>
-                Type : {{ $exam->exam_type_label }}<br>
-                Candidats : {{ $exam->candidates->count() }}
-            </td>
-        </tr>
-    </table>
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 54,
+        'marginBottom' => 3,
+        'rightLines' => [
+            'Année '.$exam->academicYear?->name,
+            'Session '.$exam->name,
+            $exam->exam_type_label,
+        ],
+        'rightWidth' => 190,
+        'rightSize' => 8,
+        'schoolNameSize' => 14,
+        'schoolInfoSize' => 7,
+    ])
 
-    <div class="title">{{ $title }}</div>
+    <div class="document-title">Bordereau des honoraires</div>
+    <div class="document-subtitle">
+        Classes concernées : {{ $classNames ?: '-' }}
+    </div>
 
-    <p class="muted">
-        Ce bordereau permet de préparer le paiement des professeurs correcteurs ou intervenants.
-        Les taux et montants peuvent être completes par la comptabilité avant validation.
-    </p>
-
-    <table class="list">
+    <table class="data-grid fees">
         <thead>
             <tr>
-                <th style="width:28px" class="center">No</th>
-                <th>Matière</th>
-                <th style="width:64px">Partie</th>
-                <th style="width:60px" class="center">Copies</th>
-                <th style="width:130px">Professeur</th>
-                <th style="width:70px" class="right">Taux</th>
-                <th style="width:80px" class="right">Montant</th>
-                <th style="width:90px">Signature</th>
+                <th class="center" style="width:24px">N°</th>
+                <th style="width:105px">Bénéficiaire</th>
+                <th style="width:85px">Identité</th>
+                <th>Discipline / activité</th>
+                <th class="center" style="width:58px">Quantité</th>
+                <th class="right" style="width:62px">Taux</th>
+                <th class="right" style="width:68px">Brut</th>
+                <th class="right" style="width:58px">Retenue</th>
+                <th class="right" style="width:58px">Avance</th>
+                <th class="right" style="width:58px">Autre</th>
+                <th class="right" style="width:68px">Net</th>
+                <th style="width:64px">Signature</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($exam->subjects->sortBy('position') as $subject)
+            @forelse ($feeRows as $row)
+                @php($subject = $row['subject'])
                 <tr>
-                    @php($copyCount = $subject->received_copies ?? $subject->scores->where('is_absent', false)->whereNotNull('score')->count())
                     <td class="center">{{ $loop->iteration }}</td>
-                    <td><strong>{{ $subject->subject?->name }}</strong></td>
-                    <td>{{ $subject->exam_part_label }}</td>
-                    <td class="center">{{ $copyCount ?: $exam->candidates->count() }}</td>
-                    <td>{{ $subject->correction_teacher_name ?: '' }}</td>
-                    <td class="right">{{ $subject->fee_rate ? number_format((float) $subject->fee_rate, 0, ',', ' ') : '' }}</td>
-                    <td class="right">{{ $subject->fee_amount ? number_format((float) $subject->fee_amount, 0, ',', ' ') : '' }}</td>
+                    <td><strong>{{ $subject->correction_teacher_name ?: '-' }}</strong></td>
+                    <td>
+                        {{ $subject->beneficiary_identity_type ?: '-' }}
+                        @if ($subject->beneficiary_identity_number)
+                            <br>{{ $subject->beneficiary_identity_number }}
+                        @endif
+                    </td>
+                    <td>
+                        <strong>{{ $subject->subject?->name ?? '-' }}</strong><br>
+                        <span class="muted">{{ $subject->exam_part_label }}</span>
+                    </td>
+                    <td class="center">
+                        {{ number_format($row['quantity'], 2, ',', ' ') }}
+                        {{ $subject->fee_quantity_unit ?: 'copies' }}
+                    </td>
+                    <td class="right">{{ number_format((float) ($subject->fee_rate ?? 0), 0, ',', ' ') }}</td>
+                    <td class="right">{{ number_format($row['gross'], 0, ',', ' ') }}</td>
+                    <td class="right">{{ number_format((float) ($subject->fee_withholding_amount ?? 0), 0, ',', ' ') }}</td>
+                    <td class="right">{{ number_format((float) ($subject->fee_advance_amount ?? 0), 0, ',', ' ') }}</td>
+                    <td class="right">{{ number_format((float) ($subject->fee_other_deduction_amount ?? 0), 0, ',', ' ') }}</td>
+                    <td class="right strong">{{ number_format($row['net'], 0, ',', ' ') }}</td>
                     <td></td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="center">Aucune matière.</td></tr>
+                <tr>
+                    <td colspan="12" class="center">Aucun honoraire à préparer.</td>
+                </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="6" class="right">Total à payer</th>
-                <th class="right">{{ number_format((float) $exam->subjects->sum('fee_amount'), 0, ',', ' ') }}</th>
-                <th></th>
+                <td colspan="6" class="right">Totaux ({{ $currency }})</td>
+                <td class="right">{{ number_format((float) $feeRows->sum('gross'), 0, ',', ' ') }}</td>
+                <td class="right">{{ number_format((float) $feeRows->sum(fn ($row) => $row['subject']->fee_withholding_amount ?? 0), 0, ',', ' ') }}</td>
+                <td class="right">{{ number_format((float) $feeRows->sum(fn ($row) => $row['subject']->fee_advance_amount ?? 0), 0, ',', ' ') }}</td>
+                <td class="right">{{ number_format((float) $feeRows->sum(fn ($row) => $row['subject']->fee_other_deduction_amount ?? 0), 0, ',', ' ') }}</td>
+                <td class="right">{{ number_format($totalNet, 0, ',', ' ') }}</td>
+                <td></td>
             </tr>
         </tfoot>
     </table>
 
-    <table style="margin-top:20px">
+    <div class="amount-words">
+        <strong>Net total arrêté à :</strong> {{ $amountInWords }}.
+    </div>
+
+    <table class="signature-grid">
         <tr>
-            <td class="list sign">Prepare par</td>
-            <td style="width:24px"></td>
-            <td class="list sign">Contrôle comptabilité</td>
-            <td style="width:24px"></td>
-            <td class="list sign">Visa direction</td>
+            <td>Préparé par</td>
+            <td>Contrôle de l’intendance</td>
+            <td>Visa de la direction</td>
         </tr>
     </table>
+
+    <div class="page-footer">
+        {{ $exam->name }} - bordereau des honoraires - page <span class="page-number"></span>
+    </div>
 </body>
 </html>

@@ -102,8 +102,15 @@ class MockExamTest extends TestCase
                 'copies_received_at' => '2026-07-20 10:30:00',
                 'copy_receiver_name' => 'Secretariat',
                 'correction_teacher_name' => 'Professeur Test',
+                'fee_quantity' => 2,
+                'fee_quantity_unit' => 'copies',
                 'fee_rate' => 500,
                 'fee_amount' => 1000,
+                'fee_withholding_amount' => 20,
+                'fee_advance_amount' => 100,
+                'fee_other_deduction_amount' => 30,
+                'beneficiary_identity_type' => 'CNIB',
+                'beneficiary_identity_number' => 'B1234567',
                 'fee_status' => 'approved',
                 'fee_paid_at' => null,
                 'fee_payment_reference' => null,
@@ -120,7 +127,14 @@ class MockExamTest extends TestCase
             'supervisor_one' => 'Surveillant A',
             'received_copies' => 2,
             'fee_amount' => 1000,
+            'fee_withholding_amount' => 20,
+            'fee_advance_amount' => 100,
+            'fee_other_deduction_amount' => 30,
+            'beneficiary_identity_type' => 'CNIB',
+            'beneficiary_identity_number' => 'B1234567',
         ]);
+
+        $this->assertSame(850.0, $examSubject->fresh()->calculatedFeeNetAmount());
 
         $scorePayload = $exam->candidates
             ->mapWithKeys(fn ($candidate) => [

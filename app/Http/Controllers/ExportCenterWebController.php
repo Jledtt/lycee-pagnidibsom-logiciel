@@ -187,14 +187,32 @@ class ExportCenterWebController extends Controller
         $request->validate([
             'academic_year_id' => ['nullable', 'integer', 'exists:academic_years,id'],
             'mock_exam_id' => ['nullable', 'integer', 'exists:mock_exams,id'],
-            'fee_status' => ['nullable', 'in:pending,paid,cancelled'],
+            'fee_status' => ['nullable', 'in:pending,approved,paid'],
         ]);
 
         $year = $this->selectedAcademicYear($request);
 
         return $this->xlsx->download(
             $this->exports->filename('honoraires-professeurs', $year),
-            ['Examen', 'Matiere', 'Type', 'Professeur', 'Taux FCFA', 'Montant FCFA', 'Statut', 'Paye le', 'Reference'],
+            [
+                'Examen',
+                'Matière',
+                'Type',
+                'Bénéficiaire',
+                'Type de pièce',
+                'Numéro de pièce',
+                'Quantité',
+                'Unité',
+                'Taux FCFA',
+                'Brut FCFA',
+                'Retenue FCFA',
+                'Avance FCFA',
+                'Autre déduction FCFA',
+                'Net FCFA',
+                'Statut',
+                'Payé le',
+                'Référence',
+            ],
             $this->exports->teacherFeeRows(
                 $year,
                 $request->integer('mock_exam_id') ?: null,
