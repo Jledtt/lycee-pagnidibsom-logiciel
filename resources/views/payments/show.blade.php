@@ -37,7 +37,7 @@
     <section class="grid two-col" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">
-                <h2>Details du paiement</h2>
+                <h2>Détails du paiement</h2>
                 <span class="badge {{ $payment->status === 'valid' ? '' : 'badge-warning' }}">{{ $payment->status }}</span>
             </div>
 

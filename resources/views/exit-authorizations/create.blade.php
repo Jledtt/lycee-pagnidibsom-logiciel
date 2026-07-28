@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="subject_name">Matière concernee</label>
+                    <label for="subject_name">Matière concernée</label>
                     <input id="subject_name" name="subject_name" value="{{ old('subject_name') }}" placeholder="Ex: Mathématiques, cours de la journée">
                     @error('subject_name') <small class="error">{{ $message }}</small> @enderror
                 </div>

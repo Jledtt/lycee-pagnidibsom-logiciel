@@ -60,6 +60,15 @@ class AdministrativeDocumentWorkflowTest extends TestCase
             ->get(route('exit-authorizations.pdf', $authorization))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+
+        $html = view('exit-authorizations.pdf', [
+            'authorization' => $authorization->load(['student', 'schoolClass']),
+            'school' => SchoolSetting::query()->first(),
+        ])->render();
+
+        $this->assertStringContainsString('AUTORISATION D’ENTRÉE ET DE SORTIE', $html);
+        $this->assertStringContainsString('Matière concernée', $html);
+        $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
     }
 
     public function test_teacher_attendance_sheet_is_prefilled_from_timetable(): void
@@ -86,6 +95,37 @@ class AdministrativeDocumentWorkflowTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_exit_authorization_pdf_uses_clean_client_wording(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        [$student, $schoolClass, $academicYear] = $this->enrolledStudent($user);
+
+        $authorization = StudentExitAuthorization::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'student_id' => $student->id,
+            'school_class_id' => $schoolClass->id,
+            'document_date' => '2026-07-21',
+            'departure_at' => '2026-07-21 10:30:00',
+            'return_at' => '2026-07-21 15:00:00',
+            'subject_name' => 'Cours de la journée',
+            'destination' => 'Centre de santé',
+            'reason' => 'Maladie',
+            'notes' => 'Autorisation remise à la vie scolaire.',
+            'created_by' => $user->id,
+        ]);
+
+        $html = view('exit-authorizations.pdf', [
+            'authorization' => $authorization->load(['student', 'schoolClass']),
+            'school' => SchoolSetting::query()->first(),
+        ])->render();
+
+        $this->assertStringContainsString('AUTORISATION D’ENTRÉE ET DE SORTIE', $html);
+        $this->assertStringContainsString('Matière concernée', $html);
+        $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
+    }
+
     public function test_certificates_use_client_wording_pdf(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -107,6 +147,31 @@ class AdministrativeDocumentWorkflowTest extends TestCase
             ->get(route('certificates.pdf', $certificate))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+
+        $student->load('guardians');
+        $enrollment = Enrollment::query()
+            ->with('schoolClass.level')
+            ->where('student_id', $student->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $html = view('certificates.certificate-pdf', [
+            'certificate' => $certificate->load('academicYear'),
+            'typeLabel' => 'Certificat de scolarité',
+            'student' => $student,
+            'enrollment' => $enrollment,
+            'school' => SchoolSetting::query()->first(),
+            'fatherGuardian' => $student->guardians->firstWhere('pivot.relationship', 'father'),
+            'motherGuardian' => $student->guardians->firstWhere('pivot.relationship', 'mother'),
+            'summary' => ['expected' => null, 'paid' => 0, 'balance' => null],
+            'principalName' => 'Yamdaogo TINTILA',
+        ])->render();
+
+        $this->assertStringContainsString('Je soussigné(e)', $html);
+        $this->assertStringContainsString('fille de', $html);
+        $this->assertStringContainsString('présent certificat', $html);
+        $this->assertStringContainsString('N° certificat', $html);
     }
 
     public function test_admin_can_save_accountant_name_for_official_documents(): void

@@ -20,8 +20,8 @@ class CertificateWebController extends Controller
 {
     public const TYPES = [
         'school_certificate' => 'Certificat de scolarité',
-        'enrollment_certificate' => 'Certificat d inscription',
-        'no_debt_certificate' => 'Certificat de non redevance',
+        'enrollment_certificate' => 'Certificat d’inscription',
+        'no_debt_certificate' => 'Certificat de non-redevance',
     ];
 
     public function index(Request $request): View

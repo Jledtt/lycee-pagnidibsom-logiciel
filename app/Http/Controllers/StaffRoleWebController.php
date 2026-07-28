@@ -256,7 +256,7 @@ class StaffRoleWebController extends Controller
             'direction' => 'Suivi global de l etablissement, rapports, bulletins et controles sans saisie financiere.',
             'secretariat' => 'Gestion quotidienne des dossiers élèves, inscriptions, imports et documents administratifs.',
             'comptable' => 'Paiements, reçus, impayés et rapports financiers, sans accès aux notes ni aux paramètres.',
-            'enseignant' => 'Saisie pedagogique: notes, absences et consultation des dossiers utiles.',
+            'enseignant' => 'Saisie pédagogique : notes, absences et consultation des dossiers utiles.',
             'surveillant' => 'Vie scolaire: absences, retards, justificatifs et rapports d assiduite.',
         ];
     }

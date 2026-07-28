@@ -5,9 +5,6 @@
     <style>
         @page { margin: 22px 26px; }
         body { font-family: DejaVu Sans, sans-serif; color: #111; font-size: 10px; }
-        .header { text-align: center; margin-bottom: 10px; }
-        .school { font-size: 16px; font-weight: 800; text-transform: uppercase; }
-        .meta { margin-top: 4px; font-size: 11px; }
         h1 { margin: 8px 0 10px; text-align: center; font-size: 18px; text-transform: uppercase; }
         .info { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
         .info td { border: 1px solid #333; padding: 5px 7px; vertical-align: top; }
@@ -22,17 +19,28 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="school">Lycée Privé Pagnidibsom</div>
-        <div class="meta">Année scolaire : {{ $timetable->academicYear?->name }} | Classe : {{ $timetable->schoolClass?->name }}</div>
-    </div>
+    @php($school = $school ?? $schoolSettings ?? null)
+
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 58,
+        'schoolNameSize' => 15,
+        'schoolInfoSize' => 9,
+        'rightWidth' => 250,
+        'rightSize' => 10,
+        'marginBottom' => 10,
+        'rightLines' => [
+            'Année scolaire : '.($timetable->academicYear?->name ?? '-'),
+            'Classe : '.($timetable->schoolClass?->name ?? '-'),
+        ],
+    ])
 
     <h1>{{ $timetable->title }}</h1>
 
     <table class="info">
         <tr>
             <td><strong>Statut :</strong> {{ $timetable->status }}</td>
-            <td><strong>Professeur principal / equipe :</strong> {{ $timetable->principal_teacher ?: '-' }}</td>
+            <td><strong>Professeur principal / équipe pédagogique :</strong> {{ $timetable->principal_teacher ?: '-' }}</td>
         </tr>
     </table>
 

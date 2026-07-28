@@ -69,7 +69,7 @@
                             <th>Action</th>
                             <th>Module</th>
                             <th>Element</th>
-                            <th>Details</th>
+                            <th>Détails</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -10,8 +10,10 @@ use App\Models\Level;
 use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\PaymentFinancialProfileService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -84,6 +86,41 @@ class PaymentWorkflowPracticalityTest extends TestCase
             'status' => 'valid',
             'cancellation_reason' => null,
         ]);
+    }
+
+    public function test_receipt_pdf_lists_schedule_lines_and_clean_totals(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        [$student, , , $payment] = $this->paymentScenario();
+
+        $payment->load([
+            'student',
+            'academicYear',
+            'enrollment.schoolClass',
+            'receiver',
+            'lines.feeType',
+            'lines.feeSchedule.feeType',
+        ]);
+
+        $profileService = app(PaymentFinancialProfileService::class);
+        $html = view('payments.receipt-pdf', [
+            'payment' => $payment,
+            'profile' => $profileService->studentFinancialProfile($student, $payment->academicYear),
+            'school' => SchoolSetting::query()->first(),
+            'summary' => $profileService->studentPaymentSummary($student, $payment->academicYear),
+        ])->render();
+
+        $this->assertStringContainsString('REÇU DE PAIEMENT', $html);
+        $this->assertStringContainsString('Désignation', $html);
+        $this->assertStringContainsString('Déjà payé', $html);
+        $this->assertStringContainsString('Scolarité novembre test', $html);
+        $this->assertStringContainsString('Total payé sur ce reçu', $html);
+
+        $this->actingAs($user)
+            ->get(route('payments.receipt', $payment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 
     private function paymentScenario(): array

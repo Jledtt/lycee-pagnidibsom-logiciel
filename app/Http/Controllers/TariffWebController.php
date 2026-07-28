@@ -216,7 +216,7 @@ class TariffWebController extends Controller
             'fevrier' => ['Scolarité février', 'SCO_FEV'],
             'conseil' => ['Conseil de l ecole', 'CONSEIL'],
             'cis' => ['Carte d identite scolaire', 'CIS'],
-            'frais_inscription' => ['Frais d inscription et reinscription', 'FRAIS_INS'],
+            'frais_inscription' => ['Frais d’inscription et réinscription', 'FRAIS_INS'],
             'tenue_scolaire' => ['Tenue scolaire', 'TENUE_SCO'],
             'bibliotheque' => ['Bibliotheque', 'BIB'],
             'tenue_sport' => ['Tenue de sport', 'SPORT'],

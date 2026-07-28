@@ -83,7 +83,7 @@
                     <strong style="font-size:18px">{{ $timetable->title }}</strong>
                 </div>
                 <div class="stat">
-                    <span>Professeur principal / equipe</span>
+                    <span>Professeur principal / équipe</span>
                     <strong style="font-size:16px">{{ $timetable->principal_teacher ?: '-' }}</strong>
                 </div>
                 <div class="stat">

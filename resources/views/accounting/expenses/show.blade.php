@@ -22,7 +22,7 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Details</h2>
+                <h2>Détails</h2>
                 <span class="badge {{ $expense->status === 'valid' ? '' : 'badge-warning' }}">{{ $expense->status }}</span>
             </div>
 

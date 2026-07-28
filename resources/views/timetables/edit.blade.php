@@ -41,7 +41,7 @@
                     </select>
                 </div>
                 <div class="field wide">
-                    <label>Professeur principal / equipe pedagogique</label>
+                    <label>Professeur principal / équipe pédagogique</label>
                     <textarea name="principal_teacher" rows="2">{{ old('principal_teacher', $timetable->principal_teacher) }}</textarea>
                 </div>
                 <div class="field wide">

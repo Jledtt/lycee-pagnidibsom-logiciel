@@ -20,7 +20,7 @@
         <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Encaisser</a>
     @endcan
     @can('attendance.view')
-        <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Assiduite</a>
+        <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Assiduité</a>
     @endcan
     @can('students.update')
         <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
@@ -208,8 +208,8 @@
 
             @php($documentTypeLabels = $documentTypeLabels + [
                 'school_certificate' => 'Certificat de scolarité',
-                'enrollment_certificate' => 'Certificat d inscription',
-                'no_debt_certificate' => 'Certificat de non redevance',
+                'enrollment_certificate' => 'Certificat d’inscription',
+                'no_debt_certificate' => 'Certificat de non-redevance',
             ])
             @php($statusLabels = ['received' => 'Reçu', 'missing' => 'Manquant', 'expired' => 'Expire'])
             @php($certificateTypes = ['school_certificate', 'enrollment_certificate', 'no_debt_certificate'])

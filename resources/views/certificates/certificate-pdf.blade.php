@@ -12,14 +12,6 @@
             font-size: 14px;
             line-height: 1.52;
         }
-        .header { width: 100%; border-collapse: collapse; margin-bottom: 34px; }
-        .header td { vertical-align: top; }
-        .logo { width: 108px; height: 108px; object-fit: contain; }
-        .school { font-weight: bold; }
-        .school h1 { margin: 0 0 7px; font-size: 17px; text-transform: uppercase; }
-        .school p { margin: 0 0 5px; font-size: 13px; }
-        .motto { width: 90px; margin-top: 12px; font-size: 12px; line-height: 1.35; font-style: italic; font-weight: bold; }
-        .year { text-align: right; font-weight: bold; font-size: 13px; }
         .title {
             margin: 0 0 26px;
             text-align: center;
@@ -39,80 +31,83 @@
     </style>
 </head>
 <body>
-    @php($school = $school ?? $schoolSettings)
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
+    @php($school = $school ?? $schoolSettings ?? null)
     @php($principalName = ($principalName ?? null) ?: ($school?->principal_name ?: 'Yamdaogo TINTILA'))
     @php($accountantName = $school?->accountant_name ?: 'Le Comptable')
-    <table class="header">
-        <tr>
-            <td style="width:128px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-                <div class="motto">{{ $school?->motto ?? '"Bâtir l\'excellence"' }}</div>
-            </td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td class="year">
-                Année scolaire: {{ $certificate->academicYear?->name ?? '-' }}<br>
-                No certificat: {{ $certificate->document_number ?? '-' }}<br>
-                {{ $school?->country ?? 'Burkina Faso' }}<br>
-                {{ $school?->national_motto ?? 'La Patrie ou la Mort Nous Vaincrons' }}
-            </td>
-        </tr>
-    </table>
+    @php($studentGender = strtolower((string) ($student->gender ?? '')))
+    @php($parentWording = match ($studentGender) {
+        'female', 'feminin', 'féminin', 'fille' => 'fille de',
+        'male', 'masculin', 'garçon', 'garcon' => 'fils de',
+        default => 'enfant de',
+    })
+    @php($schoolName = str($school?->school_name ?? 'Lycée Privé Pagnidibsom')->upper())
+
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 108,
+        'schoolNameSize' => 17,
+        'schoolInfoSize' => 13,
+        'rightWidth' => 210,
+        'rightSize' => 13,
+        'marginBottom' => 34,
+        'rightLines' => [
+            'Année scolaire : '.($certificate->academicYear?->name ?? '-'),
+            'N° certificat : '.($certificate->document_number ?? '-'),
+            $school?->country ?? 'Burkina Faso',
+            $school?->national_motto ?? 'La Patrie ou la Mort Nous Vaincrons',
+        ],
+    ])
 
     <div class="title">{{ $typeLabel }}</div>
 
     <div class="content">
         @if ($certificate->document_type === 'school_certificate')
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Le Proviseur' }} du
-                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>
-                certifie que <span class="strong">{{ $student->full_name }}</span> ne(e) le
+                Je soussigné(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Le Proviseur' }} du
+                <span class="strong">{{ $schoolName }}</span>, certifie que
+                <span class="strong">{{ $student->full_name }}</span>, né(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span> de
-                <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span> et de
-                <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span> est regulierement inscrit(e) dans mon
-                etablissement sous le numero matricule : <span class="strong">{{ $student->matricule }}</span>
+                à <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
+                {{ $parentWording }} <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span>
+                et de <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span>,
+                est régulièrement inscrit(e) dans mon établissement sous le numéro matricule
+                <span class="strong">{{ $student->matricule }}</span>,
                 en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
             </p>
             <p class="line">
-                En foi de quoi le present certificat est etabli pour servir et valoir ce que de droit.
+                En foi de quoi, le présent certificat est établi pour servir et valoir ce que de droit.
             </p>
         @elseif ($certificate->document_type === 'enrollment_certificate')
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Proviseur' }} du
-                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>, certifie que
-                <span class="strong">{{ $student->full_name }}</span>, ne(e) le
+                Je soussigné(e) <span class="strong">{{ $principalName }}</span>, {{ $school?->principal_title ?? 'Le Proviseur' }} du
+                <span class="strong">{{ $schoolName }}</span>, certifie que
+                <span class="strong">{{ $student->full_name }}</span>, né(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span>, est élève de son etablissement.
+                à <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
+                est élève de mon établissement.
             </p>
             <p class="line">
-                Elle / Il s’est inscrit(e) pour le compte de l’année
+                Elle / Il est inscrit(e) pour le compte de l’année scolaire
                 <span class="strong">{{ $certificate->academicYear?->name ?? '-' }}</span>
                 en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
             </p>
             <p class="line">
-                En foi de quoi le present certificat lui est delivre pour servir et valoir ce que de droit.
+                En foi de quoi, le présent certificat lui est délivré pour servir et valoir ce que de droit.
             </p>
         @else
             <p class="line">
-                Je soussigne(e) <span class="strong">{{ $accountantName }}</span>, Comptable du
-                <span class="strong">{{ str($school?->school_name ?? 'LYCEE PRIVE PAGNIDIBSOM')->upper() }}</span>
-                atteste que <span class="strong">{{ $student->full_name }}</span> ne(e) le
+                Je soussigné(e) <span class="strong">{{ $accountantName }}</span>, Comptable du
+                <span class="strong">{{ $schoolName }}</span>, atteste que
+                <span class="strong">{{ $student->full_name }}</span>, né(e) le
                 <span class="strong">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
-                a <span class="strong">{{ $student->birth_place ?? '-' }}</span> de
-                <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span> et de
-                <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span>
+                à <span class="strong">{{ $student->birth_place ?? '-' }}</span>,
+                {{ $parentWording }} <span class="strong">{{ $fatherGuardian?->full_name ?? '-' }}</span>
+                et de <span class="strong">{{ $motherGuardian?->full_name ?? '-' }}</span>,
+                en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>,
+                est à jour de ses frais de scolarité.
             </p>
             <p class="line">
-                en classe de <span class="strong">{{ $enrollment?->schoolClass?->name ?? '-' }}</span>.
-            </p>
-            <p class="line">
-                Est à jour de ses frais de scolarité ; par conséquent, il n’est pas redevable à l’établissement.
+                Par conséquent, il n’est pas redevable à l’établissement.
             </p>
         @endif
     </div>

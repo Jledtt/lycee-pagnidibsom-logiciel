@@ -172,6 +172,8 @@ class PaymentWebController extends Controller
 
         return Pdf::loadView('payments.receipt-pdf', [
             'payment' => $payment,
+            'profile' => $this->financialProfileService->studentFinancialProfile($payment->student, $payment->academicYear),
+            'school' => SchoolSetting::query()->first(),
             'summary' => $this->financialProfileService->studentPaymentSummary($payment->student, $payment->academicYear),
         ])
             ->setPaper('a5', 'landscape')

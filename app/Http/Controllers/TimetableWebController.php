@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
 use App\Models\Timetable;
 use App\Services\TimetableTemplateService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -190,6 +191,7 @@ class TimetableWebController extends Controller
             'timetable' => $timetable,
             'days' => $this->templates->days(),
             'grid' => $this->grid($timetable),
+            'school' => SchoolSetting::query()->first(),
         ])
             ->setPaper('a4', 'landscape')
             ->stream($filename);

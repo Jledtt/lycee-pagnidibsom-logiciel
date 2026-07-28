@@ -32,7 +32,7 @@
             <div class="detail-grid">
                 <div class="detail-item"><span>Sortie</span><strong>{{ $authorization->departure_at?->format('d/m/Y H:i') ?? '-' }}</strong></div>
                 <div class="detail-item"><span>Retour</span><strong>{{ $authorization->return_at?->format('d/m/Y H:i') ?? '-' }}</strong></div>
-                <div class="detail-item"><span>Matière concernee</span><strong>{{ $authorization->subject_name ?: '-' }}</strong></div>
+                <div class="detail-item"><span>Matière concernée</span><strong>{{ $authorization->subject_name ?: '-' }}</strong></div>
                 <div class="detail-item"><span>Lieu</span><strong>{{ $authorization->destination ?: '-' }}</strong></div>
             </div>
         </div>

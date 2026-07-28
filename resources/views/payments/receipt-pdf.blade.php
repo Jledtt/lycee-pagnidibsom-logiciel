@@ -4,49 +4,45 @@
     <meta charset="utf-8">
     <title>Reçu {{ $payment->receipt_number }}</title>
     <style>
-        @page { margin: 18px; }
+        @page { margin: 16px 18px; }
         body {
             margin: 0;
             color: #000;
             font-family: "DejaVu Sans", sans-serif;
-            font-size: 12px;
+            font-size: 10px;
         }
         table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 18px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .title { margin: 18px 0 12px; text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; }
-        .box { border: 1.2px solid #000; margin-bottom: 10px; }
-        .box td, .lines th, .lines td { border: 1.2px solid #000; padding: 7px; }
-        .lines th { text-align: left; background: #f2f2f2; }
+        .title { margin: 8px 0 9px; text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; }
+        .box { border: 1px solid #000; margin-bottom: 8px; }
+        .box td { border: 1px solid #000; padding: 5px 6px; }
+        .lines th, .lines td { border: 1px solid #000; padding: 5px 6px; }
+        .lines th { text-align: left; background: #f2f2f2; font-size: 9px; }
         .right { text-align: right; }
-        .total { font-size: 16px; font-weight: bold; }
-        .footer { margin-top: 18px; }
+        .center { text-align: center; }
+        .total { font-size: 12px; font-weight: bold; }
+        .muted { color: #444; font-size: 9px; }
+        .footer { margin-top: 12px; font-size: 10px; }
     </style>
 </head>
 <body>
-    @php($school = $school ?? $schoolSettings)
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
-    <table class="header">
-        <tr>
-            <td style="width:80px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-            </td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td style="width:160px; text-align:right">
-                <strong>No {{ $payment->receipt_number }}</strong><br>
-                {{ $payment->paid_at?->format('d/m/Y H:i') }}
-            </td>
-        </tr>
-    </table>
+    @php($school = $school ?? $schoolSettings ?? null)
+    @php($currency = $school?->currency ?? 'FCFA')
+    @php($paymentBySchedule = $payment->lines->filter(fn ($line) => ! is_null($line->fee_schedule_id))->groupBy('fee_schedule_id')->map(fn ($lines) => (float) $lines->sum('amount')))
+    @php($directLines = $payment->lines->filter(fn ($line) => is_null($line->fee_schedule_id))->values())
+    @php($scheduledRows = $profile['scheduled_rows'] ?? collect())
 
-    <div class="title">RECU DE PAIEMENT</div>
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 76,
+        'marginBottom' => 6,
+        'rightLines' => [
+            'N° '.$payment->receipt_number,
+            $payment->paid_at?->format('d/m/Y H:i'),
+        ],
+        'rightWidth' => 155,
+    ])
+
+    <div class="title">REÇU DE PAIEMENT</div>
 
     <table class="box">
         <tr>
@@ -66,33 +62,69 @@
     <table class="lines">
         <thead>
             <tr>
-                <th>Designation</th>
-                <th class="right">Montant</th>
+                <th>Désignation</th>
+                <th class="right" style="width:90px">Attendu</th>
+                <th class="right" style="width:90px">Payé reçu</th>
+                <th class="right" style="width:90px">Déjà payé</th>
+                <th class="right" style="width:90px">Reste</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($payment->lines as $line)
+            @forelse ($scheduledRows as $row)
+                @php($schedule = $row['schedule'])
+                @php($receiptPaid = (float) ($paymentBySchedule[$schedule->id] ?? 0))
                 <tr>
                     <td>
-                        {{ $line->feeSchedule?->period ?: ($line->feeType?->name ?? '-') }}
-                        @if ($line->feeSchedule?->period && $line->feeType?->name)
-                            - {{ $line->feeType->name }}
+                        {{ $schedule->period ?: 'Sans période' }}
+                        @if ($schedule->feeType?->name)
+                            - {{ $schedule->feeType->name }}
                         @endif
                     </td>
-                    <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
+                    <td class="right">{{ number_format($row['expected'], 0, ',', ' ') }} {{ $currency }}</td>
+                    <td class="right">{{ $receiptPaid > 0 ? number_format($receiptPaid, 0, ',', ' ').' '.$currency : '-' }}</td>
+                    <td class="right">{{ number_format($row['paid'], 0, ',', ' ') }} {{ $currency }}</td>
+                    <td class="right">{{ number_format($row['remaining'], 0, ',', ' ') }} {{ $currency }}</td>
+                </tr>
+            @empty
+                @foreach ($payment->lines as $line)
+                    <tr>
+                        <td>
+                            {{ $line->feeSchedule?->period ?: ($line->feeType?->name ?? '-') }}
+                            @if ($line->feeSchedule?->period && $line->feeType?->name)
+                                - {{ $line->feeType->name }}
+                            @endif
+                        </td>
+                        <td class="right">-</td>
+                        <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} {{ $currency }}</td>
+                        <td class="right">-</td>
+                        <td class="right">-</td>
+                    </tr>
+                @endforeach
+            @endforelse
+
+            @foreach ($directLines as $line)
+                <tr>
+                    <td>{{ $line->feeType?->name ?? 'Autres frais' }}</td>
+                    <td class="right">-</td>
+                    <td class="right">{{ number_format($line->amount, 0, ',', ' ') }} {{ $currency }}</td>
+                    <td class="right">-</td>
+                    <td class="right">-</td>
                 </tr>
             @endforeach
+
             <tr>
-                <td class="total">Total paye</td>
-                <td class="right total">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
+                <td class="total">Total payé sur ce reçu</td>
+                <td class="right">-</td>
+                <td class="right total">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $currency }}</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
             </tr>
             <tr>
-                <td>Total déjà paye par l’élève</td>
-                <td class="right">{{ number_format($summary['paid'], 0, ',', ' ') }} {{ $school?->currency ?? 'FCFA' }}</td>
-            </tr>
-            <tr>
-                <td>Reste à payer</td>
-                <td class="right">{{ is_null($summary['balance']) ? 'Frais à configurer' : number_format($summary['balance'], 0, ',', ' ') . ' ' . ($school?->currency ?? 'FCFA') }}</td>
+                <td>Total déjà payé par l’élève</td>
+                <td class="right">{{ is_null($summary['expected']) ? '-' : number_format($summary['expected'], 0, ',', ' ').' '.$currency }}</td>
+                <td class="right">-</td>
+                <td class="right">{{ number_format($summary['paid'], 0, ',', ' ') }} {{ $currency }}</td>
+                <td class="right">{{ is_null($summary['balance']) ? 'Frais à configurer' : number_format($summary['balance'], 0, ',', ' ').' '.$currency }}</td>
             </tr>
         </tbody>
     </table>

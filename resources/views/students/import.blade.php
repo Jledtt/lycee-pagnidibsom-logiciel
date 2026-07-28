@@ -99,7 +99,7 @@
                                 <th>Classe</th>
                                 <th>Tuteur</th>
                                 <th>Statut</th>
-                                <th>Details</th>
+                                <th>Détails</th>
                             </tr>
                         </thead>
                         <tbody>

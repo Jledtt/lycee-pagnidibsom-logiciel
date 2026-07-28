@@ -174,6 +174,6 @@
 </table>
 
 <div class="bulletin-note">
-    Il n’est delivre qu’un seul bulletin. Il appartient au titulaire d’en faire des copies certifiees conformes.<br>
+    Il n’est délivré qu’un seul bulletin. Il appartient au titulaire d’en faire des copies certifiées conformes.<br>
     <strong>"Bâtir l’excellence"</strong>
 </div>

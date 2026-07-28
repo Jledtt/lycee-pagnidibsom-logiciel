@@ -83,7 +83,7 @@
         </tbody>
     </table>
 
-    <div class="section-title">Details des evaluations</div>
+    <div class="section-title">Détails des évaluations</div>
     <table>
         <thead>
             <tr>

@@ -118,7 +118,7 @@
                                 <th>Statut note</th>
                                 <th>Commentaire</th>
                                 <th>Statut</th>
-                                <th>Details</th>
+                                <th>Détails</th>
                             </tr>
                         </thead>
                         <tbody>

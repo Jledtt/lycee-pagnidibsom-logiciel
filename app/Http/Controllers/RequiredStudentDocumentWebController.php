@@ -75,7 +75,7 @@ class RequiredStudentDocumentWebController extends Controller
         }
 
         if ($data['scope'] === 'class' && blank($data['school_class_id'])) {
-            throw ValidationException::withMessages(['school_class_id' => 'Choisis la classe concernee.']);
+            throw ValidationException::withMessages(['school_class_id' => 'Choisis la classe concernée.']);
         }
 
         if ($data['scope'] !== 'cycle') {

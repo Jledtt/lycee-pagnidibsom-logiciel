@@ -29,7 +29,7 @@
                     <strong>{{ $certificate->received_at?->format('d/m/Y') ?? $certificate->created_at->format('d/m/Y') }}</strong>
                 </div>
                 <div class="detail-item">
-                    <span>No certificat</span>
+                    <span>N° certificat</span>
                     <strong>{{ $certificate->document_number ?? '-' }}</strong>
                 </div>
                 <div class="detail-item">
@@ -63,7 +63,7 @@
             </div>
 
             @if ($certificate->document_type === 'no_debt_certificate' && is_null($summary['balance']))
-                <p class="notice" style="margin-top:16px">Les frais officiels par classe ne sont pas encore configurés. Le certificat de non redevance se base donc sur les paiements enregistrés.</p>
+                <p class="notice" style="margin-top:16px">Les frais officiels par classe ne sont pas encore configurés. Le certificat de non-redevance se base donc sur les paiements enregistrés.</p>
             @endif
         </div>
     </section>

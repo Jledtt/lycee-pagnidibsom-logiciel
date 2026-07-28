@@ -2,16 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Assiduite - {{ $student->full_name }}</title>
+    <title>Assiduité - {{ $student->full_name }}</title>
     <style>
         @page { margin: 18px 22px; }
         body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
         table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: top; }
-        .logo { width: 58px; height: 58px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 17px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
-        .meta { text-align: right; line-height: 1.45; }
         .title { margin: 18px 0 12px; text-align: center; font-size: 19px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
         .summary { margin-bottom: 10px; }
         .summary td { border: 1px solid #000; padding: 6px 8px; font-weight: bold; }
@@ -22,43 +17,39 @@
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
-    @php($statusLabels = ['absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifie'])
+    @php($school = $school ?? $schoolSettings ?? null)
+    @php($statusLabels = ['absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifié'])
 
-    <table class="header">
-        <tr>
-            <td style="width:78px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-            </td>
-            <td class="school">
-                <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
-                <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>
-                <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
-                <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
-            </td>
-            <td class="meta" style="width:220px">
-                <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
-                Élève : {{ $student->full_name }}<br>
-                Matricule : {{ $student->matricule }}<br>
-                Mois : {{ $month }}
-            </td>
-        </tr>
-    </table>
+    @include('pdf.partials.school-header', [
+        'school' => $school,
+        'logoSize' => 58,
+        'schoolNameSize' => 17,
+        'schoolInfoSize' => 10,
+        'rightWidth' => 220,
+        'rightSize' => 10,
+        'marginBottom' => 14,
+        'rightLines' => [
+            'Année scolaire : '.($academicYear?->name ?? '-'),
+            'Élève : '.$student->full_name,
+            'Matricule : '.$student->matricule,
+            'Mois : '.$month,
+        ],
+    ])
 
-    <div class="title">Historique d’assiduite</div>
+    <div class="title">Historique d’assiduité</div>
 
     <table class="summary">
         <tr>
             <td>Absences : {{ $summary['absent'] }}</td>
             <td>Retards : {{ $summary['late'] }}</td>
-            <td>Justifies : {{ $summary['excused'] }}</td>
+            <td>Justifiés : {{ $summary['excused'] }}</td>
         </tr>
     </table>
 
     <table class="list">
         <thead>
             <tr>
-                <th style="width:34px" class="center">No</th>
+                <th style="width:34px" class="center">N°</th>
                 <th style="width:78px">Date</th>
                 <th style="width:80px">Classe</th>
                 <th style="width:80px">Statut</th>

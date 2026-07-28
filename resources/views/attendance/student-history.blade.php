@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Assiduite - ' . $student->full_name,
+    'title' => 'Assiduité - ' . $student->full_name,
     'active' => 'attendance',
-    'pageTitle' => 'Assiduite de ' . $student->full_name,
+    'pageTitle' => 'Assiduité de ' . $student->full_name,
     'pageSubtitle' => 'Historique mensuel des absences, retards et justifications',
 ])
 

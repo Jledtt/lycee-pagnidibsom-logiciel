@@ -20,7 +20,7 @@
     <section class="grid two-col">
         <div class="panel">
             <div class="panel-head">
-                <h2>Details de l’inscription</h2>
+                <h2>Détails de l’inscription</h2>
                 <span class="badge {{ $enrollment->status === 'active' ? '' : 'badge-warning' }}">{{ $enrollment->status }}</span>
             </div>
 

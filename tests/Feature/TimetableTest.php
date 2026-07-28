@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AcademicYear;
 use App\Models\Level;
 use App\Models\SchoolClass;
+use App\Models\SchoolSetting;
 use App\Models\Timetable;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -141,6 +142,50 @@ class TimetableTest extends TestCase
             ->assertSee('Français');
 
         $this->assertSame(1, substr_count($response->getContent(), '<strong>7h00-7h55</strong>'));
+    }
+
+    public function test_timetable_pdf_uses_school_header_and_clean_wording(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $schoolClass = $this->schoolClass('5e B');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $timetable = Timetable::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Emploi du temps final',
+            'status' => 'active',
+            'principal_teacher' => 'Équipe de direction',
+            'created_by' => $user->id,
+        ]);
+
+        $entry = $timetable->entries()->create([
+            'sort_order' => 1,
+            'period_label' => '7h00-7h55',
+            'starts_at' => '07:00',
+            'ends_at' => '07:55',
+            'day_of_week' => 'monday',
+            'subject_name' => 'Mathématiques',
+            'teacher_name' => 'BADO Constant',
+            'is_break' => false,
+        ]);
+
+        $html = view('timetables.pdf', [
+            'timetable' => $timetable->load(['academicYear', 'schoolClass.level']),
+            'school' => SchoolSetting::query()->first(),
+            'days' => ['monday' => 'Lundi'],
+            'grid' => [[
+                'period_label' => '7h00-7h55',
+                'is_break' => false,
+                'days' => ['monday' => $entry],
+            ]],
+        ])->render();
+
+        $this->assertStringContainsString('Professeur principal / équipe pédagogique', $html);
+        $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
+        $this->assertStringContainsString('Mathématiques', $html);
     }
 
     public function test_timetable_keeps_afternoon_periods_visible_when_empty(): void

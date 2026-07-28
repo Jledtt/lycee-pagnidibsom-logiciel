@@ -2,7 +2,7 @@
     'title' => 'Générer un certificat - Lycée Privé Pagnidibsom',
     'active' => 'certificates',
     'pageTitle' => 'Générer un certificat',
-    'pageSubtitle' => 'Certificat de scolarité, certificat d inscription ou non redevance',
+    'pageSubtitle' => 'Certificat de scolarité, certificat d’inscription ou non-redevance',
 ])
 
 @section('content')

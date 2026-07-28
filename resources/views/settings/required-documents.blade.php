@@ -57,7 +57,7 @@
                     <div class="field wide">
                         <label>Classe</label>
                         <select name="school_class_id">
-                            <option value="">Non concernee</option>
+                            <option value="">Non concernée</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected((int) old('school_class_id') === $class->id)>
                                     {{ $class->name }}{{ $class->level ? ' - ' . $class->level->name : '' }}
@@ -160,7 +160,7 @@
                                 </td>
                                 <td>
                                     <select form="{{ $formId }}" name="school_class_id">
-                                        <option value="">Non concernee</option>
+                                        <option value="">Non concernée</option>
                                         @foreach ($classes as $class)
                                             <option value="{{ $class->id }}" @selected((int) $document->school_class_id === $class->id)>
                                                 {{ $class->name }}{{ $class->level ? ' - ' . $class->level->name : '' }}
