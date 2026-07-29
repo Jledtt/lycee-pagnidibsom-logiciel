@@ -10,6 +10,7 @@
     <style>
         .page { page-break-after: always; }
         .page:last-child { page-break-after: auto; }
+        .period-title { font-size: 13px; }
         .subject-list { margin-top: 7px; }
         .subject-list th,
         .subject-list td { padding: 3px 4px; }
@@ -29,6 +30,18 @@
     </style>
 </head>
 <body>
+    @php
+        $evaluationOrdinal = (int) $period->position === 1
+            ? '1re'
+            : ((int) $period->position).'e';
+        $termOrdinal = match ((int) $term->position) {
+            1 => 'premier',
+            2 => 'deuxième',
+            3 => 'troisième',
+            default => $term->name,
+        };
+    @endphp
+
     @foreach ($items as $item)
         @php
             $rows = collect($item['subjectRows']);
@@ -63,8 +76,9 @@
                 'schoolInfoSize' => 8,
             ])
 
-            <div class="document-title">Relevé individuel de notes</div>
-            <div class="document-subtitle">{{ $term->name }} - {{ $period->name }}</div>
+            <div class="document-title period-title">
+                Relevé de notes / {{ $evaluationOrdinal }} évaluation du {{ $termOrdinal }} trimestre
+            </div>
 
             <table class="identity-grid">
                 <tr>
