@@ -21,6 +21,10 @@ use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\Subject;
+use App\Models\TeacherDocument;
+use App\Models\TeacherFeeStatement;
+use App\Models\TeacherProfile;
+use App\Models\TeacherWorkSession;
 use App\Models\TermPeriod;
 use App\Models\Timetable;
 use App\Models\TimetableEntry;
@@ -92,6 +96,10 @@ class AppServiceProvider extends ServiceProvider
             Timetable::class,
             TimetableEntry::class,
             TermPeriod::class,
+            TeacherDocument::class,
+            TeacherFeeStatement::class,
+            TeacherProfile::class,
+            TeacherWorkSession::class,
             User::class,
         ];
     }

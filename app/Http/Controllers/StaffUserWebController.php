@@ -43,13 +43,15 @@ class StaffUserWebController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('staff.create', [
             'academicYear' => $this->activeAcademicYear(),
             'roleLabels' => $this->roleLabels(),
             'user' => new User(['status' => 'active']),
-            'selectedRole' => 'secretariat',
+            'selectedRole' => array_key_exists($request->string('role')->toString(), $this->roleLabels())
+                ? $request->string('role')->toString()
+                : 'secretariat',
         ]);
     }
 

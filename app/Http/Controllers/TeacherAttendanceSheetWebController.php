@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\SchoolSetting;
 use App\Models\TimetableEntry;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -95,10 +96,14 @@ class TeacherAttendanceSheetWebController extends Controller
 
     private function teacherNames(?AcademicYear $academicYear): Collection
     {
-        return TimetableEntry::query()
+        $timetableNames = TimetableEntry::query()
             ->whereHas('timetable', fn ($query) => $query->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id)))
             ->whereNotNull('teacher_name')
-            ->pluck('teacher_name')
+            ->pluck('teacher_name');
+        $accountNames = User::query()->role('enseignant')->where('status', 'active')->pluck('name');
+
+        return $timetableNames
+            ->merge($accountNames)
             ->map(fn (?string $name) => trim((string) $name))
             ->filter()
             ->unique()

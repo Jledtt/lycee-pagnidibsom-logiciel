@@ -57,6 +57,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'communications.view',
             'communications.send',
             'communications.templates.manage',
+            'teachers.view',
+            'teachers.manage',
+            'teacher_attendance.view',
+            'teacher_attendance.manage',
+            'teacher_fees.view',
+            'teacher_fees.manage',
+            'teacher_fees.approve',
+            'teacher_fees.pay',
+            'teacher_documents.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -93,6 +102,14 @@ class RolesAndPermissionsSeeder extends Seeder
                 'communications.view',
                 'communications.send',
                 'communications.templates.manage',
+                'teachers.view',
+                'teachers.manage',
+                'teacher_attendance.view',
+                'teacher_attendance.manage',
+                'teacher_fees.view',
+                'teacher_fees.manage',
+                'teacher_fees.approve',
+                'teacher_documents.manage',
             ],
             'secretariat' => [
                 'students.view',
@@ -112,6 +129,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'timetables.print',
                 'communications.view',
                 'communications.send',
+                'teachers.view',
+                'teachers.manage',
+                'teacher_attendance.view',
+                'teacher_attendance.manage',
+                'teacher_documents.manage',
             ],
             'comptable' => [
                 'students.view',
@@ -121,6 +143,10 @@ class RolesAndPermissionsSeeder extends Seeder
                 'payments.print_receipt',
                 'payments.reports',
                 'communications.view',
+                'teachers.view',
+                'teacher_fees.view',
+                'teacher_fees.manage',
+                'teacher_fees.pay',
             ],
             'enseignant' => [
                 'students.view',
@@ -131,6 +157,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'attendance.view',
                 'attendance.create',
                 'timetables.view',
+                'teachers.view',
+                'teacher_attendance.view',
+                'teacher_fees.view',
             ],
             'surveillant' => [
                 'students.view',
@@ -142,6 +171,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'mock_exams.view',
                 'mock_exams.print',
                 'timetables.view',
+                'teachers.view',
+                'teacher_attendance.view',
+                'teacher_attendance.manage',
             ],
         ];
 

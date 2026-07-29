@@ -36,6 +36,10 @@ use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
 use App\Http\Controllers\TeacherAttendanceSheetWebController;
+use App\Http\Controllers\TeacherDocumentWebController;
+use App\Http\Controllers\TeacherFeeStatementWebController;
+use App\Http\Controllers\TeacherWebController;
+use App\Http\Controllers\TeacherWorkSessionWebController;
 use App\Http\Controllers\TimetableWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -319,12 +323,79 @@ Route::get('/timetables/{timetable}/pdf', [TimetableWebController::class, 'pdf']
     ->name('timetables.pdf');
 
 Route::get('/teacher-attendance-sheets', [TeacherAttendanceSheetWebController::class, 'index'])
-    ->middleware(['auth', 'permission:timetables.print'])
+    ->middleware(['auth', 'permission:teacher_attendance.view'])
     ->name('teacher-attendance-sheets.index');
 
 Route::get('/teacher-attendance-sheets/pdf', [TeacherAttendanceSheetWebController::class, 'pdf'])
-    ->middleware(['auth', 'permission:timetables.print'])
+    ->middleware(['auth', 'permission:teacher_attendance.view'])
     ->name('teacher-attendance-sheets.pdf');
+
+Route::get('/teachers', [TeacherWebController::class, 'index'])
+    ->middleware(['auth', 'permission:teachers.view'])
+    ->name('teachers.index');
+Route::get('/teachers/{teacher}', [TeacherWebController::class, 'show'])
+    ->middleware(['auth', 'permission:teachers.view'])
+    ->name('teachers.show');
+Route::put('/teachers/{teacher}/profile', [TeacherWebController::class, 'updateProfile'])
+    ->middleware(['auth', 'permission:teachers.manage'])
+    ->name('teachers.profile.update');
+Route::get('/teachers/{teacher}/pdf', [TeacherWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:teachers.view'])
+    ->name('teachers.pdf');
+Route::post('/teachers/{teacher}/assignments', [TeacherWebController::class, 'storeAssignment'])
+    ->middleware(['auth', 'permission:teachers.manage'])
+    ->name('teachers.assignments.store');
+Route::delete('/teachers/{teacher}/assignments/{classSubject}', [TeacherWebController::class, 'destroyAssignment'])
+    ->middleware(['auth', 'permission:teachers.manage'])
+    ->name('teachers.assignments.destroy');
+
+Route::get('/teacher-work-sessions', [TeacherWorkSessionWebController::class, 'index'])
+    ->middleware(['auth', 'permission:teacher_attendance.view'])
+    ->name('teacher-work-sessions.index');
+Route::post('/teacher-work-sessions', [TeacherWorkSessionWebController::class, 'store'])
+    ->middleware(['auth', 'permission:teacher_attendance.manage'])
+    ->name('teacher-work-sessions.store');
+Route::put('/teacher-work-sessions/{teacherWorkSession}/validate', [TeacherWorkSessionWebController::class, 'validateSession'])
+    ->middleware(['auth', 'permission:teacher_attendance.manage'])
+    ->name('teacher-work-sessions.validate');
+Route::delete('/teacher-work-sessions/{teacherWorkSession}', [TeacherWorkSessionWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:teacher_attendance.manage'])
+    ->name('teacher-work-sessions.destroy');
+
+Route::get('/teacher-fees', [TeacherFeeStatementWebController::class, 'index'])
+    ->middleware(['auth', 'permission:teacher_fees.view'])
+    ->name('teacher-fees.index');
+Route::get('/teacher-fees/create', [TeacherFeeStatementWebController::class, 'create'])
+    ->middleware(['auth', 'permission:teacher_fees.manage'])
+    ->name('teacher-fees.create');
+Route::post('/teacher-fees', [TeacherFeeStatementWebController::class, 'store'])
+    ->middleware(['auth', 'permission:teacher_fees.manage'])
+    ->name('teacher-fees.store');
+Route::get('/teacher-fees/{teacherFee}', [TeacherFeeStatementWebController::class, 'show'])
+    ->middleware(['auth', 'permission:teacher_fees.view'])
+    ->name('teacher-fees.show');
+Route::get('/teacher-fees/{teacherFee}/pdf', [TeacherFeeStatementWebController::class, 'pdf'])
+    ->middleware(['auth', 'permission:teacher_fees.view'])
+    ->name('teacher-fees.pdf');
+Route::put('/teacher-fees/{teacherFee}/approve', [TeacherFeeStatementWebController::class, 'approve'])
+    ->middleware(['auth', 'permission:teacher_fees.approve'])
+    ->name('teacher-fees.approve');
+Route::put('/teacher-fees/{teacherFee}/pay', [TeacherFeeStatementWebController::class, 'markPaid'])
+    ->middleware(['auth', 'permission:teacher_fees.pay'])
+    ->name('teacher-fees.pay');
+Route::delete('/teacher-fees/{teacherFee}', [TeacherFeeStatementWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:teacher_fees.manage'])
+    ->name('teacher-fees.destroy');
+
+Route::post('/teachers/{teacher}/documents', [TeacherDocumentWebController::class, 'store'])
+    ->middleware(['auth', 'permission:teacher_documents.manage'])
+    ->name('teacher-documents.store');
+Route::get('/teacher-documents/{teacherDocument}/download', [TeacherDocumentWebController::class, 'download'])
+    ->middleware(['auth', 'permission:teachers.view'])
+    ->name('teacher-documents.download');
+Route::delete('/teacher-documents/{teacherDocument}', [TeacherDocumentWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:teacher_documents.manage'])
+    ->name('teacher-documents.destroy');
 
 Route::get('/grades', [GradeWebController::class, 'index'])
     ->middleware(['auth', 'permission:grades.view'])

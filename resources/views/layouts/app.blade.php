@@ -33,8 +33,26 @@
                     </div>
                 @endcan
 
+                @canany(['teachers.view', 'teacher_attendance.view', 'teacher_fees.view'])
+                    <div class="nav-section {{ $activeIn(['teachers', 'teacher-work-sessions', 'teacher-attendance-sheets', 'teacher-fees']) ? 'active-section' : '' }}">
+                        <p class="nav-section-title">Professeurs</p>
+                        @can('teachers.view')
+                            <a class="{{ $activeKey === 'teachers' ? 'active' : '' }}" href="{{ route('teachers.index') }}"><span class="nav-dot"></span>Dossiers professeurs</a>
+                        @endcan
+                        @can('teacher_attendance.view')
+                            <a class="{{ $activeKey === 'teacher-work-sessions' ? 'active' : '' }}" href="{{ route('teacher-work-sessions.index') }}"><span class="nav-dot"></span>Heures effectuées</a>
+                        @endcan
+                        @can('teacher_attendance.view')
+                            <a class="{{ $activeKey === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Fiches d’émargement</a>
+                        @endcan
+                        @can('teacher_fees.view')
+                            <a class="{{ $activeKey === 'teacher-fees' ? 'active' : '' }}" href="{{ route('teacher-fees.index') }}"><span class="nav-dot"></span>Honoraires</a>
+                        @endcan
+                    </div>
+                @endcanany
+
                 @canany(['classes.manage', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'students.export'])
-                    <div class="nav-section {{ $activeIn(['classes', 'enrollments', 'timetables', 'teacher-attendance-sheets', 'attendance', 'exit-authorizations']) ? 'active-section' : '' }}">
+                    <div class="nav-section {{ $activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'exit-authorizations']) ? 'active-section' : '' }}">
                         <p class="nav-section-title">Scolarité</p>
                         @can('classes.manage')
                             <a class="{{ $activeKey === 'classes' ? 'active' : '' }}" href="{{ route('classes.index') }}"><span class="nav-dot"></span>Classes</a>
@@ -44,9 +62,6 @@
                         @endcan
                         @can('timetables.view')
                             <a class="{{ $activeKey === 'timetables' ? 'active' : '' }}" href="{{ route('timetables.index') }}"><span class="nav-dot"></span>Emplois du temps</a>
-                        @endcan
-                        @can('timetables.print')
-                            <a class="{{ $activeKey === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Émargements</a>
                         @endcan
                         @can('attendance.view')
                             <a class="{{ $activeKey === 'attendance' ? 'active' : '' }}" href="{{ route('attendance.index') }}"><span class="nav-dot"></span>Absences</a>

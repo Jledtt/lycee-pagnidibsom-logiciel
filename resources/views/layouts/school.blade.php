@@ -1435,6 +1435,12 @@
                 flex-direction: column;
             }
 
+            .topbar > div:first-child,
+            .top-actions {
+                width: 100%;
+                flex: 1 1 auto;
+            }
+
             .stats,
             .modules,
             .nav,

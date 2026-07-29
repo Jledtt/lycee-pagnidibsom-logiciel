@@ -18,6 +18,10 @@ return [
             'title' => 'Vie scolaire',
             'description' => 'Suivre les présences, les sorties et les emplois du temps.',
         ],
+        'teachers' => [
+            'title' => 'Professeurs',
+            'description' => 'Gérer les dossiers, les heures effectuées, les pièces et les honoraires.',
+        ],
         'pedagogy' => [
             'title' => 'Notes et examens',
             'description' => 'Évaluations, bulletins, conseils de classe et examens blancs.',
@@ -344,11 +348,11 @@ return [
             ],
         ],
         'teacher-sheets' => [
-            'category' => 'school-life',
+            'category' => 'teachers',
             'title' => 'Imprimer les feuilles d’émargement',
             'summary' => 'Produire les feuilles utilisées pour la présence des enseignants.',
             'route' => 'teacher-attendance-sheets.index',
-            'permissions' => ['timetables.print'],
+            'permissions' => ['teacher_attendance.view'],
             'roles' => ['Secrétariat', 'Direction'],
             'keywords' => ['émargement', 'enseignant', 'signature', 'cours'],
             'steps' => [
@@ -359,6 +363,64 @@ return [
             ],
             'tips' => [
                 'Corrigez d’abord l’emploi du temps si un cours manque sur la feuille.',
+            ],
+        ],
+        'teacher-files' => [
+            'category' => 'teachers',
+            'title' => 'Gérer les dossiers professeurs',
+            'summary' => 'Centraliser l’identité, les affectations, le taux horaire, la fiscalité et les documents.',
+            'route' => 'teachers.index',
+            'permissions' => ['teachers.view'],
+            'roles' => ['Direction', 'Secrétariat', 'Comptabilité', 'Enseignant'],
+            'keywords' => ['professeur', 'enseignant', 'dossier', 'contrat', 'CNIB', 'taux horaire'],
+            'steps' => [
+                'Ouvrez Professeurs puis Dossiers professeurs.',
+                'Sélectionnez un enseignant et complétez sa spécialité, sa pièce d’identité et son contrat.',
+                'Renseignez son taux horaire par défaut et son taux de retenue à la source.',
+                'Ajoutez les contrats, diplômes, attestations et références de paiement utiles.',
+                'Téléchargez la fiche administrative PDF pour contrôle et signature.',
+            ],
+            'tips' => [
+                'Le taux enregistré dans un ordre de paiement reste inchangé même si le taux du dossier est modifié plus tard.',
+            ],
+        ],
+        'teacher-hours' => [
+            'category' => 'teachers',
+            'title' => 'Enregistrer les heures effectuées',
+            'summary' => 'Saisir les heures signées, les contrôler et les valider avant paiement.',
+            'route' => 'teacher-work-sessions.index',
+            'permissions' => ['teacher_attendance.view'],
+            'roles' => ['Direction', 'Secrétariat', 'Surveillant', 'Enseignant'],
+            'keywords' => ['heures', 'émargement', 'cours', 'signature', 'validation'],
+            'steps' => [
+                'Ouvrez Professeurs puis Heures effectuées.',
+                'Choisissez le professeur, la date, la classe, la matière et le nombre d’heures.',
+                'Cochez Signature papier contrôlée lorsque la fiche a été signée.',
+                'Laissez la ligne à vérifier ou validez-la immédiatement selon votre procédure.',
+                'Corrigez les anomalies avant de préparer les honoraires.',
+            ],
+            'tips' => [
+                'Une heure liée à un ordre de paiement ne peut plus être supprimée ni payée une seconde fois.',
+            ],
+        ],
+        'teacher-fees' => [
+            'category' => 'teachers',
+            'title' => 'Préparer et payer les honoraires',
+            'summary' => 'Calculer le brut, les retenues, les avances et le net à payer à partir des heures validées.',
+            'route' => 'teacher-fees.index',
+            'permissions' => ['teacher_fees.view'],
+            'roles' => ['Direction', 'Comptabilité', 'Enseignant'],
+            'keywords' => ['honoraires', 'taux', 'taxe', 'retenue', 'avance', 'net à payer'],
+            'steps' => [
+                'Ouvrez Honoraires et choisissez le professeur et le mois.',
+                'Vérifiez les heures validées, puis ajustez le taux horaire de chaque ligne si nécessaire.',
+                'Renseignez la retenue à la source, les avances et les autres retenues.',
+                'Créez le brouillon, puis faites-le valider par la direction.',
+                'Après règlement, enregistrez le mode, la date et la référence du paiement.',
+                'Téléchargez l’ordre de paiement PDF pour les signatures.',
+            ],
+            'tips' => [
+                'Le PDF reprend uniquement les heures validées sélectionnées et convertit automatiquement le net en lettres.',
             ],
         ],
         'subjects' => [
