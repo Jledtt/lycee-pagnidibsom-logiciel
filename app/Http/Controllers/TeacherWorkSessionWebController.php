@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\TeacherWorkSession;
@@ -12,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TeacherWorkSessionWebController extends Controller
@@ -60,8 +62,8 @@ class TeacherWorkSessionWebController extends Controller
             'school_class_id' => ['required', 'integer', Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id)],
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'session_date' => ['required', 'date', 'after_or_equal:'.$academicYear->starts_at->toDateString(), 'before_or_equal:'.$academicYear->ends_at->toDateString()],
-            'starts_at' => ['nullable', 'date_format:H:i'],
-            'ends_at' => ['nullable', 'date_format:H:i', 'after:starts_at'],
+            'starts_at' => ['required', 'date_format:H:i'],
+            'ends_at' => ['required', 'date_format:H:i', 'after:starts_at'],
             'hours_worked' => ['required', 'numeric', 'min:0.25', 'max:250'],
             'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'status' => ['required', Rule::in(['draft', 'validated'])],
@@ -72,9 +74,57 @@ class TeacherWorkSessionWebController extends Controller
         $teacher = User::query()->findOrFail($data['teacher_id']);
         abort_unless($teacher->hasRole('enseignant'), 422, 'Le compte choisi n’est pas un professeur.');
 
+        $assigned = ClassSubject::query()
+            ->where('school_class_id', $data['school_class_id'])
+            ->where('subject_id', $data['subject_id'])
+            ->where('teacher_id', $teacher->id)
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $assigned) {
+            throw ValidationException::withMessages([
+                'subject_id' => 'Ce professeur n’est pas affecté à cette matière dans cette classe.',
+            ]);
+        }
+
+        $startsAt = Carbon::createFromFormat('H:i', $data['starts_at'])->format('H:i:s');
+        $endsAt = Carbon::createFromFormat('H:i', $data['ends_at'])->format('H:i:s');
+        $teacherDaySessions = TeacherWorkSession::query()
+            ->where('teacher_id', $teacher->id)
+            ->whereDate('session_date', $data['session_date'])
+            ->where('status', '!=', 'cancelled');
+
+        $duplicateExists = (clone $teacherDaySessions)
+            ->where('school_class_id', $data['school_class_id'])
+            ->where('subject_id', $data['subject_id'])
+            ->whereTime('starts_at', $startsAt)
+            ->whereTime('ends_at', $endsAt)
+            ->exists();
+
+        if ($duplicateExists) {
+            throw ValidationException::withMessages([
+                'starts_at' => 'Cette séance a déjà été enregistrée.',
+            ]);
+        }
+
+        $overlapExists = (clone $teacherDaySessions)
+            ->whereNotNull('starts_at')
+            ->whereNotNull('ends_at')
+            ->whereTime('starts_at', '<', $endsAt)
+            ->whereTime('ends_at', '>', $startsAt)
+            ->exists();
+
+        if ($overlapExists) {
+            throw ValidationException::withMessages([
+                'starts_at' => 'Ce professeur a déjà un cours sur tout ou partie de ce créneau.',
+            ]);
+        }
+
         TeacherWorkSession::query()->create([
             ...$data,
             'academic_year_id' => $academicYear->id,
+            'starts_at' => $startsAt,
+            'ends_at' => $endsAt,
             'teacher_signed_at' => $request->boolean('teacher_signed') ? now() : null,
             'validated_at' => $data['status'] === 'validated' ? now() : null,
             'validated_by' => $data['status'] === 'validated' ? $request->user()->id : null,

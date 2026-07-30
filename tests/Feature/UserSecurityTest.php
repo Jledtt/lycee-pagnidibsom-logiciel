@@ -7,6 +7,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class UserSecurityTest extends TestCase
@@ -56,6 +57,45 @@ class UserSecurityTest extends TestCase
             'username' => 'login-history-user',
             'status' => 'logout',
         ]);
+    }
+
+    public function test_login_is_temporarily_locked_after_five_failed_attempts(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat', [
+            'username' => 'rate-limited-user',
+            'password' => 'correct-password',
+        ]);
+        $key = 'login:rate-limited-user|127.0.0.1';
+        RateLimiter::clear($key);
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->post(route('login.store'), [
+                'username' => 'rate-limited-user',
+                'password' => 'wrong-password',
+            ])->assertSessionHasErrors('username');
+        }
+
+        $this->post(route('login.store'), [
+            'username' => 'rate-limited-user',
+            'password' => 'correct-password',
+        ])->assertSessionHasErrors('username');
+
+        $this->assertStringContainsString(
+            'Trop de tentatives de connexion',
+            session('errors')->first('username'),
+        );
+        $this->assertGuest();
+
+        $this->travel(301)->seconds();
+
+        $this->post(route('login.store'), [
+            'username' => 'rate-limited-user',
+            'password' => 'correct-password',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+        RateLimiter::clear($key);
     }
 
     public function test_only_authorized_roles_can_open_login_history(): void

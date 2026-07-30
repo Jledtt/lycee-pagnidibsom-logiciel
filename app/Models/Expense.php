@@ -9,6 +9,7 @@ class Expense extends Model
 {
     protected $fillable = [
         'academic_year_id',
+        'teacher_fee_statement_id',
         'spent_at',
         'category',
         'beneficiary',
@@ -32,6 +33,11 @@ class Expense extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function teacherFeeStatement(): BelongsTo
+    {
+        return $this->belongsTo(TeacherFeeStatement::class);
     }
 
     public function creator(): BelongsTo

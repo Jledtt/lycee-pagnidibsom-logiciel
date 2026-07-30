@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Expense;
 use App\Models\SchoolSetting;
 use App\Models\TeacherFeeStatement;
 use App\Models\TeacherWorkSession;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -135,17 +137,40 @@ class TeacherFeeStatementWebController extends Controller
 
     public function markPaid(Request $request, TeacherFeeStatement $teacherFee): RedirectResponse
     {
-        abort_unless($teacherFee->status === 'approved', 422, 'Valide d’abord l’ordre de paiement.');
         $data = $request->validate([
             'paid_at' => ['required', 'date'],
             'payment_method' => ['required', Rule::in(['Espèces', 'Virement', 'Mobile Money', 'Chèque'])],
             'payment_reference' => ['nullable', 'string', 'max:120'],
         ]);
-        $teacherFee->update([
-            ...$data,
-            'status' => 'paid',
-            'paid_by' => $request->user()->id,
-        ]);
+
+        DB::transaction(function () use ($teacherFee, $data, $request): void {
+            $statement = TeacherFeeStatement::query()
+                ->with('teacher')
+                ->lockForUpdate()
+                ->findOrFail($teacherFee->id);
+
+            abort_unless($statement->status === 'approved', 422, 'Valide d’abord l’ordre de paiement.');
+
+            $statement->update([
+                ...$data,
+                'status' => 'paid',
+                'paid_by' => $request->user()->id,
+            ]);
+
+            Expense::query()->create([
+                'teacher_fee_statement_id' => $statement->id,
+                'academic_year_id' => $statement->academic_year_id,
+                'spent_at' => Carbon::parse($data['paid_at'])->toDateString(),
+                'category' => 'salaries',
+                'beneficiary' => $statement->beneficiary_name,
+                'payment_method' => $this->accountingPaymentMethod($data['payment_method']),
+                'amount' => $statement->net_amount,
+                'proof_reference' => $data['payment_reference'] ?: $statement->reference,
+                'status' => 'valid',
+                'notes' => 'Générée automatiquement depuis l’ordre d’honoraires '.$statement->reference.'.',
+                'created_by' => $request->user()->id,
+            ]);
+        });
 
         return back()->with('success', 'Paiement des honoraires enregistré.');
     }
@@ -200,5 +225,15 @@ class TeacherFeeStatementWebController extends Controller
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function accountingPaymentMethod(string $method): string
+    {
+        return match ($method) {
+            'Espèces' => 'cash',
+            'Virement', 'Chèque' => 'bank_transfer',
+            'Mobile Money' => 'mobile_money',
+            default => 'other',
+        };
     }
 }

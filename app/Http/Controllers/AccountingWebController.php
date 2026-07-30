@@ -169,6 +169,12 @@ class AccountingWebController extends Controller
 
     public function cancelExpense(Request $request, Expense $expense): RedirectResponse
     {
+        abort_if(
+            $expense->teacher_fee_statement_id,
+            422,
+            'Une dépense générée par un honoraire payé ne peut pas être annulée séparément.',
+        );
+
         $data = $request->validate([
             'reason' => ['required', 'string', 'min:5'],
         ]);

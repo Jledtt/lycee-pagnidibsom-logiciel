@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
+use App\Models\Expense;
 use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Subject;
@@ -34,6 +36,13 @@ class TeacherManagementTest extends TestCase
             'identity_document_number' => 'B1234567',
             'default_hourly_rate' => 2500,
             'withholding_tax_rate' => 2,
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'is_active' => true,
         ]);
 
         $this->actingAs($admin)
@@ -85,6 +94,24 @@ class TeacherManagementTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame('paid', $statement->refresh()->status);
         $this->assertSame('VIR-2026-001', $statement->payment_reference);
+        $this->assertDatabaseHas('expenses', [
+            'teacher_fee_statement_id' => $statement->id,
+            'academic_year_id' => $academicYear->id,
+            'category' => 'salaries',
+            'beneficiary' => $teacher->name,
+            'payment_method' => 'bank_transfer',
+            'amount' => 44000,
+            'status' => 'valid',
+            'created_by' => $admin->id,
+        ]);
+        $this->assertSame('44000.00', Expense::query()->firstOrFail()->amount);
+        $expense = Expense::query()->firstOrFail();
+        $this->actingAs($admin)
+            ->put(route('accounting.expenses.cancel', $expense), [
+                'cancellation_reason' => 'Tentative de désynchronisation.',
+            ])
+            ->assertStatus(422);
+        $this->assertSame('valid', $expense->refresh()->status);
 
         $this->actingAs($admin)
             ->get(route('teacher-fees.pdf', $statement))
@@ -125,6 +152,82 @@ class TeacherManagementTest extends TestCase
 
         $this->assertDatabaseCount('teacher_fee_statements', 1);
         $this->assertDatabaseCount('teacher_fee_lines', 1);
+    }
+
+    public function test_work_sessions_require_assignment_and_reject_duplicates_and_overlaps(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-session-admin');
+        $teacher = $this->userWithRole('enseignant', 'teacher-session');
+        [$academicYear, $firstClass, $subject] = $this->academicContext();
+        $sessionDate = $academicYear->starts_at->copy()->addMonth()->toDateString();
+        $payload = [
+            'teacher_id' => $teacher->id,
+            'school_class_id' => $firstClass->id,
+            'subject_id' => $subject->id,
+            'session_date' => $sessionDate,
+            'starts_at' => '08:00',
+            'ends_at' => '10:00',
+            'hours_worked' => 2,
+            'status' => 'validated',
+        ];
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), $payload)
+            ->assertSessionHasErrors('subject_id');
+
+        ClassSubject::query()->create([
+            'school_class_id' => $firstClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), $payload)
+            ->assertSessionHasErrors('starts_at');
+
+        $secondClass = SchoolClass::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'level_id' => $firstClass->level_id,
+            'name' => '4e A',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $secondClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), [
+                ...$payload,
+                'school_class_id' => $secondClass->id,
+                'starts_at' => '09:00',
+                'ends_at' => '11:00',
+            ])
+            ->assertSessionHasErrors('starts_at');
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), [
+                ...$payload,
+                'school_class_id' => $secondClass->id,
+                'session_date' => $academicYear->starts_at->copy()->addMonth()->addDay()->toDateString(),
+                'starts_at' => '10:00',
+                'ends_at' => '13:00',
+                'hours_worked' => 3,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('teacher_work_sessions', 2);
+        $this->assertSame(5.0, (float) TeacherWorkSession::query()->sum('hours_worked'));
     }
 
     public function test_teacher_can_only_view_their_own_professor_file_and_fees(): void

@@ -22,7 +22,10 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request, LoginHistoryService $loginHistoryService): RedirectResponse
     {
+        $request->ensureIsNotRateLimited();
+
         if (! Auth::attempt($request->credentials() + ['status' => 'active'], $request->boolean('remember'))) {
+            $request->hitRateLimiter();
             $loginHistoryService->record($request, 'failed');
 
             return back()
@@ -30,6 +33,7 @@ class AuthController extends Controller
                 ->onlyInput('username');
         }
 
+        $request->clearRateLimiter();
         $request->session()->regenerate();
         $request->user()->forceFill(['last_login_at' => now()])->save();
         $loginHistoryService->record($request, 'success', $request->user());

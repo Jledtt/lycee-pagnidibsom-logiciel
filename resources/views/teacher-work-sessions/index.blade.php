@@ -47,8 +47,8 @@
                     <div class="field"><label>Date du cours</label><input type="date" name="session_date" value="{{ old('session_date', now()->toDateString()) }}" required></div>
                     <div class="field"><label>Classe</label><select name="school_class_id" required><option value="">Choisir</option>@foreach ($classes as $class)<option value="{{ $class->id }}" @selected((int) old('school_class_id') === $class->id)>{{ $class->name }}</option>@endforeach</select></div>
                     <div class="field"><label>Matière</label><select name="subject_id" required><option value="">Choisir</option>@foreach ($subjects as $subject)<option value="{{ $subject->id }}" @selected((int) old('subject_id') === $subject->id)>{{ $subject->name }}</option>@endforeach</select></div>
-                    <div class="field"><label>Début</label><input type="time" name="starts_at" value="{{ old('starts_at') }}"></div>
-                    <div class="field"><label>Fin</label><input type="time" name="ends_at" value="{{ old('ends_at') }}"></div>
+                    <div class="field"><label>Début du cours</label><input type="time" name="starts_at" value="{{ old('starts_at') }}" required></div>
+                    <div class="field"><label>Fin du cours</label><input type="time" name="ends_at" value="{{ old('ends_at') }}" required></div>
                     <div class="field"><label>Nombre d’heures effectuées</label><input type="number" min="0.25" max="250" step="0.25" name="hours_worked" value="{{ old('hours_worked', 1) }}" required></div>
                     <div class="field"><label>Taux horaire exceptionnel</label><input type="number" min="0" step="1" name="hourly_rate" value="{{ old('hourly_rate') }}" placeholder="Sinon taux du dossier"></div>
                     <div class="field"><label>Statut</label><select name="status"><option value="draft">À vérifier</option><option value="validated">Validé</option></select></div>
