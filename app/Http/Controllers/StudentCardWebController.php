@@ -66,6 +66,12 @@ class StudentCardWebController extends Controller
 
     private function photoPath(Student $student): ?string
     {
+        $media = $student->getFirstMedia('student_photo');
+
+        if ($media && file_exists($media->getPath())) {
+            return $media->getPath();
+        }
+
         if (filled($student->photo_path) && file_exists(public_path($student->photo_path))) {
             return public_path($student->photo_path);
         }
@@ -73,12 +79,20 @@ class StudentCardWebController extends Controller
         $photoDocument = $student->documents
             ->where('document_type', 'photo')
             ->where('status', 'received')
-            ->filter(fn ($document) => filled($document->file_path) && Storage::disk('public')->exists($document->file_path))
+            ->filter(fn ($document) => filled($document->file_path))
             ->sortByDesc('created_at')
             ->first();
 
-        return $photoDocument
-            ? Storage::disk('public')->path($photoDocument->file_path)
-            : null;
+        if (! $photoDocument) {
+            return null;
+        }
+
+        foreach (['documents', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($photoDocument->file_path)) {
+                return Storage::disk($disk)->path($photoDocument->file_path);
+            }
+        }
+
+        return null;
     }
 }

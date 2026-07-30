@@ -17,7 +17,7 @@ class StudentDocumentTest extends TestCase
 
     public function test_secretariat_can_upload_and_download_student_document(): void
     {
-        Storage::fake('public');
+        Storage::fake('documents');
         $this->seed(DatabaseSeeder::class);
         $user = $this->userWithRole('secretariat');
         $student = $this->student();
@@ -44,6 +44,7 @@ class StudentDocumentTest extends TestCase
             'model_id' => $student->id,
             'collection_name' => 'birth_certificate',
             'name' => 'Acte de naissance',
+            'disk' => 'documents',
         ]);
         $this->assertDatabaseHas('activity_logs', [
             'auditable_type' => StudentDocument::class,
@@ -55,11 +56,15 @@ class StudentDocumentTest extends TestCase
             ->get(route('student-documents.download', $document))
             ->assertOk()
             ->assertDownload('lpp-2026-0001-acte-de-naissance.pdf');
+
+        auth()->logout();
+        $this->get(route('student-documents.download', $document))
+            ->assertRedirect(route('login'));
     }
 
     public function test_secretariat_can_upload_student_photo(): void
     {
-        Storage::fake('public');
+        Storage::fake('documents');
         $this->seed(DatabaseSeeder::class);
         $user = $this->userWithRole('secretariat');
         $student = $this->student();
@@ -82,13 +87,14 @@ class StudentDocumentTest extends TestCase
             'model_id' => $student->id,
             'collection_name' => 'student_photo',
             'name' => 'Photo élève',
+            'disk' => 'documents',
         ]);
-        $this->assertNotNull($student->fresh()->photo_path);
+        $this->assertStringStartsWith('media:', (string) $student->fresh()->photo_path);
     }
 
     public function test_secretariat_can_mark_missing_document_without_file(): void
     {
-        Storage::fake('public');
+        Storage::fake('documents');
         $this->seed(DatabaseSeeder::class);
         $user = $this->userWithRole('secretariat');
         $student = $this->student();
@@ -112,6 +118,7 @@ class StudentDocumentTest extends TestCase
 
     public function test_document_file_is_deleted_when_document_is_removed(): void
     {
+        Storage::fake('documents');
         Storage::fake('public');
         $this->seed(DatabaseSeeder::class);
         $user = $this->userWithRole('secretariat');

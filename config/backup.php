@@ -40,6 +40,7 @@ return [
                     base_path('resources'),
                     base_path('routes'),
                     storage_path('app/public'),
+                    storage_path('app/private/documents'),
                 ],
 
                 /*
@@ -54,6 +55,7 @@ return [
                     storage_path('logs'),
                     storage_path('app/backup-temp'),
                     storage_path('app/backups'),
+                    storage_path('app/private/'.env('LPP_BACKUP_NAME', 'lpp-gestion-scolaire')),
                 ],
 
                 /*

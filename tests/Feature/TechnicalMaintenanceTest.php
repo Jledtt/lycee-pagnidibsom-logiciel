@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -40,6 +41,20 @@ class TechnicalMaintenanceTest extends TestCase
         $this->assertSecureBackupPermissions($path);
 
         File::deleteDirectory($path);
+    }
+
+    public function test_automatic_backup_includes_private_documents_and_database(): void
+    {
+        $this->assertContains(
+            storage_path('app/private/documents'),
+            config('backup.backup.source.files.include'),
+        );
+
+        $backupEvent = collect(app(Schedule::class)->events())
+            ->first(fn ($event) => str_contains($event->command, 'backup:run'));
+
+        $this->assertNotNull($backupEvent);
+        $this->assertStringNotContainsString('--only-db', $backupEvent->command);
     }
 
     public function test_admin_can_create_and_download_backup_from_settings(): void

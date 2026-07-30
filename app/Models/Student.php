@@ -91,19 +91,19 @@ class Student extends Model implements HasMedia
     {
         $this->addMediaCollection('student_photo')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk('documents');
 
         $this->addMediaCollection('birth_certificate')
-            ->useDisk('public');
+            ->useDisk('documents');
 
         $this->addMediaCollection('medical_certificate')
-            ->useDisk('public');
+            ->useDisk('documents');
 
         $this->addMediaCollection('previous_school_record')
-            ->useDisk('public');
+            ->useDisk('documents');
 
         $this->addMediaCollection('scanned_documents')
-            ->useDisk('public');
+            ->useDisk('documents');
     }
 
     public function getFullNameAttribute(): string

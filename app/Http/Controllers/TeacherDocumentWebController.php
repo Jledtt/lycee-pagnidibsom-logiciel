@@ -27,7 +27,7 @@ class TeacherDocumentWebController extends Controller
         ]);
         $file = $request->file('document_file');
         $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $path = $file->storeAs('teacher-documents/'.$teacher->id, $filename, 'local');
+        $path = $file->storeAs('teachers/'.$teacher->id, $filename, 'documents');
 
         TeacherDocument::query()->create([
             ...$data,
@@ -46,20 +46,38 @@ class TeacherDocumentWebController extends Controller
             $request->user()->can('teacher_documents.manage') || $request->user()->id === $teacherDocument->teacher_id,
             403,
         );
-        abort_unless(Storage::disk('local')->exists($teacherDocument->file_path), 404, 'Fichier introuvable.');
+        $disk = $this->diskContaining($teacherDocument->file_path);
+        abort_unless($disk, 404, 'Fichier introuvable.');
         $extension = pathinfo($teacherDocument->file_path, PATHINFO_EXTENSION);
 
         return response()->download(
-            Storage::disk('local')->path($teacherDocument->file_path),
+            Storage::disk($disk)->path($teacherDocument->file_path),
             Str::slug($teacherDocument->teacher?->name.'-'.$teacherDocument->name).'.'.$extension,
         );
     }
 
     public function destroy(TeacherDocument $teacherDocument): RedirectResponse
     {
-        Storage::disk('local')->delete($teacherDocument->file_path);
+        if ($disk = $this->diskContaining($teacherDocument->file_path)) {
+            Storage::disk($disk)->delete($teacherDocument->file_path);
+        }
         $teacherDocument->delete();
 
         return back()->with('success', 'Document supprimé.');
+    }
+
+    private function diskContaining(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        foreach (['documents', 'local'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                return $disk;
+            }
+        }
+
+        return null;
     }
 }

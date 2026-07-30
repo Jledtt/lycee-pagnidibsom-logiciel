@@ -61,7 +61,7 @@ class StudentDocumentWebController extends Controller
 
             if ($data['document_type'] === 'photo') {
                 $student->forceFill([
-                    'photo_path' => $media->getUrl(),
+                    'photo_path' => 'media:'.$media->id,
                 ])->save();
             }
         }
@@ -81,9 +81,10 @@ class StudentDocumentWebController extends Controller
             return response()->file($media->getPath());
         }
 
-        abort_unless(Storage::disk('public')->exists($studentDocument->file_path), 404, 'Fichier introuvable.');
+        $disk = $this->diskContaining($studentDocument->file_path);
+        abort_unless($disk, 404, 'Fichier introuvable.');
 
-        return response()->file(Storage::disk('public')->path($studentDocument->file_path));
+        return response()->file(Storage::disk($disk)->path($studentDocument->file_path));
     }
 
     public function download(StudentDocument $studentDocument): BinaryFileResponse
@@ -100,12 +101,13 @@ class StudentDocumentWebController extends Controller
             return response()->download($media->getPath(), $filename);
         }
 
-        abort_unless(Storage::disk('public')->exists($studentDocument->file_path), 404, 'Fichier introuvable.');
+        $disk = $this->diskContaining($studentDocument->file_path);
+        abort_unless($disk, 404, 'Fichier introuvable.');
 
         $extension = pathinfo($studentDocument->file_path, PATHINFO_EXTENSION);
         $filename = Str::slug($studentDocument->student?->matricule.'-'.$studentDocument->name).'.'.$extension;
 
-        return response()->download(Storage::disk('public')->path($studentDocument->file_path), $filename);
+        return response()->download(Storage::disk($disk)->path($studentDocument->file_path), $filename);
     }
 
     public function destroy(Student $student, StudentDocument $studentDocument): RedirectResponse
@@ -114,8 +116,8 @@ class StudentDocumentWebController extends Controller
 
         if ($media = $this->mediaFromDocument($studentDocument)) {
             $media->delete();
-        } elseif ($studentDocument->file_path && Storage::disk('public')->exists($studentDocument->file_path)) {
-            Storage::disk('public')->delete($studentDocument->file_path);
+        } elseif ($disk = $this->diskContaining($studentDocument->file_path)) {
+            Storage::disk($disk)->delete($studentDocument->file_path);
         }
 
         $studentDocument->delete();
@@ -154,6 +156,25 @@ class StudentDocumentWebController extends Controller
             return null;
         }
 
-        return Media::query()->whereKey($mediaId)->first();
+        return Media::query()
+            ->whereKey($mediaId)
+            ->where('model_type', Student::class)
+            ->where('model_id', $studentDocument->student_id)
+            ->first();
+    }
+
+    private function diskContaining(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        foreach (['documents', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                return $disk;
+            }
+        }
+
+        return null;
     }
 }

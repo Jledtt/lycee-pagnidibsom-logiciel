@@ -40,11 +40,18 @@
             <span class="badge">{{ $student->status }}</span>
         </div>
 
-        @php($studentPhoto = $student->getFirstMedia('student_photo'))
+        @php($studentPhotoDocument = $student->documents
+            ->where('document_type', 'photo')
+            ->where('status', 'received')
+            ->whereNotNull('file_path')
+            ->sortByDesc('created_at')
+            ->first())
         <div class="student-profile-strip">
             <div class="student-photo-frame">
-                @if ($studentPhoto || $student->photo_path)
-                    <img src="{{ $studentPhoto?->getUrl() ?? $student->photo_path }}" alt="Photo de {{ $student->full_name }}">
+                @if ($studentPhotoDocument)
+                    <img src="{{ route('student-documents.show', $studentPhotoDocument) }}" alt="Photo de {{ $student->full_name }}">
+                @elseif ($student->photo_path && ! \Illuminate\Support\Str::startsWith($student->photo_path, 'media:'))
+                    <img src="{{ $student->photo_path }}" alt="Photo de {{ $student->full_name }}">
                 @else
                     <span>PHOTO</span>
                 @endif

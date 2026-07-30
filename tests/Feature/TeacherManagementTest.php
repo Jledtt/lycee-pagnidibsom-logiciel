@@ -142,7 +142,7 @@ class TeacherManagementTest extends TestCase
 
     public function test_administration_updates_teacher_profile_and_protects_documents(): void
     {
-        Storage::fake('local');
+        Storage::fake('documents');
         $this->seed(DatabaseSeeder::class);
         $admin = $this->userWithRole('admin', 'teacher-doc-admin');
         $teacher = $this->userWithRole('enseignant', 'teacher-doc');
@@ -188,7 +188,7 @@ class TeacherManagementTest extends TestCase
             'subject_id' => $subject->id,
         ]);
         $document = $teacher->teacherDocuments()->firstOrFail();
-        Storage::disk('local')->assertExists($document->file_path);
+        Storage::disk('documents')->assertExists($document->file_path);
         $this->actingAs($teacher)->get(route('teacher-documents.download', $document))->assertOk();
     }
 
