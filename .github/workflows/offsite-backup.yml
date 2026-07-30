@@ -38,7 +38,7 @@ jobs:
             -o BatchMode=yes \
             lpp-backup-export@164.132.198.19 > "$filename"
           test -s "$filename"
-          zipinfo -v "$filename" | grep -q 'file security status:.*encrypted'
+          zipinfo -v "$filename" | grep 'file security status:.*encrypted' >/dev/null
           sha256sum "$filename" > "$filename.sha256"
           echo "filename=$filename" >> "$GITHUB_OUTPUT"
 

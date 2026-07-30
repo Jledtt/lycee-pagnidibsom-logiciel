@@ -21,7 +21,7 @@ if (( ARCHIVE_AGE_SECONDS < 0 || ARCHIVE_AGE_SECONDS > MAX_AGE_SECONDS )); then
     exit 1
 fi
 
-if ! zipinfo -v "$ARCHIVE" | grep -q 'file security status:.*encrypted'; then
+if ! zipinfo -v "$ARCHIVE" | grep 'file security status:.*encrypted' >/dev/null; then
     echo "La derniere archive n est pas chiffree." >&2
     exit 1
 fi
