@@ -6,6 +6,7 @@ use App\Mail\BusinessNotificationMail;
 use App\Models\CommunicationMessage;
 use App\Services\CommunicationQuotaService;
 use App\Services\CommunicationService;
+use App\Services\ResendWebhookService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Mail;
@@ -86,6 +87,7 @@ class SendCommunicationEmail implements ShouldQueue
                 'failed_at' => null,
             ])->save();
 
+            app(ResendWebhookService::class)->reconcileMessage($message);
             $communications->refreshCampaign($message->campaign);
         } catch (Throwable $exception) {
             $message->forceFill([

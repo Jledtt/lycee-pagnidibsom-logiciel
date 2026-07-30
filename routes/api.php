@@ -3,8 +3,13 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ResendWebhookController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/webhooks/resend', ResendWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.resend');
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->middleware('permission:students.view');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class CommunicationMessage extends Model
@@ -24,6 +25,12 @@ class CommunicationMessage extends Model
         'status',
         'attempts',
         'provider_message_id',
+        'delivery_status',
+        'delivery_status_at',
+        'delivery_error',
+        'delivered_at',
+        'bounced_at',
+        'complained_at',
         'error_message',
         'metadata',
         'deduplication_key',
@@ -40,6 +47,10 @@ class CommunicationMessage extends Model
             'queued_at' => 'datetime',
             'sent_at' => 'datetime',
             'failed_at' => 'datetime',
+            'delivery_status_at' => 'datetime',
+            'delivered_at' => 'datetime',
+            'bounced_at' => 'datetime',
+            'complained_at' => 'datetime',
         ];
     }
 
@@ -56,5 +67,10 @@ class CommunicationMessage extends Model
     public function related(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function emailEvents(): HasMany
+    {
+        return $this->hasMany(CommunicationEmailEvent::class, 'communication_message_id');
     }
 }

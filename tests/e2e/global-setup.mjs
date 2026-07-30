@@ -18,4 +18,17 @@ export default function globalSetup() {
     if (migration.status !== 0) {
         throw new Error('La préparation de la base Playwright a échoué.');
     }
+
+    const workflowData = spawnSync(
+        'php',
+        ['artisan', 'db:seed', '--class=Database\\Seeders\\E2eWorkflowSeeder', '--force'],
+        {
+            env: appEnvironment,
+            stdio: 'inherit',
+        },
+    );
+
+    if (workflowData.status !== 0) {
+        throw new Error('La préparation des parcours métier Playwright a échoué.');
+    }
 }

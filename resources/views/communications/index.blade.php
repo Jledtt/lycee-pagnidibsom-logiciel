@@ -27,6 +27,14 @@
             'completed' => 'Terminé',
             'partial' => 'Partiel',
         ];
+        $deliveryLabels = [
+            'sent' => 'Accepté par Resend',
+            'delivered' => 'Remis au serveur destinataire',
+            'delayed' => 'Livraison retardée',
+            'bounced' => 'Adresse rejetée',
+            'complained' => 'Signalé comme spam',
+            'rejected' => 'Envoi rejeté',
+        ];
         $eventLabels = [
             'announcement' => 'Annonce',
             'payment_received' => 'Paiement',
@@ -226,7 +234,12 @@
                                     <td>{{ $campaign->created_at?->format('d/m/Y H:i') }}</td>
                                     <td><strong>{{ $campaign->title }}</strong><br><span style="color:var(--muted)">{{ $campaign->subject }}</span></td>
                                     <td>{{ $audienceLabels[$campaign->audience] ?? $campaign->audience }}{{ $campaign->schoolClass ? ' - '.$campaign->schoolClass->name : '' }}</td>
-                                    <td>{{ $campaign->sent_count }} envoyé(s), {{ $campaign->failed_count }} échec(s), {{ $campaign->skipped_count }} ignoré(s) / {{ $campaign->recipients_count }}</td>
+                                    <td>
+                                        {{ $campaign->sent_count }} accepté(s),
+                                        {{ $campaign->delivered_count }} remis,
+                                        {{ $campaign->delivery_problem_count }} incident(s)
+                                        / {{ $campaign->recipients_count }}
+                                    </td>
                                     <td><span class="badge {{ in_array($campaign->status, ['failed', 'partial']) ? 'badge-danger' : ($campaign->status === 'processing' ? 'badge-warning' : '') }}">{{ $statusLabels[$campaign->status] ?? $campaign->status }}</span></td>
                                 </tr>
                             @endforeach
@@ -257,6 +270,12 @@
                         <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $statusLabels[$value] }}</option>
                     @endforeach
                 </select>
+                <select name="delivery">
+                    <option value="">Toutes les livraisons</option>
+                    @foreach ($deliveryLabels as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['delivery'] ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
                 <button class="btn btn-subtle" type="submit">Filtrer</button>
                 <a class="btn btn-subtle" href="{{ route('communications.index', ['tab' => 'history']) }}">Réinitialiser</a>
             </form>
@@ -273,6 +292,7 @@
                                 <th>Événement</th>
                                 <th>Objet</th>
                                 <th>Statut</th>
+                                <th>Livraison Resend</th>
                                 <th>Tentatives</th>
                                 <th></th>
                             </tr>
@@ -285,6 +305,18 @@
                                     <td>{{ $eventLabels[$message->event_type] ?? $message->event_type }}</td>
                                     <td>{{ $message->subject }}@if($message->error_message)<br><small class="error">{{ \Illuminate\Support\Str::limit($message->error_message, 100) }}</small>@endif</td>
                                     <td><span class="badge {{ $message->status === 'failed' ? 'badge-danger' : (in_array($message->status, ['deferred', 'queued']) ? 'badge-warning' : '') }}">{{ $statusLabels[$message->status] ?? $message->status }}</span></td>
+                                    <td>
+                                        @if($message->delivery_status)
+                                            <span class="badge {{ in_array($message->delivery_status, ['bounced', 'complained', 'rejected']) ? 'badge-danger' : ($message->delivery_status === 'delayed' ? 'badge-warning' : '') }}">
+                                                {{ $deliveryLabels[$message->delivery_status] ?? $message->delivery_status }}
+                                            </span>
+                                            @if($message->delivery_error)
+                                                <br><small class="error">{{ \Illuminate\Support\Str::limit($message->delivery_error, 100) }}</small>
+                                            @endif
+                                        @else
+                                            <span style="color:var(--muted)">En attente du webhook</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $message->attempts }}</td>
                                     <td>
                                         @can('communications.send')

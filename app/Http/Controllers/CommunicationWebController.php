@@ -39,6 +39,7 @@ class CommunicationWebController extends Controller
         $messages = CommunicationMessage::query()
             ->with(['campaign', 'creator'])
             ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
+            ->when($request->string('delivery')->toString(), fn ($query, string $status) => $query->where('delivery_status', $status))
             ->when($request->string('event')->toString(), fn ($query, string $event) => $query->where('event_type', $event))
             ->when($request->string('search')->toString(), function ($query, string $search) {
                 $query->where(function ($subQuery) use ($search) {
@@ -67,12 +68,19 @@ class CommunicationWebController extends Controller
             'messages' => $messages,
             'campaigns' => CommunicationCampaign::query()
                 ->with(['creator', 'schoolClass'])
+                ->withCount([
+                    'messages as delivered_count' => fn ($query) => $query->where('delivery_status', 'delivered'),
+                    'messages as delivery_problem_count' => fn ($query) => $query->whereIn(
+                        'delivery_status',
+                        ['bounced', 'complained', 'rejected'],
+                    ),
+                ])
                 ->latest()
                 ->limit(12)
                 ->get(),
             'templates' => $templates->ensureDefaults(),
             'quota' => $quota->usage(),
-            'filters' => $request->only(['status', 'event', 'search']),
+            'filters' => $request->only(['status', 'delivery', 'event', 'search']),
             'tab' => $request->string('tab')->toString() ?: 'send',
         ]);
     }
