@@ -451,6 +451,50 @@
     overflow-wrap: anywhere;
 }
 
+.field-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #4d4445;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.field .check input[type="checkbox"] {
+    width: 18px;
+    min-height: 18px;
+    flex: 0 0 18px;
+    margin: 0;
+}
+
+.dialog-action-note {
+    display: grid;
+    gap: 4px;
+    margin-top: 18px;
+    padding: 14px;
+    border-left: 4px solid #e6a817;
+    background: #fffdf9;
+}
+
+.dialog-action-note strong {
+    color: #1d1718;
+}
+
+.dialog-action-note span {
+    color: #6f6564;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.dialog-action-note--danger {
+    border-left-color: #a72a2a;
+    background: #fff5f4;
+}
+
+.dialog-action-note[hidden],
+.ui-dialog__footer .btn[hidden] {
+    display: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .ui-dialog[open] .ui-dialog__surface {
         animation: ui-dialog-enter 150ms ease-out;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Attendance\JustifyAttendanceRecordRequest;
 use App\Http\Requests\Attendance\StoreAttendanceSessionRequest;
 use App\Http\Requests\Attendance\UpdateAttendanceSessionRequest;
 use App\Models\AcademicYear;
@@ -187,6 +188,21 @@ class AttendanceWebController extends Controller
             ->with('success', 'Absence supprimée. L’élève est marqué présent.');
     }
 
+    public function justifyRecord(
+        JustifyAttendanceRecordRequest $request,
+        AttendanceRecord $attendanceRecord,
+    ): RedirectResponse {
+        $this->attendanceSessionService->justifyRecord(
+            $attendanceRecord,
+            $request->user(),
+            $request->validated('reason'),
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Absence ou retard justifié avec succès.');
+    }
+
     private function attendancePdfResponse(?AttendanceSession $session, SchoolClass $schoolClass, ?AcademicYear $academicYear, $date)
     {
         $records = $session
@@ -333,7 +349,7 @@ class AttendanceWebController extends Controller
     {
         $month = $request->input('month') ?: now()->format('Y-m');
         $month = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) ? $month : now()->format('Y-m');
-        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $start = Carbon::createFromFormat('Y-m-d', $month.'-01')->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
         return [$month, $start, $end];

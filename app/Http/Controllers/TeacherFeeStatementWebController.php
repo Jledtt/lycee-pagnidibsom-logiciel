@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Teacher\PayTeacherFeeStatementRequest;
 use App\Models\AcademicYear;
 use App\Models\Expense;
 use App\Models\SchoolSetting;
@@ -39,7 +40,7 @@ class TeacherFeeStatementWebController extends Controller
             ->where('academic_year_id', $academicYear?->id)
             ->when($filters['teacher_id'] ?? null, fn (Builder $query, int $teacherId) => $query->where('teacher_id', $teacherId))
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
-            ->when($filters['month'] ?? null, fn (Builder $query, string $month) => $query->whereDate('period_month', Carbon::createFromFormat('Y-m', $month)->startOfMonth()));
+            ->when($filters['month'] ?? null, fn (Builder $query, string $month) => $query->whereDate('period_month', Carbon::createFromFormat('Y-m-d', $month.'-01')->startOfMonth()));
 
         if (! $request->user()->can('teacher_fees.manage')) {
             $query->where('teacher_id', $request->user()->id);
@@ -62,7 +63,7 @@ class TeacherFeeStatementWebController extends Controller
             'month' => ['required', 'date_format:Y-m'],
         ]);
         $teacher = User::query()->role('enseignant')->with('teacherProfile')->findOrFail($filters['teacher_id']);
-        $periodMonth = Carbon::createFromFormat('Y-m', $filters['month'])->startOfMonth();
+        $periodMonth = Carbon::createFromFormat('Y-m-d', $filters['month'].'-01')->startOfMonth();
         $sessions = TeacherWorkSession::query()
             ->with(['schoolClass', 'subject'])
             ->where('academic_year_id', $academicYear->id)
@@ -102,7 +103,7 @@ class TeacherFeeStatementWebController extends Controller
         $statement = $this->teacherFeeService->create(
             $academicYear,
             $teacher,
-            Carbon::createFromFormat('Y-m', $data['period_month'])->startOfMonth(),
+            Carbon::createFromFormat('Y-m-d', $data['period_month'].'-01')->startOfMonth(),
             $data['session_ids'],
             $data['rates'],
             $data,
@@ -115,7 +116,7 @@ class TeacherFeeStatementWebController extends Controller
     public function show(Request $request, TeacherFeeStatement $teacherFee): View
     {
         $this->authorizeStatementAccess($request, $teacherFee);
-        $teacherFee->load(['teacher.teacherProfile', 'lines.schoolClass', 'lines.subject', 'approver', 'payer']);
+        $teacherFee->load(['teacher.teacherProfile', 'lines.schoolClass', 'lines.subject', 'approver', 'payer', 'expense']);
 
         return view('teacher-fees.show', [
             'academicYear' => $teacherFee->academicYear,
@@ -135,13 +136,9 @@ class TeacherFeeStatementWebController extends Controller
         return back()->with('success', 'Ordre de paiement validé par l’administration.');
     }
 
-    public function markPaid(Request $request, TeacherFeeStatement $teacherFee): RedirectResponse
+    public function markPaid(PayTeacherFeeStatementRequest $request, TeacherFeeStatement $teacherFee): RedirectResponse
     {
-        $data = $request->validate([
-            'paid_at' => ['required', 'date'],
-            'payment_method' => ['required', Rule::in(['Espèces', 'Virement', 'Mobile Money', 'Chèque'])],
-            'payment_reference' => ['nullable', 'string', 'max:120'],
-        ]);
+        $data = $request->validated();
 
         DB::transaction(function () use ($teacherFee, $data, $request): void {
             $statement = TeacherFeeStatement::query()
@@ -172,7 +169,9 @@ class TeacherFeeStatementWebController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Paiement des honoraires enregistré.');
+        return back()
+            ->with('success', 'Paiement des honoraires enregistré.')
+            ->with('teacher_fee_paid', true);
     }
 
     public function destroy(TeacherFeeStatement $teacherFee): RedirectResponse

@@ -36,7 +36,8 @@ class TeacherFeeService
                 ->where('academic_year_id', $academicYear->id)
                 ->where('teacher_id', $teacher->id)
                 ->where('status', 'validated')
-                ->whereBetween('session_date', [$periodMonth->copy()->startOfMonth(), $periodMonth->copy()->endOfMonth()])
+                ->whereDate('session_date', '>=', $periodMonth->copy()->startOfMonth()->toDateString())
+                ->whereDate('session_date', '<=', $periodMonth->copy()->endOfMonth()->toDateString())
                 ->whereDoesntHave('feeLine')
                 ->lockForUpdate()
                 ->get();

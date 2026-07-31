@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Teacher\StoreTeacherWorkSessionRequest;
 use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\SchoolClass;
@@ -26,7 +27,9 @@ class TeacherWorkSessionWebController extends Controller
             'teacher_id' => ['nullable', 'integer', 'exists:users,id'],
             'status' => ['nullable', Rule::in(['draft', 'validated', 'cancelled'])],
         ]);
-        $month = isset($filters['month']) ? Carbon::createFromFormat('Y-m', $filters['month'])->startOfMonth() : now()->startOfMonth();
+        $month = isset($filters['month'])
+            ? Carbon::createFromFormat('Y-m-d', $filters['month'].'-01')->startOfMonth()
+            : now()->startOfMonth();
         $query = TeacherWorkSession::query()
             ->with(['teacher', 'schoolClass', 'subject', 'validator', 'feeLine'])
             ->where('academic_year_id', $academicYear?->id)
@@ -52,24 +55,11 @@ class TeacherWorkSessionWebController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTeacherWorkSessionRequest $request): RedirectResponse
     {
         $academicYear = $this->activeAcademicYear();
         abort_unless($academicYear, 422, 'Configure une année scolaire active.');
-
-        $data = $request->validate([
-            'teacher_id' => ['required', 'integer', 'exists:users,id'],
-            'school_class_id' => ['required', 'integer', Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id)],
-            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'session_date' => ['required', 'date', 'after_or_equal:'.$academicYear->starts_at->toDateString(), 'before_or_equal:'.$academicYear->ends_at->toDateString()],
-            'starts_at' => ['required', 'date_format:H:i'],
-            'ends_at' => ['required', 'date_format:H:i', 'after:starts_at'],
-            'hours_worked' => ['required', 'numeric', 'min:0.25', 'max:250'],
-            'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
-            'status' => ['required', Rule::in(['draft', 'validated'])],
-            'teacher_signed' => ['nullable', 'boolean'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $teacher = User::query()->findOrFail($data['teacher_id']);
         abort_unless($teacher->hasRole('enseignant'), 422, 'Le compte choisi n’est pas un professeur.');
@@ -82,9 +72,7 @@ class TeacherWorkSessionWebController extends Controller
             ->exists();
 
         if (! $assigned) {
-            throw ValidationException::withMessages([
-                'subject_id' => 'Ce professeur n’est pas affecté à cette matière dans cette classe.',
-            ]);
+            $this->failAndReopen($request, 'subject_id', 'Ce professeur n’est pas affecté à cette matière dans cette classe.');
         }
 
         $startsAt = Carbon::createFromFormat('H:i', $data['starts_at'])->format('H:i:s');
@@ -102,9 +90,7 @@ class TeacherWorkSessionWebController extends Controller
             ->exists();
 
         if ($duplicateExists) {
-            throw ValidationException::withMessages([
-                'starts_at' => 'Cette séance a déjà été enregistrée.',
-            ]);
+            $this->failAndReopen($request, 'starts_at', 'Cette séance a déjà été enregistrée.');
         }
 
         $overlapExists = (clone $teacherDaySessions)
@@ -115,9 +101,7 @@ class TeacherWorkSessionWebController extends Controller
             ->exists();
 
         if ($overlapExists) {
-            throw ValidationException::withMessages([
-                'starts_at' => 'Ce professeur a déjà un cours sur tout ou partie de ce créneau.',
-            ]);
+            $this->failAndReopen($request, 'starts_at', 'Ce professeur a déjà un cours sur tout ou partie de ce créneau.');
         }
 
         TeacherWorkSession::query()->create([
@@ -168,5 +152,12 @@ class TeacherWorkSessionWebController extends Controller
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function failAndReopen(Request $request, string $field, string $message): never
+    {
+        $request->session()->flash('teacher_work_session_open', true);
+
+        throw ValidationException::withMessages([$field => $message]);
     }
 }

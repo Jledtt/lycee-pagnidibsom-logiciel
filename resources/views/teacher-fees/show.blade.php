@@ -7,7 +7,12 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('teacher-fees.index') }}">Retour</a>
-    <a class="btn btn-primary" href="{{ route('teacher-fees.pdf', $statement) }}">PDF</a>
+    <a class="btn btn-subtle" href="{{ route('teacher-fees.pdf', $statement) }}" data-download-feedback="Téléchargement de l’ordre d’honoraires lancé.">PDF</a>
+    @if ($statement->status === 'approved')
+        @can('teacher_fees.pay')
+            <button class="btn btn-primary" type="button" data-dialog-open="teacher-fee-payment-dialog">Payer les honoraires</button>
+        @endcan
+    @endif
 @endsection
 
 @section('content')
@@ -65,23 +70,43 @@
                 @endcan
             @endif
 
-            @if ($statement->status === 'approved')
-                @can('teacher_fees.pay')
-                    <section class="panel" style="margin-top:16px">
-                        <div class="panel-head"><h2>Enregistrer le paiement</h2></div>
-                        <form method="POST" action="{{ route('teacher-fees.pay', $statement) }}">
-                            @csrf
-                            @method('PUT')
-                            <div class="form-grid">
-                                <div class="field"><label>Date</label><input type="date" name="paid_at" value="{{ now()->toDateString() }}" required></div>
-                                <div class="field"><label>Mode</label><select name="payment_method" required>@foreach (['Espèces', 'Virement', 'Mobile Money', 'Chèque'] as $method)<option value="{{ $method }}" @selected($statement->payment_method === $method)>{{ $method }}</option>@endforeach</select></div>
-                                <div class="field wide"><label>Référence</label><input name="payment_reference" value="{{ $statement->payment_reference }}"></div>
-                            </div>
-                            <button class="btn btn-primary" type="submit">Marquer comme payé</button>
-                        </form>
-                    </section>
-                @endcan
-            @endif
         </div>
     </section>
 @endsection
+
+@push('dialogs')
+    @if ($statement->status === 'approved')
+        @can('teacher_fees.pay')
+            @include('teacher-fees.partials.payment-dialog')
+        @endcan
+    @endif
+
+    @if (session('teacher_fee_paid'))
+        <x-ui.modal
+            id="teacher-fee-paid-dialog"
+            title="Honoraires payés"
+            description="La dépense comptable a été créée automatiquement."
+            size="small"
+            :open="true"
+        >
+            <div class="payment-success-summary">
+                <span>Net payé</span>
+                <strong class="money">{{ number_format((float) $statement->net_amount, 0, ',', ' ') }} FCFA</strong>
+                <small>{{ $statement->beneficiary_name }}</small>
+            </div>
+
+            <x-slot:footer>
+                <button class="btn btn-subtle" type="button" data-dialog-close>Fermer</button>
+                <a class="btn btn-subtle" href="{{ route('teacher-fees.pdf', $statement) }}" data-download-feedback="Téléchargement de l’ordre d’honoraires lancé.">PDF</a>
+                @can('teachers.view')
+                    <a class="btn btn-subtle" href="{{ route('teachers.show', $statement->teacher) }}">Dossier professeur</a>
+                @endcan
+                @if ($statement->expense)
+                    @can('payments.reports')
+                        <a class="btn btn-primary" href="{{ route('accounting.expenses.show', $statement->expense) }}">Dépense comptable</a>
+                    @endcan
+                @endif
+            </x-slot:footer>
+        </x-ui.modal>
+    @endif
+@endpush

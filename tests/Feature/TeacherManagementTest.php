@@ -85,13 +85,16 @@ class TeacherManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('teacher-fees.approve', $statement))
             ->assertSessionHasNoErrors();
-        $this->actingAs($admin)
+        $paymentResponse = $this->actingAs($admin)
+            ->from(route('teacher-fees.show', $statement))
             ->put(route('teacher-fees.pay', $statement), [
                 'paid_at' => now()->toDateString(),
                 'payment_method' => 'Virement',
                 'payment_reference' => 'VIR-2026-001',
-            ])
-            ->assertSessionHasNoErrors();
+            ]);
+        $paymentResponse
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('teacher_fee_paid', true);
         $this->assertSame('paid', $statement->refresh()->status);
         $this->assertSame('VIR-2026-001', $statement->payment_reference);
         $this->assertDatabaseHas('expenses', [
@@ -106,6 +109,13 @@ class TeacherManagementTest extends TestCase
         ]);
         $this->assertSame('44000.00', Expense::query()->firstOrFail()->amount);
         $expense = Expense::query()->firstOrFail();
+        $this->followRedirects($paymentResponse)
+            ->assertOk()
+            ->assertSee('id="teacher-fee-paid-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false)
+            ->assertSee('Dossier professeur')
+            ->assertSee(route('teacher-fees.pdf', $statement), false)
+            ->assertSee(route('accounting.expenses.show', $expense), false);
         $this->actingAs($admin)
             ->put(route('accounting.expenses.cancel', $expense), [
                 'cancellation_reason' => 'Tentative de désynchronisation.',
@@ -228,6 +238,73 @@ class TeacherManagementTest extends TestCase
 
         $this->assertDatabaseCount('teacher_work_sessions', 2);
         $this->assertSame(5.0, (float) TeacherWorkSession::query()->sum('hours_worked'));
+    }
+
+    public function test_teacher_work_session_forms_use_dialogs_and_reopen_after_validation_error(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-dialog-admin');
+
+        $this->actingAs($admin)
+            ->get(route('teacher-work-sessions.index'))
+            ->assertOk()
+            ->assertSee('data-dialog-open="teacher-work-session-form-dialog"', false)
+            ->assertSee('id="teacher-work-session-action-dialog"', false);
+
+        $response = $this->actingAs($admin)
+            ->from(route('teacher-work-sessions.index'))
+            ->post(route('teacher-work-sessions.store'), []);
+
+        $response
+            ->assertRedirect(route('teacher-work-sessions.index'))
+            ->assertSessionHasErrors(['teacher_id', 'school_class_id', 'subject_id'])
+            ->assertSessionHas('teacher_work_session_open', true);
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="teacher-work-session-form-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false);
+    }
+
+    public function test_invalid_teacher_fee_payment_reopens_the_payment_dialog(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-payment-dialog-admin');
+        $teacher = $this->userWithRole('enseignant', 'teacher-payment-dialog');
+        [$academicYear] = $this->academicContext();
+        $statement = TeacherFeeStatement::query()->create([
+            'reference' => 'HON-DIALOG-001',
+            'academic_year_id' => $academicYear->id,
+            'teacher_id' => $teacher->id,
+            'period_month' => $academicYear->starts_at->copy()->startOfMonth(),
+            'beneficiary_name' => $teacher->name,
+            'gross_amount' => 50000,
+            'withholding_tax_rate' => 2,
+            'withholding_tax_amount' => 1000,
+            'advance_amount' => 0,
+            'other_deduction_amount' => 0,
+            'net_amount' => 49000,
+            'status' => 'approved',
+            'created_by' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('teacher-fees.show', $statement))
+            ->put(route('teacher-fees.pay', $statement), [
+                'paid_at' => '',
+                'payment_method' => 'Inconnu',
+            ]);
+
+        $response
+            ->assertRedirect(route('teacher-fees.show', $statement))
+            ->assertSessionHasErrors(['paid_at', 'payment_method'])
+            ->assertSessionHas('teacher_fee_payment_open', true);
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="teacher-fee-payment-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false)
+            ->assertSee('Net à payer');
     }
 
     public function test_teacher_can_only_view_their_own_professor_file_and_fees(): void

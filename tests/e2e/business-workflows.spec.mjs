@@ -151,6 +151,15 @@ test('absence enregistrée et email automatique présent dans l’historique', a
     await page.getByRole('button', { name: 'Enregistrer le pointage' }).first().click();
     await expect(page.getByText('Pointage enregistré.')).toBeVisible();
 
+    await page.goto('/attendance');
+    const incidentRow = page.locator('table tbody tr').filter({ hasText: SEEDED_MATRICULE });
+    await incidentRow.getByRole('button', { name: 'Traiter' }).click();
+    const attendanceDialog = page.locator('#attendance-record-dialog');
+    await expect(attendanceDialog).toBeVisible();
+    await attendanceDialog.locator('textarea[name="reason"]').fill('Justification test navigateur');
+    await attendanceDialog.getByRole('button', { name: 'Enregistrer la justification' }).click();
+    await expect(page.getByText('Absence ou retard justifié avec succès.')).toBeVisible();
+
     await page.goto('/communications?tab=history&search=parent.e2e@gmail.com');
     const messageRow = page.locator('table tbody tr')
         .filter({ hasText: 'parent.e2e@gmail.com' })
@@ -161,7 +170,10 @@ test('absence enregistrée et email automatique présent dans l’historique', a
 
 test('heures, ordre d’honoraires, paiement et dépense comptable', async ({ page }) => {
     await page.goto('/teacher-work-sessions');
-    const workForm = page.locator('input[name="hours_worked"]').locator('xpath=ancestor::form');
+    await page.getByRole('button', { name: 'Ajouter des heures' }).click();
+    const workDialog = page.locator('#teacher-work-session-form-dialog');
+    await expect(workDialog).toBeVisible();
+    const workForm = workDialog.locator('form');
     await workForm.locator('select[name="teacher_id"]').selectOption({ label: 'Enseignant' });
     await workForm.locator('input[name="session_date"]').fill('2026-10-17');
     await workForm.locator('select[name="school_class_id"]').selectOption({ label: SEEDED_CLASS });
@@ -169,9 +181,17 @@ test('heures, ordre d’honoraires, paiement et dépense comptable', async ({ pa
     await workForm.locator('input[name="starts_at"]').fill('08:00');
     await workForm.locator('input[name="ends_at"]').fill('11:00');
     await workForm.locator('input[name="hours_worked"]').fill('3');
-    await workForm.locator('select[name="status"]').selectOption('validated');
-    await workForm.getByRole('button', { name: 'Enregistrer les heures' }).click();
+    await workForm.locator('select[name="status"]').selectOption('draft');
+    await workDialog.getByRole('button', { name: 'Enregistrer les heures' }).click();
     await expect(page.getByText('Heures du professeur enregistrées.')).toBeVisible();
+
+    await page.goto('/teacher-work-sessions?month=2026-10');
+    const workRow = page.locator('table tbody tr').filter({ hasText: '17/10/2026' }).filter({ hasText: 'Enseignant' });
+    await workRow.getByRole('button', { name: 'Gérer' }).click();
+    const actionDialog = page.locator('#teacher-work-session-action-dialog');
+    await expect(actionDialog).toBeVisible();
+    await actionDialog.getByRole('button', { name: 'Confirmer la validation' }).click();
+    await expect(page.getByText('Émargement validé.')).toBeVisible();
 
     await page.goto('/teacher-fees');
     const prepare = page.locator('form[action$="/teacher-fees/create"]');
@@ -184,14 +204,21 @@ test('heures, ordre d’honoraires, paiement et dépense comptable', async ({ pa
     await expect(page).toHaveURL(/\/teacher-fees\/\d+$/);
     await expect(page.getByText('7 500 FCFA').first()).toBeVisible();
     await page.getByRole('button', { name: /Valider l’ordre de paiement/ }).click();
-    await page.locator('input[name="paid_at"]').fill('2026-10-31');
-    await page.locator('select[name="payment_method"]').selectOption({ label: 'Virement' });
-    await page.locator('input[name="payment_reference"]').fill('E2E-VIR-001');
-    await page.getByRole('button', { name: 'Marquer comme payé' }).click();
-    await expect(page.getByText('Paid').first()).toBeVisible();
+    await page.getByRole('button', { name: 'Payer les honoraires' }).click();
+    const feeDialog = page.locator('#teacher-fee-payment-dialog');
+    await expect(feeDialog).toBeVisible();
+    await expect(feeDialog.getByText('7 350 FCFA')).toBeVisible();
+    await feeDialog.locator('input[name="paid_at"]').fill('2026-10-31');
+    await feeDialog.locator('select[name="payment_method"]').selectOption({ label: 'Virement' });
+    await feeDialog.locator('input[name="payment_reference"]').fill('E2E-VIR-001');
+    await feeDialog.getByRole('button', { name: 'Confirmer le paiement' }).click();
 
-    await page.goto('/accounting/expenses?date_from=2026-10-31&date_to=2026-10-31');
-    await expect(page.locator('table tbody tr').filter({ hasText: 'Enseignant' })).toContainText('7 350');
+    const paidDialog = page.locator('#teacher-fee-paid-dialog');
+    await expect(paidDialog).toBeVisible();
+    await expect(paidDialog.getByRole('link', { name: 'PDF' })).toBeVisible();
+    await expect(paidDialog.getByRole('link', { name: 'Dossier professeur' })).toBeVisible();
+    await paidDialog.getByRole('link', { name: 'Dépense comptable' }).click();
+    await expect(page.getByText('7 350 FCFA').first()).toBeVisible();
 });
 
 test('téléversement et récupération sécurisée d’un document élève', async ({ page }) => {

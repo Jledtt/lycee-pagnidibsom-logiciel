@@ -140,6 +140,18 @@ test('les fenêtres du dossier élève restent utilisables sur toutes les taille
     expect(await elementOverflowsViewport(financialDrawer)).toBe(false);
 });
 
+test('la fenêtre de saisie des heures reste utilisable sur toutes les tailles d’écran', async ({ page }) => {
+    await login(page);
+    await page.goto('/teacher-work-sessions');
+    await page.getByRole('button', { name: 'Ajouter des heures' }).click();
+
+    const dialog = page.locator('#teacher-work-session-form-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Enregistrer les heures' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Annuler' })).toBeVisible();
+    expect(await elementOverflowsViewport(dialog)).toBe(false);
+});
+
 test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
     await login(page);
     await page.goto('/help');

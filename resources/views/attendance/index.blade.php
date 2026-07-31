@@ -147,11 +147,17 @@
                                             @endcan
                                         @endif
                                     @can('attendance.update')
-                                        <form method="POST" action="{{ route('attendance.records.clear', $record) }}" onsubmit="return confirm('Supprimer cette absence ou ce retard ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger" type="submit">Supprimer</button>
-                                        </form>
+                                        <button
+                                            class="btn btn-subtle"
+                                            type="button"
+                                            data-dialog-open="attendance-record-dialog"
+                                            data-attendance-student="{{ $record->student?->full_name }}"
+                                            data-attendance-date="{{ $record->session?->session_date?->format('d/m/Y') }}"
+                                            data-attendance-status="{{ $statusLabels[$record->status] ?? $record->status }}"
+                                            data-attendance-reason="{{ $record->reason }}"
+                                            data-attendance-justify-url="{{ route('attendance.records.justify', $record) }}"
+                                            data-attendance-clear-url="{{ route('attendance.records.clear', $record) }}"
+                                        >Traiter</button>
                                     @endcan
                                     </div>
                                 </td>
@@ -164,3 +170,9 @@
         </div>
     </section>
 @endsection
+
+@push('dialogs')
+    @can('attendance.update')
+        @include('attendance.partials.record-dialog', ['records' => $recentRecords])
+    @endcan
+@endpush

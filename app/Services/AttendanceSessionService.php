@@ -69,4 +69,15 @@ class AttendanceSessionService
             'justified_by' => null,
         ])->save();
     }
+
+    public function justifyRecord(AttendanceRecord $record, User $user, string $reason): void
+    {
+        $record->forceFill([
+            'status' => 'excused',
+            'minutes_late' => null,
+            'reason' => $reason,
+            'justified_at' => now(),
+            'justified_by' => $user->id,
+        ])->save();
+    }
 }

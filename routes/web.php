@@ -183,6 +183,10 @@ Route::delete('/attendance/records/{attendanceRecord}', [AttendanceWebController
     ->middleware(['auth', 'permission:attendance.update'])
     ->name('attendance.records.clear');
 
+Route::put('/attendance/records/{attendanceRecord}/justify', [AttendanceWebController::class, 'justifyRecord'])
+    ->middleware(['auth', 'permission:attendance.update'])
+    ->name('attendance.records.justify');
+
 Route::get('/exit-authorizations', [StudentExitAuthorizationWebController::class, 'index'])
     ->middleware(['auth', 'permission:attendance.view|students.export'])
     ->name('exit-authorizations.index');
