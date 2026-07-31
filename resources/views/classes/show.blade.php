@@ -44,7 +44,16 @@
                                 <td>{{ $enrollment->enrollment_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>{{ $guardian?->phone_primary ?? '-' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('classes.students.detach', [$schoolClass, $enrollment]) }}" onsubmit="return confirm('Retirer cet élève de la classe ?')">
+                                    <form
+                                        method="POST"
+                                        action="{{ route('classes.students.detach', [$schoolClass, $enrollment]) }}"
+                                        data-confirm
+                                        data-confirm-title="Retirer l’élève de la classe"
+                                        data-confirm-object="{{ $enrollment->student->full_name }} — {{ $schoolClass->name }}"
+                                        data-confirm-message="L’inscription dans cette classe sera supprimée. Les paiements déjà enregistrés resteront dans l’historique de l’élève."
+                                        data-confirm-action="Retirer l’élève"
+                                        data-prevent-double-submit
+                                    >
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-danger" type="submit">Retirer</button>
@@ -133,7 +142,17 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('classes.destroy', $schoolClass) }}" style="margin-top:16px" onsubmit="return confirm('Archiver cette classe ?')">
+        <form
+            method="POST"
+            action="{{ route('classes.destroy', $schoolClass) }}"
+            style="margin-top:16px"
+            data-confirm
+            data-confirm-title="Archiver la classe"
+            data-confirm-object="{{ $schoolClass->name }} — {{ $schoolClass->academicYear?->name ?? $academicYear?->name }}"
+            data-confirm-message="La classe disparaîtra des listes actives. Les élèves, inscriptions, notes et autres données déjà enregistrées ne seront pas supprimés."
+            data-confirm-action="Archiver la classe"
+            data-prevent-double-submit
+        >
             @csrf
             @method('DELETE')
             <button class="btn btn-danger" type="submit">Archiver la classe</button>

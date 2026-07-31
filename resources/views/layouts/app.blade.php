@@ -183,6 +183,8 @@
 
     @stack('dialogs')
 
+    <x-ui.confirmation-dialog />
+
     <script>
         (() => {
             const sidebar = document.querySelector('.sidebar');

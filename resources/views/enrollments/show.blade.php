@@ -190,7 +190,17 @@
             @endif
 
             @if ($enrollment->status !== 'cancelled')
-                <form method="POST" action="{{ route('enrollments.destroy', $enrollment) }}" style="margin-top:16px" onsubmit="return confirm('Annuler cette inscription ?')">
+                <form
+                    method="POST"
+                    action="{{ route('enrollments.destroy', $enrollment) }}"
+                    style="margin-top:16px"
+                    data-confirm
+                    data-confirm-title="Annuler l’inscription"
+                    data-confirm-object="{{ $enrollment->student->full_name }} — {{ $enrollment->schoolClass?->name ?? 'Classe non renseignée' }}"
+                    data-confirm-message="L’inscription passera au statut annulé. Le dossier élève et les paiements déjà enregistrés resteront conservés."
+                    data-confirm-action="Annuler l’inscription"
+                    data-prevent-double-submit
+                >
                     @csrf
                     @method('DELETE')
                     <button class="btn btn-danger" type="submit">Annuler l’inscription</button>

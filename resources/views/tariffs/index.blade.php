@@ -6,7 +6,17 @@
 ])
 
 @section('page_actions')
-    <form method="POST" action="{{ route('tariffs.defaults') }}" onsubmit="return confirm('Initialiser les tarifs depuis l’affiche ? Les lignes existantes avec les mêmes périodes seront mises à jour.')">
+    <form
+        method="POST"
+        action="{{ route('tariffs.defaults') }}"
+        data-confirm
+        data-confirm-title="Initialiser les tarifs officiels"
+        data-confirm-object="Toutes les classes actives — {{ $academicYear?->name ?? 'Année active' }}"
+        data-confirm-message="Les lignes officielles seront créées ou mises à jour avec les montants de l’affiche. Les autres lignes personnalisées seront conservées."
+        data-confirm-action="Initialiser les tarifs"
+        data-confirm-tone="primary"
+        data-prevent-double-submit
+    >
         @csrf
         <button class="btn btn-subtle" type="submit">Initialiser affiche</button>
     </form>

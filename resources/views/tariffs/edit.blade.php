@@ -6,7 +6,17 @@
 ])
 
 @section('page_actions')
-    <form method="POST" action="{{ route('tariffs.class-defaults', $schoolClass) }}" onsubmit="return confirm('Appliquer les tarifs officiels pour cette classe ? Les lignes existantes avec les mêmes périodes seront mises à jour.')">
+    <form
+        method="POST"
+        action="{{ route('tariffs.class-defaults', $schoolClass) }}"
+        data-confirm
+        data-confirm-title="Appliquer les tarifs officiels"
+        data-confirm-object="{{ $schoolClass->name }} — {{ $academicYear?->name ?? 'Année active' }}"
+        data-confirm-message="Les lignes officielles de cette classe seront créées ou mises à jour avec les montants de l’affiche. Les autres lignes personnalisées seront conservées."
+        data-confirm-action="Appliquer les tarifs"
+        data-confirm-tone="primary"
+        data-prevent-double-submit
+    >
         @csrf
         <button class="btn btn-primary" type="submit">Appliquer les tarifs officiels</button>
     </form>

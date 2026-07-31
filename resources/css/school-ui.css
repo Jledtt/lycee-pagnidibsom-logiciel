@@ -495,6 +495,34 @@
     display: none;
 }
 
+.confirmation-summary {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-left: 4px solid #a72a2a;
+    border-radius: 8px;
+    background: #fff5f4;
+}
+
+.confirmation-summary span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.confirmation-summary strong {
+    overflow-wrap: anywhere;
+    font-size: 18px;
+}
+
+.confirmation-summary p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .ui-dialog[open] .ui-dialog__surface {
         animation: ui-dialog-enter 150ms ease-out;

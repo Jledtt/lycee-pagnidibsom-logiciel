@@ -51,4 +51,36 @@ class UiDialogComponentsTest extends TestCase
         $this->assertStringContainsString('aria-labelledby="student-summary-title"', $html);
         $this->assertStringContainsString('aria-describedby="student-summary-description"', $html);
     }
+
+    public function test_global_confirmation_dialog_exposes_clear_cancel_and_confirm_actions(): void
+    {
+        $html = Blade::render('<x-ui.confirmation-dialog />');
+
+        $this->assertStringContainsString('id="app-confirmation-dialog"', $html);
+        $this->assertStringContainsString('data-confirmation-object', $html);
+        $this->assertStringContainsString('data-confirmation-message', $html);
+        $this->assertStringContainsString('data-dialog-close', $html);
+        $this->assertStringContainsString('data-confirmation-submit', $html);
+    }
+
+    public function test_school_views_no_longer_use_native_confirm_dialogs(): void
+    {
+        $views = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(resource_path('views')),
+        );
+        $confirmationForms = 0;
+
+        foreach ($views as $view) {
+            if (! $view->isFile() || $view->getExtension() !== 'php') {
+                continue;
+            }
+
+            $contents = file_get_contents($view->getPathname());
+
+            $this->assertStringNotContainsString('confirm(', $contents, $view->getPathname());
+            $confirmationForms += preg_match_all('/\sdata-confirm(?:\s|>)/', $contents);
+        }
+
+        $this->assertSame(10, $confirmationForms);
+    }
 }

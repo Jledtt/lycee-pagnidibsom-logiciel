@@ -106,7 +106,17 @@
 
                     @can('report_cards.validate')
                         @if (! $lockSummary['is_locked'])
-                            <form method="POST" action="{{ route('class-council.lock') }}" onsubmit="return confirm('Verrouiller toutes les evaluations de ce trimestre ?')">
+                            <form
+                                method="POST"
+                                action="{{ route('class-council.lock') }}"
+                                data-confirm
+                                data-confirm-title="Verrouiller le conseil de classe"
+                                data-confirm-object="{{ $selectedClass->name }} — {{ $selectedTerm->name }}"
+                                data-confirm-message="Les bulletins seront recalculés et validés, puis toutes les évaluations de ce trimestre seront protégées contre la modification."
+                                data-confirm-action="Verrouiller le conseil"
+                                data-confirm-tone="primary"
+                                data-prevent-double-submit
+                            >
                                 @csrf
                                 <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                                 <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
@@ -117,7 +127,16 @@
 
                     @can('grades.unlock')
                         @if ($lockSummary['locked'] > 0)
-                            <form method="POST" action="{{ route('class-council.unlock') }}" onsubmit="return confirm('Déverrouiller les évaluations pour correction admin ?')">
+                            <form
+                                method="POST"
+                                action="{{ route('class-council.unlock') }}"
+                                data-confirm
+                                data-confirm-title="Déverrouiller les évaluations"
+                                data-confirm-object="{{ $selectedClass->name }} — {{ $selectedTerm->name }}"
+                                data-confirm-message="Les évaluations redeviendront modifiables. Toute correction pourra changer les bulletins lors de leur prochaine génération."
+                                data-confirm-action="Déverrouiller"
+                                data-prevent-double-submit
+                            >
                                 @csrf
                                 <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
                                 <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">

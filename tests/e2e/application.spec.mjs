@@ -152,6 +152,32 @@ test('la fenêtre de saisie des heures reste utilisable sur toutes les tailles d
     expect(await elementOverflowsViewport(dialog)).toBe(false);
 });
 
+test('les actions sensibles affichent leur objet et leurs conséquences', async ({ page }) => {
+    await login(page);
+    await page.goto('/students?search=LPP-E2E-001');
+    const studentRow = page.locator('table tbody tr').filter({ hasText: 'LPP-E2E-001' });
+    await studentRow.getByRole('link', { name: 'Voir' }).click();
+    await page.getByRole('button', { name: 'Archiver le dossier' }).click();
+
+    const dialog = page.locator('#app-confirmation-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Archiver le dossier élève' })).toBeVisible();
+    await expect(dialog.getByText(/Aminata Workflow.*LPP-E2E-001/)).toBeVisible();
+    await expect(dialog.getByText(/historique scolaire, financier et administratif/)).toBeVisible();
+    expect(await elementOverflowsViewport(dialog)).toBe(false);
+    await dialog.getByRole('button', { name: 'Annuler' }).click();
+    await expect(dialog).toBeHidden();
+
+    await page.goto('/tariffs');
+    await page.getByRole('button', { name: 'Initialiser affiche' }).click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Initialiser les tarifs officiels' })).toBeVisible();
+    await expect(dialog.getByText(/Toutes les classes actives/)).toBeVisible();
+    await expect(dialog.getByText(/autres lignes personnalisées seront conservées/)).toBeVisible();
+    await dialog.getByRole('button', { name: 'Initialiser les tarifs' }).click();
+    await expect(page.getByText(/ligne\(s\) de tarifs initialisées/)).toBeVisible();
+});
+
 test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
     await login(page);
     await page.goto('/help');

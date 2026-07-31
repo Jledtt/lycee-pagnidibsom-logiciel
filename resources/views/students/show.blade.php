@@ -323,7 +323,16 @@
                                                 <a class="btn btn-subtle" href="{{ route('certificates.pdf', $document) }}">PDF</a>
                                             @endif
                                             @can('students.update')
-                                                <form method="POST" action="{{ route('students.documents.destroy', [$student, $document]) }}" onsubmit="return confirm('Supprimer ce document ?')">
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route('students.documents.destroy', [$student, $document]) }}"
+                                                    data-confirm
+                                                    data-confirm-title="Supprimer le document"
+                                                    data-confirm-object="{{ $document->name }} — {{ $student->full_name }}"
+                                                    data-confirm-message="Le document et son fichier téléversé seront supprimés définitivement du dossier élève. Cette action est irréversible."
+                                                    data-confirm-action="Supprimer le document"
+                                                    data-prevent-double-submit
+                                                >
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger" type="submit">Supprimer</button>
@@ -413,7 +422,16 @@
             <h2>Actions</h2>
         </div>
 
-        <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('Archiver ce dossier élève ?')">
+        <form
+            method="POST"
+            action="{{ route('students.destroy', $student) }}"
+            data-confirm
+            data-confirm-title="Archiver le dossier élève"
+            data-confirm-object="{{ $student->full_name }} — {{ $student->matricule }}"
+            data-confirm-message="Le dossier sera retiré des listes actives. Son historique scolaire, financier et administratif restera conservé."
+            data-confirm-action="Archiver le dossier"
+            data-prevent-double-submit
+        >
             @csrf
             @method('DELETE')
             <button class="btn btn-danger" type="submit">Archiver le dossier</button>

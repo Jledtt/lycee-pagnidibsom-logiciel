@@ -1,4 +1,5 @@
 const activeTriggers = new WeakMap();
+let pendingConfirmation = null;
 
 function getDialog(id) {
     const dialog = document.getElementById(id);
@@ -75,6 +76,87 @@ document.addEventListener('click', (event) => {
             closeDialog(dialog);
         }
     }
+});
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+
+    if (! (form instanceof HTMLFormElement) || ! form.matches('[data-confirm]')) {
+        return;
+    }
+
+    if (form.dataset.confirmed === 'true') {
+        delete form.dataset.confirmed;
+        return;
+    }
+
+    const dialog = getDialog('app-confirmation-dialog');
+
+    if (! dialog) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+    const title = dialog.querySelector('.ui-dialog__title');
+    const object = dialog.querySelector('[data-confirmation-object]');
+    const message = dialog.querySelector('[data-confirmation-message]');
+    const confirmButton = dialog.querySelector('[data-confirmation-submit]');
+
+    if (title) {
+        title.textContent = form.dataset.confirmTitle || 'Confirmer l’action';
+    }
+
+    if (object) {
+        object.textContent = form.dataset.confirmObject || 'Action sélectionnée';
+    }
+
+    if (message) {
+        message.textContent = form.dataset.confirmMessage || 'Cette action modifiera les données enregistrées.';
+    }
+
+    if (confirmButton instanceof HTMLButtonElement) {
+        confirmButton.textContent = form.dataset.confirmAction || 'Confirmer';
+        confirmButton.classList.toggle('btn-danger', form.dataset.confirmTone !== 'primary');
+        confirmButton.classList.toggle('btn-primary', form.dataset.confirmTone === 'primary');
+    }
+
+    pendingConfirmation = { form, submitter };
+    openDialog(dialog, submitter);
+});
+
+const confirmationDialog = getDialog('app-confirmation-dialog');
+const confirmationSubmit = confirmationDialog?.querySelector('[data-confirmation-submit]');
+
+confirmationSubmit?.addEventListener('click', () => {
+    const pending = pendingConfirmation;
+    pendingConfirmation = null;
+
+    if (! pending?.form.isConnected) {
+        closeDialog(confirmationDialog);
+        return;
+    }
+
+    pending.form.dataset.confirmed = 'true';
+    closeDialog(confirmationDialog);
+
+    if (pending.submitter?.isConnected && pending.submitter.form === pending.form) {
+        pending.form.requestSubmit(pending.submitter);
+    } else {
+        pending.form.requestSubmit();
+    }
+
+    window.setTimeout(() => {
+        if (pending.form.dataset.confirmed === 'true') {
+            delete pending.form.dataset.confirmed;
+        }
+    }, 0);
+});
+
+confirmationDialog?.addEventListener('close', () => {
+    pendingConfirmation = null;
 });
 
 document.addEventListener('submit', (event) => {

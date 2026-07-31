@@ -182,7 +182,16 @@
                                             @method('PUT')
                                             <button class="btn btn-primary" type="submit">Enregistrer</button>
                                         </form>
-                                            <form method="POST" action="{{ route('settings.required-documents.destroy', $document) }}" onsubmit="return confirm('Supprimer cette pièce obligatoire ?')">
+                                            <form
+                                                method="POST"
+                                                action="{{ route('settings.required-documents.destroy', $document) }}"
+                                                data-confirm
+                                                data-confirm-title="Supprimer la pièce obligatoire"
+                                                data-confirm-object="{{ $document->name }}"
+                                                data-confirm-message="Cette règle ne sera plus demandée dans les dossiers. Les fichiers déjà téléversés par les élèves ne seront pas supprimés."
+                                                data-confirm-action="Supprimer la règle"
+                                                data-prevent-double-submit
+                                            >
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger" type="submit">Supprimer</button>
