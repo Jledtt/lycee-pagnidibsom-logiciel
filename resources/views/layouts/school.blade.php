@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#8b1e2d">
     <title>{{ $title ?? 'Lycée Privé Pagnidibsom' }}</title>
+    @vite('resources/js/app.js')
     <style>
         :root {
             --ink: #1d1718;

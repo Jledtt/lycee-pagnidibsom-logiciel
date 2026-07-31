@@ -6,6 +6,8 @@
         $activeIn = fn (array $keys) => in_array($activeKey, $keys, true);
     @endphp
 
+    <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
@@ -154,7 +156,7 @@
             </nav>
         </aside>
 
-        <main class="main">
+        <main class="main" id="main-content" tabindex="-1">
             <header class="topbar">
                 <div>
                     <h1>{{ $pageTitle ?? 'Tableau de bord' }}</h1>
@@ -178,6 +180,8 @@
             @yield('content')
         </main>
     </div>
+
+    @stack('dialogs')
 
     <script>
         (() => {
