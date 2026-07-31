@@ -36,6 +36,66 @@ class PaymentWorkflowPracticalityTest extends TestCase
             ->assertSee(route('payments.create', ['student_id' => $student->id]), false);
     }
 
+    public function test_payment_list_exposes_modal_with_full_page_fallback(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        $this->paymentScenario();
+
+        $this->actingAs($user)
+            ->get(route('payments.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('payments.create').'"', false)
+            ->assertSee('data-dialog-open="payment-create-dialog"', false)
+            ->assertSee('id="payment-create-modal-form"', false)
+            ->assertSee('data-prevent-double-submit', false);
+    }
+
+    public function test_payment_creation_sets_follow_up_marker(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        [$student] = $this->paymentScenario();
+        $schedule = FeeSchedule::query()->where('period', 'Novembre')->firstOrFail();
+
+        $response = $this->actingAs($user)->post(route('payments.store'), [
+            'student_id' => $student->id,
+            'payment_method' => 'cash',
+            'paid_at' => '2026-07-20 10:00:00',
+            'lines' => [[
+                'fee_schedule_id' => $schedule->id,
+                'amount' => 5000,
+            ]],
+        ]);
+
+        $payment = Payment::query()->latest('id')->firstOrFail();
+        $response
+            ->assertRedirect(route('payments.show', $payment))
+            ->assertSessionHas('payment_created', true);
+    }
+
+    public function test_invalid_payment_reopens_the_modal_with_errors(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        $this->paymentScenario();
+
+        $response = $this->actingAs($user)
+            ->from(route('payments.index'))
+            ->post(route('payments.store'), [
+                'payment_method' => 'cash',
+            ]);
+
+        $response
+            ->assertRedirect(route('payments.index'))
+            ->assertSessionHasErrors(['student_id', 'lines']);
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="payment-create-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false);
+    }
+
     public function test_class_payment_report_can_filter_partial_students(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -76,11 +136,19 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $user = $this->userWithRole('comptable');
         [, , , $payment] = $this->paymentScenario();
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->from(route('payments.show', $payment))
-            ->delete(route('payments.destroy', $payment), ['reason' => ''])
+            ->delete(route('payments.destroy', $payment), ['reason' => '']);
+
+        $response
             ->assertRedirect(route('payments.show', $payment))
             ->assertSessionHasErrors('reason');
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="cancel-payment-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false)
+            ->assertDontSee("confirm('Annuler ce paiement ?')", false);
 
         $this->assertDatabaseHas('payments', [
             'id' => $payment->id,

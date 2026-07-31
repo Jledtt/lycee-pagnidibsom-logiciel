@@ -54,28 +54,37 @@ test('création d’un élève puis inscription dans une classe', async ({ page 
 });
 
 test('paiement, reçu PDF puis annulation motivée', async ({ page }) => {
-    await page.goto('/payments/create');
-    await selectOptionContaining(page.locator('#student_id'), SEEDED_MATRICULE);
-    await expect(page.locator('#lines_0_fee_schedule_id option')).toHaveCount(2);
-    await page.locator('#lines_0_fee_schedule_id').selectOption({ index: 1 });
-    await expect(page.locator('#lines_0_amount')).toHaveValue('25000');
-    await page.locator('#paid_at').fill('2026-10-10T10:30');
-    await page.getByRole('button', { name: 'Enregistrer le paiement' }).click();
+    await page.goto('/payments');
+    await page.getByRole('link', { name: 'Nouveau paiement' }).click();
+
+    const paymentDialog = page.locator('#payment-create-dialog');
+    await expect(paymentDialog).toBeVisible();
+    await selectOptionContaining(paymentDialog.locator('[data-payment-student]'), SEEDED_MATRICULE);
+    await expect(paymentDialog.locator('[data-payment-schedule]').first().locator('option')).toHaveCount(2);
+    await paymentDialog.locator('[data-payment-schedule]').first().selectOption({ index: 1 });
+    await expect(paymentDialog.locator('[data-payment-amount]').first()).toHaveValue('25000');
+    await paymentDialog.locator('input[name="paid_at"]').fill('2026-10-10T10:30');
+    await paymentDialog.getByRole('button', { name: 'Enregistrer le paiement' }).click();
 
     await expect(page).toHaveURL(/\/payments\/\d+$/);
-    await expect(page.getByText('25 000 FCFA').first()).toBeVisible();
+    const successDialog = page.locator('#payment-success-dialog');
+    await expect(successDialog).toBeVisible();
+    await expect(successDialog.getByText('25 000 FCFA')).toBeVisible();
 
-    const receiptHref = await page.getByRole('link', { name: 'Reçu PDF' }).getAttribute('href');
+    const receiptHref = await successDialog.getByRole('link', { name: 'Télécharger le reçu' }).getAttribute('href');
     const receipt = await page.request.get(receiptHref);
     expect(receipt.ok()).toBe(true);
     expect(receipt.headers()['content-type']).toContain('application/pdf');
     expect((await receipt.body()).byteLength).toBeGreaterThan(1000);
 
-    page.once('dialog', (dialog) => dialog.accept());
-    await page.locator('#reason').fill('Annulation automatique du test navigateur');
-    await page.getByRole('button', { name: 'Annuler le paiement' }).click();
+    await successDialog.locator('.ui-dialog__footer').getByRole('button', { name: 'Fermer' }).click();
+    await page.locator('button[data-dialog-open="cancel-payment-dialog"]').click();
+    const cancellationDialog = page.locator('#cancel-payment-dialog');
+    await expect(cancellationDialog).toBeVisible();
+    await cancellationDialog.getByLabel('Motif d’annulation').fill('Annulation automatique du test navigateur');
+    await cancellationDialog.getByRole('button', { name: 'Confirmer l’annulation' }).click();
 
-    await expect(page.getByText('cancelled').first()).toBeVisible();
+    await expect(page.getByText('Annulé').first()).toBeVisible();
     await expect(page.getByText('Annulation automatique du test navigateur')).toBeVisible();
 });
 

@@ -14,7 +14,7 @@
         <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('payments.create')
-        <a class="btn btn-primary" href="{{ route('payments.create') }}">Nouveau paiement</a>
+        <a class="btn btn-primary" href="{{ route('payments.create') }}" data-dialog-open="payment-create-dialog">Nouveau paiement</a>
     @endcan
 @endsection
 
@@ -98,3 +98,14 @@
         @endif
     </section>
 @endsection
+
+@can('payments.create')
+    @push('dialogs')
+        @include('payments.partials.create-dialog', [
+            'paymentForm' => $paymentForm,
+            'dialogId' => 'payment-create-dialog',
+            'formId' => 'payment-create-modal-form',
+            'cancelUrl' => route('payments.index'),
+        ])
+    @endpush
+@endcan

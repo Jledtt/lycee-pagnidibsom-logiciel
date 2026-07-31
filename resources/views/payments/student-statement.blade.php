@@ -11,7 +11,12 @@
         <a class="btn btn-subtle" href="{{ route('payments.students.statement.pdf', $student) }}">PDF</a>
     @endcan
     @can('payments.create')
-        <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Encaisser</a>
+        <a
+            class="btn btn-primary"
+            href="{{ route('payments.create', ['student_id' => $student->id]) }}"
+            data-dialog-open="student-payment-dialog"
+            data-payment-student-id="{{ $student->id }}"
+        >Encaisser</a>
     @endcan
 @endsection
 
@@ -71,7 +76,14 @@
                                     <td>
                                         @can('payments.create')
                                             @if ($row['remaining'] > 0)
-                                                <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id, 'fee_schedule_id' => $row['schedule']->id, 'amount' => (int) $row['remaining']]) }}">Solder</a>
+                                                <a
+                                                    class="btn btn-primary"
+                                                    href="{{ route('payments.create', ['student_id' => $student->id, 'fee_schedule_id' => $row['schedule']->id, 'amount' => (int) $row['remaining']]) }}"
+                                                    data-dialog-open="student-payment-dialog"
+                                                    data-payment-student-id="{{ $student->id }}"
+                                                    data-payment-schedule-id="{{ $row['schedule']->id }}"
+                                                    data-payment-amount="{{ (int) $row['remaining'] }}"
+                                                >Solder</a>
                                             @else
                                                 <span class="badge">Solde</span>
                                             @endif
@@ -149,3 +161,14 @@
         </section>
     @endif
 @endsection
+
+@can('payments.create')
+    @push('dialogs')
+        @include('payments.partials.create-dialog', [
+            'paymentForm' => $paymentForm,
+            'dialogId' => 'student-payment-dialog',
+            'formId' => 'student-payment-modal-form',
+            'cancelUrl' => route('payments.students.statement', $student),
+        ])
+    @endpush
+@endcan

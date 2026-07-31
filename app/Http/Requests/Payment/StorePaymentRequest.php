@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Payment;
 
 use App\Models\AcademicYear;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -33,5 +34,12 @@ class StorePaymentRequest extends FormRequest
             ],
             'lines.*.amount' => ['nullable', 'numeric', 'min:1'],
         ];
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        $this->session()->flash('payment_form_open', true);
+
+        parent::failedValidation($validator);
     }
 }

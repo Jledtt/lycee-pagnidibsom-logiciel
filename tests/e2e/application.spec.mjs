@@ -86,6 +86,27 @@ test('les grands montants financiers restent dans leurs cartes', async ({ page }
     await expect(page.locator('.finance-stats .money-currency').first()).toHaveText('FCFA');
 });
 
+test('la fenêtre de paiement reste utilisable sur toutes les tailles d’écran', async ({ page }) => {
+    await login(page);
+    await page.goto('/payments');
+    await page.getByRole('link', { name: 'Nouveau paiement' }).click();
+
+    const dialog = page.locator('#payment-create-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Enregistrer le paiement' })).toBeVisible();
+
+    const overflowsViewport = await dialog.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+
+        return bounds.left < -1 || bounds.right > window.innerWidth + 1;
+    });
+
+    expect(overflowsViewport).toBe(false);
+
+    await dialog.locator('.ui-dialog__close').click();
+    await expect(dialog).toBeHidden();
+});
+
 test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
     await login(page);
     await page.goto('/help');

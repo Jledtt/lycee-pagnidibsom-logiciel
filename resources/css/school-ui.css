@@ -180,6 +180,183 @@
     border-radius: 0;
 }
 
+.payment-dialog .ui-dialog__body {
+    padding: 0;
+}
+
+.payment-form-section {
+    padding: 20px 22px;
+}
+
+.payment-form-section + .payment-form-section {
+    border-top: 1px solid #e7dfd8;
+}
+
+.payment-form-section__heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.payment-form-section__heading h3 {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.3;
+    text-wrap: balance;
+}
+
+.payment-form-section__heading span {
+    color: #6f6564;
+    font-size: 13px;
+}
+
+.payment-lines {
+    display: grid;
+}
+
+.payment-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 210px);
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e7dfd8;
+}
+
+.payment-line:first-child {
+    padding-top: 0;
+}
+
+.payment-line:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.payment-line .field {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.payment-form-actions {
+    position: sticky;
+    z-index: 2;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px 22px;
+    border-top: 1px solid #e7dfd8;
+    background: #fffdf9;
+}
+
+.payment-form-total {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.payment-form-total span {
+    color: #6f6564;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.payment-form-total strong {
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.payment-form-commands {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.payment-page-form {
+    overflow: hidden;
+}
+
+.payment-danger-zone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e7dfd8;
+}
+
+.payment-danger-zone > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.payment-danger-zone span {
+    color: #6f6564;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.payment-summary-list {
+    display: grid;
+}
+
+.payment-summary-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e7dfd8;
+}
+
+.payment-summary-list > div:first-child {
+    padding-top: 0;
+}
+
+.payment-summary-list > div:last-child {
+    border-bottom: 0;
+}
+
+.payment-summary-list span {
+    color: #6f6564;
+}
+
+.payment-summary-list strong {
+    max-width: 65%;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.payment-summary-list__balance strong {
+    color: #8b1e2d;
+    font-size: 20px;
+}
+
+.payment-success-summary {
+    display: grid;
+    gap: 8px;
+    padding: 8px 0;
+    text-align: center;
+}
+
+.payment-success-summary span,
+.payment-success-summary small {
+    color: #6f6564;
+}
+
+.payment-success-summary strong {
+    color: #8b1e2d;
+    font-size: 30px;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .ui-dialog[open] .ui-dialog__surface {
         animation: ui-dialog-enter 150ms ease-out;
@@ -239,5 +416,42 @@
     .ui-dialog__footer .btn,
     .ui-drawer__footer .btn {
         width: 100%;
+    }
+
+    .payment-form-section {
+        padding: 18px;
+    }
+
+    .payment-form-section__heading,
+    .payment-danger-zone,
+    .payment-form-actions,
+    .payment-form-commands {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .payment-line {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .payment-form-actions {
+        padding: 14px 18px max(14px, env(safe-area-inset-bottom));
+    }
+
+    .payment-form-commands .btn,
+    .payment-danger-zone .btn {
+        width: 100%;
+    }
+
+    .payment-summary-list > div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .payment-summary-list strong {
+        max-width: none;
+        text-align: left;
     }
 }

@@ -34,6 +34,9 @@ function openDialog(dialog, trigger = null) {
         dialog.close();
     }
 
+    dialog.dispatchEvent(new CustomEvent('dialog:opening', {
+        detail: { trigger },
+    }));
     dialog.showModal();
     syncPageState();
 

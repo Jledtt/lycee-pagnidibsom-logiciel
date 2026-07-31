@@ -60,27 +60,19 @@ class PaymentWebController extends Controller
             'payments' => $payments,
             'totalPaid' => $totalPaid,
             'filters' => $request->only(['search', 'status']),
+            'paymentForm' => $request->user()->can('payments.create')
+                ? $this->paymentFormData($request, $academicYear)
+                : null,
         ]);
     }
 
     public function create(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
-        $students = $this->financialProfileService->enrolledStudents($academicYear);
 
         return view('payments.create', [
             'academicYear' => $academicYear,
-            'payment' => new Payment([
-                'payment_method' => 'cash',
-                'paid_at' => now(),
-                'status' => 'valid',
-            ]),
-            'students' => $students,
-            'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
-            'paymentProfiles' => $this->financialProfileService->paymentProfiles($students, $academicYear),
-            'prefillAmount' => $request->integer('amount') > 0 ? $request->integer('amount') : null,
-            'prefillFeeScheduleId' => $request->integer('fee_schedule_id') ?: null,
-            'selectedStudentId' => $request->integer('student_id'),
+            'paymentForm' => $this->paymentFormData($request, $academicYear),
         ]);
     }
 
@@ -153,17 +145,22 @@ class PaymentWebController extends Controller
 
         return redirect()
             ->route('payments.show', $payment)
-            ->with('success', 'Paiement enregistré avec succès.');
+            ->with('success', 'Paiement enregistré avec succès.')
+            ->with('payment_created', true);
     }
 
-    public function show(Payment $payment): View
+    public function show(Request $request, Payment $payment): View
     {
         $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
+        $academicYear = $this->activeAcademicYear();
 
         return view('payments.show', [
-            'academicYear' => $this->activeAcademicYear(),
+            'academicYear' => $academicYear,
             'payment' => $payment,
             'summary' => $this->financialProfileService->studentPaymentSummary($payment->student, $payment->academicYear),
+            'paymentForm' => $request->user()->can('payments.create')
+                ? $this->paymentFormData($request, $academicYear, $payment->student)
+                : null,
         ]);
     }
 
@@ -202,7 +199,7 @@ class PaymentWebController extends Controller
             ->download($filename);
     }
 
-    public function studentStatement(Student $student): View
+    public function studentStatement(Request $request, Student $student): View
     {
         $academicYear = $this->activeAcademicYear();
 
@@ -210,6 +207,9 @@ class PaymentWebController extends Controller
             'academicYear' => $academicYear,
             'profile' => $this->financialProfileService->studentFinancialProfile($student, $academicYear),
             'student' => $student->load('guardians'),
+            'paymentForm' => $request->user()->can('payments.create')
+                ? $this->paymentFormData($request, $academicYear, $student)
+                : null,
         ]);
     }
 
@@ -284,6 +284,20 @@ class PaymentWebController extends Controller
     private function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()->where('is_active', true)->first();
+    }
+
+    private function paymentFormData(Request $request, ?AcademicYear $academicYear, ?Student $selectedStudent = null): array
+    {
+        $students = $this->financialProfileService->enrolledStudents($academicYear);
+
+        return [
+            'students' => $students,
+            'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
+            'profiles' => $this->financialProfileService->paymentProfiles($students, $academicYear),
+            'selectedStudentId' => $request->integer('student_id') ?: $selectedStudent?->id,
+            'selectedScheduleId' => $request->integer('fee_schedule_id') ?: null,
+            'selectedAmount' => $request->integer('amount') > 0 ? $request->integer('amount') : null,
+        ];
     }
 
     private function paymentQuery(Request $request, ?AcademicYear $academicYear)
