@@ -14,7 +14,15 @@
         <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $student) }}">PDF</a>
     @endcan
     @can('payments.view')
-        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}">Situation financiere</a>
+        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}" data-dialog-open="student-financial-drawer">Situation financière</a>
+    @endcan
+    @if ($currentEnrollment)
+        @can('enrollments.view')
+            <a class="btn btn-subtle" href="{{ route('enrollments.show', $currentEnrollment) }}" data-dialog-open="student-enrollment-drawer">Résumé inscription</a>
+        @endcan
+    @endif
+    @can('students.update')
+        <a class="btn btn-subtle" href="#student-documents" data-dialog-open="student-document-dialog">Ajouter une pièce</a>
     @endcan
     @can('payments.create')
         <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Encaisser</a>
@@ -26,6 +34,90 @@
         <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
     @endcan
 @endsection
+
+@push('dialogs')
+    @can('students.update')
+        @include('students.partials.document-dialog', [
+            'student' => $student,
+            'documentTypeLabels' => $documentTypeLabels,
+        ])
+    @endcan
+
+    @if ($currentEnrollment)
+        @can('enrollments.view')
+            <x-ui.drawer
+                id="student-enrollment-drawer"
+                title="Résumé de l’inscription"
+                description="{{ $currentEnrollment->academicYear?->name ?? 'Année scolaire active' }}"
+            >
+                <div class="follow-up-summary-list">
+                    <div><span>Élève</span><strong>{{ $student->full_name }}</strong></div>
+                    <div><span>Classe</span><strong>{{ $currentEnrollment->schoolClass?->name ?? '-' }}</strong></div>
+                    <div><span>Niveau</span><strong>{{ $currentEnrollment->schoolClass?->level?->name ?? '-' }}</strong></div>
+                    <div><span>Date d’inscription</span><strong>{{ $currentEnrollment->enrollment_date?->format('d/m/Y') ?? '-' }}</strong></div>
+                    <div><span>Type</span><strong>{{ match ($currentEnrollment->type) {
+                        'renewal' => 'Réinscription',
+                        'transfer' => 'Transfert',
+                        default => 'Nouvelle inscription',
+                    } }}</strong></div>
+                    <div><span>Statut</span><strong>{{ $currentEnrollment->status === 'active' ? 'Active' : ucfirst($currentEnrollment->status) }}</strong></div>
+                </div>
+
+                <x-slot:footer>
+                    <button class="btn btn-subtle" type="button" data-dialog-close>Fermer</button>
+                    <a class="btn btn-primary" href="{{ route('enrollments.show', $currentEnrollment) }}">Voir l’inscription</a>
+                </x-slot:footer>
+            </x-ui.drawer>
+        @endcan
+    @endif
+
+    @can('payments.view')
+        @if ($financialSummary)
+            <x-ui.drawer
+                id="student-financial-drawer"
+                title="Situation financière"
+                description="{{ $student->full_name }} - {{ $academicYear?->name ?? 'Année active' }}"
+            >
+                <div class="follow-up-summary-list">
+                    <div><span>Classe</span><strong>{{ $financialSummary['enrollment']?->schoolClass?->name ?? 'Non inscrit' }}</strong></div>
+                    <div><span>Total attendu</span><strong class="money">{{ is_null($financialSummary['expected']) ? 'À configurer' : number_format($financialSummary['expected'], 0, ',', ' ').' FCFA' }}</strong></div>
+                    <div><span>Total payé</span><strong class="money">{{ number_format($financialSummary['paid'], 0, ',', ' ') }} FCFA</strong></div>
+                    <div class="follow-up-summary-list__highlight"><span>Reste à payer</span><strong class="money">{{ is_null($financialSummary['balance']) ? 'À configurer' : number_format($financialSummary['balance'], 0, ',', ' ').' FCFA' }}</strong></div>
+                </div>
+
+                <x-slot:footer>
+                    <button class="btn btn-subtle" type="button" data-dialog-close>Fermer</button>
+                    <a class="btn btn-primary" href="{{ route('payments.students.statement', $student) }}">Voir la situation complète</a>
+                </x-slot:footer>
+            </x-ui.drawer>
+        @endif
+    @endcan
+
+    @if (session('student_created'))
+        <x-ui.modal
+            id="student-created-dialog"
+            title="Dossier élève créé"
+            description="{{ $student->full_name }} possède maintenant le matricule {{ $student->matricule }}."
+            size="medium"
+            :open="true"
+        >
+            <div class="creation-follow-up">
+                <span>Prochaine étape</span>
+                <strong>Compléter le dossier ou inscrire l’élève dans une classe.</strong>
+            </div>
+
+            <x-slot:footer>
+                <button class="btn btn-subtle" type="button" data-dialog-close>Voir le dossier</button>
+                @can('students.update')
+                    <button class="btn btn-subtle" type="button" data-dialog-open="student-document-dialog">Ajouter des documents</button>
+                @endcan
+                @can('enrollments.create')
+                    <a class="btn btn-primary" href="{{ route('enrollments.create', ['student_id' => $student->id]) }}">Inscrire maintenant</a>
+                @endcan
+            </x-slot:footer>
+        </x-ui.modal>
+    @endif
+@endpush
 
 @section('content')
     @if ($errors->any())
@@ -153,55 +245,27 @@
         </div>
     </section>
 
-    <section class="grid two-col" style="margin-top:16px">
+    <section class="grid two-col" id="student-documents" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">
-                <h2>Ajouter un document</h2>
+                <h2>Dossier documentaire</h2>
+                <span class="badge {{ count($missingRequiredDocuments) === 0 ? '' : 'badge-warning' }}">
+                    {{ $student->documents->count() }} pièce(s)
+                </span>
             </div>
 
             @can('students.update')
-                <form method="POST" action="{{ route('students.documents.store', $student) }}" enctype="multipart/form-data">
-                    @csrf
-
-                    <div class="form-grid">
-                        <div class="field">
-                            <label>Nom du document</label>
-                            <input name="name" value="{{ old('name') }}" placeholder="Ex: Acte de naissance" required>
-                        </div>
-
-                        <div class="field">
-                            <label>Type</label>
-                            <select name="document_type" required>
-                                @foreach ($documentTypeLabels as $type => $label)
-                                    <option value="{{ $type }}" @selected(old('document_type') === $type)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label>Statut</label>
-                            <select name="status" required>
-                                <option value="received" @selected(old('status', 'received') === 'received')>Reçu</option>
-                                <option value="missing" @selected(old('status') === 'missing')>Manquant</option>
-                                <option value="expired" @selected(old('status') === 'expired')>Expire</option>
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label>Date de reception</label>
-                            <input type="date" name="received_at" value="{{ old('received_at', now()->toDateString()) }}">
-                        </div>
-
-                        <div class="field wide">
-                            <label>Fichier PDF ou image</label>
-                            <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,.webp">
-                        </div>
+                <div class="document-quick-summary">
+                    <div>
+                        <span>Pièces attendues</span>
+                        <strong>{{ count($requiredDocumentStatuses) }}</strong>
                     </div>
-
-                    <div class="form-actions">
-                        <button class="btn btn-primary" type="submit">Ajouter au dossier</button>
+                    <div>
+                        <span>Encore manquantes</span>
+                        <strong>{{ count($missingRequiredDocuments) }}</strong>
                     </div>
-                </form>
+                </div>
+                <button class="btn btn-primary" type="button" data-dialog-open="student-document-dialog">Ajouter une pièce</button>
             @else
                 <div class="empty">Tu peux consulter les documents, mais ton role ne permet pas d en ajouter.</div>
             @endcan

@@ -116,6 +116,32 @@ class StudentDocumentTest extends TestCase
         ]);
     }
 
+    public function test_invalid_document_reopens_the_short_upload_dialog(): void
+    {
+        Storage::fake('documents');
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $student = $this->student();
+
+        $response = $this->actingAs($user)
+            ->from(route('students.show', $student))
+            ->post(route('students.documents.store', $student), [
+                'name' => 'Acte de naissance',
+                'document_type' => 'birth_certificate',
+                'status' => 'received',
+            ]);
+
+        $response
+            ->assertRedirect(route('students.show', $student))
+            ->assertSessionHasErrors('document_file');
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="student-document-dialog"', false)
+            ->assertSee('open data-dialog-open-on-load', false)
+            ->assertSee('10 Mo maximum.');
+    }
+
     public function test_document_file_is_deleted_when_document_is_removed(): void
     {
         Storage::fake('documents');

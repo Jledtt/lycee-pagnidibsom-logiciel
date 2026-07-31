@@ -42,15 +42,23 @@ test('création d’un élève puis inscription dans une classe', async ({ page 
     await expect(page).toHaveURL(/\/students\/\d+$/);
     await expect(page.locator('.topbar h1')).toHaveText('Nadine Navigateur');
 
-    await page.goto('/enrollments/create');
-    await selectOptionContaining(page.locator('#student_id'), 'Nadine Navigateur');
+    const studentCreatedDialog = page.locator('#student-created-dialog');
+    await expect(studentCreatedDialog).toBeVisible();
+    await expect(studentCreatedDialog.getByRole('button', { name: 'Ajouter des documents' })).toBeVisible();
+    await studentCreatedDialog.getByRole('link', { name: 'Inscrire maintenant' }).click();
+
+    await expect(page.locator('#student_id option:checked')).toContainText('Nadine Navigateur');
     await selectOptionContaining(page.locator('#school_class_id'), SEEDED_CLASS);
     await page.locator('#enrollment_date').fill('2026-10-02');
     await page.getByRole('button', { name: "Enregistrer l'inscription" }).click();
 
     await expect(page).toHaveURL(/\/enrollments\/\d+$/);
-    await expect(page.getByText('Nadine Navigateur').first()).toBeVisible();
-    await expect(page.getByText(SEEDED_CLASS).first()).toBeVisible();
+    const enrollmentCreatedDialog = page.locator('#enrollment-created-dialog');
+    await expect(enrollmentCreatedDialog).toBeVisible();
+    await expect(enrollmentCreatedDialog.getByRole('button', { name: 'Premier paiement' })).toBeVisible();
+    await expect(enrollmentCreatedDialog.getByRole('link', { name: /Fiche d.inscription/ })).toBeVisible();
+    await expect(enrollmentCreatedDialog.getByRole('link', { name: 'Carte scolaire' })).toBeVisible();
+    await expect(enrollmentCreatedDialog.getByRole('link', { name: 'Voir la classe' })).toBeVisible();
 });
 
 test('paiement, reçu PDF puis annulation motivée', async ({ page }) => {
@@ -191,7 +199,10 @@ test('téléversement et récupération sécurisée d’un document élève', as
     const studentIndexRow = page.locator('table tbody tr').filter({ hasText: SEEDED_MATRICULE });
     await expect(studentIndexRow).toContainText(SEEDED_STUDENT);
     await studentIndexRow.getByRole('link', { name: 'Voir' }).click();
-    const documentForm = page.locator('form[enctype="multipart/form-data"]');
+    await page.getByRole('link', { name: 'Ajouter une pièce' }).click();
+    const documentDialog = page.locator('#student-document-dialog');
+    await expect(documentDialog).toBeVisible();
+    const documentForm = documentDialog.locator('form[enctype="multipart/form-data"]');
     await documentForm.locator('input[name="name"]').fill('Acte E2E navigateur');
     await documentForm.locator('select[name="document_type"]').selectOption('birth_certificate');
     await documentForm.locator('select[name="status"]').selectOption('received');
@@ -200,7 +211,7 @@ test('téléversement et récupération sécurisée d’un document élève', as
         mimeType: 'application/pdf',
         buffer: Buffer.from('%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF'),
     });
-    await documentForm.getByRole('button', { name: 'Ajouter au dossier' }).click();
+    await documentDialog.getByRole('button', { name: 'Ajouter au dossier' }).click();
 
     const documentRow = page.locator('table tbody tr').filter({ hasText: 'Acte E2E navigateur' });
     await expect(documentRow).toContainText('Reçu');

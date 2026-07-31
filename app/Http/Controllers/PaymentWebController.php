@@ -6,7 +6,6 @@ use App\Http\Requests\Payment\CancelPaymentRequest;
 use App\Http\Requests\Payment\StorePaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\FeeSchedule;
-use App\Models\FeeType;
 use App\Models\Payment;
 use App\Models\SchoolSetting;
 use App\Models\Student;
@@ -288,16 +287,16 @@ class PaymentWebController extends Controller
 
     private function paymentFormData(Request $request, ?AcademicYear $academicYear, ?Student $selectedStudent = null): array
     {
-        $students = $this->financialProfileService->enrolledStudents($academicYear);
+        $requestedStudent = $request->integer('student_id')
+            ? Student::query()->find($request->integer('student_id'))
+            : null;
 
-        return [
-            'students' => $students,
-            'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
-            'profiles' => $this->financialProfileService->paymentProfiles($students, $academicYear),
-            'selectedStudentId' => $request->integer('student_id') ?: $selectedStudent?->id,
-            'selectedScheduleId' => $request->integer('fee_schedule_id') ?: null,
-            'selectedAmount' => $request->integer('amount') > 0 ? $request->integer('amount') : null,
-        ];
+        return $this->financialProfileService->paymentFormData(
+            $academicYear,
+            $requestedStudent ?? $selectedStudent,
+            $request->integer('fee_schedule_id') ?: null,
+            $request->integer('amount') > 0 ? $request->integer('amount') : null,
+        );
     }
 
     private function paymentQuery(Request $request, ?AcademicYear $academicYear)

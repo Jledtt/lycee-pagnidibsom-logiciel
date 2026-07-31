@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\EnrollmentService;
+use App\Services\PaymentFinancialProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -42,9 +43,11 @@ class EnrollmentWebController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
+        $students = $this->availableStudents($academicYear);
+        $selectedStudentId = $request->integer('student_id');
 
         return view('enrollments.create', [
             'academicYear' => $academicYear,
@@ -52,8 +55,9 @@ class EnrollmentWebController extends Controller
                 'type' => 'new',
                 'status' => 'active',
                 'enrollment_date' => now()->toDateString(),
+                'student_id' => $students->contains('id', $selectedStudentId) ? $selectedStudentId : null,
             ]),
-            'students' => $this->availableStudents($academicYear),
+            'students' => $students,
             'classes' => $this->activeClasses($academicYear),
         ]);
     }
@@ -72,16 +76,31 @@ class EnrollmentWebController extends Controller
 
         return redirect()
             ->route('enrollments.show', $enrollment)
-            ->with('success', 'Inscription enregistrée avec succès.');
+            ->with('success', 'Inscription enregistrée avec succès.')
+            ->with('enrollment_created', true);
     }
 
-    public function show(Enrollment $enrollment): View
-    {
+    public function show(
+        Request $request,
+        Enrollment $enrollment,
+        PaymentFinancialProfileService $financialProfiles,
+    ): View {
         $enrollment->load(['student.guardians', 'schoolClass.level', 'academicYear', 'creator']);
+        $activeAcademicYear = $this->activeAcademicYear();
+        $canStartPayment = $request->user()->can('payments.create')
+            && $enrollment->status === 'active'
+            && (int) $enrollment->academic_year_id === (int) $activeAcademicYear?->id;
 
         return view('enrollments.show', [
-            'academicYear' => $this->activeAcademicYear(),
+            'academicYear' => $activeAcademicYear,
             'enrollment' => $enrollment,
+            'canStartPayment' => $canStartPayment,
+            'paymentForm' => $canStartPayment
+                ? $financialProfiles->paymentFormData($activeAcademicYear, $enrollment->student)
+                : null,
+            'financialSummary' => $request->user()->can('payments.view')
+                ? $financialProfiles->studentPaymentSummary($enrollment->student, $enrollment->academicYear)
+                : null,
         ]);
     }
 

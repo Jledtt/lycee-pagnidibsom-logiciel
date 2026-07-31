@@ -2,35 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Student\StoreStudentDocumentRequest;
 use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\StudentDocument;
-use App\Services\RequiredStudentDocumentService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StudentDocumentWebController extends Controller
 {
-    public function store(Request $request, Student $student, RequiredStudentDocumentService $requiredDocuments): RedirectResponse
+    public function store(StoreStudentDocumentRequest $request, Student $student): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'document_type' => ['required', 'string', Rule::in(array_keys($requiredDocuments->availableDocumentTypes()))],
-            'status' => ['required', 'in:received,missing,expired'],
-            'received_at' => ['nullable', 'date'],
-            'document_file' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp'],
-        ]);
-
-        if (($data['status'] ?? null) !== 'missing' && ! $request->hasFile('document_file')) {
-            return back()
-                ->withErrors(['document_file' => 'Ajoute un fichier PDF ou image, ou marque le document comme manquant.'])
-                ->withInput();
-        }
+        $data = $request->validated();
 
         $document = StudentDocument::query()->create([
             'student_id' => $student->id,

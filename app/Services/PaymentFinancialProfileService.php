@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\FeeSchedule;
+use App\Models\FeeType;
 use App\Models\Payment;
 use App\Models\PaymentLine;
 use App\Models\Student;
@@ -12,6 +13,24 @@ use Illuminate\Support\Collection;
 
 class PaymentFinancialProfileService
 {
+    public function paymentFormData(
+        ?AcademicYear $academicYear,
+        ?Student $selectedStudent = null,
+        ?int $selectedScheduleId = null,
+        ?int $selectedAmount = null,
+    ): array {
+        $students = $this->enrolledStudents($academicYear);
+
+        return [
+            'students' => $students,
+            'feeTypes' => FeeType::query()->where('status', 'active')->orderBy('name')->get(),
+            'profiles' => $this->paymentProfiles($students, $academicYear),
+            'selectedStudentId' => $selectedStudent?->id,
+            'selectedScheduleId' => $selectedScheduleId,
+            'selectedAmount' => $selectedAmount,
+        ];
+    }
+
     public function enrolledStudents(?AcademicYear $academicYear): Collection
     {
         return Student::query()

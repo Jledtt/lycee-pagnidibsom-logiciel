@@ -357,6 +357,100 @@
     overflow-wrap: anywhere;
 }
 
+.document-quick-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.document-quick-summary > div {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #e7dfd8;
+    border-radius: 6px;
+    background: #fffdf9;
+}
+
+.document-quick-summary span,
+.creation-follow-up span {
+    display: block;
+    margin-bottom: 5px;
+    color: #6f6564;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.document-quick-summary strong {
+    display: block;
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+}
+
+.student-document-fields .field {
+    min-width: 0;
+}
+
+.student-document-fields input[type="file"] {
+    padding: 10px;
+}
+
+.student-document-fields .is-optional label::after {
+    content: " (facultatif)";
+    color: #6f6564;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.follow-up-summary-list {
+    display: grid;
+}
+
+.follow-up-summary-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-width: 0;
+    padding: 15px 0;
+    border-bottom: 1px solid #e7dfd8;
+}
+
+.follow-up-summary-list > div:first-child {
+    padding-top: 0;
+}
+
+.follow-up-summary-list > div:last-child {
+    border-bottom: 0;
+}
+
+.follow-up-summary-list span {
+    color: #6f6564;
+}
+
+.follow-up-summary-list strong {
+    max-width: 65%;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.follow-up-summary-list__highlight strong {
+    color: #8b1e2d;
+    font-size: 20px;
+}
+
+.creation-follow-up {
+    padding: 16px;
+    border-left: 4px solid #e6a817;
+    background: #fffdf9;
+}
+
+.creation-follow-up strong {
+    display: block;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .ui-dialog[open] .ui-dialog__surface {
         animation: ui-dialog-enter 150ms ease-out;
@@ -451,6 +545,21 @@
     }
 
     .payment-summary-list strong {
+        max-width: none;
+        text-align: left;
+    }
+
+    .document-quick-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .follow-up-summary-list > div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .follow-up-summary-list strong {
         max-width: none;
         text-align: left;
     }

@@ -7,6 +7,7 @@ use App\Models\Guardian;
 use App\Models\Student;
 use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
+use App\Services\PaymentFinancialProfileService;
 use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -114,11 +115,18 @@ class StudentWebController extends Controller
 
         return redirect()
             ->route('students.show', $student)
-            ->with('success', 'Élève ajouté avec succès.');
+            ->with('success', 'Élève ajouté avec succès.')
+            ->with('student_created', true);
     }
 
-    public function show(Student $student, RequiredStudentDocumentService $requiredDocuments): View
-    {
+    public function show(
+        Request $request,
+        Student $student,
+        RequiredStudentDocumentService $requiredDocuments,
+        PaymentFinancialProfileService $financialProfiles,
+    ): View {
+        $academicYear = $this->activeAcademicYear();
+
         $student->load([
             'guardians',
             'enrollments.schoolClass.level',
@@ -127,16 +135,23 @@ class StudentWebController extends Controller
             'documents.academicYear',
         ]);
 
-        $currentEnrollment = $student->enrollments->sortByDesc('id')->first();
+        $currentEnrollment = $student->enrollments
+            ->when($academicYear, fn ($enrollments) => $enrollments->where('academic_year_id', $academicYear->id))
+            ->where('status', 'active')
+            ->sortByDesc('id')
+            ->first();
         $currentClass = $currentEnrollment?->schoolClass;
 
         return view('students.show', [
-            'academicYear' => $this->activeAcademicYear(),
+            'academicYear' => $academicYear,
             'student' => $student,
             'currentEnrollment' => $currentEnrollment,
             'documentTypeLabels' => $requiredDocuments->availableDocumentTypes(),
             'requiredDocumentStatuses' => $requiredDocuments->statusForStudent($student, $currentClass),
             'missingRequiredDocuments' => $requiredDocuments->missingForStudent($student, $currentClass),
+            'financialSummary' => $request->user()->can('payments.view')
+                ? $financialProfiles->studentPaymentSummary($student, $academicYear)
+                : null,
         ]);
     }
 

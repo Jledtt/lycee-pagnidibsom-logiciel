@@ -8,6 +8,14 @@ async function login(page) {
     await expect(page).toHaveURL(/\/dashboard$/);
 }
 
+async function elementOverflowsViewport(locator) {
+    return locator.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+
+        return bounds.left < -1 || bounds.right > window.innerWidth + 1;
+    });
+}
+
 test('la page de connexion est lisible et sans débordement horizontal', async ({ page }) => {
     const response = await page.goto('/login');
 
@@ -105,6 +113,31 @@ test('la fenêtre de paiement reste utilisable sur toutes les tailles d’écran
 
     await dialog.locator('.ui-dialog__close').click();
     await expect(dialog).toBeHidden();
+});
+
+test('les fenêtres du dossier élève restent utilisables sur toutes les tailles d’écran', async ({ page }) => {
+    await login(page);
+    await page.goto('/students?search=LPP-E2E-001');
+    const studentRow = page.locator('table tbody tr').filter({ hasText: 'LPP-E2E-001' });
+    await studentRow.getByRole('link', { name: 'Voir' }).click();
+
+    await page.getByRole('link', { name: 'Ajouter une pièce' }).click();
+    const documentDialog = page.locator('#student-document-dialog');
+    await expect(documentDialog).toBeVisible();
+    await expect(documentDialog.getByRole('button', { name: 'Ajouter au dossier' })).toBeVisible();
+    expect(await elementOverflowsViewport(documentDialog)).toBe(false);
+    await documentDialog.locator('.ui-dialog__close').click();
+
+    await page.getByRole('link', { name: 'Résumé inscription' }).click();
+    const enrollmentDrawer = page.locator('#student-enrollment-drawer');
+    await expect(enrollmentDrawer).toBeVisible();
+    expect(await elementOverflowsViewport(enrollmentDrawer)).toBe(false);
+    await enrollmentDrawer.locator('.ui-drawer__close').click();
+
+    await page.getByRole('link', { name: 'Situation financière' }).click();
+    const financialDrawer = page.locator('#student-financial-drawer');
+    await expect(financialDrawer).toBeVisible();
+    expect(await elementOverflowsViewport(financialDrawer)).toBe(false);
 });
 
 test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
