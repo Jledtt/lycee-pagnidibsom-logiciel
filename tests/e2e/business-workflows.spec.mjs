@@ -71,9 +71,10 @@ test('paiement, reçu PDF puis annulation motivée', async ({ page }) => {
     await selectOptionContaining(paymentDialog.locator('[data-payment-schedule]').first(), 'Inscription E2E');
     await expect(paymentDialog.locator('[data-payment-amount]').first()).toHaveValue('25000');
     await paymentDialog.locator('input[name="paid_at"]').fill('2026-10-10T10:30');
-    await paymentDialog.getByRole('button', { name: 'Enregistrer le paiement' }).click();
+    await paymentDialog.getByRole('button', { name: 'Enregistrer le paiement' }).click({ clickCount: 2, delay: 10 });
 
     await expect(page).toHaveURL(/\/payments\/\d+$/);
+    const paymentUrl = page.url();
     const successDialog = page.locator('#payment-success-dialog');
     await expect(successDialog).toBeVisible();
     await expect(successDialog.getByText('25 000 FCFA')).toBeVisible();
@@ -84,7 +85,10 @@ test('paiement, reçu PDF puis annulation motivée', async ({ page }) => {
     expect(receipt.headers()['content-type']).toContain('application/pdf');
     expect((await receipt.body()).byteLength).toBeGreaterThan(1000);
 
-    await successDialog.locator('.ui-dialog__footer').getByRole('button', { name: 'Fermer' }).click();
+    await page.goto(`/payments?search=${SEEDED_MATRICULE}`);
+    await expect(page.locator('table tbody tr').filter({ hasText: SEEDED_STUDENT })).toHaveCount(1);
+    await page.goto(paymentUrl);
+
     await page.locator('button[data-dialog-open="cancel-payment-dialog"]').click();
     const cancellationDialog = page.locator('#cancel-payment-dialog');
     await expect(cancellationDialog).toBeVisible();

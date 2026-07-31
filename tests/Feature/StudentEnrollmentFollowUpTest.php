@@ -31,6 +31,13 @@ class StudentEnrollmentFollowUpTest extends TestCase
 
         $student = Student::query()->where('last_name', 'Suivi')->firstOrFail();
 
+        $this->assertDatabaseHas('students', [
+            'id' => $student->id,
+            'first_name' => 'Nadia',
+            'last_name' => 'Suivi',
+            'status' => 'active',
+        ]);
+
         $response
             ->assertRedirect(route('students.show', $student))
             ->assertSessionHas('student_created', true);
@@ -93,6 +100,14 @@ class StudentEnrollmentFollowUpTest extends TestCase
         ]);
 
         $enrollment = Enrollment::query()->where('student_id', $student->id)->firstOrFail();
+
+        $this->assertDatabaseHas('enrollments', [
+            'id' => $enrollment->id,
+            'student_id' => $student->id,
+            'school_class_id' => $schoolClass->id,
+            'academic_year_id' => $academicYear->id,
+            'status' => 'active',
+        ]);
 
         $response
             ->assertRedirect(route('enrollments.show', $enrollment))

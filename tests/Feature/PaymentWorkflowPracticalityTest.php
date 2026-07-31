@@ -72,6 +72,18 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $response
             ->assertRedirect(route('payments.show', $payment))
             ->assertSessionHas('payment_created', true);
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->id,
+            'student_id' => $student->id,
+            'status' => 'valid',
+            'amount' => 5000,
+        ]);
+        $this->assertDatabaseHas('payment_lines', [
+            'payment_id' => $payment->id,
+            'fee_schedule_id' => $schedule->id,
+            'amount' => 5000,
+        ]);
     }
 
     public function test_invalid_payment_reopens_the_modal_with_errors(): void

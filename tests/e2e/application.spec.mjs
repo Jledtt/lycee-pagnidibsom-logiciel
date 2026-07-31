@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-async function login(page) {
+async function login(page, username = 'admin', password = 'Pagnidibsom') {
     await page.goto('/login');
-    await page.getByLabel('Identifiant').fill('admin');
-    await page.getByLabel('Mot de passe').fill('Pagnidibsom');
+    await page.getByLabel('Identifiant').fill(username);
+    await page.getByLabel('Mot de passe').fill(password);
     await page.getByRole('button', { name: 'Se connecter' }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 }
@@ -176,6 +176,61 @@ test('les actions sensibles affichent leur objet et leurs conséquences', async 
     await expect(dialog.getByText(/autres lignes personnalisées seront conservées/)).toBeVisible();
     await dialog.getByRole('button', { name: 'Initialiser les tarifs' }).click();
     await expect(page.getByText(/ligne\(s\) de tarifs initialisées/)).toBeVisible();
+});
+
+test('une confirmation se ferme avec Échap, restaure le focus et produit une capture', async ({ page }, testInfo) => {
+    await login(page);
+    await page.goto('/students?search=LPP-E2E-001');
+    const studentRow = page.locator('table tbody tr').filter({ hasText: 'LPP-E2E-001' });
+    await studentRow.getByRole('link', { name: 'Voir' }).click();
+
+    const archiveButton = page.getByRole('button', { name: 'Archiver le dossier' });
+    await archiveButton.click();
+    const dialog = page.locator('#app-confirmation-dialog');
+    await expect(dialog).toBeVisible();
+
+    const screenshotPath = testInfo.outputPath(`confirmation-${testInfo.project.name}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: false });
+    await testInfo.attach(`confirmation-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(archiveButton).toBeFocused();
+
+    await archiveButton.click();
+    await dialog.getByRole('button', { name: 'Annuler' }).click();
+    await expect(dialog).toBeHidden();
+});
+
+test('la validation native bloque un paiement incomplet', async ({ page }) => {
+    await login(page);
+    await page.goto('/payments');
+    await page.getByRole('link', { name: 'Nouveau paiement' }).click();
+
+    const dialog = page.locator('#payment-create-dialog');
+    const studentSelect = dialog.locator('[data-payment-student]');
+    await dialog.getByRole('button', { name: 'Enregistrer le paiement' }).click();
+
+    await expect(dialog).toBeVisible();
+    expect(await studentSelect.evaluate((element) => element.checkValidity())).toBe(false);
+    expect(await studentSelect.evaluate((element) => element.validationMessage)).not.toBe('');
+    await expect(page).toHaveURL(/\/payments$/);
+});
+
+test('les permissions refusent les tarifs au secrétariat et autorisent les paiements au comptable', async ({ page }) => {
+    await login(page, 'secretariat', 'secretariat');
+    await expect(page.getByRole('link', { name: 'Tarifs' })).toHaveCount(0);
+    const forbiddenResponse = await page.goto('/tariffs');
+    expect(forbiddenResponse?.status()).toBe(403);
+
+    await page.context().clearCookies();
+    await login(page, 'comptable', 'comptable');
+    const allowedResponse = await page.goto('/payments');
+    expect(allowedResponse?.status()).toBe(200);
+    await expect(page.getByRole('link', { name: 'Nouveau paiement' })).toBeVisible();
 });
 
 test('la documentation reste lisible et ouvre un guide', async ({ page }) => {

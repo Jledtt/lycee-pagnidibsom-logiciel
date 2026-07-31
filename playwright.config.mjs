@@ -35,5 +35,9 @@ export default defineConfig({
             name: 'chromium-mobile',
             use: { ...devices['Pixel 7'] },
         },
+        {
+            name: 'chromium-tablet',
+            use: { ...devices['iPad (gen 7)'], browserName: 'chromium' },
+        },
     ],
 });
