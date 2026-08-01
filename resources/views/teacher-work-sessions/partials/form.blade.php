@@ -21,8 +21,19 @@
 
         <div class="field">
             <label for="{{ $formId }}-date">Date du cours</label>
-            <input id="{{ $formId }}-date" type="date" name="session_date" value="{{ old('session_date', now()->toDateString()) }}" required>
+            <input
+                id="{{ $formId }}-date"
+                type="date"
+                name="session_date"
+                value="{{ old('session_date', $defaultSessionDate) }}"
+                @if($academicYear?->starts_at) min="{{ $academicYear->starts_at->toDateString() }}" @endif
+                @if($academicYear?->ends_at) max="{{ $academicYear->ends_at->toDateString() }}" @endif
+                required
+            >
             @error('session_date') <small class="error">{{ $message }}</small> @enderror
+            @if($academicYear?->starts_at && $academicYear?->ends_at)
+                <small class="field-hint">Dates autorisées : du {{ $academicYear->starts_at->format('d/m/Y') }} au {{ $academicYear->ends_at->format('d/m/Y') }}.</small>
+            @endif
         </div>
 
         <div class="field">

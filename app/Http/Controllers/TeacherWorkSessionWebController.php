@@ -30,6 +30,14 @@ class TeacherWorkSessionWebController extends Controller
         $month = isset($filters['month'])
             ? Carbon::createFromFormat('Y-m-d', $filters['month'].'-01')->startOfMonth()
             : now()->startOfMonth();
+        $defaultSessionDate = now()->startOfDay();
+
+        if ($academicYear?->starts_at && $defaultSessionDate->lt($academicYear->starts_at)) {
+            $defaultSessionDate = $academicYear->starts_at->copy();
+        } elseif ($academicYear?->ends_at && $defaultSessionDate->gt($academicYear->ends_at)) {
+            $defaultSessionDate = $academicYear->ends_at->copy();
+        }
+
         $query = TeacherWorkSession::query()
             ->with(['teacher', 'schoolClass', 'subject', 'validator', 'feeLine'])
             ->where('academic_year_id', $academicYear?->id)
@@ -43,6 +51,7 @@ class TeacherWorkSessionWebController extends Controller
 
         return view('teacher-work-sessions.index', [
             'academicYear' => $academicYear,
+            'defaultSessionDate' => $defaultSessionDate->toDateString(),
             'classes' => SchoolClass::query()->where('academic_year_id', $academicYear?->id)->orderBy('name')->get(),
             'filters' => [
                 'month' => $month->format('Y-m'),

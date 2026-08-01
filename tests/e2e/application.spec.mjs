@@ -149,6 +149,11 @@ test('la fenêtre de saisie des heures reste utilisable sur toutes les tailles d
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Enregistrer les heures' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Annuler' })).toBeVisible();
+    const sessionDate = dialog.locator('input[name="session_date"]');
+    await expect(sessionDate).toHaveValue('2026-10-01');
+    await expect(sessionDate).toHaveAttribute('min', '2026-10-01');
+    await expect(sessionDate).toHaveAttribute('max', '2027-07-31');
+    await expect(dialog.getByText('Dates autorisées : du 01/10/2026 au 31/07/2027.')).toBeVisible();
     expect(await elementOverflowsViewport(dialog)).toBe(false);
 });
 

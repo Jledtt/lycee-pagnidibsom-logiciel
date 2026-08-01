@@ -266,6 +266,38 @@ class TeacherManagementTest extends TestCase
             ->assertSee('open data-dialog-open-on-load', false);
     }
 
+    public function test_work_session_date_is_limited_to_the_active_academic_year_with_a_clear_message(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-date-admin');
+        $teacher = $this->userWithRole('enseignant', 'teacher-date');
+        [$academicYear, $schoolClass, $subject] = $this->academicContext();
+        $this->travelTo($academicYear->starts_at->copy()->subMonths(2));
+
+        $this->actingAs($admin)
+            ->get(route('teacher-work-sessions.index'))
+            ->assertOk()
+            ->assertSee('value="'.$academicYear->starts_at->toDateString().'"', false)
+            ->assertSee('min="'.$academicYear->starts_at->toDateString().'"', false)
+            ->assertSee('max="'.$academicYear->ends_at->toDateString().'"', false)
+            ->assertSee('Dates autorisées : du '.$academicYear->starts_at->format('d/m/Y').' au '.$academicYear->ends_at->format('d/m/Y').'.');
+
+        $this->actingAs($admin)
+            ->post(route('teacher-work-sessions.store'), [
+                'teacher_id' => $teacher->id,
+                'school_class_id' => $schoolClass->id,
+                'subject_id' => $subject->id,
+                'session_date' => $academicYear->starts_at->copy()->subDay()->toDateString(),
+                'starts_at' => '07:00',
+                'ends_at' => '09:00',
+                'hours_worked' => 2,
+                'status' => 'validated',
+            ])
+            ->assertSessionHasErrors([
+                'session_date' => 'La date du cours doit être comprise dans l’année scolaire '.$academicYear->name.', à partir du '.$academicYear->starts_at->format('d/m/Y').'.',
+            ]);
+    }
+
     public function test_invalid_teacher_fee_payment_reopens_the_payment_dialog(): void
     {
         $this->seed(DatabaseSeeder::class);

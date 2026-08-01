@@ -41,6 +41,29 @@ class StoreTeacherWorkSessionRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        $academicYear = AcademicYear::query()->where('is_active', true)->first();
+
+        return [
+            'session_date.after_or_equal' => $academicYear
+                ? 'La date du cours doit être comprise dans l’année scolaire '.$academicYear->name.', à partir du '.$academicYear->starts_at->format('d/m/Y').'.'
+                : 'La date du cours est antérieure à la période autorisée.',
+            'session_date.before_or_equal' => $academicYear
+                ? 'La date du cours doit être comprise dans l’année scolaire '.$academicYear->name.', au plus tard le '.$academicYear->ends_at->format('d/m/Y').'.'
+                : 'La date du cours dépasse la période autorisée.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'session_date' => 'date du cours',
+            'starts_at' => 'heure de début',
+            'ends_at' => 'heure de fin',
+        ];
+    }
+
     protected function failedValidation(Validator $validator): void
     {
         $this->session()->flash('teacher_work_session_open', true);
