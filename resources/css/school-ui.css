@@ -528,6 +528,7 @@
 }
 
 .timetable-overview {
+    --timetable-divider: #cfc1b4;
     margin: -18px -18px 18px;
     border-bottom: 1px solid var(--line);
     background: var(--panel);
@@ -630,7 +631,7 @@
     column-gap: 28px;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--line);
+    border-top: 2px solid var(--timetable-divider);
     list-style: none;
 }
 
@@ -638,7 +639,7 @@
     position: relative;
     min-width: 0;
     padding: 10px 8px 10px 16px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--timetable-divider);
     font-size: 14px;
     font-weight: 700;
     line-height: 1.35;
