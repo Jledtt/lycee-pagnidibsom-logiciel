@@ -64,33 +64,68 @@
         @endif
     </section>
 
-    <section class="panel" style="margin-top:16px">
-        <div class="panel-head">
-            <h2>{{ $selectedClass ? 'Grille de ' . $selectedClass->name : 'Grille' }}</h2>
-            @if ($timetable)
-                <span class="badge {{ $timetable->status === 'active' ? '' : 'badge-warning' }}">
-                    {{ $timetable->status === 'active' ? 'Active' : ($timetable->status === 'archived' ? 'Archivee' : 'Brouillon') }}
-                </span>
-            @endif
-        </div>
-
+    <section class="panel timetable-panel" style="margin-top:16px">
         @if (! $timetable)
+            <div class="panel-head">
+                <h2>{{ $selectedClass ? 'Grille de ' . $selectedClass->name : 'Grille' }}</h2>
+            </div>
             <div class="empty">Aucun emploi du temps pour cette classe. Crée une grille vide ou applique l’exemple Word.</div>
         @else
-            <div class="summary-row" style="margin-bottom:16px">
-                <div class="stat">
-                    <span>Titre</span>
-                    <strong style="font-size:18px">{{ $timetable->title }}</strong>
+            @php
+                $teachingTeam = collect(preg_split('/\s*;\s*/u', (string) $timetable->principal_teacher))
+                    ->map(fn ($member) => trim($member))
+                    ->filter();
+                $statusLabel = match ($timetable->status) {
+                    'active' => 'Actif',
+                    'archived' => 'Archivé',
+                    default => 'Brouillon',
+                };
+            @endphp
+
+            <header class="timetable-overview">
+                <div class="timetable-overview__heading">
+                    <div class="timetable-overview__title">
+                        <span class="timetable-overview__eyebrow">Grille hebdomadaire</span>
+                        <h2>{{ $selectedClass?->name ?? 'Classe' }}</h2>
+                        <p>{{ $timetable->title }}</p>
+                    </div>
+                    <span class="badge {{ $timetable->status === 'active' ? '' : 'badge-warning' }}">
+                        {{ $statusLabel }}
+                    </span>
                 </div>
-                <div class="stat">
-                    <span>Professeur principal / équipe</span>
-                    <strong style="font-size:16px">{{ $timetable->principal_teacher ?: '-' }}</strong>
+
+                <dl class="timetable-overview__meta">
+                    <div>
+                        <dt>Année scolaire</dt>
+                        <dd>{{ $timetable->academicYear?->name ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Dernière modification</dt>
+                        <dd>
+                            <time datetime="{{ $timetable->updated_at?->toIso8601String() }}">
+                                {{ $timetable->updated_at?->format('d/m/Y à H:i') }}
+                            </time>
+                        </dd>
+                    </div>
+                </dl>
+
+                <div class="timetable-team">
+                    <div class="timetable-team__head">
+                        <h3>Équipe pédagogique</h3>
+                        <span>{{ $teachingTeam->count() }} {{ $teachingTeam->count() > 1 ? 'professeurs' : 'professeur' }}</span>
+                    </div>
+
+                    @if ($teachingTeam->isEmpty())
+                        <p class="timetable-team__empty">Aucun professeur renseigné.</p>
+                    @else
+                        <ul class="timetable-team__list">
+                            @foreach ($teachingTeam as $member)
+                                <li>{{ $member }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
-                <div class="stat">
-                    <span>Dernière modification</span>
-                    <strong style="font-size:18px">{{ $timetable->updated_at?->format('d/m/Y H:i') }}</strong>
-                </div>
-            </div>
+            </header>
 
             <div class="subject-list-scroll">
                 <table class="table timetable-table" style="min-width:1080px">

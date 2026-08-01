@@ -157,6 +157,44 @@ test('la fenêtre de saisie des heures reste utilisable sur toutes les tailles d
     expect(await elementOverflowsViewport(dialog)).toBe(false);
 });
 
+test('le résumé de l’emploi du temps reste lisible avec une équipe pédagogique longue', async ({ page }, testInfo) => {
+    await login(page);
+    await page.goto('/timetables');
+
+    if (!await page.locator('.timetable-overview').isVisible()) {
+        await page.getByRole('button', { name: 'Créer une grille vide' }).click();
+        await expect(page).toHaveURL(/\/timetables\/\d+\/edit$/);
+
+        await page.locator('input[name="title"]').fill('Emploi du temps provisoire');
+        await page.locator('textarea[name="principal_teacher"]').fill([
+            'Aminata Test (Français)',
+            'Paul Exemple (Mathématiques)',
+            'Mariam Démo (Anglais)',
+            'Issa Essai (Histoire-Géographie)',
+            'Awa Contrôle (EPS)',
+            'Karim Validation (Physique-Chimie)',
+            'Fatou Mobile (Allemand)',
+            'Oumar Tablette (Philosophie)',
+        ].join('; '));
+        await page.getByRole('button', { name: 'Enregistrer l’emploi du temps' }).click();
+        await page.getByRole('link', { name: 'Retour' }).click();
+    }
+
+    const overview = page.locator('.timetable-overview');
+    await expect(overview).toBeVisible();
+    await expect(overview.getByRole('heading', { name: 'E2E 5e A' })).toBeVisible();
+    await expect(overview.getByRole('heading', { name: 'Équipe pédagogique' })).toBeVisible();
+    await expect(overview.locator('.timetable-team__list li')).toHaveCount(8);
+    expect(await elementOverflowsViewport(overview)).toBe(false);
+
+    const screenshotPath = testInfo.outputPath(`timetable-overview-${testInfo.project.name}.png`);
+    await overview.screenshot({ path: screenshotPath });
+    await testInfo.attach(`timetable-overview-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
+});
+
 test('les actions sensibles affichent leur objet et leurs conséquences', async ({ page }) => {
     await login(page);
     await page.goto('/students?search=LPP-E2E-001');

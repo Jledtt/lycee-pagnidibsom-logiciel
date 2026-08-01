@@ -111,6 +111,7 @@ class TimetableTest extends TestCase
             'academic_year_id' => $academicYear->id,
             'school_class_id' => $schoolClass->id,
             'title' => 'Emploi test',
+            'principal_teacher' => 'Aminata Test (Français); Paul Exemple (Mathématiques)',
             'status' => 'active',
             'created_by' => $user->id,
         ]);
@@ -139,7 +140,11 @@ class TimetableTest extends TestCase
             ->assertOk()
             ->assertSee('7h00-7h55', false)
             ->assertSee('EPS')
-            ->assertSee('Français');
+            ->assertSee('Français')
+            ->assertSee('class="timetable-overview"', false)
+            ->assertSee('Équipe pédagogique')
+            ->assertSee('2 professeurs')
+            ->assertSeeInOrder(['Aminata Test (Français)', 'Paul Exemple (Mathématiques)']);
 
         $this->assertSame(1, substr_count($response->getContent(), '<strong>7h00-7h55</strong>'));
     }

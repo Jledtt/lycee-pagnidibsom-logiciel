@@ -523,6 +523,181 @@
     line-height: 1.5;
 }
 
+.timetable-panel {
+    overflow: hidden;
+}
+
+.timetable-overview {
+    margin: -18px -18px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+}
+
+.timetable-overview__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 24px 18px;
+    background: #fffaf2;
+    border-top: 4px solid var(--gold);
+}
+
+.timetable-overview__title {
+    min-width: 0;
+}
+
+.timetable-overview__eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.timetable-overview__title h2 {
+    font-size: 24px;
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+.timetable-overview__title p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    overflow-wrap: anywhere;
+}
+
+.timetable-overview__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.timetable-overview__meta > div {
+    min-width: 0;
+    padding: 14px 24px;
+}
+
+.timetable-overview__meta > div + div {
+    border-left: 1px solid var(--line);
+}
+
+.timetable-overview__meta dt {
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.timetable-overview__meta dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+
+.timetable-team {
+    padding: 18px 24px 20px;
+}
+
+.timetable-team__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.timetable-team__head h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.timetable-team__head span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.timetable-team__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    column-gap: 28px;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+}
+
+.timetable-team__list li {
+    position: relative;
+    min-width: 0;
+    padding: 10px 8px 10px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.timetable-team__list li::before {
+    position: absolute;
+    top: 16px;
+    left: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    content: '';
+}
+
+.timetable-team__empty {
+    margin: 0;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+}
+
+@media (max-width: 720px) {
+    .timetable-overview__heading {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 18px;
+    }
+
+    .timetable-overview__heading .badge {
+        align-self: flex-start;
+    }
+
+    .timetable-overview__meta {
+        grid-template-columns: 1fr;
+    }
+
+    .timetable-overview__meta > div {
+        padding: 12px 18px;
+    }
+
+    .timetable-overview__meta > div + div {
+        border-top: 1px solid var(--line);
+        border-left: 0;
+    }
+
+    .timetable-team {
+        padding: 16px 18px 18px;
+    }
+
+    .timetable-team__head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+    }
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .ui-dialog[open] .ui-dialog__surface {
         animation: ui-dialog-enter 150ms ease-out;

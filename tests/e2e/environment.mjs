@@ -1,6 +1,7 @@
 import path from 'node:path';
 
-export const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8010';
+export const serverPort = process.env.E2E_PORT ?? '8010';
+export const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${serverPort}`;
 export const databasePath = path.resolve('database/e2e.sqlite');
 
 export const appEnvironment = {

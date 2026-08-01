@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { appEnvironment, baseURL } from './tests/e2e/environment.mjs';
+import { appEnvironment, baseURL, serverPort } from './tests/e2e/environment.mjs';
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -20,7 +20,7 @@ export default defineConfig({
     webServer: process.env.E2E_BASE_URL
         ? undefined
         : {
-              command: 'php artisan serve --host=127.0.0.1 --port=8010',
+              command: `php artisan serve --host=127.0.0.1 --port=${serverPort}`,
               env: appEnvironment,
               reuseExistingServer: false,
               timeout: 120_000,
