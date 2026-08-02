@@ -67,6 +67,53 @@ test('un administrateur ouvre les modules principaux puis se déconnecte', async
     await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
 });
 
+test('la navigation regroupe les modules et reste utilisable au clavier', async ({ page }, testInfo) => {
+    await login(page);
+
+    const navigation = page.getByRole('navigation', { name: 'Navigation principale' });
+    const menuButton = page.locator('.sidebar-toggle');
+    const compactNavigation = (page.viewportSize()?.width ?? 1280) <= 980;
+
+    if (compactNavigation) {
+        await expect(navigation).toBeHidden();
+        await menuButton.click();
+        await expect(navigation).toBeVisible();
+        await expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+        await expect(menuButton).toHaveAttribute('aria-label', 'Masquer le menu');
+    } else {
+        await expect(navigation).toBeVisible();
+    }
+
+    const activeSection = navigation.locator('.nav-section.active-section');
+    await expect(activeSection).toHaveCount(1);
+    await expect(activeSection).toHaveAttribute('open', '');
+    await expect(navigation.locator('a[aria-current="page"]')).toHaveText('Tableau de bord');
+
+    const financeSection = navigation.locator('.nav-section').filter({ hasText: 'Finances' });
+    expect(await financeSection.getAttribute('open')).toBeNull();
+    await financeSection.locator('summary').click();
+    await expect(financeSection).toHaveAttribute('open', '');
+    await expect(financeSection.getByRole('link', { name: 'Paiements' })).toBeVisible();
+
+    await expect(page.locator('.topbar__page-actions')).toBeVisible();
+    await expect(page.locator('.topbar__account')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+
+    const screenshotPath = testInfo.outputPath(`interface-shell-${testInfo.project.name}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: false });
+    await testInfo.attach(`interface-shell-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
+
+    if (compactNavigation) {
+        await page.keyboard.press('Escape');
+        await expect(navigation).toBeHidden();
+        await expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+        await expect(menuButton).toBeFocused();
+    }
+});
+
 test('les grands montants financiers restent dans leurs cartes', async ({ page }) => {
     await login(page);
 

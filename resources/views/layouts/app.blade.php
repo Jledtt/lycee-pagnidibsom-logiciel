@@ -16,168 +16,169 @@
                     <strong>{{ $schoolSettings?->school_name ?? 'Lycée Privé Pagnidibsom' }}</strong>
                     <span>{{ $academicYear?->name ?? 'Année non configurée' }}</span>
                 </div>
-                <button class="sidebar-toggle" type="button" aria-controls="sidebar-navigation" aria-expanded="false" title="Afficher le menu">
+                <button class="sidebar-toggle" type="button" aria-controls="sidebar-navigation" aria-expanded="false" aria-label="Afficher le menu" title="Afficher le menu">
                     <span aria-hidden="true">&#9776;</span>
                 </button>
             </div>
 
-            <nav class="nav" id="sidebar-navigation">
-                <div class="nav-section {{ $activeIn(['dashboard', 'help']) ? 'active-section' : '' }}">
-                    <p class="nav-section-title">Accueil</p>
-                    <a class="{{ $activeKey === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Tableau de bord</a>
-                    <a class="{{ $activeKey === 'help' ? 'active' : '' }}" href="{{ route('help.index') }}"><span class="nav-dot"></span>Documentation</a>
-                </div>
+            <nav class="nav" id="sidebar-navigation" aria-label="Navigation principale">
+                <x-navigation.section title="Accueil" :active="$activeIn(['dashboard', 'help'])">
+                    <x-navigation.link :href="route('dashboard')" :active="$activeKey === 'dashboard'">Tableau de bord</x-navigation.link>
+                    <x-navigation.link :href="route('help.index')" :active="$activeKey === 'help'">Documentation</x-navigation.link>
+                </x-navigation.section>
 
                 @can('students.view')
-                    <div class="nav-section {{ $activeIn(['students']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Élèves</p>
-                        <a class="{{ $activeKey === 'students' ? 'active' : '' }}" href="{{ route('students.index') }}"><span class="nav-dot"></span>Dossiers élèves</a>
-                    </div>
+                    <x-navigation.section title="Élèves" :active="$activeIn(['students'])">
+                        <x-navigation.link :href="route('students.index')" :active="$activeKey === 'students'">Dossiers élèves</x-navigation.link>
+                    </x-navigation.section>
                 @endcan
 
                 @canany(['teachers.view', 'teacher_attendance.view', 'teacher_fees.view'])
-                    <div class="nav-section {{ $activeIn(['teachers', 'teacher-work-sessions', 'teacher-attendance-sheets', 'teacher-fees']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Professeurs</p>
+                    <x-navigation.section title="Professeurs" :active="$activeIn(['teachers', 'teacher-work-sessions', 'teacher-attendance-sheets', 'teacher-fees'])">
                         @can('teachers.view')
-                            <a class="{{ $activeKey === 'teachers' ? 'active' : '' }}" href="{{ route('teachers.index') }}"><span class="nav-dot"></span>Dossiers professeurs</a>
+                            <x-navigation.link :href="route('teachers.index')" :active="$activeKey === 'teachers'">Dossiers professeurs</x-navigation.link>
                         @endcan
                         @can('teacher_attendance.view')
-                            <a class="{{ $activeKey === 'teacher-work-sessions' ? 'active' : '' }}" href="{{ route('teacher-work-sessions.index') }}"><span class="nav-dot"></span>Heures effectuées</a>
+                            <x-navigation.link :href="route('teacher-work-sessions.index')" :active="$activeKey === 'teacher-work-sessions'">Heures effectuées</x-navigation.link>
                         @endcan
                         @can('teacher_attendance.view')
-                            <a class="{{ $activeKey === 'teacher-attendance-sheets' ? 'active' : '' }}" href="{{ route('teacher-attendance-sheets.index') }}"><span class="nav-dot"></span>Fiches d’émargement</a>
+                            <x-navigation.link :href="route('teacher-attendance-sheets.index')" :active="$activeKey === 'teacher-attendance-sheets'">Fiches d’émargement</x-navigation.link>
                         @endcan
                         @can('teacher_fees.view')
-                            <a class="{{ $activeKey === 'teacher-fees' ? 'active' : '' }}" href="{{ route('teacher-fees.index') }}"><span class="nav-dot"></span>Honoraires</a>
+                            <x-navigation.link :href="route('teacher-fees.index')" :active="$activeKey === 'teacher-fees'">Honoraires</x-navigation.link>
                         @endcan
-                    </div>
+                    </x-navigation.section>
                 @endcanany
 
                 @canany(['classes.manage', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'students.export'])
-                    <div class="nav-section {{ $activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'exit-authorizations']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Scolarité</p>
+                    <x-navigation.section title="Scolarité" :active="$activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'exit-authorizations'])">
                         @can('classes.manage')
-                            <a class="{{ $activeKey === 'classes' ? 'active' : '' }}" href="{{ route('classes.index') }}"><span class="nav-dot"></span>Classes</a>
+                            <x-navigation.link :href="route('classes.index')" :active="$activeKey === 'classes'">Classes</x-navigation.link>
                         @endcan
                         @can('enrollments.view')
-                            <a class="{{ $activeKey === 'enrollments' ? 'active' : '' }}" href="{{ route('enrollments.index') }}"><span class="nav-dot"></span>Inscriptions</a>
+                            <x-navigation.link :href="route('enrollments.index')" :active="$activeKey === 'enrollments'">Inscriptions</x-navigation.link>
                         @endcan
                         @can('timetables.view')
-                            <a class="{{ $activeKey === 'timetables' ? 'active' : '' }}" href="{{ route('timetables.index') }}"><span class="nav-dot"></span>Emplois du temps</a>
+                            <x-navigation.link :href="route('timetables.index')" :active="$activeKey === 'timetables'">Emplois du temps</x-navigation.link>
                         @endcan
                         @can('attendance.view')
-                            <a class="{{ $activeKey === 'attendance' ? 'active' : '' }}" href="{{ route('attendance.index') }}"><span class="nav-dot"></span>Absences</a>
+                            <x-navigation.link :href="route('attendance.index')" :active="$activeKey === 'attendance'">Absences</x-navigation.link>
                         @endcan
                         @canany(['attendance.view', 'students.export'])
-                            <a class="{{ $activeKey === 'exit-authorizations' ? 'active' : '' }}" href="{{ route('exit-authorizations.index') }}"><span class="nav-dot"></span>Autorisations</a>
+                            <x-navigation.link :href="route('exit-authorizations.index')" :active="$activeKey === 'exit-authorizations'">Autorisations</x-navigation.link>
                         @endcanany
-                    </div>
+                    </x-navigation.section>
                 @endcanany
 
                 @canany(['payments.view', 'payments.reports', 'settings.manage'])
-                    <div class="nav-section {{ $activeIn(['payments', 'accounting', 'tariffs']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Finances</p>
+                    <x-navigation.section title="Finances" :active="$activeIn(['payments', 'accounting', 'tariffs'])">
                         @can('payments.view')
-                            <a class="{{ $activeKey === 'payments' ? 'active' : '' }}" href="{{ route('payments.index') }}"><span class="nav-dot"></span>Paiements</a>
+                            <x-navigation.link :href="route('payments.index')" :active="$activeKey === 'payments'">Paiements</x-navigation.link>
                         @endcan
                         @can('payments.reports')
-                            <a class="{{ $activeKey === 'accounting' ? 'active' : '' }}" href="{{ route('accounting.cash-journal') }}"><span class="nav-dot"></span>Comptabilité</a>
+                            <x-navigation.link :href="route('accounting.cash-journal')" :active="$activeKey === 'accounting'">Comptabilité</x-navigation.link>
                         @endcan
                         @can('settings.manage')
-                            <a class="{{ $activeKey === 'tariffs' ? 'active' : '' }}" href="{{ route('tariffs.index') }}"><span class="nav-dot"></span>Tarifs</a>
+                            <x-navigation.link :href="route('tariffs.index')" :active="$activeKey === 'tariffs'">Tarifs</x-navigation.link>
                         @endcan
-                    </div>
+                    </x-navigation.section>
                 @endcanany
 
                 @canany(['grades.view', 'report_cards.view', 'settings.manage'])
-                    <div class="nav-section {{ $activeIn(['grades', 'report-cards', 'subjects']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Notes / Bulletins</p>
+                    <x-navigation.section title="Notes / Bulletins" :active="$activeIn(['grades', 'report-cards', 'subjects'])">
                         @can('grades.view')
-                            <a class="{{ $activeKey === 'grades' ? 'active' : '' }}" href="{{ route('grades.index') }}"><span class="nav-dot"></span>Notes</a>
+                            <x-navigation.link :href="route('grades.index')" :active="$activeKey === 'grades'">Notes</x-navigation.link>
                         @endcan
                         @can('report_cards.view')
-                            <a class="{{ $activeKey === 'report-cards' ? 'active' : '' }}" href="{{ route('report-cards.index') }}"><span class="nav-dot"></span>Bulletins</a>
+                            <x-navigation.link :href="route('report-cards.index')" :active="$activeKey === 'report-cards'">Bulletins</x-navigation.link>
                         @endcan
                         @can('settings.manage')
-                            <a class="{{ $activeKey === 'subjects' ? 'active' : '' }}" href="{{ route('subjects.index') }}"><span class="nav-dot"></span>Matières</a>
+                            <x-navigation.link :href="route('subjects.index')" :active="$activeKey === 'subjects'">Matières</x-navigation.link>
                         @endcan
-                    </div>
+                    </x-navigation.section>
                 @endcanany
 
                 @can('mock_exams.view')
-                    <div class="nav-section {{ $activeIn(['mock-exams']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Examens</p>
-                        <a class="{{ $activeKey === 'mock-exams' ? 'active' : '' }}" href="{{ route('mock-exams.index') }}"><span class="nav-dot"></span>Examens blancs</a>
-                    </div>
+                    <x-navigation.section title="Examens" :active="$activeIn(['mock-exams'])">
+                        <x-navigation.link :href="route('mock-exams.index')" :active="$activeKey === 'mock-exams'">Examens blancs</x-navigation.link>
+                    </x-navigation.section>
                 @endcan
 
                 @canany(['students.import', 'students.export', 'payments.reports', 'grades.view', 'report_cards.view', 'mock_exams.view', 'mock_exams.print', 'attendance.reports', 'attendance.view'])
-                    <div class="nav-section {{ $activeIn(['certificates', 'reports', 'print-center', 'exports']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Documents</p>
+                    <x-navigation.section title="Documents" :active="$activeIn(['certificates', 'reports', 'print-center', 'exports'])">
                         @can('students.export')
-                            <a class="{{ $activeKey === 'certificates' ? 'active' : '' }}" href="{{ route('certificates.index') }}"><span class="nav-dot"></span>Certificats</a>
+                            <x-navigation.link :href="route('certificates.index')" :active="$activeKey === 'certificates'">Certificats</x-navigation.link>
                         @endcan
                         @canany(['students.export', 'payments.reports'])
-                            <a class="{{ $activeKey === 'reports' ? 'active' : '' }}" href="{{ auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation') }}"><span class="nav-dot"></span>Rapports</a>
+                            <x-navigation.link :href="auth()->user()->can('students.export') ? route('reports.class-list') : route('reports.payment-situation')" :active="$activeKey === 'reports'">Rapports</x-navigation.link>
                         @endcanany
                         @canany(['students.export', 'payments.reports', 'mock_exams.print', 'report_cards.print', 'attendance.reports'])
-                            <a class="{{ $activeKey === 'print-center' ? 'active' : '' }}" href="{{ route('print-center.index') }}"><span class="nav-dot"></span>Centre d’impression</a>
+                            <x-navigation.link :href="route('print-center.index')" :active="$activeKey === 'print-center'">Centre d’impression</x-navigation.link>
                         @endcanany
                         @canany(['students.import', 'students.export', 'payments.reports', 'grades.view', 'report_cards.view', 'mock_exams.view', 'mock_exams.print', 'attendance.reports', 'attendance.view'])
-                            <a class="{{ $activeKey === 'exports' ? 'active' : '' }}" href="{{ route('exports.index') }}"><span class="nav-dot"></span>Imports / Exports</a>
+                            <x-navigation.link :href="route('exports.index')" :active="$activeKey === 'exports'">Imports / Exports</x-navigation.link>
                         @endcanany
-                    </div>
+                    </x-navigation.section>
                 @endcanany
 
                 @can('communications.view')
-                    <div class="nav-section {{ $activeIn(['communications']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Communication</p>
-                        <a class="{{ $activeKey === 'communications' ? 'active' : '' }}" href="{{ route('communications.index') }}"><span class="nav-dot"></span>Notifications</a>
-                    </div>
+                    <x-navigation.section title="Communication" :active="$activeIn(['communications'])">
+                        <x-navigation.link :href="route('communications.index')" :active="$activeKey === 'communications'">Notifications</x-navigation.link>
+                    </x-navigation.section>
                 @endcan
 
                 @canany(['users.manage', 'activity_logs.view', 'settings.manage', 'academic_years.manage'])
-                    <div class="nav-section {{ $activeIn(['staff', 'activity-logs', 'settings', 'academic-years', 'profile']) ? 'active-section' : '' }}">
-                        <p class="nav-section-title">Administration</p>
+                    <x-navigation.section title="Administration" :active="$activeIn(['staff', 'activity-logs', 'settings', 'academic-years', 'profile'])">
                         @can('users.manage')
-                            <a class="{{ $activeKey === 'staff' ? 'active' : '' }}" href="{{ route('staff.index') }}"><span class="nav-dot"></span>Personnel</a>
+                            <x-navigation.link :href="route('staff.index')" :active="$activeKey === 'staff'">Personnel</x-navigation.link>
                         @endcan
                         @can('activity_logs.view')
-                            <a class="{{ $activeKey === 'activity-logs' ? 'active' : '' }}" href="{{ route('activity-logs.index') }}"><span class="nav-dot"></span>Journal</a>
+                            <x-navigation.link :href="route('activity-logs.index')" :active="$activeKey === 'activity-logs'">Journal</x-navigation.link>
                         @endcan
                         @can('settings.manage')
-                            <a class="{{ $activeKey === 'settings' ? 'active' : '' }}" href="{{ route('settings.edit') }}"><span class="nav-dot"></span>Paramètres</a>
+                            <x-navigation.link :href="route('settings.edit')" :active="$activeKey === 'settings'">Paramètres</x-navigation.link>
                         @endcan
                         @can('academic_years.manage')
-                            <a class="{{ $activeKey === 'academic-years' ? 'active' : '' }}" href="{{ route('academic-years.index') }}"><span class="nav-dot"></span>Années scolaires</a>
+                            <x-navigation.link :href="route('academic-years.index')" :active="$activeKey === 'academic-years'">Années scolaires</x-navigation.link>
                         @endcan
-                    </div>
+                    </x-navigation.section>
                 @endcanany
             </nav>
         </aside>
 
         <main class="main" id="main-content" tabindex="-1">
+            <div class="main-frame">
             <header class="topbar">
-                <div>
+                <div class="topbar__identity">
                     <h1>{{ $pageTitle ?? 'Tableau de bord' }}</h1>
                     <p>{{ $pageSubtitle ?? 'Gestion scolaire' }}</p>
                 </div>
 
-                <div class="top-actions">
-                    @yield('page_actions')
-                    <a class="user-pill" href="{{ route('profile.show') }}">{{ auth()->user()->name }}</a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="btn btn-subtle" type="submit">Déconnexion</button>
-                    </form>
+                <div class="top-actions topbar__controls">
+                    @hasSection('page_actions')
+                        <div class="topbar__page-actions">
+                            @yield('page_actions')
+                        </div>
+                    @endif
+
+                    <div class="topbar__account">
+                        <a class="user-pill" href="{{ route('profile.show') }}" aria-label="Ouvrir le profil de {{ auth()->user()->name }}">
+                            {{ auth()->user()->name }}
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="btn btn-subtle" type="submit">Déconnexion</button>
+                        </form>
+                    </div>
                 </div>
             </header>
 
             @if (session('success'))
-                <p class="notice">{{ session('success') }}</p>
+                <p class="notice" role="status" aria-live="polite">{{ session('success') }}</p>
             @endif
 
             @yield('content')
+            </div>
         </main>
     </div>
 
@@ -194,10 +195,22 @@
                 return;
             }
 
-            toggle.addEventListener('click', () => {
-                const open = sidebar.classList.toggle('is-open');
+            const setMenuState = (open) => {
+                sidebar.classList.toggle('is-open', open);
                 toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
                 toggle.title = open ? 'Masquer le menu' : 'Afficher le menu';
+                toggle.setAttribute('aria-label', toggle.title);
+            };
+
+            toggle.addEventListener('click', () => {
+                setMenuState(! sidebar.classList.contains('is-open'));
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && sidebar.classList.contains('is-open')) {
+                    setMenuState(false);
+                    toggle.focus();
+                }
             });
         })();
     </script>
