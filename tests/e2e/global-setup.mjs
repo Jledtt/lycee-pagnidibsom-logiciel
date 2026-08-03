@@ -3,6 +3,10 @@ import { rmSync, writeFileSync } from 'node:fs';
 import { appEnvironment, databasePath } from './environment.mjs';
 
 export default function globalSetup() {
+    if (process.env.E2E_BASE_URL) {
+        return;
+    }
+
     rmSync(databasePath, { force: true });
     writeFileSync(databasePath, '');
 

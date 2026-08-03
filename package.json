@@ -6,6 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "test:e2e": "playwright test",
+        "test:e2e:production-documents": "playwright test tests/e2e/production-documents.spec.mjs --project=chromium-desktop",
         "test:e2e:install": "playwright install chromium"
     },
     "devDependencies": {
