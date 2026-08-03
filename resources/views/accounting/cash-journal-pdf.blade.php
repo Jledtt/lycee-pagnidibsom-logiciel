@@ -9,9 +9,10 @@
             margin: 0;
             color: #000;
             font-family: "DejaVu Sans", sans-serif;
-            font-size: 10px;
+            font-size: 8px;
         }
         table { width: 100%; border-collapse: collapse; }
+        .list { table-layout: fixed; }
         .header td { vertical-align: top; }
         .logo { width: 58px; height: 58px; object-fit: contain; }
         .school h1 { margin: 0 0 4px; font-size: 17px; text-transform: uppercase; }
@@ -34,8 +35,10 @@
         .list th,
         .list td {
             border: 1px solid #000;
-            padding: 5px 4px;
+            padding: 4px 3px;
             vertical-align: top;
+            overflow-wrap: anywhere;
+            word-wrap: break-word;
         }
         .list th {
             background: #f1f1f1;
@@ -67,7 +70,7 @@
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
-            <td class="meta" style="width:230px">
+            <td class="meta" style="width:150px">
                 <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Période : {{ \Illuminate\Support\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
                 au {{ \Illuminate\Support\Carbon::parse($filters['date_to'])->format('d/m/Y') }}<br>
@@ -90,14 +93,14 @@
     <table class="list">
         <thead>
             <tr>
-                <th style="width:82px">Date</th>
-                <th style="width:92px">Reçu</th>
+                <th style="width:62px">Date</th>
+                <th style="width:70px">Reçu</th>
                 <th>Élève</th>
-                <th style="width:70px">Classe</th>
-                <th style="width:85px">Mode</th>
-                <th style="width:105px">Caissier</th>
-                <th style="width:95px" class="right">Montant</th>
-                <th style="width:70px">Statut</th>
+                <th style="width:48px">Classe</th>
+                <th style="width:58px">Mode</th>
+                <th style="width:75px">Caissier</th>
+                <th style="width:70px" class="right">Montant</th>
+                <th style="width:48px">Statut</th>
             </tr>
         </thead>
         <tbody>

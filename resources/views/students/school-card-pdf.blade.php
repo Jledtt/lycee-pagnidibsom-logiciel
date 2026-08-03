@@ -18,8 +18,8 @@
         }
         .card {
             position: relative;
-            width: 760px;
-            height: 445px;
+            width: 720px;
+            height: 430px;
             margin: 0 auto;
             border: 2px solid #111;
             overflow: hidden;
@@ -28,7 +28,7 @@
         .top-title {
             color: #f28c1d;
             text-align: center;
-            font-size: 31px;
+            font-size: 28px;
             line-height: 1;
             font-weight: 900;
             letter-spacing: 5px;

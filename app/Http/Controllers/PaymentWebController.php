@@ -194,7 +194,7 @@ class PaymentWebController extends Controller
             'school' => SchoolSetting::query()->first(),
             'summary' => $this->financialProfileService->studentPaymentSummary($payment->student, $payment->academicYear),
         ])
-            ->setPaper('a5', 'landscape')
+            ->setPaper('a5', 'portrait')
             ->download($filename);
     }
 

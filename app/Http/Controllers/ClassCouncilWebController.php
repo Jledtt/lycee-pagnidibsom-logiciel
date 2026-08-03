@@ -75,7 +75,7 @@ class ClassCouncilWebController extends Controller
             'summary' => $this->summary($reportCards),
             'term' => $term,
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 

@@ -279,7 +279,6 @@ class GradeWebController extends Controller
                 'weighted' => $average === null ? null : round($average * $coefficient, 2),
             ];
         });
-        $orientation = $assessments->count() > 6 ? 'landscape' : 'portrait';
         $filename = 'registre-notes-'.Str::slug(
             $assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.($assessment->termPeriod?->name ?? $assessment->term->name)
         ).'.pdf';
@@ -291,7 +290,7 @@ class GradeWebController extends Controller
             'rows' => $rows,
             'school' => SchoolSetting::query()->first(),
         ])
-            ->setPaper('a4', $orientation)
+            ->setPaper('a4')
             ->stream($filename);
     }
 

@@ -8,10 +8,11 @@
     </style>
     @include('pdf.partials.standard-styles')
     <style>
-        body { font-size: 7.5px; }
+        body { font-size: 6.5px; }
         .fees { margin-top: 7px; }
+        .fees { table-layout: fixed; }
         .fees th,
-        .fees td { padding: 3px; }
+        .fees td { padding: 2px; overflow-wrap: anywhere; word-wrap: break-word; }
         .fees tfoot td { background: #eeeeee; font-weight: bold; }
         .amount-words { margin-top: 7px; font-size: 8px; }
         .page-footer {
@@ -53,18 +54,18 @@
     <table class="data-grid fees">
         <thead>
             <tr>
-                <th class="center" style="width:24px">N°</th>
-                <th style="width:105px">Bénéficiaire</th>
-                <th style="width:85px">Identité</th>
-                <th>Discipline / activité</th>
-                <th class="center" style="width:58px">Quantité</th>
-                <th class="right" style="width:62px">Taux</th>
-                <th class="right" style="width:68px">Brut</th>
-                <th class="right" style="width:58px">Retenue</th>
-                <th class="right" style="width:58px">Avance</th>
-                <th class="right" style="width:58px">Autre</th>
-                <th class="right" style="width:68px">Net</th>
-                <th style="width:64px">Signature</th>
+                <th class="center" style="width:3%">N°</th>
+                <th style="width:12%">Bénéficiaire</th>
+                <th style="width:10%">Identité</th>
+                <th style="width:14%">Discipline / activité</th>
+                <th class="center" style="width:7%">Quantité</th>
+                <th class="right" style="width:7%">Taux</th>
+                <th class="right" style="width:8%">Brut</th>
+                <th class="right" style="width:7%">Retenue</th>
+                <th class="right" style="width:7%">Avance</th>
+                <th class="right" style="width:7%">Autre</th>
+                <th class="right" style="width:8%">Net</th>
+                <th style="width:10%">Signature</th>
             </tr>
         </thead>
         <tbody>

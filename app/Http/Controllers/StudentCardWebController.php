@@ -29,7 +29,7 @@ class StudentCardWebController extends Controller
             'school' => $school,
             'student' => $student,
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 

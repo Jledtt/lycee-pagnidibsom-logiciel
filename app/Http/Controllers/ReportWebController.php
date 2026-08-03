@@ -55,7 +55,7 @@ class ReportWebController extends Controller
             'schoolClass' => $schoolClass,
             'summary' => $this->classSummary($schoolClass),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 
@@ -138,7 +138,7 @@ class ReportWebController extends Controller
             'schoolClass' => $schoolClass,
             'summary' => $this->paymentSummary($rows),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 
@@ -223,7 +223,7 @@ class ReportWebController extends Controller
             'schoolClass' => $schoolClass,
             'summary' => $this->installmentSummary($rows),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 
@@ -268,7 +268,7 @@ class ReportWebController extends Controller
             'schoolClass' => $schoolClass,
             'summary' => $requiredDocuments->summary($rows),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 

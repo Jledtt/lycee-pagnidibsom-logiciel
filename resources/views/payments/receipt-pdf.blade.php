@@ -19,7 +19,7 @@
         .summary-grid td { padding: 4px 5px; }
         .amount-words { margin-top: 5px; font-size: 8px; }
         .signature-grid { margin-top: 6px; }
-        .signature-grid td { height: 25px; }
+        .signature-grid td { height: 52px; }
     </style>
 </head>
 <body>
@@ -27,17 +27,17 @@
 
     @include('pdf.partials.school-header', [
         'school' => $school,
-        'logoSize' => 52,
+        'logoSize' => 46,
         'marginBottom' => 2,
         'rightLines' => [
             'N° '.$payment->receipt_number,
             $payment->paid_at?->format('d/m/Y à H:i'),
             'Année '.$payment->academicYear?->name,
         ],
-        'rightWidth' => 165,
-        'rightSize' => 9,
-        'schoolNameSize' => 15,
-        'schoolInfoSize' => 8,
+        'rightWidth' => 112,
+        'rightSize' => 8,
+        'schoolNameSize' => 13,
+        'schoolInfoSize' => 7,
     ])
 
     <div class="document-title">Reçu de paiement</div>
@@ -59,7 +59,7 @@
         <thead>
             <tr>
                 <th>Désignation du frais payé</th>
-                <th class="right" style="width:135px">Montant payé</th>
+                <th class="right" style="width:100px">Montant payé</th>
             </tr>
         </thead>
         <tbody>

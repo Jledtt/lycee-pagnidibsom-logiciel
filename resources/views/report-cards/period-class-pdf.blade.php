@@ -8,22 +8,53 @@
     </style>
     @include('pdf.partials.standard-styles')
     <style>
-        .page { page-break-after: always; }
+        .page {
+            position: relative;
+            min-height: 1040px;
+            page-break-after: always;
+        }
         .page:last-child { page-break-after: auto; }
-        .period-title { font-size: 13px; }
-        .subject-list { margin-top: 7px; }
+        .period-title { margin: 10px 0; font-size: 15px; }
+        .subject-list { margin-top: 9px; }
         .subject-list th,
-        .subject-list td { padding: 3px 4px; }
+        .subject-list td { padding: 5px 6px; font-size: 9.5px; }
         .group-row td {
             background: #e5e5e5;
-            font-size: 8px;
+            font-size: 9px;
             font-weight: bold;
             text-transform: uppercase;
         }
         .total-row td { background: #eeeeee; font-weight: bold; }
         .observations {
-            margin-top: 7px;
+            margin-top: 10px;
             border: 1px solid #555;
+            min-height: 52px;
+            padding: 8px 9px;
+            font-size: 10px;
+        }
+        .page-balanced .identity-grid td { padding: 6px 7px; font-size: 9.5px; }
+        .page-balanced .summary-grid td { padding: 7px 6px; font-size: 10px; }
+        .page-balanced .signature-grid {
+            position: absolute;
+            right: 0;
+            bottom: 8px;
+            left: 0;
+            margin-top: 0;
+        }
+        .page-balanced .signature-grid td {
+            height: 72px;
+            border-top: 1px solid #777;
+            padding-top: 8px;
+        }
+        .page-dense {
+            min-height: auto;
+        }
+        .page-dense .subject-list th,
+        .page-dense .subject-list td {
+            padding: 3px 4px;
+            font-size: 8px;
+        }
+        .page-dense .observations {
             min-height: 34px;
             padding: 5px 7px;
         }
@@ -59,7 +90,7 @@
             }
         @endphp
 
-        <div class="page">
+        <div class="page {{ $rows->count() > 17 ? 'page-dense' : 'page-balanced' }}">
             @include('pdf.partials.school-header', [
                 'school' => $school,
                 'logoSize' => 58,

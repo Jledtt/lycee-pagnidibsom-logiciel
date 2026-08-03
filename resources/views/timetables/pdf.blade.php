@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <style>
         @page { margin: 22px 26px; }
-        body { font-family: DejaVu Sans, sans-serif; color: #111; font-size: 10px; }
+        body { font-family: DejaVu Sans, sans-serif; color: #111; font-size: 8.5px; }
         h1 { margin: 8px 0 10px; text-align: center; font-size: 18px; text-transform: uppercase; }
         .info { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
         .info td { border: 1px solid #333; padding: 5px 7px; vertical-align: top; }
         .schedule { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .schedule th, .schedule td { border: 1px solid #222; padding: 6px 4px; text-align: center; vertical-align: middle; }
+        .schedule th, .schedule td { border: 1px solid #222; padding: 5px 2px; text-align: center; vertical-align: middle; overflow-wrap: anywhere; word-wrap: break-word; }
         .schedule th { background: #174534; color: #fff; font-weight: 800; }
-        .schedule td:first-child { width: 90px; font-weight: 800; background: #f2f2f2; }
+        .schedule td:first-child { width: 62px; font-weight: 800; background: #f2f2f2; }
         .break td { background: #faedcd; font-weight: 800; color: #7a5300; letter-spacing: 1px; }
-        .subject { font-size: 11px; font-weight: 800; }
-        .teacher, .room { margin-top: 3px; font-size: 8px; color: #444; }
+        .subject { font-size: 9px; font-weight: 800; }
+        .teacher, .room { margin-top: 2px; font-size: 7px; color: #444; }
         .notes { margin-top: 10px; font-size: 9px; }
     </style>
 </head>
@@ -26,7 +26,7 @@
         'logoSize' => 58,
         'schoolNameSize' => 15,
         'schoolInfoSize' => 9,
-        'rightWidth' => 250,
+        'rightWidth' => 150,
         'rightSize' => 10,
         'marginBottom' => 10,
         'rightLines' => [

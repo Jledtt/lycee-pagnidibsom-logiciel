@@ -480,7 +480,7 @@ class MockExamWebController extends Controller
             'totalNet' => $totalNet,
             'title' => 'Honoraires professeurs',
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream('honoraires-professeurs-'.Str::slug($mockExam->name).'.pdf');
     }
 

@@ -5,8 +5,8 @@
     <title>Pièces manquantes</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111b15; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #cfd8d1; padding: 7px; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #cfd8d1; padding: 6px; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; }
         th { background: #eef4f0; text-align: left; text-transform: uppercase; font-size: 9px; }
         h1 { text-align: center; font-size: 20px; margin: 14px 0 8px; text-transform: uppercase; }
         .header td { border: 0; }

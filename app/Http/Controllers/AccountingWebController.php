@@ -59,7 +59,7 @@ class AccountingWebController extends Controller
             'school' => SchoolSetting::query()->first(),
             'summary' => $this->cashSummary($payments),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 
@@ -212,7 +212,7 @@ class AccountingWebController extends Controller
             'school' => SchoolSetting::query()->first(),
             'summary' => $this->expenseSummary($expenses),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 

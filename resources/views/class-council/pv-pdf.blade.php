@@ -6,8 +6,8 @@
     <style>
         @page { margin: 24px 28px; }
         body { margin: 0; color: #111; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #cfd8d1; padding: 6px; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #cfd8d1; padding: 5px; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; }
         th { background: #eef4f0; text-align: left; text-transform: uppercase; font-size: 8px; }
         .header td { border: 0; }
         .logo { width: 56px; height: 56px; object-fit: contain; }
@@ -34,7 +34,7 @@
                 <p>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</p>
                 <p>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</p>
             </td>
-            <td class="meta" style="width:240px">
+            <td class="meta" style="width:155px">
                 <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Trimestre : {{ $term->name }}<br>

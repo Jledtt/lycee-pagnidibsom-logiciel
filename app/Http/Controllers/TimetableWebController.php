@@ -193,7 +193,7 @@ class TimetableWebController extends Controller
             'grid' => $this->grid($timetable),
             'school' => SchoolSetting::query()->first(),
         ])
-            ->setPaper('a4', 'landscape')
+            ->setPaper('a4')
             ->stream($filename);
     }
 
