@@ -34,17 +34,18 @@
         }
         .page-balanced .identity-grid td { padding: 6px 7px; font-size: 9.5px; }
         .page-balanced .summary-grid td { padding: 7px 6px; font-size: 10px; }
-        .page-balanced .signature-grid {
-            position: absolute;
-            right: 0;
-            bottom: 8px;
-            left: 0;
-            margin-top: 0;
+        .signature-grid {
+            margin-top: 16px;
         }
-        .page-balanced .signature-grid td {
-            height: 72px;
-            border-top: 1px solid #777;
-            padding-top: 8px;
+        .signature-grid td {
+            height: 86px;
+            padding: 0 8px;
+            vertical-align: top;
+        }
+        .signature-name {
+            display: block;
+            margin-top: 48px;
+            font-weight: bold;
         }
         .page-dense {
             min-height: auto;
@@ -181,7 +182,10 @@
                 <tr>
                     <td>Signature des parents</td>
                     <td>Responsable pédagogique</td>
-                    <td>{{ $school?->principal_title ?? 'Le Proviseur' }}</td>
+                    <td>
+                        {{ $school?->principal_title ?? 'Le Proviseur' }}
+                        <span class="signature-name">{{ $school?->principal_name ?: 'Yamdaogo TINTILA' }}</span>
+                    </td>
                 </tr>
             </table>
         </div>

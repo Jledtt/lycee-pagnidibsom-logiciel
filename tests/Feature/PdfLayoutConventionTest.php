@@ -33,12 +33,13 @@ class PdfLayoutConventionTest extends TestCase
         $this->assertStringContainsString('register-section', $template);
     }
 
-    public function test_individual_transcript_balances_short_pages_and_keeps_dense_pages_safe(): void
+    public function test_individual_transcript_keeps_signatures_in_flow_and_dense_pages_safe(): void
     {
         $template = (string) file_get_contents(resource_path('views/report-cards/period-class-pdf.blade.php'));
 
         $this->assertStringContainsString('page-balanced', $template);
         $this->assertStringContainsString('page-dense', $template);
-        $this->assertStringContainsString('bottom: 8px', $template);
+        $this->assertStringContainsString('principal_name', $template);
+        $this->assertStringNotContainsString('position: absolute', $template);
     }
 }
