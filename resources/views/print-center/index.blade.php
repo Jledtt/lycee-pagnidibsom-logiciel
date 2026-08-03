@@ -203,6 +203,10 @@
                             <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $exam) }}" data-download-feedback="Téléchargement anonymats lancé.">Anonymats</a>
                             <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $exam) }}" data-download-feedback="Téléchargement PV lancé.">PV surveillance</a>
                             <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $exam) }}" data-download-feedback="Téléchargement bordereau lancé.">Bordereau copies</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.transcripts.pdf', $exam) }}" data-download-feedback="Téléchargement des relevés individuels lancé.">Relevés</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$exam, 'admis']) }}" data-download-feedback="Téléchargement de la liste des admis lancé.">Admis</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$exam, 'second-tour']) }}" data-download-feedback="Téléchargement de la liste du second tour lancé.">Second tour</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$exam, 'ajournes']) }}" data-download-feedback="Téléchargement de la liste des ajournés lancé.">Ajournés</a>
                             <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$exam, 'provisoire']) }}" data-download-feedback="Téléchargement des résultats provisoires lancé.">Résultats provisoires</a>
                             <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$exam, 'definitif']) }}" data-download-feedback="Téléchargement résultats définitifs lancé.">Résultats définitifs</a>
                             <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $exam) }}" data-download-feedback="Téléchargement décision jury lancé.">Décision jury</a>

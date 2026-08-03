@@ -288,7 +288,10 @@ class MockExamWebController extends Controller
 
         $data = $request->validate([
             'candidates' => ['nullable', 'array'],
-            'candidates.*.jury_decision' => ['nullable', 'in:admitted,repeat,excluded,oriented,ec,none'],
+            'candidates.*.jury_decision' => [
+                'nullable',
+                'in:admitted,second_round,rejected,absent,repeat,excluded,oriented,ec,none',
+            ],
             'candidates.*.jury_observation' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -404,19 +407,85 @@ class MockExamWebController extends Controller
             ->stream('saisie-notes-'.Str::slug($mockExam->name.'-'.$mockExamSubject->subject?->name).'.pdf');
     }
 
+    public function transcriptsPdf(MockExam $mockExam)
+    {
+        $this->loadExamResults($mockExam);
+
+        return Pdf::loadView('mock-exams.transcripts-pdf', [
+            'exam' => $mockExam,
+            'items' => $this->resultRows($mockExam),
+            'school' => SchoolSetting::query()->first(),
+        ])
+            ->setPaper('a4')
+            ->stream('releves-notes-'.Str::slug($mockExam->name).'.pdf');
+    }
+
+    public function candidateTranscriptPdf(MockExam $mockExam, MockExamCandidate $mockExamCandidate)
+    {
+        abort_unless($mockExamCandidate->mock_exam_id === $mockExam->id, 404);
+
+        $this->loadExamResults($mockExam);
+        $item = $this->resultRows($mockExam)
+            ->firstWhere(fn (array $row): bool => $row['candidate']->id === $mockExamCandidate->id);
+
+        abort_unless($item, 404);
+
+        return Pdf::loadView('mock-exams.transcripts-pdf', [
+            'exam' => $mockExam,
+            'items' => collect([$item]),
+            'school' => SchoolSetting::query()->first(),
+        ])
+            ->setPaper('a4')
+            ->stream('releve-notes-'.Str::slug($mockExamCandidate->student?->full_name.'-'.$mockExam->name).'.pdf');
+    }
+
+    public function decisionListPdf(MockExam $mockExam, string $category)
+    {
+        $categories = [
+            'admis' => [
+                'decision_key' => 'admitted',
+                'title' => 'Liste des admis',
+                'description' => 'admis au premier tour',
+                'filename' => 'liste-admis',
+            ],
+            'second-tour' => [
+                'decision_key' => 'second_round',
+                'title' => 'Liste des candidats autorisés au second tour',
+                'description' => 'autorisés à subir les épreuves du second tour',
+                'filename' => 'liste-second-tour',
+            ],
+            'ajournes' => [
+                'decision_key' => 'rejected',
+                'title' => 'Liste des candidats ajournés',
+                'description' => 'ajournés à l’issue des épreuves',
+                'filename' => 'liste-ajournes',
+            ],
+        ];
+
+        abort_unless(array_key_exists($category, $categories), 404);
+
+        $this->loadExamResults($mockExam);
+        $configuration = $categories[$category];
+        $results = $this->resultRows($mockExam)
+            ->where('decision_key', $configuration['decision_key'])
+            ->values();
+
+        return Pdf::loadView('mock-exams.decision-list-pdf', [
+            'description' => $configuration['description'],
+            'exam' => $mockExam,
+            'results' => $results,
+            'school' => SchoolSetting::query()->first(),
+            'title' => $configuration['title'],
+        ])
+            ->setPaper('a4')
+            ->stream($configuration['filename'].'-'.Str::slug($mockExam->name).'.pdf');
+    }
+
     public function resultsPdf(MockExam $mockExam, string $status = 'provisoire')
     {
         abort_unless(in_array($status, ['provisoire', 'definitif'], true), 404);
 
-        $mockExam->load([
-            'academicYear',
-            'classes.level',
-            'subjects.subject',
-            'subjects.scores',
-            'candidates.student',
-            'candidates.schoolClass',
-            'candidates.scores.subject',
-        ]);
+        $this->loadExamResults($mockExam);
 
         $title = $status === 'definitif' ? 'Résultats définitifs' : 'Résultats provisoires';
 
@@ -433,23 +502,16 @@ class MockExamWebController extends Controller
 
     public function juryDecisionPdf(MockExam $mockExam)
     {
-        $mockExam->load([
-            'academicYear',
-            'classes.level',
-            'subjects.subject',
-            'candidates.student',
-            'candidates.schoolClass',
-            'candidates.scores.subject',
-        ]);
+        $this->loadExamResults($mockExam);
 
         $results = $this->resultRows($mockExam);
 
         return Pdf::loadView('mock-exams.jury-decision-pdf', [
-            'admitted' => $results->where('decision', 'Admis')->count(),
-            'deferred' => $results->where('decision', 'A deliberer')->count(),
+            'admitted' => $results->where('decision_key', 'admitted')->count(),
+            'deferred' => $results->where('decision_key', 'second_round')->count(),
             'exam' => $mockExam,
             'juryDecisionLabels' => $this->juryDecisionLabels(),
-            'rejected' => $results->where('decision', 'Ajourne')->count(),
+            'rejected' => $results->where('decision_key', 'rejected')->count(),
             'results' => $results,
             'school' => SchoolSetting::query()->first(),
             'title' => 'Décision du jury',
@@ -488,9 +550,15 @@ class MockExamWebController extends Controller
     {
         $subjects = $mockExam->subjects->sortBy('position')->values();
         $coefficientTotal = $subjects->sum(fn ($subject) => (float) $subject->coefficient);
+        $pvNumbers = $mockExam->candidates
+            ->sortBy('id')
+            ->values()
+            ->mapWithKeys(fn (MockExamCandidate $candidate, int $index): array => [
+                $candidate->id => $index + 1,
+            ]);
 
         return $mockExam->candidates
-            ->map(function (MockExamCandidate $candidate) use ($subjects, $coefficientTotal) {
+            ->map(function (MockExamCandidate $candidate) use ($subjects, $coefficientTotal, $pvNumbers) {
                 $scores = $candidate->scores->keyBy('mock_exam_subject_id');
                 $weightedTotal = 0.0;
                 $usedCoefficients = 0.0;
@@ -512,22 +580,19 @@ class MockExamWebController extends Controller
                 }
 
                 $average = $usedCoefficients <= 0 ? null : round($weightedTotal / $usedCoefficients, 2);
-
-                $decision = match (true) {
-                    $average === null => 'Non classe',
-                    $average >= 10 => 'Admis',
-                    $average >= 8 => 'A deliberer',
-                    default => 'Ajourne',
-                };
+                $decision = $this->resolvedDecision($candidate, $average);
 
                 return [
                     'average' => $average,
                     'candidate' => $candidate,
                     'coefficient_total' => $coefficientTotal,
-                    'decision' => $decision,
+                    'decision' => $decision['label'],
+                    'decision_key' => $decision['key'],
                     'missing' => $missing,
+                    'pv_number' => $pvNumbers->get($candidate->id),
                     'scores' => $scores,
                     'used_coefficients' => $usedCoefficients,
+                    'weighted_total' => round($weightedTotal, 2),
                 ];
             })
             ->sortByDesc(fn (array $row) => $row['average'] ?? -1)
@@ -537,6 +602,50 @@ class MockExamWebController extends Controller
 
                 return $row;
             });
+    }
+
+    private function loadExamResults(MockExam $mockExam): void
+    {
+        $mockExam->load([
+            'academicYear',
+            'classes.level',
+            'subjects.subject',
+            'subjects.scores',
+            'candidates.student',
+            'candidates.schoolClass',
+            'candidates.scores.subject',
+        ]);
+    }
+
+    /**
+     * @return array{key: string, label: string}
+     */
+    private function resolvedDecision(MockExamCandidate $candidate, ?float $average): array
+    {
+        $manualDecision = match ($candidate->jury_decision) {
+            'admitted', 'oriented' => 'admitted',
+            'second_round', 'ec' => 'second_round',
+            'rejected', 'repeat', 'excluded' => 'rejected',
+            'absent' => 'unclassified',
+            default => null,
+        };
+
+        $key = $manualDecision ?? match (true) {
+            $average === null => 'unclassified',
+            $average >= 10 => 'admitted',
+            $average >= 8 => 'second_round',
+            default => 'rejected',
+        };
+
+        return [
+            'key' => $key,
+            'label' => match ($key) {
+                'admitted' => 'Admis(e) au premier tour',
+                'second_round' => 'Autorisé(e) au second tour',
+                'rejected' => 'Ajourné(e)',
+                default => $candidate->jury_decision === 'absent' ? 'Absent(e)' : 'Non classé(e)',
+            },
+        ];
     }
 
     private function ensureExamEditable(Request $request, MockExam $mockExam): void
@@ -549,12 +658,11 @@ class MockExamWebController extends Controller
     private function juryDecisionLabels(): array
     {
         return [
-            'admitted' => 'Admis / Passe',
-            'repeat' => 'Redouble',
-            'excluded' => 'Exclu',
-            'oriented' => 'Oriente',
-            'ec' => 'EC',
-            'none' => 'A determiner',
+            'admitted' => 'Admis(e) au premier tour',
+            'second_round' => 'Autorisé(e) au second tour',
+            'rejected' => 'Ajourné(e)',
+            'absent' => 'Absent(e)',
+            'none' => 'À déterminer',
         ];
     }
 

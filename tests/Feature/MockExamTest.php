@@ -186,7 +186,17 @@ class MockExamTest extends TestCase
             ->get(route('print-center.index'))
             ->assertOk()
             ->assertSee('Centre d’impression')
-            ->assertSee('PV surveillance');
+            ->assertSee('PV surveillance')
+            ->assertSee('Relevés')
+            ->assertSee('Second tour');
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id]))
+            ->assertOk()
+            ->assertSee('Relevés individuels')
+            ->assertSee('Liste des admis')
+            ->assertSee('Liste second tour')
+            ->assertSee('Liste des ajournés');
 
         foreach ([
             route('mock-exams.candidates.pdf', $exam),
@@ -195,6 +205,11 @@ class MockExamTest extends TestCase
             route('mock-exams.surveillance-pv.pdf', $exam),
             route('mock-exams.copy-receipt.pdf', $exam),
             route('mock-exams.subjects.scores.pdf', [$exam, $examSubject]),
+            route('mock-exams.transcripts.pdf', $exam),
+            route('mock-exams.candidates.transcript.pdf', [$exam, $exam->candidates->first()]),
+            route('mock-exams.decision-lists.pdf', [$exam, 'admis']),
+            route('mock-exams.decision-lists.pdf', [$exam, 'second-tour']),
+            route('mock-exams.decision-lists.pdf', [$exam, 'ajournes']),
             route('mock-exams.results.pdf', [$exam, 'provisoire']),
             route('mock-exams.results.pdf', [$exam, 'definitif']),
             route('mock-exams.jury-decision.pdf', $exam),
@@ -205,6 +220,10 @@ class MockExamTest extends TestCase
                 ->assertOk()
                 ->assertHeader('content-type', 'application/pdf');
         }
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.decision-lists.pdf', [$exam, 'inconnue']))
+            ->assertNotFound();
     }
 
     private function userWithRole(string $role): User

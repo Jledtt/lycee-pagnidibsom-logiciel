@@ -203,6 +203,10 @@
                 <div class="page-actions" style="margin-top:10px">
                     <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du PV de surveillance lancé.">PV surveillance</a>
                     <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du bordereau des copies lancé.">Bordereau copies</a>
+                    <a class="btn btn-primary" href="{{ route('mock-exams.transcripts.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des relevés individuels lancé.">Relevés individuels</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'admis']) }}" data-download-feedback="Téléchargement de la liste des admis lancé.">Liste des admis</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'second-tour']) }}" data-download-feedback="Téléchargement de la liste du second tour lancé.">Liste second tour</a>
+                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'ajournes']) }}" data-download-feedback="Téléchargement de la liste des ajournés lancé.">Liste des ajournés</a>
                     <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Téléchargement des résultats provisoires lancé.">Résultats provisoires</a>
                     <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'definitif']) }}" data-download-feedback="Téléchargement des résultats définitifs lancé.">Résultats définitifs</a>
                     <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la decision du jury lancé.">Décision jury</a>
@@ -234,6 +238,7 @@
                             <th>Classe</th>
                             <th>Salle</th>
                             <th>Statut</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -246,10 +251,15 @@
                                 <td>{{ $candidate->schoolClass?->name }}</td>
                                 <td>{{ $candidate->room_name ?: '-' }}</td>
                                 <td><span class="badge">{{ $candidate->status }}</span></td>
+                                <td>
+                                    @can('mock_exams.print')
+                                        <a class="btn btn-subtle" href="{{ route('mock-exams.candidates.transcript.pdf', [$selectedExam, $candidate]) }}" data-download-feedback="Téléchargement du relevé individuel lancé.">Relevé PDF</a>
+                                    @endcan
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7">Aucun candidat. Clique sur synchroniser candidats.</td>
+                                <td colspan="8">Aucun candidat. Clique sur synchroniser candidats.</td>
                             </tr>
                         @endforelse
                     </tbody>

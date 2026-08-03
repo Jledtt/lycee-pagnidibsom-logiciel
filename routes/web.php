@@ -471,6 +471,18 @@ Route::get('/mock-exams/{mockExam}/subjects/{mockExamSubject}/scores/pdf', [Mock
     ->middleware(['auth', 'permission:mock_exams.print'])
     ->name('mock-exams.subjects.scores.pdf');
 
+Route::get('/mock-exams/{mockExam}/transcripts/pdf', [MockExamWebController::class, 'transcriptsPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.transcripts.pdf');
+
+Route::get('/mock-exams/{mockExam}/candidates/{mockExamCandidate}/transcript/pdf', [MockExamWebController::class, 'candidateTranscriptPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.candidates.transcript.pdf');
+
+Route::get('/mock-exams/{mockExam}/decision-lists/{category}/pdf', [MockExamWebController::class, 'decisionListPdf'])
+    ->middleware(['auth', 'permission:mock_exams.print'])
+    ->name('mock-exams.decision-lists.pdf');
+
 Route::get('/mock-exams/{mockExam}/results/{status}/pdf', [MockExamWebController::class, 'resultsPdf'])
     ->middleware(['auth', 'permission:mock_exams.print'])
     ->whereIn('status', ['provisoire', 'definitif'])

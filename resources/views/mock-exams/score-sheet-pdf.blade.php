@@ -4,21 +4,21 @@
     <meta charset="utf-8">
     <title>{{ $title }} - {{ $exam->name }}</title>
     <style>
-        @page { margin: 18px 22px; }
-        body { margin: 0; color: #000; font-family: "DejaVu Serif", serif; font-size: 11px; }
+        @page { margin: 14px 20px; }
+        body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 9px; }
         table { width: 100%; border-collapse: collapse; }
         .header td { border: 0; vertical-align: top; }
-        .logo { width: 60px; height: 60px; object-fit: contain; }
-        .school h1 { margin: 0 0 4px; font-size: 14px; text-transform: uppercase; }
-        .school p { margin: 0 0 3px; font-weight: bold; }
+        .logo { width: 54px; height: 54px; object-fit: contain; }
+        .school h1 { margin: 0 0 3px; font-size: 13px; text-transform: uppercase; }
+        .school p { margin: 0 0 2px; font-weight: bold; }
         .meta { text-align: right; line-height: 1.45; }
-        .title { margin: 18px 0 12px; text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
-        .subtitle { margin: 0 0 12px; text-align: center; font-size: 12px; font-weight: bold; }
-        .list th, .list td { border: 1px solid #000; padding: 6px; vertical-align: top; }
-        .list th { background: #f1f1f1; text-align: left; text-transform: uppercase; font-size: 9px; }
+        .title { margin: 10px 0 7px; text-align: center; font-size: 15px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
+        .subtitle { margin: 0 0 8px; text-align: center; font-size: 10px; font-weight: bold; }
+        .list th, .list td { border: 1px solid #000; padding: 3px 5px; vertical-align: top; }
+        .list th { background: #f1f1f1; text-align: left; text-transform: uppercase; font-size: 8px; }
         .center { text-align: center; }
         .right { text-align: right; }
-        .sign { margin-top: 24px; text-align: right; line-height: 1.6; }
+        .sign { margin-top: 12px; text-align: right; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -42,7 +42,7 @@
         </tr>
     </table>
 
-    <div class="title">Rélève de notes</div>
+    <div class="title">Relevé de notes</div>
     <div class="subtitle">Epreuve : {{ $subject->subject?->name }} - Correcteur : {{ $subject->correction_teacher_name ?: '................................' }}</div>
 
     <table class="list">
@@ -76,8 +76,8 @@
 
     <div class="sign">
         Ouagadougou, le {{ now()->format('d/m/Y') }}<br>
-        Correcteur<br><br><br>
-        ................................
+        Correcteur<br><br>
+        <strong>{{ $subject->correction_teacher_name ?: '................................' }}</strong>
     </div>
 </body>
 </html>
