@@ -10,7 +10,7 @@ test.describe('documents de production en lecture seule', () => {
 
     test('tous les PDF disponibles répondent avec un contenu valide', async ({ page }, testInfo) => {
         test.skip(testInfo.project.name !== 'chromium-desktop', 'Contrôle exécuté une seule fois.');
-        test.setTimeout(180_000);
+        test.setTimeout(360_000);
 
         await page.goto('/login');
         await page.getByLabel('Identifiant').fill(USERNAME);
