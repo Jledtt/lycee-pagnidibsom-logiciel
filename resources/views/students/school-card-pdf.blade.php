@@ -35,14 +35,6 @@
             text-transform: uppercase;
             padding-top: 14px;
         }
-        .motto {
-            color: #cc6d13;
-            text-align: center;
-            font-size: 16px;
-            font-style: italic;
-            font-weight: 800;
-            margin-top: 2px;
-        }
         .school-row {
             width: 100%;
             border-collapse: collapse;
@@ -150,13 +142,14 @@
     <div class="sheet">
         <div class="card">
             <div class="top-title">{{ str($school?->school_name ?? 'Lycée Privé Pagnidibsom')->upper() }}</div>
-            <div class="motto">- {{ trim($school?->motto ?? 'Bâtir l’excellence', '"') }} -</div>
-
             <table class="school-row">
                 <tr>
                     <td class="logo-cell">
                         @if (file_exists($logoFullPath))
-                            <img class="logo" src="{{ $logoFullPath }}" alt="Logo">
+                            @include('pdf.partials.logo-with-motto', [
+                                'logoPath' => $logoPath,
+                                'mottoSize' => 7,
+                            ])
                         @endif
                     </td>
                     <td class="school-info">
@@ -168,7 +161,10 @@
                     </td>
                     <td class="logo-cell">
                         @if (file_exists($logoFullPath))
-                            <img class="logo" src="{{ $logoFullPath }}" alt="Logo">
+                            @include('pdf.partials.logo-with-motto', [
+                                'logoPath' => $logoPath,
+                                'mottoSize' => 7,
+                            ])
                         @endif
                     </td>
                 </tr>

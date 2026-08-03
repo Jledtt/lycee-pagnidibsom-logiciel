@@ -33,7 +33,7 @@
     @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     <table class="header">
         <tr>
-            <td style="width:86px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
+            <td style="width:86px">@include('pdf.partials.logo-with-motto', ['logoPath' => $logoPath])</td>
             <td class="school">
                 <strong>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</strong><br>
                 {{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }} -

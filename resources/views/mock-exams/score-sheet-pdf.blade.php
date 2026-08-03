@@ -26,7 +26,7 @@
 
     <table class="header">
         <tr>
-            <td style="width:74px"><img class="logo" src="{{ public_path($logoPath) }}" alt="Logo"></td>
+            <td style="width:74px">@include('pdf.partials.logo-with-motto', ['logoPath' => $logoPath])</td>
             <td class="school">
                 <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
                 <p>{{ $school?->address ?? '04 Ouagadougou 04 BP 8825' }}</p>

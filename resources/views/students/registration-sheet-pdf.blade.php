@@ -53,12 +53,6 @@
             font-size: 13px;
         }
 
-        .motto {
-            margin-top: 10px;
-            font-style: italic;
-            font-weight: bold;
-        }
-
         .title {
             margin: 26px 0 16px;
             text-align: center;
@@ -151,8 +145,10 @@
     <table class="header">
         <tr>
             <td style="width: 170px">
-                <img class="logo" src="{{ public_path($logoPath) }}" alt="Logo">
-                <div class="motto">{{ $school?->motto ?? '"Bâtir l\'excellence"' }}</div>
+                @include('pdf.partials.logo-with-motto', [
+                    'logoPath' => $logoPath,
+                    'mottoSize' => 11,
+                ])
             </td>
             <td class="school">
                 <h1>{{ $school?->school_name ?? 'Lycée Privé Pagnidibsom' }}</h1>
