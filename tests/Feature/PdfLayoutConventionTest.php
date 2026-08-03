@@ -39,6 +39,7 @@ class PdfLayoutConventionTest extends TestCase
 
         $this->assertStringContainsString('page-balanced', $template);
         $this->assertStringContainsString('page-dense', $template);
+        $this->assertStringContainsString('$rows->count() > 10', $template);
         $this->assertStringContainsString('principal_name', $template);
         $this->assertStringNotContainsString('position: absolute', $template);
     }

@@ -91,7 +91,7 @@
             }
         @endphp
 
-        <div class="page {{ $rows->count() > 17 ? 'page-dense' : 'page-balanced' }}">
+        <div class="page {{ $rows->count() > 10 ? 'page-dense' : 'page-balanced' }}">
             @include('pdf.partials.school-header', [
                 'school' => $school,
                 'logoSize' => 58,
