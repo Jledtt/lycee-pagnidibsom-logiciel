@@ -8,6 +8,9 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('teachers.index') }}">Retour</a>
     <a class="btn btn-subtle" href="{{ route('teachers.pdf', $teacher) }}">Dossier PDF</a>
+    @can('timetables.view')
+        <a class="btn btn-subtle" href="{{ route('timetables.availabilities', ['teacher_id' => $teacher->id]) }}">Disponibilités</a>
+    @endcan
     @can('teacher_attendance.view')
         <a class="btn btn-subtle" href="{{ route('teacher-work-sessions.index', ['teacher_id' => $teacher->id]) }}">Émargements</a>
     @endcan

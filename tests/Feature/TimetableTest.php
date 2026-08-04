@@ -8,9 +8,12 @@ use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Subject;
+use App\Models\TeacherAvailability;
+use App\Models\TeacherAvailabilitySchedule;
 use App\Models\Timetable;
 use App\Models\TimetablePeriod;
 use App\Models\User;
+use App\Services\TimetableTemplateService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -492,6 +495,252 @@ class TimetableTest extends TestCase
         ]);
     }
 
+    public function test_secretariat_can_record_and_validate_teacher_availability(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $slots = $this->availabilityPayload($academicYear);
+        $firstPeriod = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->orderBy('sort_order')
+            ->firstOrFail();
+        $slots[$firstPeriod->id]['monday'] = TeacherAvailability::STATUS_PREFERRED;
+
+        $this->actingAs($user)
+            ->put(route('timetables.availabilities.update', $teacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+                'notes' => 'Disponible surtout le lundi matin.',
+                'slots' => $slots,
+            ])
+            ->assertRedirect(route('timetables.availabilities', ['teacher_id' => $teacher->id]));
+
+        $schedule = TeacherAvailabilitySchedule::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('teacher_id', $teacher->id)
+            ->firstOrFail();
+
+        $this->assertSame(TeacherAvailabilitySchedule::STATUS_VALIDATED, $schedule->status);
+        $this->assertNotNull($schedule->submitted_at);
+        $this->assertNotNull($schedule->validated_at);
+        $this->assertSame($user->id, $schedule->updated_by);
+        $this->assertSame(42, $schedule->availabilities()->count());
+        $this->assertDatabaseHas('teacher_availabilities', [
+            'teacher_availability_schedule_id' => $schedule->id,
+            'timetable_period_id' => $firstPeriod->id,
+            'day_of_week' => 'monday',
+            'status' => TeacherAvailability::STATUS_PREFERRED,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('timetables.availabilities', ['teacher_id' => $teacher->id]))
+            ->assertOk()
+            ->assertSee($teacher->name)
+            ->assertSee('Validée')
+            ->assertSee('Disponible surtout le lundi matin.');
+    }
+
+    public function test_teacher_can_manage_only_their_own_availability(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $teacher = $this->userWithRole('enseignant');
+        $otherTeacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $slots = $this->availabilityPayload($academicYear, TeacherAvailability::STATUS_AVAILABLE);
+
+        $this->actingAs($teacher)
+            ->get(route('timetables.availabilities', ['teacher_id' => $otherTeacher->id]))
+            ->assertOk()
+            ->assertSee($teacher->name)
+            ->assertDontSee($otherTeacher->name);
+
+        $this->actingAs($teacher)
+            ->put(route('timetables.availabilities.update', $teacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+                'slots' => $slots,
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($teacher)
+            ->from(route('timetables.availabilities'))
+            ->put(route('timetables.availabilities.update', $teacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+                'slots' => $slots,
+            ])
+            ->assertSessionHasErrors('workflow_status');
+
+        $this->actingAs($teacher)
+            ->put(route('timetables.availabilities.update', $otherTeacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+                'slots' => $slots,
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_teacher_cannot_transmit_an_entirely_unavailable_week(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $this->actingAs($teacher)
+            ->from(route('timetables.availabilities'))
+            ->put(route('timetables.availabilities.update', $teacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+                'slots' => $this->availabilityPayload($academicYear),
+            ])
+            ->assertRedirect(route('timetables.availabilities'))
+            ->assertSessionHasErrors('slots');
+
+        $this->assertDatabaseMissing('teacher_availability_schedules', [
+            'academic_year_id' => $academicYear->id,
+            'teacher_id' => $teacher->id,
+        ]);
+    }
+
+    public function test_submitted_availability_blocks_manual_course_on_unavailable_slot(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe disponibilité');
+        $subject = Subject::query()->firstOrCreate(
+            ['name' => 'Sciences numériques'],
+            ['code' => 'SN', 'status' => 'active'],
+        );
+        $assignment = ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+        $slots = $this->availabilityPayload($academicYear);
+        $periods = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->orderBy('sort_order')
+            ->get();
+        $slots[$periods->first()->id]['tuesday'] = TeacherAvailability::STATUS_AVAILABLE;
+
+        $this->actingAs($user)->put(route('timetables.availabilities.update', $teacher), [
+            'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+            'slots' => $slots,
+        ])->assertSessionHasNoErrors();
+
+        $this->actingAs($user)->post(route('timetables.store'), [
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Grille disponibilités',
+        ]);
+        $timetable = Timetable::query()->where('school_class_id', $schoolClass->id)->with('entries')->firstOrFail();
+        $mondayEntry = $timetable->entries->first(fn ($entry) => ! $entry->is_break
+            && $entry->day_of_week === 'monday'
+            && $entry->timetable_period_id === $periods->first()->id
+        );
+        $payload = $timetable->entries
+            ->sortBy([['sort_order', 'asc'], ['day_of_week', 'asc']])
+            ->values()
+            ->map(fn ($entry): array => $this->entryPayload(
+                $entry,
+                $entry->is($mondayEntry) ? $assignment->id : null,
+            ))
+            ->all();
+
+        $this->actingAs($user)
+            ->from(route('timetables.edit', $timetable))
+            ->put(route('timetables.update', $timetable), [
+                'title' => $timetable->title,
+                'status' => 'draft',
+                'entries' => $payload,
+            ])
+            ->assertRedirect(route('timetables.edit', $timetable))
+            ->assertSessionHasErrors('entries');
+
+        $slots[$periods->first()->id]['monday'] = TeacherAvailability::STATUS_AVAILABLE;
+        $this->actingAs($user)->put(route('timetables.availabilities.update', $teacher), [
+            'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+            'slots' => $slots,
+        ])->assertSessionHasNoErrors();
+
+        $this->actingAs($user)
+            ->put(route('timetables.update', $timetable), [
+                'title' => $timetable->title,
+                'status' => 'draft',
+                'entries' => $payload,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('timetable_entries', [
+            'timetable_id' => $timetable->id,
+            'teacher_id' => $teacher->id,
+            'day_of_week' => 'monday',
+            'timetable_period_id' => $periods->first()->id,
+        ]);
+    }
+
+    public function test_availability_cannot_be_transmitted_when_it_invalidates_an_existing_course(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe cours existant');
+        $subject = Subject::query()->firstOrCreate(
+            ['name' => 'Arts appliqués'],
+            ['code' => 'ARTAPP', 'status' => 'active'],
+        );
+        $assignment = ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'weekly_hours' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->post(route('timetables.store'), [
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Cours existant',
+        ]);
+        $timetable = Timetable::query()->where('school_class_id', $schoolClass->id)->with('entries')->firstOrFail();
+        $target = $timetable->entries->first(fn ($entry) => ! $entry->is_break && $entry->day_of_week === 'monday');
+        $payload = $timetable->entries
+            ->sortBy([['sort_order', 'asc'], ['day_of_week', 'asc']])
+            ->values()
+            ->map(fn ($entry): array => $this->entryPayload($entry, $entry->is($target) ? $assignment->id : null))
+            ->all();
+        $this->actingAs($user)->put(route('timetables.update', $timetable), [
+            'title' => $timetable->title,
+            'status' => 'draft',
+            'entries' => $payload,
+        ])->assertSessionHasNoErrors();
+
+        $slots = $this->availabilityPayload($academicYear);
+        $secondPeriod = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->whereKeyNot($target->timetable_period_id)
+            ->firstOrFail();
+        $slots[$secondPeriod->id]['tuesday'] = TeacherAvailability::STATUS_AVAILABLE;
+
+        $this->actingAs($user)
+            ->from(route('timetables.availabilities', ['teacher_id' => $teacher->id]))
+            ->put(route('timetables.availabilities.update', $teacher), [
+                'workflow_status' => TeacherAvailabilitySchedule::STATUS_SUBMITTED,
+                'slots' => $slots,
+            ])
+            ->assertSessionHasErrors('slots');
+    }
+
     public function test_comptable_cannot_open_timetable_module(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -529,6 +778,25 @@ class TimetableTest extends TestCase
             'room' => $entry->room,
             'is_break' => $entry->is_break ? 1 : 0,
         ];
+    }
+
+    private function availabilityPayload(AcademicYear $academicYear, string $status = TeacherAvailability::STATUS_UNAVAILABLE): array
+    {
+        app(TimetableTemplateService::class)->ensurePeriods($academicYear);
+        $days = array_keys(app(TimetableTemplateService::class)->days());
+        $payload = [];
+
+        foreach (TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_active', true)
+            ->where('is_break', false)
+            ->get() as $period) {
+            foreach ($days as $day) {
+                $payload[$period->id][$day] = $status;
+            }
+        }
+
+        return $payload;
     }
 
     private function schoolClass(string $name): SchoolClass

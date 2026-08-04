@@ -262,6 +262,28 @@ test('la configuration des créneaux reste utilisable sur toutes les tailles d�
     await expect(newRow.locator('input[name$="[label]"]')).toHaveValue('17h00-18h00');
 });
 
+test('la saisie des disponibilités professeur reste claire et utilisable', async ({ page }) => {
+    await login(page);
+    await page.goto('/timetables/availabilities');
+
+    await expect(page.getByRole('heading', { name: 'Disponibilités des professeurs' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Semaine habituelle' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Enregistrer en brouillon' })).toBeVisible();
+
+    const form = page.locator('[data-availability-form]');
+    const firstSlot = form.locator('[data-availability-toggle]').first();
+    await expect(firstSlot).toContainText('Indisponible');
+    await firstSlot.click();
+    await expect(firstSlot).toContainText('Disponible');
+
+    await form.getByRole('button', { name: 'Tout indisponible' }).click();
+    await expect(form.locator('[data-availability-count="unavailable"]')).toHaveText('42');
+
+    await form.locator('[data-availability-day="monday"]').click();
+    await expect(form.locator('[data-availability-count="available"]')).toHaveText('7');
+    expect(await elementOverflowsViewport(page.locator('.availability-overview'))).toBe(false);
+});
+
 test('les actions sensibles affichent leur objet et leurs conséquences', async ({ page }) => {
     await login(page);
     await page.goto('/students?search=LPP-E2E-001');

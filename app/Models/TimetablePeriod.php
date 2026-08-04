@@ -32,4 +32,9 @@ class TimetablePeriod extends Model
     {
         return $this->hasMany(TimetableEntry::class);
     }
+
+    public function teacherAvailabilities(): HasMany
+    {
+        return $this->hasMany(TeacherAvailability::class);
+    }
 }

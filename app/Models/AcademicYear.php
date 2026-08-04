@@ -50,4 +50,9 @@ class AcademicYear extends Model
     {
         return $this->hasMany(TimetablePeriod::class)->orderBy('sort_order');
     }
+
+    public function teacherAvailabilitySchedules(): HasMany
+    {
+        return $this->hasMany(TeacherAvailabilitySchedule::class);
+    }
 }

@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @if (auth()->user()->can('timetables.manage') || auth()->user()->hasRole('enseignant') || auth()->user()->can('teachers.manage'))
+        <a class="btn btn-subtle" href="{{ route('timetables.availabilities') }}">Disponibilités</a>
+    @endif
     @can('timetables.manage')
         <a class="btn btn-subtle" href="{{ route('timetables.periods') }}">Configurer les créneaux</a>
     @endcan

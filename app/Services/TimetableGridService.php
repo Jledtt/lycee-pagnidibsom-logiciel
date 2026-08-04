@@ -11,6 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class TimetableGridService
 {
+    public function __construct(
+        private readonly TeacherAvailabilityService $availabilities,
+    ) {}
+
     public function update(Timetable $timetable, array $attributes, array $rows): void
     {
         $assignments = ClassSubject::query()
@@ -25,6 +29,7 @@ class TimetableGridService
             ->values();
 
         $this->ensureTeachersAreAvailable($timetable, $entries);
+        $this->availabilities->ensureTimetableEntriesAllowed($timetable, $entries);
 
         DB::transaction(function () use ($timetable, $attributes, $entries): void {
             $timetable->update($attributes);

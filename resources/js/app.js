@@ -6,3 +6,4 @@ import './attendance-record-dialog';
 import './teacher-work-session-dialogs';
 import './timetable-editor';
 import './timetable-periods';
+import './teacher-availability';

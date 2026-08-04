@@ -36,6 +36,7 @@ use App\Http\Controllers\StudentWebController;
 use App\Http\Controllers\SubjectWebController;
 use App\Http\Controllers\TariffWebController;
 use App\Http\Controllers\TeacherAttendanceSheetWebController;
+use App\Http\Controllers\TeacherAvailabilityWebController;
 use App\Http\Controllers\TeacherDocumentWebController;
 use App\Http\Controllers\TeacherFeeStatementWebController;
 use App\Http\Controllers\TeacherWebController;
@@ -323,6 +324,14 @@ Route::get('/timetables/periods', [TimetableWebController::class, 'periods'])
 Route::put('/timetables/periods', [TimetableWebController::class, 'updatePeriods'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.periods.update');
+
+Route::get('/timetables/availabilities', [TeacherAvailabilityWebController::class, 'index'])
+    ->middleware(['auth', 'permission:timetables.view'])
+    ->name('timetables.availabilities');
+
+Route::put('/timetables/availabilities/{teacher}', [TeacherAvailabilityWebController::class, 'update'])
+    ->middleware(['auth', 'permission:timetables.view'])
+    ->name('timetables.availabilities.update');
 
 Route::get('/timetables/{timetable}/edit', [TimetableWebController::class, 'edit'])
     ->middleware(['auth', 'permission:timetables.manage'])

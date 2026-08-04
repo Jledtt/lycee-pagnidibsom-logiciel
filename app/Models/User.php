@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TeacherDocument::class, 'teacher_id');
     }
+
+    public function teacherAvailabilitySchedules(): HasMany
+    {
+        return $this->hasMany(TeacherAvailabilitySchedule::class, 'teacher_id');
+    }
 }
