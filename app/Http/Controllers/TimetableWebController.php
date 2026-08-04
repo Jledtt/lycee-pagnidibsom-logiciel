@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Timetable\UpdateTimetablePeriodsRequest;
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Timetable;
+use App\Services\TimetableGridService;
+use App\Services\TimetablePeriodService;
 use App\Services\TimetableTemplateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +19,11 @@ use Illuminate\View\View;
 
 class TimetableWebController extends Controller
 {
-    public function __construct(private readonly TimetableTemplateService $templates) {}
+    public function __construct(
+        private readonly TimetableTemplateService $templates,
+        private readonly TimetablePeriodService $periods,
+        private readonly TimetableGridService $grids,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -47,6 +55,26 @@ class TimetableWebController extends Controller
             'grid' => $timetable ? $this->grid($timetable) : [],
             'canApplyExample' => $this->templates->classHasExample($selectedClass),
         ]);
+    }
+
+    public function periods(): View
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+
+        return view('timetables.periods', [
+            'academicYear' => $academicYear,
+            'periods' => $this->templates->periods($academicYear, false),
+        ]);
+    }
+
+    public function updatePeriods(UpdateTimetablePeriodsRequest $request): RedirectResponse
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+        $this->periods->synchronize($academicYear, $request->validated('periods'));
+
+        return redirect()
+            ->route('timetables.periods')
+            ->with('success', 'Créneaux de l’année scolaire mis à jour.');
     }
 
     public function store(Request $request): RedirectResponse
@@ -87,11 +115,21 @@ class TimetableWebController extends Controller
     {
         $timetable->load(['schoolClass.level', 'academicYear', 'entries']);
 
+        $classSubjects = ClassSubject::query()
+            ->with(['subject', 'teacher'])
+            ->where('school_class_id', $timetable->school_class_id)
+            ->where('is_active', true)
+            ->join('subjects', 'subjects.id', '=', 'class_subjects.subject_id')
+            ->orderBy('subjects.name')
+            ->select('class_subjects.*')
+            ->get();
+
         return view('timetables.edit', [
             'timetable' => $timetable,
             'days' => $this->templates->days(),
             'grid' => $this->grid($timetable),
             'subjectOptions' => $this->templates->subjectOptions(),
+            'classSubjects' => $classSubjects,
         ]);
     }
 
@@ -108,36 +146,30 @@ class TimetableWebController extends Controller
             'entries.*.starts_at' => ['nullable', 'date_format:H:i'],
             'entries.*.ends_at' => ['nullable', 'date_format:H:i'],
             'entries.*.day_of_week' => ['required', 'string', 'max:20'],
+            'entries.*.timetable_period_id' => [
+                'nullable',
+                Rule::exists('timetable_periods', 'id')->where('academic_year_id', $timetable->academic_year_id),
+            ],
+            'entries.*.class_subject_id' => [
+                'nullable',
+                Rule::exists('class_subjects', 'id')
+                    ->where('school_class_id', $timetable->school_class_id)
+                    ->where('is_active', true),
+            ],
             'entries.*.subject_name' => ['nullable', 'string', 'max:120'],
             'entries.*.teacher_name' => ['nullable', 'string', 'max:160'],
             'entries.*.room' => ['nullable', 'string', 'max:60'],
             'entries.*.is_break' => ['nullable', 'boolean'],
         ]);
 
-        $timetable->update([
+        $attributes = [
             'title' => $data['title'],
             'principal_teacher' => $data['principal_teacher'] ?? null,
             'notes' => $data['notes'] ?? null,
             'status' => $data['status'],
-        ]);
+        ];
 
-        $entries = collect($data['entries'])
-            ->map(fn (array $entry) => [
-                'sort_order' => (int) $entry['sort_order'],
-                'period_label' => $entry['period_label'],
-                'starts_at' => $entry['starts_at'] ?: null,
-                'ends_at' => $entry['ends_at'] ?: null,
-                'day_of_week' => $entry['day_of_week'],
-                'subject_name' => filled($entry['subject_name'] ?? null) ? trim($entry['subject_name']) : null,
-                'teacher_name' => filled($entry['teacher_name'] ?? null) ? trim($entry['teacher_name']) : null,
-                'room' => filled($entry['room'] ?? null) ? trim($entry['room']) : null,
-                'is_break' => (bool) ($entry['is_break'] ?? false),
-            ])
-            ->values()
-            ->all();
-
-        $timetable->entries()->delete();
-        $timetable->entries()->createMany($entries);
+        $this->grids->update($timetable, $attributes, $data['entries']);
 
         return redirect()
             ->route('timetables.edit', $timetable)
@@ -234,8 +266,9 @@ class TimetableWebController extends Controller
     {
         $rows = [];
 
-        foreach ($this->templates->periods() as $period) {
+        foreach ($this->templates->periods($timetable->academicYear) as $period) {
             $rows[$period['label']] = [
+                'id' => $period['id'] ?? null,
                 'sort_order' => $period['sort_order'],
                 'period_label' => $period['label'],
                 'starts_at' => $period['starts_at'],
@@ -249,6 +282,7 @@ class TimetableWebController extends Controller
             $key = $entry->period_label;
 
             $rows[$key] ??= [
+                'id' => $entry->timetable_period_id,
                 'sort_order' => $entry->sort_order,
                 'period_label' => $entry->period_label,
                 'starts_at' => $entry->starts_at ? substr((string) $entry->starts_at, 0, 5) : null,

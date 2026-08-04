@@ -316,6 +316,14 @@ Route::post('/timetables/example', [TimetableWebController::class, 'applyExample
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.example');
 
+Route::get('/timetables/periods', [TimetableWebController::class, 'periods'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.periods');
+
+Route::put('/timetables/periods', [TimetableWebController::class, 'updatePeriods'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.periods.update');
+
 Route::get('/timetables/{timetable}/edit', [TimetableWebController::class, 'edit'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.edit');

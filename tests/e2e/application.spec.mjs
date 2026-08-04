@@ -242,6 +242,26 @@ test('le résumé de l’emploi du temps reste lisible avec une équipe pédagog
     });
 });
 
+test('la configuration des créneaux reste utilisable sur toutes les tailles d’écran', async ({ page }) => {
+    await login(page);
+    await page.goto('/timetables/periods');
+
+    await expect(page.getByRole('heading', { name: 'Créneaux des emplois du temps' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Enregistrer les créneaux' })).toBeVisible();
+
+    const rows = page.locator('tbody tr');
+    const initialCount = await rows.count();
+
+    await page.getByRole('button', { name: 'Ajouter un créneau' }).click();
+    await expect(rows).toHaveCount(initialCount + 1);
+
+    const newRow = rows.last();
+    await newRow.locator('input[name$="[label]"]').fill('17h00-18h00');
+    await newRow.locator('input[name$="[starts_at]"]').fill('17:00');
+    await newRow.locator('input[name$="[ends_at]"]').fill('18:00');
+    await expect(newRow.locator('input[name$="[label]"]')).toHaveValue('17h00-18h00');
+});
+
 test('les actions sensibles affichent leur objet et leurs conséquences', async ({ page }) => {
     await login(page);
     await page.goto('/students?search=LPP-E2E-001');

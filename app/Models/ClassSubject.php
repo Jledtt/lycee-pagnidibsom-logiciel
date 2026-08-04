@@ -12,11 +12,13 @@ class ClassSubject extends Model
         'subject_id',
         'teacher_id',
         'coefficient',
+        'weekly_hours',
         'is_active',
     ];
 
     protected $casts = [
         'coefficient' => 'decimal:2',
+        'weekly_hours' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

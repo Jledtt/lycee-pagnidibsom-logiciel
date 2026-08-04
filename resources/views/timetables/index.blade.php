@@ -6,6 +6,9 @@
 ])
 
 @section('page_actions')
+    @can('timetables.manage')
+        <a class="btn btn-subtle" href="{{ route('timetables.periods') }}">Configurer les créneaux</a>
+    @endcan
     @if ($timetable)
         @can('timetables.print')
             <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>

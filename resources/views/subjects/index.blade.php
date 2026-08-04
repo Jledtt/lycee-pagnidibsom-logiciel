@@ -51,6 +51,10 @@
                 <strong>{{ number_format($classSubjects->where('is_active', true)->sum('coefficient'), 2, ',', ' ') }}</strong>
             </div>
             <div class="stat">
+                <span>Heures par semaine</span>
+                <strong>{{ number_format($classSubjects->where('is_active', true)->sum('weekly_hours'), 2, ',', ' ') }}</strong>
+            </div>
+            <div class="stat">
                 <span>Matières globales</span>
                 <strong>{{ $subjects->count() }}</strong>
             </div>
@@ -82,7 +86,7 @@
                         <div class="subject-list-inner ledger-list">
                             @foreach ($classSubjects as $classSubject)
                                 <div class="ledger-item">
-                                    <form method="POST" action="{{ route('subjects.class-subjects.update', $classSubject) }}" class="ledger-summary" style="grid-template-columns:minmax(220px,1.5fr) minmax(150px,.6fr) minmax(180px,.8fr) minmax(240px,1fr)">
+                                    <form method="POST" action="{{ route('subjects.class-subjects.update', $classSubject) }}" class="ledger-summary" style="grid-template-columns:minmax(220px,1.5fr) minmax(130px,.55fr) minmax(150px,.6fr) minmax(150px,.6fr) minmax(240px,1fr)">
                                         @csrf
                                         @method('PUT')
 
@@ -94,6 +98,11 @@
                                         <div class="field" style="margin-bottom:0">
                                             <label>Coefficient</label>
                                             <input type="number" name="coefficient" min="0" max="99.99" step="0.25" value="{{ old('coefficient', $classSubject->coefficient) }}">
+                                        </div>
+
+                                        <div class="field" style="margin-bottom:0">
+                                            <label>Heures / semaine</label>
+                                            <input type="number" name="weekly_hours" min="0" max="60" step="0.25" value="{{ old('weekly_hours', $classSubject->weekly_hours) }}" placeholder="À définir">
                                         </div>
 
                                         <div class="field" style="margin-bottom:0">
@@ -142,6 +151,11 @@
                             <div class="field">
                                 <label>Coefficient</label>
                                 <input type="number" name="coefficient" min="0" max="99.99" step="0.25" value="1" required>
+                            </div>
+
+                            <div class="field">
+                                <label>Heures par semaine</label>
+                                <input type="number" name="weekly_hours" min="0.25" max="60" step="0.25" placeholder="Ex : 4">
                             </div>
 
                             <div class="form-actions wide">

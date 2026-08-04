@@ -102,6 +102,7 @@ class SubjectWebController extends Controller
             'school_class_id' => ['required', 'exists:school_classes,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'coefficient' => ['required', 'numeric', 'min:0', 'max:99.99'],
+            'weekly_hours' => ['nullable', 'numeric', 'min:0', 'max:60'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -110,6 +111,7 @@ class SubjectWebController extends Controller
                 'school_class_id' => $data['school_class_id'],
                 'subject_id' => $data['subject_id'],
                 'coefficient' => $data['coefficient'],
+                'weekly_hours' => $data['weekly_hours'] ?? null,
                 'is_active' => (bool) ($data['is_active'] ?? true),
             ]);
         } catch (QueryException) {
@@ -125,13 +127,14 @@ class SubjectWebController extends Controller
     {
         $data = $request->validate([
             'coefficient' => ['required', 'numeric', 'min:0', 'max:99.99'],
+            'weekly_hours' => ['nullable', 'numeric', 'min:0', 'max:60'],
             'is_active' => ['required', 'boolean'],
         ]);
 
         $classSubject->update($data);
 
         return $this->backToIndex($classSubject->school_class_id)
-            ->with('success', 'Coefficient mis à jour.');
+            ->with('success', 'Coefficient et volume horaire mis à jour.');
     }
 
     public function destroyClassSubject(ClassSubject $classSubject): RedirectResponse

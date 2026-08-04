@@ -71,7 +71,10 @@
                     <div class="form-row" style="margin:0 0 8px">
                         <div class="detail-item" style="flex:1">
                             <span>{{ $assignment->schoolClass?->name }}</span>
-                            <strong>{{ $assignment->subject?->name }} · coeff. {{ $assignment->coefficient }}</strong>
+                            <strong>
+                                {{ $assignment->subject?->name }} · coeff. {{ $assignment->coefficient }}
+                                · {{ $assignment->weekly_hours !== null ? number_format((float) $assignment->weekly_hours, 2, ',', ' ') . ' h/sem.' : 'volume à définir' }}
+                            </strong>
                         </div>
                         @can('teachers.manage')
                             <form method="POST" action="{{ route('teachers.assignments.destroy', [$teacher, $assignment]) }}">@csrf @method('DELETE')<button class="btn btn-danger" type="submit">Retirer</button></form>
@@ -88,6 +91,7 @@
                             <div class="field"><label>Classe</label><select name="school_class_id" required><option value="">Choisir</option>@foreach ($classes as $class)<option value="{{ $class->id }}">{{ $class->name }}</option>@endforeach</select></div>
                             <div class="field"><label>Matière</label><select name="subject_id" required><option value="">Choisir</option>@foreach ($subjects as $subject)<option value="{{ $subject->id }}">{{ $subject->name }}</option>@endforeach</select></div>
                             <div class="field"><label>Coefficient</label><input type="number" min="0.01" max="20" step="0.01" name="coefficient" value="1" required></div>
+                            <div class="field"><label>Heures par semaine</label><input type="number" min="0.25" max="60" step="0.25" name="weekly_hours" placeholder="Ex : 4"></div>
                         </div>
                         <button class="btn btn-subtle" type="submit">Ajouter l’affectation</button>
                     </form>

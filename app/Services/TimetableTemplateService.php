@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Timetable;
+use App\Models\TimetablePeriod;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TimetableTemplateService
@@ -21,7 +24,46 @@ class TimetableTemplateService
         ];
     }
 
-    public function periods(): array
+    public function periods(?AcademicYear $academicYear = null, bool $activeOnly = true): array
+    {
+        if ($academicYear) {
+            $periods = TimetablePeriod::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->when($activeOnly, fn ($query) => $query->where('is_active', true))
+                ->orderBy('sort_order')
+                ->get();
+
+            if ($periods->isNotEmpty()) {
+                return $periods
+                    ->map(fn (TimetablePeriod $period) => $this->periodPayload($period))
+                    ->all();
+            }
+        }
+
+        return $this->defaultPeriods();
+    }
+
+    public function ensurePeriods(AcademicYear $academicYear): array
+    {
+        if (! TimetablePeriod::query()->where('academic_year_id', $academicYear->id)->exists()) {
+            $now = now();
+            DB::table('timetable_periods')->upsert(
+                collect($this->defaultPeriods())->map(fn (array $period): array => [
+                    'academic_year_id' => $academicYear->id,
+                    ...$period,
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->all(),
+                ['academic_year_id', 'sort_order'],
+                ['label', 'starts_at', 'ends_at', 'is_break', 'is_active', 'updated_at'],
+            );
+        }
+
+        return $this->periods($academicYear, false);
+    }
+
+    private function defaultPeriods(): array
     {
         return [
             ['sort_order' => 1, 'label' => '7h00-7h55', 'starts_at' => '07:00', 'ends_at' => '07:55', 'is_break' => false],
@@ -39,8 +81,9 @@ class TimetableTemplateService
     public function seedBlankEntries(Timetable $timetable): void
     {
         $payload = [];
+        $this->ensurePeriods($timetable->academicYear);
 
-        foreach ($this->periods() as $period) {
+        foreach ($this->periods($timetable->academicYear) as $period) {
             foreach (array_keys($this->days()) as $day) {
                 $payload[] = $this->entryPayload($period, $day, $period['is_break'] ? $period['label'] : null);
             }
@@ -67,8 +110,9 @@ class TimetableTemplateService
         ])->save();
 
         $payload = [];
+        $this->ensurePeriods($timetable->academicYear);
 
-        foreach ($this->periods() as $period) {
+        foreach ($this->periods($timetable->academicYear) as $period) {
             foreach (array_keys($this->days()) as $day) {
                 $subject = $period['is_break']
                     ? $period['label']
@@ -104,6 +148,7 @@ class TimetableTemplateService
         $subject = filled($subject) ? Str::of($subject)->squish()->toString() : null;
 
         return [
+            'timetable_period_id' => $period['id'] ?? null,
             'sort_order' => $period['sort_order'],
             'period_label' => $period['label'],
             'starts_at' => $period['starts_at'],
@@ -111,6 +156,19 @@ class TimetableTemplateService
             'day_of_week' => $day,
             'subject_name' => $subject,
             'is_break' => $period['is_break'],
+        ];
+    }
+
+    private function periodPayload(TimetablePeriod $period): array
+    {
+        return [
+            'id' => $period->id,
+            'sort_order' => $period->sort_order,
+            'label' => $period->label,
+            'starts_at' => $period->starts_at ? substr((string) $period->starts_at, 0, 5) : null,
+            'ends_at' => $period->ends_at ? substr((string) $period->ends_at, 0, 5) : null,
+            'is_break' => $period->is_break,
+            'is_active' => $period->is_active,
         ];
     }
 

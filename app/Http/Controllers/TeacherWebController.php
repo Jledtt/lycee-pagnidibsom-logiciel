@@ -113,6 +113,7 @@ class TeacherWebController extends Controller
             'school_class_id' => ['required', Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id)],
             'subject_id' => ['required', Rule::exists('subjects', 'id')->where('status', 'active')],
             'coefficient' => ['required', 'numeric', 'min:0.01', 'max:20'],
+            'weekly_hours' => ['nullable', 'numeric', 'min:0.25', 'max:60'],
         ]);
 
         ClassSubject::query()->updateOrCreate(
@@ -123,6 +124,7 @@ class TeacherWebController extends Controller
             [
                 'teacher_id' => $teacher->id,
                 'coefficient' => $data['coefficient'],
+                'weekly_hours' => $data['weekly_hours'] ?? null,
                 'is_active' => true,
             ],
         );

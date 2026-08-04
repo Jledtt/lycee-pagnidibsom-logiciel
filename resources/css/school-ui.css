@@ -1105,3 +1105,6 @@
         text-align: left;
     }
 }
+.timetable-cell-fields.has-assignment .timetable-legacy-fields {
+    display: none !important;
+}

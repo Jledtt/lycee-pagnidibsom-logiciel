@@ -377,6 +377,7 @@ class TeacherManagementTest extends TestCase
                 'school_class_id' => $schoolClass->id,
                 'subject_id' => $subject->id,
                 'coefficient' => 2,
+                'weekly_hours' => 4,
             ])
             ->assertSessionHasNoErrors();
 
@@ -398,6 +399,7 @@ class TeacherManagementTest extends TestCase
             'teacher_id' => $teacher->id,
             'school_class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
+            'weekly_hours' => 4,
         ]);
         $document = $teacher->teacherDocuments()->firstOrFail();
         Storage::disk('documents')->assertExists($document->file_path);

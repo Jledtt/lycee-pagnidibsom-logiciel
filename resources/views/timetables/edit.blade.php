@@ -87,10 +87,12 @@
                                         <strong>{{ $row['period_label'] }}</strong>
                                         @foreach (array_keys($days) as $dayKey)
                                             <input type="hidden" name="entries[{{ $entryIndex }}][sort_order]" value="{{ $row['sort_order'] }}">
+                                            <input type="hidden" name="entries[{{ $entryIndex }}][timetable_period_id]" value="{{ $row['id'] ?? '' }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][period_label]" value="{{ $row['period_label'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][starts_at]" value="">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][ends_at]" value="">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][day_of_week]" value="{{ $dayKey }}">
+                                            <input type="hidden" name="entries[{{ $entryIndex }}][class_subject_id]" value="">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][subject_name]" value="{{ $row['period_label'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][teacher_name]" value="">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][room]" value="">
@@ -113,15 +115,31 @@
                                         @php($entry = $row['days'][$dayKey] ?? null)
                                         <td>
                                             <input type="hidden" name="entries[{{ $entryIndex }}][sort_order]" value="{{ $row['sort_order'] }}">
+                                            <input type="hidden" name="entries[{{ $entryIndex }}][timetable_period_id]" value="{{ $row['id'] ?? '' }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][period_label]" value="{{ $row['period_label'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][starts_at]" value="{{ $row['starts_at'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][ends_at]" value="{{ $row['ends_at'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][day_of_week]" value="{{ $dayKey }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][is_break]" value="0">
 
-                                            <div style="display:grid;gap:6px">
-                                                <input name="entries[{{ $entryIndex }}][subject_name]" list="subject-options" value="{{ old('entries.' . $entryIndex . '.subject_name', $entry?->subject_name) }}" placeholder="Matière">
-                                                <input name="entries[{{ $entryIndex }}][teacher_name]" value="{{ old('entries.' . $entryIndex . '.teacher_name', $entry?->teacher_name) }}" placeholder="Professeur">
+                                            <div class="timetable-cell-fields" style="display:grid;gap:6px">
+                                                <select name="entries[{{ $entryIndex }}][class_subject_id]" data-timetable-assignment aria-label="Affectation pédagogique">
+                                                    <option value="">Activité ou ancien libellé</option>
+                                                    @foreach ($classSubjects as $classSubject)
+                                                        <option
+                                                            value="{{ $classSubject->id }}"
+                                                            data-subject="{{ $classSubject->subject?->name }}"
+                                                            data-teacher="{{ $classSubject->teacher?->name }}"
+                                                            @selected((int) old('entries.' . $entryIndex . '.class_subject_id', $entry?->class_subject_id) === $classSubject->id)
+                                                        >
+                                                            {{ $classSubject->subject?->name }}{{ $classSubject->teacher ? ' - ' . $classSubject->teacher->name : ' - professeur non affecté' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <div class="timetable-legacy-fields" style="display:grid;gap:6px">
+                                                    <input data-timetable-subject name="entries[{{ $entryIndex }}][subject_name]" list="subject-options" value="{{ old('entries.' . $entryIndex . '.subject_name', $entry?->subject_name) }}" placeholder="Devoir ou activité libre">
+                                                    <input data-timetable-teacher name="entries[{{ $entryIndex }}][teacher_name]" value="{{ old('entries.' . $entryIndex . '.teacher_name', $entry?->teacher_name) }}" placeholder="Professeur (ancien planning)">
+                                                </div>
                                                 <input name="entries[{{ $entryIndex }}][room]" value="{{ old('entries.' . $entryIndex . '.room', $entry?->room) }}" placeholder="Salle">
                                             </div>
                                         </td>
