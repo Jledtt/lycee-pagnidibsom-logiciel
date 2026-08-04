@@ -104,7 +104,7 @@
                 <div class="empty">Aucune session d’examen blanc pour le moment.</div>
             @else
                 <div class="ledger-list">
-                    @foreach ($exams as $exam)
+                    @foreach ($selectedExam ? $exams->where('id', $selectedExam->id) : $exams as $exam)
                         <a class="ledger-item {{ $selectedExam?->id === $exam->id ? 'is-selected' : '' }}" href="{{ route('mock-exams.index', ['mock_exam_id' => $exam->id]) }}" @if ($selectedExam?->id === $exam->id) aria-current="page" @endif>
                             <div class="ledger-summary" style="grid-template-columns:minmax(220px,1.4fr) minmax(140px,.7fr) minmax(140px,.7fr) minmax(130px,.7fr)">
                                 <div class="ledger-person">
@@ -127,6 +127,39 @@
                         </a>
                     @endforeach
                 </div>
+
+                @if ($selectedExam && $exams->where('id', '!=', $selectedExam->id)->isNotEmpty())
+                    <details class="exam-session-switcher">
+                        <summary>
+                            <span>Changer de session</span>
+                            <span class="badge">{{ $exams->where('id', '!=', $selectedExam->id)->count() }} autre(s)</span>
+                        </summary>
+                        <div class="ledger-list">
+                            @foreach ($exams->where('id', '!=', $selectedExam->id) as $exam)
+                                <a class="ledger-item" href="{{ route('mock-exams.index', ['mock_exam_id' => $exam->id]) }}">
+                                    <div class="ledger-summary" style="grid-template-columns:minmax(220px,1.4fr) minmax(140px,.7fr) minmax(140px,.7fr) minmax(130px,.7fr)">
+                                        <div class="ledger-person">
+                                            <strong>{{ $exam->name }}</strong>
+                                            <span>{{ $exam->exam_type_label }} - {{ $exam->status_label }}</span>
+                                        </div>
+                                        <div class="ledger-metric">
+                                            <strong>{{ $exam->candidates_count }}</strong>
+                                            <span>Candidats</span>
+                                        </div>
+                                        <div class="ledger-metric">
+                                            <strong>{{ $exam->subjects_count }}</strong>
+                                            <span>Matières</span>
+                                        </div>
+                                        <div class="ledger-metric">
+                                            <strong>{{ $exam->classes->pluck('name')->join(', ') ?: '-' }}</strong>
+                                            <span>Classes</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             @endif
     </section>
 

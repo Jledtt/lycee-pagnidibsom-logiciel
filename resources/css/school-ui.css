@@ -711,6 +711,32 @@
     background: color-mix(in srgb, var(--forest) 5%, white);
 }
 
+.exam-session-switcher {
+    margin-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.exam-session-switcher summary {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--forest);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 750;
+    list-style: none;
+}
+
+.exam-session-switcher summary::-webkit-details-marker {
+    display: none;
+}
+
+.exam-session-switcher .ledger-list {
+    margin-top: 2px;
+}
+
 .exam-workspace-tabs {
     display: flex;
     gap: 24px;
