@@ -951,7 +951,22 @@
     }
 
     .exam-workspace-tabs {
-        gap: 18px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+        overflow: visible;
+    }
+
+    .exam-workspace-tab {
+        justify-content: center;
+        padding: 0 8px;
+        border-bottom: 1px solid var(--line);
+        text-align: center;
+        white-space: normal;
+    }
+
+    .exam-workspace-tab.is-active {
+        border-bottom: 3px solid var(--forest);
     }
 
     .exam-workspace .summary-row {
