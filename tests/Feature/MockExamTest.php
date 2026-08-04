@@ -193,9 +193,34 @@ class MockExamTest extends TestCase
         $this->actingAs($user)
             ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id]))
             ->assertOk()
+            ->assertSee('Vue d’ensemble')
+            ->assertSee('Préparer la session')
+            ->assertDontSee('Liste des admis');
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id, 'section' => 'candidates']))
+            ->assertOk()
+            ->assertSee('Relevé PDF')
+            ->assertDontSee('Préparer la session');
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id, 'section' => 'subjects']))
+            ->assertOk()
+            ->assertSee('Suivi PV, copies et honoraires')
+            ->assertSee('Saisie notes');
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id, 'section' => 'jury']))
+            ->assertOk()
+            ->assertSee('Décisions du jury')
+            ->assertSee('Enregistrer les décisions');
+
+        $this->actingAs($user)
+            ->get(route('mock-exams.index', ['mock_exam_id' => $exam->id, 'section' => 'documents']))
+            ->assertOk()
             ->assertSee('Relevés individuels')
             ->assertSee('Liste des admis')
-            ->assertSee('Liste second tour')
+            ->assertSee('Liste du second tour')
             ->assertSee('Liste des ajournés');
 
         foreach ([

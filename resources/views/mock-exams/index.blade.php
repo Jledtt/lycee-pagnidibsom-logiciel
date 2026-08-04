@@ -10,13 +10,28 @@
         <div class="error">{{ $errors->first() }}</div>
     @endif
 
-    <section class="panel">
-        <div class="panel-head">
-            <h2>Nouvelle session</h2>
-            <span class="badge">{{ $academicYear->name }}</span>
-        </div>
+    @php
+        $workspaceSections = [
+            'overview' => 'Vue d’ensemble',
+            'candidates' => 'Candidats',
+            'subjects' => 'Épreuves et notes',
+            'jury' => 'Jury',
+            'documents' => 'Documents',
+        ];
+        $activeWorkspace = request('section', 'overview');
+        $activeWorkspace = array_key_exists($activeWorkspace, $workspaceSections) ? $activeWorkspace : 'overview';
+    @endphp
 
-        <form class="form-grid" method="POST" action="{{ route('mock-exams.store') }}">
+    <details class="panel exam-create-disclosure" @if ($errors->any() || $exams->isEmpty()) open @endif>
+        <summary class="exam-disclosure-summary">
+            <span>
+                <strong>Créer une nouvelle session</strong>
+                <small>Examen trimestriel, BEPC blanc ou BAC blanc</small>
+            </span>
+            <span class="badge">{{ $academicYear->name }}</span>
+        </summary>
+
+        <form class="form-grid exam-disclosure-body" method="POST" action="{{ route('mock-exams.store') }}">
             @csrf
 
             <div class="field">
@@ -77,10 +92,9 @@
                 <button class="btn btn-primary" type="submit">Créer la session</button>
             </div>
         </form>
-    </section>
+    </details>
 
-    <section class="grid two-col" style="margin-top:16px">
-        <div class="panel">
+    <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Sessions créées</h2>
                 <span class="badge">{{ $exams->count() }} session(s)</span>
@@ -91,7 +105,7 @@
             @else
                 <div class="ledger-list">
                     @foreach ($exams as $exam)
-                        <a class="ledger-item" href="{{ route('mock-exams.index', ['mock_exam_id' => $exam->id]) }}">
+                        <a class="ledger-item {{ $selectedExam?->id === $exam->id ? 'is-selected' : '' }}" href="{{ route('mock-exams.index', ['mock_exam_id' => $exam->id]) }}" @if ($selectedExam?->id === $exam->id) aria-current="page" @endif>
                             <div class="ledger-summary" style="grid-template-columns:minmax(220px,1.4fr) minmax(140px,.7fr) minmax(140px,.7fr) minmax(130px,.7fr)">
                                 <div class="ledger-person">
                                     <strong>{{ $exam->name }}</strong>
@@ -114,9 +128,9 @@
                     @endforeach
                 </div>
             @endif
-        </div>
+    </section>
 
-        <div class="panel">
+    <section class="panel exam-workspace" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $selectedExam ? $selectedExam->name : 'Session sélectionnée' }}</h2>
                 @if ($selectedExam)
@@ -151,77 +165,91 @@
                     <p class="notice">Session verrouillee : seul un administrateur peut encore effectuer une correction.</p>
                 @endif
 
-                @can('mock_exams.manage')
-                    <div class="page-actions" style="margin-top:16px">
-                        @foreach ([
-                            'provisoire' => 'Marquer provisoire',
-                            'corrige' => 'Marquer corrige',
-                            'définitif' => 'Valider définitif',
-                            'verrouille' => 'Verrouiller',
-                        ] as $status => $label)
-                            <form method="POST" action="{{ route('mock-exams.result-status.update', $selectedExam) }}">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="result_status" value="{{ $status }}">
-                                <button class="btn {{ $status === 'verrouille' ? 'btn-primary' : 'btn-subtle' }}" type="submit">{{ $label }}</button>
-                            </form>
-                        @endforeach
+                <nav class="exam-workspace-tabs" aria-label="Rubriques de la session">
+                    @foreach ($workspaceSections as $section => $label)
+                        <a
+                            class="exam-workspace-tab {{ $activeWorkspace === $section ? 'is-active' : '' }}"
+                            href="{{ route('mock-exams.index', ['mock_exam_id' => $selectedExam->id, 'section' => $section]) }}"
+                            @if ($activeWorkspace === $section) aria-current="page" @endif
+                        >{{ $label }}</a>
+                    @endforeach
+                </nav>
+
+                @if ($activeWorkspace === 'overview')
+                    <div class="exam-overview-grid">
+                        <div class="exam-workflow-section">
+                            <div class="exam-section-heading">
+                                <div>
+                                    <h3>Préparer la session</h3>
+                                    <p>Candidats, anonymats et répartition dans les salles.</p>
+                                </div>
+                            </div>
+
+                            <div class="exam-action-stack">
+                                <form method="POST" action="{{ route('mock-exams.candidates.sync', $selectedExam) }}">
+                                    @csrf
+                                    <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Synchroniser les candidats</button>
+                                </form>
+
+                                <form class="exam-inline-tool" method="POST" action="{{ route('mock-exams.anonymity.generate', $selectedExam) }}">
+                                    @csrf
+                                    <div class="field">
+                                        <label for="exam-prefix">Préfixe des anonymats</label>
+                                        <input id="exam-prefix" name="prefix" value="X">
+                                    </div>
+                                    <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Générer</button>
+                                </form>
+
+                                <form class="exam-inline-tool" method="POST" action="{{ route('mock-exams.rooms.distribute', $selectedExam) }}">
+                                    @csrf
+                                    <div class="field">
+                                        <label for="exam-room-count">Nombre de salles</label>
+                                        <input id="exam-room-count" type="number" name="room_count" min="1" max="30" value="2">
+                                    </div>
+                                    <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Répartir</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="exam-workflow-section">
+                            <div class="exam-section-heading">
+                                <div>
+                                    <h3>État des résultats</h3>
+                                    <p>Fais progresser la session après les contrôles nécessaires.</p>
+                                </div>
+                                <span class="badge">{{ $selectedExam->result_status_label }}</span>
+                            </div>
+
+                            @can('mock_exams.manage')
+                                <div class="exam-status-actions">
+                                    @foreach ([
+                                        'provisoire' => 'Marquer provisoire',
+                                        'corrige' => 'Marquer corrigé',
+                                        'définitif' => 'Valider définitivement',
+                                        'verrouille' => 'Verrouiller la session',
+                                    ] as $status => $label)
+                                        <form method="POST" action="{{ route('mock-exams.result-status.update', $selectedExam) }}">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="result_status" value="{{ $status }}">
+                                            <button class="btn {{ $status === 'verrouille' ? 'btn-primary' : 'btn-subtle' }}" type="submit">{{ $label }}</button>
+                                        </form>
+                                    @endforeach
+                                </div>
+                            @endcan
+                        </div>
                     </div>
-                @endcan
-
-                <div class="page-actions" style="margin-top:16px">
-                    <form method="POST" action="{{ route('mock-exams.candidates.sync', $selectedExam) }}">
-                        @csrf
-                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Synchroniser candidats</button>
-                    </form>
-
-                    <form class="inline-form" method="POST" action="{{ route('mock-exams.anonymity.generate', $selectedExam) }}">
-                        @csrf
-                        <div class="field" style="min-width:90px">
-                            <label>Préfixe</label>
-                            <input name="prefix" value="X">
-                        </div>
-                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Générer anonymats</button>
-                    </form>
-
-                    <form class="inline-form" method="POST" action="{{ route('mock-exams.rooms.distribute', $selectedExam) }}">
-                        @csrf
-                        <div class="field" style="min-width:90px">
-                            <label>Salles</label>
-                            <input type="number" name="room_count" min="1" max="30" value="2">
-                        </div>
-                        <button class="btn btn-subtle" type="submit" @disabled(! $canEditExam)>Repartir</button>
-                    </form>
-                </div>
-
-                <div class="page-actions" style="margin-top:16px">
-                    <a class="btn btn-primary" href="{{ route('mock-exams.candidates.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des candidats lancé.">PDF candidats</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.rooms.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la répartition par salle lancé.">PDF salles</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des anonymats lancé.">PDF anonymats</a>
-                </div>
-
-                <div class="page-actions" style="margin-top:10px">
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du PV de surveillance lancé.">PV surveillance</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du bordereau des copies lancé.">Bordereau copies</a>
-                    <a class="btn btn-primary" href="{{ route('mock-exams.transcripts.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des relevés individuels lancé.">Relevés individuels</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'admis']) }}" data-download-feedback="Téléchargement de la liste des admis lancé.">Liste des admis</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'second-tour']) }}" data-download-feedback="Téléchargement de la liste du second tour lancé.">Liste second tour</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'ajournes']) }}" data-download-feedback="Téléchargement de la liste des ajournés lancé.">Liste des ajournés</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Téléchargement des résultats provisoires lancé.">Résultats provisoires</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'definitif']) }}" data-download-feedback="Téléchargement des résultats définitifs lancé.">Résultats définitifs</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la decision du jury lancé.">Décision jury</a>
-                    <a class="btn btn-subtle" href="{{ route('mock-exams.teacher-fees.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des honoraires professeurs lancé.">Honoraires</a>
-                </div>
+                @endif
 
                 @if ($selectedExam->notes)
                     <p class="notice" style="margin-top:16px">{{ $selectedExam->notes }}</p>
                 @endif
             @endif
-        </div>
     </section>
 
     @if ($selectedExam)
-        <section class="panel" style="margin-top:16px">
+        @if ($activeWorkspace === 'candidates')
+            <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Candidats</h2>
                 <span class="badge">{{ $selectedExam->candidates->count() }} ligne(s)</span>
@@ -265,9 +293,11 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+            </section>
+        @endif
 
-        <section class="panel" style="margin-top:16px">
+        @if ($activeWorkspace === 'subjects')
+            <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Suivi PV, copies et honoraires</h2>
                 <span class="badge">{{ $selectedExam->subjects->count() }} matière(s)</span>
@@ -412,9 +442,11 @@
             @empty
                 <div class="empty">Aucune matière. Les matières actives des classes seront reprises automatiquement à la création.</div>
             @endforelse
-        </section>
+            </section>
+        @endif
 
-        <section class="panel" style="margin-top:16px">
+        @if ($activeWorkspace === 'jury')
+            <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>Décisions du jury</h2>
                 <span class="badge">{{ $selectedExam->candidates->count() }} candidat(s)</span>
@@ -471,6 +503,67 @@
                     </div>
                 @endcan
             </form>
-        </section>
+            </section>
+        @endif
+
+        @if ($activeWorkspace === 'documents')
+            <section class="panel" style="margin-top:16px">
+                <div class="panel-head">
+                    <div>
+                        <h2>Documents de la session</h2>
+                        <span>Choisis uniquement le document nécessaire à l’étape en cours.</span>
+                    </div>
+                    <span class="badge">PDF</span>
+                </div>
+
+                <div class="exam-document-groups">
+                    <div class="exam-document-group">
+                        <div class="exam-section-heading">
+                            <div>
+                                <h3>Organisation</h3>
+                                <p>Avant et pendant les épreuves.</p>
+                            </div>
+                        </div>
+                        <div class="exam-document-links">
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.candidates.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des candidats lancé.">Liste des candidats</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.rooms.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la répartition par salle lancé.">Répartition des salles</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.anonymity.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la liste des anonymats lancé.">Liste des anonymats</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.surveillance-pv.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du PV de surveillance lancé.">PV de surveillance</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.copy-receipt.pdf', $selectedExam) }}" data-download-feedback="Téléchargement du bordereau des copies lancé.">Bordereau des copies</a>
+                        </div>
+                    </div>
+
+                    <div class="exam-document-group">
+                        <div class="exam-section-heading">
+                            <div>
+                                <h3>Résultats et jury</h3>
+                                <p>Après la saisie et le contrôle des notes.</p>
+                            </div>
+                        </div>
+                        <div class="exam-document-links">
+                            <a class="btn btn-primary" href="{{ route('mock-exams.transcripts.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des relevés individuels lancé.">Relevés individuels</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'admis']) }}" data-download-feedback="Téléchargement de la liste des admis lancé.">Liste des admis</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'second-tour']) }}" data-download-feedback="Téléchargement de la liste du second tour lancé.">Liste du second tour</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.decision-lists.pdf', [$selectedExam, 'ajournes']) }}" data-download-feedback="Téléchargement de la liste des ajournés lancé.">Liste des ajournés</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'provisoire']) }}" data-download-feedback="Téléchargement des résultats provisoires lancé.">Résultats provisoires</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.results.pdf', [$selectedExam, 'definitif']) }}" data-download-feedback="Téléchargement des résultats définitifs lancé.">Résultats définitifs</a>
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.jury-decision.pdf', $selectedExam) }}" data-download-feedback="Téléchargement de la décision du jury lancé.">Décision du jury</a>
+                        </div>
+                    </div>
+
+                    <div class="exam-document-group">
+                        <div class="exam-section-heading">
+                            <div>
+                                <h3>Honoraires</h3>
+                                <p>État des correcteurs et montants liés à la session.</p>
+                            </div>
+                        </div>
+                        <div class="exam-document-links">
+                            <a class="btn btn-subtle" href="{{ route('mock-exams.teacher-fees.pdf', $selectedExam) }}" data-download-feedback="Téléchargement des honoraires professeurs lancé.">Honoraires des professeurs</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
     @endif
 @endsection

@@ -42,7 +42,6 @@ test.describe('documents de production en lecture seule', () => {
             '/report-cards',
             '/timetables',
             '/class-council',
-            '/mock-exams',
             '/accounting/balance-sheet',
             '/accounting/cash-journal',
             '/accounting/expenses',
@@ -51,6 +50,17 @@ test.describe('documents de production en lecture seule', () => {
 
         for (const path of sections) {
             await collectLinks(path);
+        }
+
+        const mockExamLinks = await collectLinks('/mock-exams');
+        const mockExamDocumentsUrl = mockExamLinks.find((href) => {
+            const url = new URL(href);
+
+            return url.pathname === '/mock-exams' && url.searchParams.get('section') === 'documents';
+        });
+
+        if (mockExamDocumentsUrl) {
+            await collectLinks(mockExamDocumentsUrl);
         }
 
         const detailPages = [
