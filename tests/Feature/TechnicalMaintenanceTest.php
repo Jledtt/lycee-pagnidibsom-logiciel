@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\DatabaseBackupService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,9 +66,7 @@ class TechnicalMaintenanceTest extends TestCase
         $admin->assignRole('admin');
 
         $this->app['config']->set('app.env', 'testing');
-        putenv('LPP_BACKUP_PATH='.$path);
-        $_ENV['LPP_BACKUP_PATH'] = $path;
-        $_SERVER['LPP_BACKUP_PATH'] = $path;
+        config()->set('lpp.backup.export_path', $path);
 
         File::deleteDirectory($path);
 
@@ -90,8 +89,14 @@ class TechnicalMaintenanceTest extends TestCase
             ->assertOk();
 
         File::deleteDirectory($path);
-        putenv('LPP_BACKUP_PATH');
-        unset($_ENV['LPP_BACKUP_PATH'], $_SERVER['LPP_BACKUP_PATH']);
+    }
+
+    public function test_manual_backup_path_is_read_from_cached_configuration(): void
+    {
+        $path = storage_path('framework/testing/configured-backups');
+        config()->set('lpp.backup.export_path', $path);
+
+        $this->assertSame($path, app(DatabaseBackupService::class)->directory());
     }
 
     private function assertSecureBackupPermissions(string $directory): void

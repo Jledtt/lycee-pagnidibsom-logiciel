@@ -85,7 +85,7 @@ class DatabaseBackupService
 
     public function directory(): string
     {
-        return env('LPP_BACKUP_PATH') ?: storage_path('app/backups');
+        return config('lpp.backup.export_path') ?: storage_path('app/backups');
     }
 
     private function tableRows(string $driver, ?string $database): array
@@ -159,7 +159,7 @@ class DatabaseBackupService
 
     private function dumpMysql(array $config, string $directory, string $timestamp): ?string
     {
-        $binary = $this->findExecutable('LPP_MYSQLDUMP_PATH', ['mysqldump', 'mysqldump.exe'], [
+        $binary = $this->findExecutable(config('lpp.backup.mysqldump_path'), ['mysqldump', 'mysqldump.exe'], [
             'C:/laragon/bin/mysql/*/bin/mysqldump.exe',
         ]);
 
@@ -188,7 +188,7 @@ class DatabaseBackupService
 
     private function dumpPostgres(array $config, string $directory, string $timestamp): ?string
     {
-        $binary = $this->findExecutable('LPP_PGDUMP_PATH', ['pg_dump', 'pg_dump.exe']);
+        $binary = $this->findExecutable(config('lpp.backup.pg_dump_path'), ['pg_dump', 'pg_dump.exe']);
 
         if (! $binary) {
             return null;
@@ -266,10 +266,8 @@ class DatabaseBackupService
         return File::isFile($archivePath) ? $archivePath : null;
     }
 
-    private function findExecutable(string $envName, array $names, array $extraGlobs = []): ?string
+    private function findExecutable(?string $configured, array $names, array $extraGlobs = []): ?string
     {
-        $configured = env($envName);
-
         if (is_string($configured) && $configured !== '' && File::exists($configured)) {
             return $configured;
         }
@@ -304,7 +302,7 @@ class DatabaseBackupService
 
     private function prune(string $directory): void
     {
-        $keepDays = max((int) env('LPP_BACKUP_KEEP_DAYS', 14), 1);
+        $keepDays = max((int) config('lpp.backup.keep_days', 14), 1);
 
         foreach (File::glob($directory.DIRECTORY_SEPARATOR.'lpp-*') ?: [] as $file) {
             if (File::lastModified($file) < now()->subDays($keepDays)->timestamp) {
