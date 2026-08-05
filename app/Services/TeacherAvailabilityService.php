@@ -59,6 +59,35 @@ class TeacherAvailabilityService
         });
     }
 
+    public function replaceImported(
+        AcademicYear $academicYear,
+        User $teacher,
+        User $actor,
+        array $submittedSlots,
+        ?string $notes = null,
+    ): TeacherAvailabilitySchedule {
+        $slots = $this->normalizeSlots($this->coursePeriods($academicYear), $submittedSlots);
+        $this->ensureAtLeastOneAvailableSlot($slots);
+        $this->ensureExistingCoursesFit($academicYear, $teacher, $slots);
+
+        $schedule = TeacherAvailabilitySchedule::query()->firstOrNew([
+            'academic_year_id' => $academicYear->id,
+            'teacher_id' => $teacher->id,
+        ]);
+        $schedule->fill([
+            'status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+            'notes' => filled($notes) ? trim((string) $notes) : null,
+            'source' => 'import',
+            'submitted_at' => now(),
+            'validated_at' => now(),
+            'updated_by' => $actor->id,
+        ])->save();
+        $schedule->availabilities()->delete();
+        $schedule->availabilities()->createMany($slots->values()->all());
+
+        return $schedule->load(['availabilities.period', 'teacher']);
+    }
+
     public function ensureTimetableEntriesAllowed(Timetable $timetable, Collection $entries): void
     {
         $linked = $entries->filter(fn (array $entry): bool => filled($entry['teacher_id']) && filled($entry['timetable_period_id']));

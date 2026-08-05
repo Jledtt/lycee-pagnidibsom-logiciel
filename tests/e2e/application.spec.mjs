@@ -141,6 +141,31 @@ test('les grands montants financiers restent dans leurs cartes', async ({ page }
     await expect(page.locator('.finance-stats .money-currency').first()).toHaveText('FCFA');
 });
 
+test('la planification automatique reste lisible et protège les grilles actives', async ({ page }, testInfo) => {
+    await login(page);
+    const response = await page.goto('/timetables/planning/automatic');
+
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('.topbar h1')).toHaveText('Planification automatique');
+    await expect(page.getByRole('list', { name: 'Étapes de planification' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1. Importer les disponibilités' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '2. Générer une proposition' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Télécharger le modèle CSV' })).toBeVisible();
+    await expect(page.getByText('Les classes avec un emploi du temps actif sont protégées et restent inchangées.')).toBeVisible();
+
+    const hasHorizontalOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
+
+    const screenshotPath = testInfo.outputPath(`planification-automatique-${testInfo.project.name}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await testInfo.attach(`planification-automatique-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
+});
+
 test('la fenêtre de paiement reste utilisable sur toutes les tailles d’écran', async ({ page }) => {
     await login(page);
     await page.goto('/payments');

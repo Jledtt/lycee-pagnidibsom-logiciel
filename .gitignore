@@ -27,6 +27,7 @@ work/
 /storage/pail
 /test-results
 /vendor
+/.venv-timetable
 database/e2e.sqlite
 _ide_helper.php
 Homestead.json

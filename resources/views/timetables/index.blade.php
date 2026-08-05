@@ -10,6 +10,7 @@
         <a class="btn btn-subtle" href="{{ route('timetables.availabilities') }}">Disponibilités</a>
     @endif
     @can('timetables.manage')
+        <a class="btn btn-primary" href="{{ route('timetables.planning') }}">Planification automatique</a>
         <a class="btn btn-subtle" href="{{ route('timetables.periods') }}">Configurer les créneaux</a>
     @endcan
     @if ($timetable)

@@ -41,6 +41,7 @@ use App\Http\Controllers\TeacherDocumentWebController;
 use App\Http\Controllers\TeacherFeeStatementWebController;
 use App\Http\Controllers\TeacherWebController;
 use App\Http\Controllers\TeacherWorkSessionWebController;
+use App\Http\Controllers\TimetablePlanningWebController;
 use App\Http\Controllers\TimetableWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -332,6 +333,34 @@ Route::get('/timetables/availabilities', [TeacherAvailabilityWebController::clas
 Route::put('/timetables/availabilities/{teacher}', [TeacherAvailabilityWebController::class, 'update'])
     ->middleware(['auth', 'permission:timetables.view'])
     ->name('timetables.availabilities.update');
+
+Route::get('/timetables/planning/automatic', [TimetablePlanningWebController::class, 'index'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning');
+
+Route::get('/timetables/planning/availability-template', [TimetablePlanningWebController::class, 'template'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.template');
+
+Route::post('/timetables/planning/availability-preview', [TimetablePlanningWebController::class, 'previewImport'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.import.preview');
+
+Route::post('/timetables/planning/availability-import', [TimetablePlanningWebController::class, 'applyImport'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.import.apply');
+
+Route::delete('/timetables/planning/availability-preview', [TimetablePlanningWebController::class, 'clearImport'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.import.clear');
+
+Route::post('/timetables/planning/generate', [TimetablePlanningWebController::class, 'generate'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.generate');
+
+Route::post('/timetables/planning/runs/{timetableGenerationRun}/apply', [TimetablePlanningWebController::class, 'apply'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.apply');
 
 Route::get('/timetables/{timetable}/edit', [TimetableWebController::class, 'edit'])
     ->middleware(['auth', 'permission:timetables.manage'])

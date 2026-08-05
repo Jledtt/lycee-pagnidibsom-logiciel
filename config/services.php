@@ -23,6 +23,14 @@ return [
         'webhook_secret' => env('RESEND_WEBHOOK_SECRET'),
     ],
 
+    'timetable_solver' => [
+        'python' => env('TIMETABLE_SOLVER_PYTHON') ?: (PHP_OS_FAMILY === 'Windows'
+            ? base_path('.venv-timetable/Scripts/python.exe')
+            : base_path('.venv-timetable/bin/python')),
+        'script' => env('TIMETABLE_SOLVER_SCRIPT') ?: base_path('scripts/timetable_solver.py'),
+        'time_limit_seconds' => (int) env('TIMETABLE_SOLVER_TIME_LIMIT', 12),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
