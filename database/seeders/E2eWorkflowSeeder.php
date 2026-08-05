@@ -19,12 +19,19 @@ use App\Models\TimetablePeriod;
 use App\Models\User;
 use App\Services\TimetableTemplateService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class E2eWorkflowSeeder extends Seeder
 {
     public function run(): void
     {
         abort_unless(app()->environment('e2e'), 403, 'Ce seeder est réservé aux tests navigateur.');
+
+        foreach (['secretariat', 'comptable'] as $username) {
+            User::query()->where('username', $username)->update([
+                'password' => Hash::make("e2e-{$username}-secret"),
+            ]);
+        }
 
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $level = Level::query()->where('name', '5e')->firstOrFail();

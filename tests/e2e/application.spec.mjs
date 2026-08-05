@@ -423,13 +423,13 @@ test('la validation native bloque un paiement incomplet', async ({ page }) => {
 });
 
 test('les permissions refusent les tarifs au secrétariat et autorisent les paiements au comptable', async ({ page }) => {
-    await login(page, 'secretariat', 'secretariat');
+    await login(page, 'secretariat', 'e2e-secretariat-secret');
     await expect(page.getByRole('link', { name: 'Tarifs' })).toHaveCount(0);
     const forbiddenResponse = await page.goto('/tariffs');
     expect(forbiddenResponse?.status()).toBe(403);
 
     await page.context().clearCookies();
-    await login(page, 'comptable', 'comptable');
+    await login(page, 'comptable', 'e2e-comptable-secret');
     const allowedResponse = await page.goto('/payments');
     expect(allowedResponse?.status()).toBe(200);
     await expect(page.getByRole('link', { name: 'Nouveau paiement' })).toBeVisible();

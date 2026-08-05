@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\RoleLoginUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -14,17 +15,22 @@ class RoleLoginUsersSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_role_login_accounts_are_created_with_role_name_passwords(): void
+    public function test_role_login_accounts_are_created_with_random_passwords(): void
     {
         $this->seed(DatabaseSeeder::class);
 
-        foreach (['direction', 'secretariat', 'comptable', 'enseignant', 'surveillant'] as $roleName) {
+        $roleNames = ['direction', 'secretariat', 'comptable', 'enseignant', 'surveillant'];
+
+        foreach ($roleNames as $roleName) {
             $user = User::query()->where('username', $roleName)->firstOrFail();
 
             $this->assertSame('active', $user->status);
             $this->assertSame($roleName.'@lyceepagnidibsom.local', $user->email);
             $this->assertTrue($user->hasRole($roleName));
-            $this->assertTrue(Hash::check($roleName, $user->password));
+
+            foreach ($roleNames as $unsafePassword) {
+                $this->assertFalse(Hash::check($unsafePassword, $user->password));
+            }
         }
 
         $this->assertDatabaseMissing('users', ['username' => 'parent']);
@@ -57,6 +63,36 @@ class RoleLoginUsersSeederTest extends TestCase
 
         $this->assertDatabaseMissing('roles', ['name' => 'parent']);
         $this->assertDatabaseMissing('roles', ['name' => 'eleve']);
+    }
+
+    public function test_role_login_seeder_does_nothing_in_production(): void
+    {
+        $parent = User::factory()->create([
+            'username' => 'parent',
+            'email' => 'parent@lyceepagnidibsom.local',
+        ]);
+        $this->app->detectEnvironment(fn () => 'production');
+
+        try {
+            (new RoleLoginUsersSeeder)->setContainer($this->app)->run();
+        } finally {
+            $this->app->detectEnvironment(fn () => 'testing');
+        }
+
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseHas('users', ['id' => $parent->id]);
+        $this->assertDatabaseMissing('users', ['username' => 'direction']);
+    }
+
+    public function test_role_login_seeder_preserves_an_existing_password(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $direction = User::query()->where('username', 'direction')->firstOrFail();
+        $direction->update(['password' => 'custom-existing-password']);
+
+        $this->seed(RoleLoginUsersSeeder::class);
+
+        $this->assertTrue(Hash::check('custom-existing-password', $direction->refresh()->password));
     }
 
     public function test_configured_admin_password_is_used_only_when_the_account_is_created(): void
