@@ -67,6 +67,9 @@ jobs:
       - name: Verifier le formatage PHP
         run: vendor/bin/pint --test
 
+      - name: Analyser le code PHP avec Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
       - name: Construire les ressources Vite
         run: npm run build
 

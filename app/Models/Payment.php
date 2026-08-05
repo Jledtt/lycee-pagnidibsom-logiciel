@@ -50,6 +50,7 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function canceller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by');
@@ -70,6 +71,9 @@ class Payment extends Model
         return $this->canceller?->name ?? $this->legacyCancellationParts()['actor'];
     }
 
+    /**
+     * @return array{reason: ?string, actor: ?string}
+     */
     private function legacyCancellationParts(): array
     {
         $reason = $this->cancellation_reason;
