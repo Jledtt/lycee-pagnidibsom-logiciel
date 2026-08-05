@@ -37,6 +37,16 @@ jobs:
           node-version: '24'
           cache: npm
 
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements-timetable.txt
+
+      - name: Installer le moteur d'emploi du temps
+        run: pip install -r requirements-timetable.txt
+
       - name: Installer les dependances PHP
         run: composer install --no-interaction --no-progress --prefer-dist
 
@@ -62,6 +72,9 @@ jobs:
 
       - name: Executer les tests Laravel
         run: php artisan test
+
+      - name: Tester les contraintes du moteur d'emploi du temps
+        run: python -m unittest discover -s tests/python -v
 
       - name: Installer Chromium
         run: npx playwright install --with-deps chromium

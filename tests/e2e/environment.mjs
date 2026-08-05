@@ -1,8 +1,12 @@
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 
 export const serverPort = process.env.E2E_PORT ?? '8010';
 export const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${serverPort}`;
 export const databasePath = path.resolve('database/e2e.sqlite');
+const windowsSolver = path.resolve('.venv-timetable/Scripts/python.exe');
+const solverPython = process.env.TIMETABLE_SOLVER_PYTHON
+    ?? (process.platform === 'win32' && existsSync(windowsSolver) ? windowsSolver : 'python3');
 
 export const appEnvironment = {
     ...process.env,
@@ -18,4 +22,5 @@ export const appEnvironment = {
     MAIL_MAILER: 'array',
     QUEUE_CONNECTION: 'sync',
     SESSION_DRIVER: 'file',
+    TIMETABLE_SOLVER_PYTHON: solverPython,
 };

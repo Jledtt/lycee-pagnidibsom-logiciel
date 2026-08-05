@@ -268,22 +268,25 @@ test('le résumé de l’emploi du temps reste lisible avec une équipe pédagog
     if (!await page.locator('.timetable-overview').isVisible()) {
         await page.getByRole('button', { name: 'Créer une grille vide' }).click();
         await expect(page).toHaveURL(/\/timetables\/\d+\/edit$/);
-
-        await page.locator('input[name="title"]').fill('Emploi du temps provisoire');
-        await page.locator('textarea[name="principal_teacher"]').fill([
-            'Aminata Test (Français)',
-            'Paul Exemple (Mathématiques)',
-            'Mariam Démo (Anglais)',
-            'Issa Essai (Histoire-Géographie)',
-            'Awa Contrôle (EPS)',
-            'Karim Validation (Physique-Chimie)',
-            'Fatou Mobile (Allemand)',
-            'Oumar Tablette (Philosophie)',
-        ].join('; '));
-        await page.getByRole('button', { name: 'Enregistrer l’emploi du temps' }).click();
-        await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
-        await page.getByRole('link', { name: 'Retour' }).click();
+    } else {
+        await page.locator('.topbar__page-actions a[href$="/review"]').click();
+        await page.getByRole('link', { name: 'Corriger la grille' }).click();
     }
+
+    await page.locator('input[name="title"]').fill('Emploi du temps provisoire');
+    await page.locator('textarea[name="principal_teacher"]').fill([
+        'Aminata Test (Français)',
+        'Paul Exemple (Mathématiques)',
+        'Mariam Démo (Anglais)',
+        'Issa Essai (Histoire-Géographie)',
+        'Awa Contrôle (EPS)',
+        'Karim Validation (Physique-Chimie)',
+        'Fatou Mobile (Allemand)',
+        'Oumar Tablette (Philosophie)',
+    ].join('; '));
+    await page.getByRole('button', { name: 'Enregistrer l’emploi du temps' }).click();
+    await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
+    await page.getByRole('link', { name: 'Retour' }).click();
 
     const overview = page.locator('.timetable-overview');
     await expect(overview).toBeVisible();
@@ -330,9 +333,18 @@ test('la saisie des disponibilités professeur reste claire et utilisable', asyn
 
     const form = page.locator('[data-availability-form]');
     const firstSlot = form.locator('[data-availability-toggle]').first();
-    await expect(firstSlot).toContainText('Indisponible');
+    const initialStatus = await firstSlot.getAttribute('data-status');
+    const statusCycle = ['unavailable', 'available', 'preferred'];
+    const statusLabels = {
+        unavailable: 'Indisponible',
+        available: 'Disponible',
+        preferred: 'Préféré',
+    };
+    const expectedStatus = statusCycle[(statusCycle.indexOf(initialStatus) + 1) % statusCycle.length];
+
     await firstSlot.click();
-    await expect(firstSlot).toContainText('Disponible');
+    await expect(firstSlot).toHaveAttribute('data-status', expectedStatus);
+    await expect(firstSlot).toContainText(statusLabels[expectedStatus]);
 
     await form.getByRole('button', { name: 'Tout indisponible' }).click();
     await expect(form.locator('[data-availability-count="unavailable"]')).toHaveText('42');
@@ -472,4 +484,39 @@ test('la revision visuelle de l emploi du temps reste contenue et explicite', as
         path: screenshotPath,
         contentType: 'image/png',
     });
+});
+
+test('la generation automatique produit un brouillon revisable et un PDF valide', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'Le parcours métier complet est exécuté une fois sur ordinateur.');
+
+    await login(page);
+    await page.goto('/timetables/planning/automatic');
+
+    const generateButton = page.getByRole('button', { name: 'Générer la proposition' });
+    await expect(generateButton).toBeEnabled();
+    await generateButton.click();
+
+    await expect(page.getByRole('heading', { name: /Proposition n°/ })).toBeVisible();
+    await expect(page.getByText(/Solution (optimale|réalisable)/)).toBeVisible();
+    await expect(page.getByText('E2E 5e A').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Appliquer en brouillon' }).click();
+    const confirmation = page.locator('#app-confirmation-dialog');
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Appliquer les brouillons' }).click();
+    await expect(page.getByText(/Proposition appliquée le/)).toBeVisible();
+
+    await page.goto('/timetables');
+    await page.locator('.topbar__page-actions a[href$="/review"]').click();
+    await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
+    const automaticMetric = page.locator('.timetable-review-metrics > div').filter({ hasText: 'Génération automatique' });
+    await expect(automaticMetric.locator('strong')).toHaveText('1');
+
+    const pdfLink = page.getByRole('link', { name: 'PDF' });
+    const pdfResponse = await page.request.get(await pdfLink.getAttribute('href'));
+    expect(pdfResponse.status()).toBe(200);
+    expect(pdfResponse.headers()['content-type']).toContain('application/pdf');
+    const pdfBody = await pdfResponse.body();
+    expect(pdfBody.subarray(0, 4).toString()).toBe('%PDF');
+    expect(pdfBody.length).toBeGreaterThan(10_000);
 });

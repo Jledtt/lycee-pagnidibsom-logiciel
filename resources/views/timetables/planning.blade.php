@@ -101,6 +101,7 @@
                 'OPTIMAL' => 'Solution optimale',
                 'FEASIBLE' => 'Solution réalisable',
                 'INFEASIBLE' => 'Aucune solution possible',
+                'INVALID_SOLUTION' => 'Proposition rejetée',
                 'NOT_READY' => 'Configuration incomplète',
                 'ERROR' => 'Moteur indisponible',
                 default => $run->solver_status ?? 'En attente',

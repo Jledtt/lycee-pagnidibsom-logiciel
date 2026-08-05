@@ -12,8 +12,12 @@ use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Models\TeacherAvailability;
+use App\Models\TeacherAvailabilitySchedule;
 use App\Models\TeacherProfile;
+use App\Models\TimetablePeriod;
 use App\Models\User;
+use App\Services\TimetableTemplateService;
 use Illuminate\Database\Seeder;
 
 class E2eWorkflowSeeder extends Seeder
@@ -40,6 +44,9 @@ class E2eWorkflowSeeder extends Seeder
                 'status' => 'active',
             ],
         );
+        SchoolClass::query()
+            ->where('id', '!=', $schoolClass->id)
+            ->update(['status' => 'archived']);
 
         $student = Student::query()->updateOrCreate(
             ['matricule' => 'LPP-E2E-001'],
@@ -118,8 +125,39 @@ class E2eWorkflowSeeder extends Seeder
             [
                 'teacher_id' => $teacher->id,
                 'coefficient' => 2,
+                'weekly_hours' => 1,
                 'is_active' => true,
             ],
         );
+
+        app(TimetableTemplateService::class)->ensurePeriods($academicYear);
+        $availabilitySchedule = TeacherAvailabilitySchedule::query()->updateOrCreate(
+            [
+                'academic_year_id' => $academicYear->id,
+                'teacher_id' => $teacher->id,
+            ],
+            [
+                'status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+                'source' => 'manual',
+                'submitted_at' => now(),
+                'validated_at' => now(),
+                'updated_by' => User::query()->where('username', 'admin')->value('id'),
+            ],
+        );
+        $availabilitySchedule->availabilities()->delete();
+
+        foreach (TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_active', true)
+            ->where('is_break', false)
+            ->get() as $period) {
+            foreach (array_keys(app(TimetableTemplateService::class)->days()) as $day) {
+                $availabilitySchedule->availabilities()->create([
+                    'timetable_period_id' => $period->id,
+                    'day_of_week' => $day,
+                    'status' => TeacherAvailability::STATUS_AVAILABLE,
+                ]);
+            }
+        }
     }
 }

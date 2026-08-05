@@ -61,12 +61,25 @@ class TimetableGenerationService
         try {
             $result = $this->solve($input);
             $solverStatus = (string) ($result['status'] ?? 'ERROR');
+            $solutionErrors = in_array($solverStatus, ['OPTIMAL', 'FEASIBLE'], true)
+                ? $this->solutionErrors($input, $result)
+                : [];
+
+            if ($solutionErrors !== []) {
+                $solverStatus = 'INVALID_SOLUTION';
+                $diagnostics['blockers'] = [
+                    ...$diagnostics['blockers'],
+                    ...$solutionErrors,
+                ];
+            }
+
             $run->update([
                 'status' => in_array($solverStatus, ['OPTIMAL', 'FEASIBLE'], true)
                     ? TimetableGenerationRun::STATUS_DRAFT
                     : TimetableGenerationRun::STATUS_FAILED,
                 'solver_status' => $solverStatus,
                 'result' => $result,
+                'diagnostics' => $diagnostics,
             ]);
         } catch (\Throwable $error) {
             report($error);
@@ -97,6 +110,12 @@ class TimetableGenerationService
             || $this->fingerprint($freshInput) !== ($run->input_snapshot['fingerprint'] ?? null)) {
             throw ValidationException::withMessages([
                 'generation' => 'Les classes, volumes horaires ou disponibilites ont change. Genere une nouvelle proposition.',
+            ]);
+        }
+
+        if ($this->solutionErrors($run->input_snapshot, $run->result ?? []) !== []) {
+            throw ValidationException::withMessages([
+                'generation' => 'La proposition contient un conflit technique. Genere une nouvelle proposition.',
             ]);
         }
 
@@ -140,9 +159,9 @@ class TimetableGenerationService
                 $timetable = Timetable::query()->updateOrCreate(
                     ['academic_year_id' => $run->academic_year_id, 'school_class_id' => $classId],
                     [
-                        'title' => 'Emploi du temps genere automatiquement',
+                        'title' => 'Emploi du temps généré automatiquement',
                         'principal_teacher' => $classAssignments->pluck('teacher.name')->filter()->unique()->implode('; '),
-                        'notes' => 'Proposition automatique appliquee le '.now()->format('d/m/Y H:i').'. A verifier avant activation.',
+                        'notes' => 'Proposition automatique appliquée le '.now()->format('d/m/Y H:i').'. À vérifier avant activation.',
                         'status' => 'draft',
                         'created_by' => $existing?->created_by ?? $actor->id,
                     ],
@@ -447,6 +466,100 @@ class TimetableGenerationService
         $process->mustRun();
 
         return json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    private function solutionErrors(array $input, array $result): array
+    {
+        $assignments = collect($input['assignments'] ?? [])
+            ->filter(fn ($assignment): bool => is_array($assignment) && filled($assignment['id'] ?? null))
+            ->keyBy(fn (array $assignment): int => (int) $assignment['id']);
+        $slots = collect($input['slots'] ?? [])
+            ->filter(fn ($slot): bool => is_array($slot) && filled($slot['key'] ?? null))
+            ->keyBy(fn (array $slot): string => (string) $slot['key']);
+        $entries = collect($result['assignments'] ?? []);
+        $errors = [];
+        $placed = [];
+        $daily = [];
+        $assignmentSlots = [];
+        $classSlots = [];
+        $teacherSlots = [];
+
+        foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                $errors[] = 'Le moteur a renvoye une ligne de cours illisible.';
+
+                continue;
+            }
+
+            $assignmentId = (int) ($entry['class_subject_id'] ?? 0);
+            $slotKey = (string) ($entry['slot_key'] ?? '');
+            $assignment = $assignments->get($assignmentId);
+            $slot = $slots->get($slotKey);
+
+            if (! $assignment || ! $slot) {
+                $errors[] = 'Le moteur a renvoye un cours ou un creneau inconnu.';
+
+                continue;
+            }
+
+            $classId = (int) ($entry['class_id'] ?? 0);
+            $teacherId = (int) ($entry['teacher_id'] ?? 0);
+            $day = (string) ($entry['day'] ?? '');
+            $periodId = (int) ($entry['period_id'] ?? 0);
+
+            if ($classId !== (int) $assignment['class_id']
+                || $teacherId !== (int) $assignment['teacher_id']
+                || $day !== (string) $slot['day']
+                || $periodId !== (int) $slot['period_id']) {
+                $errors[] = 'Le moteur a renvoye un cours rattache a une mauvaise classe, un mauvais professeur ou un mauvais creneau.';
+            }
+
+            if (! in_array($slotKey, $assignment['allowed_slot_keys'] ?? [], true)) {
+                $errors[] = 'Le moteur a place un cours pendant une indisponibilite.';
+            }
+
+            $assignmentSlotKey = $assignmentId.'|'.$slotKey;
+            $classSlotKey = $classId.'|'.$slotKey;
+            $teacherSlotKey = $teacherId.'|'.$slotKey;
+
+            if (isset($assignmentSlots[$assignmentSlotKey])) {
+                $errors[] = 'Le moteur a duplique un cours sur le meme creneau.';
+            }
+            if (isset($classSlots[$classSlotKey])) {
+                $errors[] = 'Le moteur a cree un conflit de classe sur un meme creneau.';
+            }
+            if (isset($teacherSlots[$teacherSlotKey])) {
+                $errors[] = 'Le moteur a cree un conflit de professeur sur un meme creneau.';
+            }
+
+            $assignmentSlots[$assignmentSlotKey] = true;
+            $classSlots[$classSlotKey] = true;
+            $teacherSlots[$teacherSlotKey] = true;
+            $placed[$assignmentId][] = $slotKey;
+            $daily[$assignmentId][$day] = ($daily[$assignmentId][$day] ?? 0) + 1;
+
+            $mustBeFixed = in_array($slotKey, $assignment['fixed_slot_keys'] ?? [], true);
+            if ((bool) ($entry['is_fixed'] ?? false) !== $mustBeFixed) {
+                $errors[] = 'Le moteur n a pas preserve correctement un cours verrouille.';
+            }
+        }
+
+        foreach ($assignments as $assignmentId => $assignment) {
+            $assignmentPlaced = $placed[$assignmentId] ?? [];
+            if (count($assignmentPlaced) !== (int) ($assignment['required_slots'] ?? 0)) {
+                $errors[] = 'Le moteur n a pas respecte tous les volumes horaires demandes.';
+            }
+            if (array_diff($assignment['fixed_slot_keys'] ?? [], $assignmentPlaced) !== []) {
+                $errors[] = 'Le moteur a deplace un cours verrouille.';
+            }
+            foreach ($daily[$assignmentId] ?? [] as $count) {
+                if ($count > (int) ($assignment['max_slots_per_day'] ?? 2)) {
+                    $errors[] = 'Le moteur a depasse la limite quotidienne d une matiere.';
+                }
+            }
+        }
+
+        return array_values(array_unique($errors));
     }
 
     private function fingerprint(array $input): string

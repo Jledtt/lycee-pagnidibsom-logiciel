@@ -13,6 +13,7 @@ use App\Models\Timetable;
 use App\Models\TimetableGenerationRun;
 use App\Models\TimetablePeriod;
 use App\Models\User;
+use App\Services\TimetableGenerationService;
 use App\Services\TimetableTemplateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Database\Seeders\DatabaseSeeder;
@@ -332,6 +333,44 @@ class TimetablePlanningTest extends TestCase
         $this->assertDatabaseMissing('timetables', ['school_class_id' => $schoolClass->id]);
     }
 
+    public function test_generator_refuses_to_apply_a_tampered_solution(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe proposition alteree');
+        $subject = Subject::query()->create([
+            'name' => 'Securite du planning',
+            'code' => 'SECP',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 1,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)->post(route('timetables.planning.generate'));
+        $run = TimetableGenerationRun::query()->firstOrFail();
+        $result = $run->result;
+        $result['assignments'][0]['period_id'] = 999999;
+        $run->update(['result' => $result]);
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.apply', $run->fresh()))
+            ->assertSessionHasErrors('generation');
+
+        $this->assertDatabaseMissing('timetables', ['school_class_id' => $schoolClass->id]);
+        $this->assertSame(TimetableGenerationRun::STATUS_DRAFT, $run->fresh()->status);
+    }
+
     public function test_generator_never_replaces_an_active_timetable(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -391,6 +430,104 @@ class TimetablePlanningTest extends TestCase
             'school_class_id' => $targetClass->id,
             'status' => 'draft',
         ]);
+    }
+
+    public function test_generator_rejects_a_solver_result_with_a_teacher_conflict(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $firstClass = $this->schoolClass('Classe conflit solveur A');
+        $secondClass = $this->schoolClass('Classe conflit solveur B');
+
+        foreach ([$firstClass, $secondClass] as $index => $schoolClass) {
+            $subject = Subject::query()->create([
+                'name' => 'Matiere solveur '.($index + 1),
+                'code' => 'SOLV'.($index + 1),
+                'status' => 'active',
+            ]);
+            ClassSubject::query()->create([
+                'school_class_id' => $schoolClass->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'coefficient' => 2,
+                'weekly_hours' => 1,
+                'is_active' => true,
+            ]);
+        }
+
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        config()->set('services.timetable_solver.python', PHP_BINARY);
+        config()->set('services.timetable_solver.script', base_path('tests/Fixtures/timetable_solver_conflict_stub.php'));
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'))
+            ->assertRedirect();
+
+        $run = TimetableGenerationRun::query()->firstOrFail();
+        $this->assertSame(TimetableGenerationRun::STATUS_FAILED, $run->status);
+        $this->assertSame('INVALID_SOLUTION', $run->solver_status);
+        $this->assertContains(
+            'Le moteur a cree un conflit de professeur sur un meme creneau.',
+            $run->diagnostics['blockers'],
+        );
+        $this->assertDatabaseCount('timetables', 0);
+    }
+
+    public function test_readiness_blocks_a_shared_teacher_without_enough_unique_slots(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        foreach (['A', 'B'] as $suffix) {
+            $schoolClass = $this->schoolClass('Classe capacite '.$suffix);
+            $subject = Subject::query()->create([
+                'name' => 'Matiere capacite '.$suffix,
+                'code' => 'CAP'.$suffix,
+                'status' => 'active',
+            ]);
+            ClassSubject::query()->create([
+                'school_class_id' => $schoolClass->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'coefficient' => 2,
+                'weekly_hours' => 1,
+                'is_active' => true,
+            ]);
+        }
+
+        app(TimetableTemplateService::class)->ensurePeriods($academicYear);
+        $period = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->orderBy('sort_order')
+            ->firstOrFail();
+        $schedule = TeacherAvailabilitySchedule::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'teacher_id' => $teacher->id,
+            'status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+            'source' => 'manual',
+            'submitted_at' => now(),
+            'validated_at' => now(),
+            'updated_by' => $user->id,
+        ]);
+        $schedule->availabilities()->create([
+            'timetable_period_id' => $period->id,
+            'day_of_week' => 'monday',
+            'status' => TeacherAvailability::STATUS_AVAILABLE,
+        ]);
+
+        $readiness = app(TimetableGenerationService::class)->readiness($academicYear);
+
+        $this->assertContains(
+            $teacher->name.' : les disponibilites ne couvrent pas son volume horaire total.',
+            $readiness['blockers'],
+        );
     }
 
     public function test_non_manager_cannot_access_automatic_planning(): void

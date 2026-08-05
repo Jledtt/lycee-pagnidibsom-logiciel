@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\TimetableTemplateService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
 class TimetableTest extends TestCase
@@ -104,10 +105,17 @@ class TimetableTest extends TestCase
             'room' => 'Salle 1',
         ]);
 
-        $this->actingAs($user)
+        $pdfResponse = $this->actingAs($user)
             ->get(route('timetables.pdf', $timetable))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+
+        $pdf = (new Parser)->parseContent($pdfResponse->getContent());
+        $this->assertCount(1, $pdf->getPages());
+        $pdfText = preg_replace('/\s+/u', ' ', str_replace("'", '’', $pdf->getText()));
+        $this->assertStringContainsString('Bâtir l’excellence', $pdfText);
+        $this->assertStringContainsString('PUBLIÉ - DOCUMENT OFFICIEL', $pdfText);
+        $this->assertStringContainsString('Mathématiques', $pdfText);
     }
 
     public function test_timetable_groups_same_period_on_one_row(): void
@@ -201,6 +209,8 @@ class TimetableTest extends TestCase
 
         $this->assertStringContainsString('Professeur principal / équipe pédagogique', $html);
         $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
+        $this->assertStringContainsString('Publié - document officiel', $html);
+        $this->assertStringContainsString('Dernière mise à jour', $html);
         $this->assertStringContainsString('Mathématiques', $html);
     }
 
