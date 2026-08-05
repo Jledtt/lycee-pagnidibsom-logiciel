@@ -15,7 +15,7 @@
 @endsection
 
 @section('content')
-    @php($statusLabels = ['present' => 'Present', 'absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifie'])
+    @php($statusLabels = ['present' => 'Présent', 'absent' => 'Absent', 'late' => 'Retard', 'excused' => 'Justifié'])
 
     <section class="panel">
         <div class="panel-head">
@@ -76,7 +76,7 @@
                     <thead>
                         <tr>
                             <th>Classe</th>
-                            <th>Presents</th>
+                            <th>Présents</th>
                             <th>Absents</th>
                             <th>Retards</th>
                                 <th>Actions</th>

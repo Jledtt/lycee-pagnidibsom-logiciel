@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('school_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('school_name')->default('Lycee Prive Pagnidibsom');
+            $table->string('school_name')->default('Lycée Privé Pagnidibsom');
             $table->string('address')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();

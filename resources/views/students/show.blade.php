@@ -184,15 +184,15 @@
                 <strong>{{ $student->origin_school ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Classe frequentee</span>
+                <span>Classe fréquentée</span>
                 <strong>{{ $student->previous_class ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Classe déjà redoublee</span>
+                <span>Classe déjà redoublée</span>
                 <strong>{{ $student->repeated_class ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Nationalite</span>
+                <span>Nationalité</span>
                 <strong>{{ $student->nationality ?? '-' }}</strong>
             </div>
             <div class="detail-item">

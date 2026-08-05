@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="reason">Motif de l absence / sortie</label>
+                    <label for="reason">Motif de l’absence ou de la sortie</label>
                     <input id="reason" name="reason" value="{{ old('reason') }}" placeholder="Ex: Maladie" required>
                     @error('reason') <small class="error">{{ $message }}</small> @enderror
                 </div>
@@ -95,7 +95,7 @@
             </div>
             <div class="detail-item">
                 <span>Trace</span>
-                <strong>Chaque document reste dans l historique avec le nom de l élève, la date, le motif et l auteur.</strong>
+                <strong>Chaque document reste dans l’historique avec le nom de l’élève, la date, le motif et l’auteur.</strong>
             </div>
             <div class="detail-item">
                 <span>Impression</span>

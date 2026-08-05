@@ -30,7 +30,7 @@ class StudentImportTest extends TestCase
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString('Nom', $sheetXml);
         $this->assertStringContainsString('Prénom', $sheetXml);
-        $this->assertStringContainsString('Date naissance', $sheetXml);
+        $this->assertStringContainsString('Date de naissance', $sheetXml);
         $this->assertStringContainsString('Ouedraogo', $sheetXml);
         $this->assertStringContainsString('Awa', $sheetXml);
     }

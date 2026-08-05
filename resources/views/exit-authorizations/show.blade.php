@@ -1,7 +1,7 @@
 @extends('layouts.app', [
     'title' => 'Autorisation - Lycée Privé Pagnidibsom',
     'active' => 'exit-authorizations',
-    'pageTitle' => 'Autorisation entree / sortie',
+    'pageTitle' => 'Autorisation d’entrée et de sortie',
     'pageSubtitle' => $authorization->student?->full_name,
 ])
 

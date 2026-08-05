@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Situation financiere - {{ $student->full_name }}</title>
+    <title>Situation financière - {{ $student->full_name }}</title>
     <style>
         @page { margin: 18px 22px; }
         body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 10px; }
@@ -39,7 +39,7 @@
         </tr>
     </table>
 
-    <div class="title">Situation financiere de l’élève</div>
+    <div class="title">Situation financière de l’élève</div>
 
     <table class="summary">
         <tr>

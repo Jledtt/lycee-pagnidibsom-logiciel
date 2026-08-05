@@ -139,7 +139,7 @@
     <section class="panel import-review-commit">
         <div>
             <h2>Confirmer l’import</h2>
-            <p class="panel-subtitle">Les disponibilités actuelles des {{ $preview['summary']['teachers'] }} professeur(s) concerné(s) seront remplacées pour {{ $academicYear->name }}.</p>
+            <p class="panel-subtitle">{{ $preview['summary']['teachers'] === 1 ? 'Les disponibilités actuelles du professeur concerné seront remplacées' : 'Les disponibilités actuelles des '.$preview['summary']['teachers'].' professeurs concernés seront remplacées' }} pour {{ $academicYear->name }}.</p>
         </div>
         <div class="page-actions">
             <form method="POST" action="{{ route('timetables.planning.import.clear') }}">
@@ -152,7 +152,7 @@
                 action="{{ route('timetables.planning.import.apply') }}"
                 data-confirm
                 data-confirm-title="Importer les disponibilités"
-                data-confirm-object="{{ $preview['summary']['teachers'] }} professeur(s) — {{ $academicYear->name }}"
+                data-confirm-object="{{ $preview['summary']['teachers'] }} {{ $preview['summary']['teachers'] === 1 ? 'professeur' : 'professeurs' }} — {{ $academicYear->name }}"
                 data-confirm-message="Les fiches actuelles des professeurs concernés seront remplacées par les lignes validées de cet aperçu."
                 data-confirm-action="Confirmer l’import"
                 data-confirm-tone="primary"

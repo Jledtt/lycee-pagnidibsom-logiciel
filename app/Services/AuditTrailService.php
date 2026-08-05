@@ -79,7 +79,7 @@ class AuditTrailService
     public function description(string $action, Model $model, ?string $label = null): string
     {
         $labels = [
-            'created' => 'Creation',
+            'created' => 'Création',
             'updated' => 'Modification',
             'deleted' => 'Suppression',
             'permissions_updated' => 'Modification des acces',
@@ -123,6 +123,6 @@ class AuditTrailService
         $name = trim((string) ($student->full_name ?? ''));
         $matricule = trim((string) ($student->matricule ?? ''));
 
-        return trim($name.($matricule !== '' ? ' - '.$matricule : '')) ?: 'Eleve #'.$student->getKey();
+        return trim($name.($matricule !== '' ? ' - '.$matricule : '')) ?: 'Élève #'.$student->getKey();
     }
 }

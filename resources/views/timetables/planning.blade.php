@@ -43,7 +43,7 @@
             <div class="planning-preview-head">
                 <div>
                     <strong>{{ $importPreview['filename'] }}</strong>
-                    <span>{{ $importPreview['summary']['valid'] }} valide(s), {{ $importPreview['summary']['invalid'] }} à corriger, {{ $importPreview['summary']['ignored'] ?? 0 }} ignorée(s)</span>
+                    <span>Valides : {{ $importPreview['summary']['valid'] }} · À corriger : {{ $importPreview['summary']['invalid'] }} · Ignorées : {{ $importPreview['summary']['ignored'] ?? 0 }}</span>
                 </div>
                 <div class="page-actions">
                     <form method="POST" action="{{ route('timetables.planning.import.clear') }}">
@@ -77,7 +77,7 @@
             <details class="planning-diagnostics planning-diagnostics--error" @if (count($readiness['blockers']) <= 5) open @endif>
                 <summary>
                     <strong>Points bloquants</strong>
-                    <span>{{ count($readiness['blockers']) }} élément(s) à corriger</span>
+                    <span>Corrections requises : {{ count($readiness['blockers']) }}</span>
                 </summary>
                 <ul>@foreach ($readiness['blockers'] as $message)<li>{{ $message }}</li>@endforeach</ul>
             </details>
@@ -161,7 +161,7 @@
                 <form method="POST" action="{{ route('timetables.planning.apply', $run) }}" style="margin-top:16px"
                     data-confirm
                     data-confirm-title="Appliquer la proposition"
-                    data-confirm-object="{{ $readiness['counts']['classes'] }} classe(s) — {{ $academicYear->name }}"
+                    data-confirm-object="{{ $readiness['counts']['classes'] }} {{ $readiness['counts']['classes'] === 1 ? 'classe' : 'classes' }} — {{ $academicYear->name }}"
                     data-confirm-message="Les grilles non actives seront remplacées par ces brouillons automatiques. Les emplois du temps actifs resteront inchangés."
                     data-confirm-action="Appliquer les brouillons"
                     data-confirm-tone="primary">

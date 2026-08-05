@@ -51,9 +51,9 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('eleves-par-classe', $year, $class),
-            ['Matricule', 'Nom', 'Prenom', 'Sexe', 'Date naissance', 'Lieu naissance', 'Classe', 'Telephone domicile', 'Tuteur', 'Contact tuteur', 'Statut'],
+            ['Matricule', 'Nom', 'Prénom', 'Sexe', 'Date de naissance', 'Lieu de naissance', 'Classe', 'Téléphone du domicile', 'Tuteur', 'Contact du tuteur', 'Statut'],
             $this->exports->studentRows($year, $class?->id, $request->string('status')->toString() ?: null),
-            'Eleves'
+            'Élèves'
         );
     }
 
@@ -72,7 +72,7 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('paiements', $year, $class),
-            ['Recu', 'Date', 'Eleve', 'Matricule', 'Classe', 'Montant FCFA', 'Mode', 'Statut', 'Recu par', 'Notes'],
+            ['Reçu', 'Date', 'Élève', 'Matricule', 'Classe', 'Montant FCFA', 'Mode', 'Statut', 'Reçu par', 'Notes'],
             $this->exports->paymentRows(
                 $year,
                 $class?->id,
@@ -97,7 +97,7 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('impayes', $year, $class),
-            ['Eleve', 'Matricule', 'Classe', 'Total attendu FCFA', 'Total paye FCFA', 'Reste FCFA', 'Tuteur', 'Contact'],
+            ['Élève', 'Matricule', 'Classe', 'Total attendu FCFA', 'Total payé FCFA', 'Reste FCFA', 'Tuteur', 'Contact'],
             $this->exports->unpaidRows($year, $class?->id, $request->filled('minimum_balance') ? (float) $request->input('minimum_balance') : null),
             'Impayes'
         );
@@ -118,7 +118,7 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('notes', $year, $class),
-            ['Classe', 'Periode', 'Evaluation', 'Matiere', 'Matricule', 'Eleve', 'Note', 'Note sur', 'Statut', 'Observation'],
+            ['Classe', 'Période', 'Évaluation', 'Matière', 'Matricule', 'Élève', 'Note', 'Note sur', 'Statut', 'Observation'],
             $this->exports->gradeRows(
                 $year,
                 $class?->id,
@@ -145,7 +145,7 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('absences', $year, $class),
-            ['Date', 'Classe', 'Matricule', 'Eleve', 'Statut', 'Retard minutes', 'Motif', 'Justifie le'],
+            ['Date', 'Classe', 'Matricule', 'Élève', 'Statut', 'Retard en minutes', 'Motif', 'Justifié le'],
             $this->exports->attendanceRows(
                 $year,
                 $class?->id,
@@ -171,7 +171,7 @@ class ExportCenterWebController extends Controller
 
         return $this->xlsx->download(
             $this->exports->filename('resultats-examen-blanc', $year, $class),
-            ['Examen', 'Classe', 'Anonymat', 'Matricule', 'Eleve', 'Salle', 'Moyenne', 'Statut', 'Decision jury', 'Observation'],
+            ['Examen', 'Classe', 'Anonymat', 'Matricule', 'Élève', 'Salle', 'Moyenne', 'Statut', 'Décision du jury', 'Observation'],
             $this->exports->mockExamResultRows(
                 $year,
                 $request->integer('mock_exam_id') ?: null,

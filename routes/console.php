@@ -29,36 +29,36 @@ Artisan::command('inspire', function () {
 Artisan::command('lpp:backup-database {--path=}', function () {
     $backup = app(DatabaseBackupService::class)->create($this->option('path'));
 
-    $this->info('Sauvegarde JSON creee : '.$backup['json_path']);
+    $this->info('Sauvegarde JSON créée : '.$backup['json_path']);
 
     if ($backup['native_path']) {
-        $this->info('Sauvegarde native creee : '.$backup['native_path']);
+        $this->info('Sauvegarde native créée : '.$backup['native_path']);
     }
 
     if ($backup['archive_path']) {
-        $this->info('Archive telechargeable creee : '.$backup['archive_path']);
+        $this->info('Archive téléchargeable créée : '.$backup['archive_path']);
     }
-})->purpose('Sauvegarder la base de donnees LPP');
+})->purpose('Sauvegarder la base de données LPP');
 
 Artisan::command('lpp:test-backup-alert', function () {
     event(new BackupHasFailed(
-        new RuntimeException('[TEST] Verification du canal d alerte des sauvegardes LPP.'),
+        new RuntimeException('[TEST] Vérification du canal d’alerte des sauvegardes LPP.'),
         'local',
         config('backup.backup.name'),
     ));
 
-    $this->info('Alerte de test transmise au canal de notification configure.');
-})->purpose('Tester l alerte mail des sauvegardes');
+    $this->info('Alerte de test transmise au canal de notification configuré.');
+})->purpose('Tester l’alerte par e-mail des sauvegardes');
 
 Artisan::command('lpp:notify-backup-restore-failure', function () {
     event(new BackupHasFailed(
-        new RuntimeException('La verification periodique de restauration LPP a echoue. Consultez storage/logs/backup-restore-check.log.'),
+        new RuntimeException('La vérification périodique de restauration LPP a échoué. Consultez storage/logs/backup-restore-check.log.'),
         'local',
         config('backup.backup.name'),
     ));
 
     $this->error('Alerte de restauration transmise.');
-})->purpose('Signaler un echec de verification de restauration');
+})->purpose('Signaler un échec de vérification de restauration');
 
 Artisan::command('lpp:clean-demo-data', function () {
     $matricules = ['TEST-2026-0001', 'TEST-2026-0002'];
@@ -122,18 +122,18 @@ Artisan::command('lpp:clean-demo-data', function () {
             ->delete();
     });
 
-    $this->info('Donnees de test Awa/Issa supprimees.');
-})->purpose('Supprimer les eleves de demonstration TEST-2026');
+    $this->info('Données de test Awa/Issa supprimées.');
+})->purpose('Supprimer les élèves de démonstration TEST-2026');
 
 Artisan::command('lpp:setup-classes-subjects', function () {
     $result = app(PagnidibsomClassSubjectSetupService::class)->apply();
 
-    $this->info('Configuration appliquee pour '.$result['academic_year'].'.');
+    $this->info('Configuration appliquée pour '.$result['academic_year'].'.');
 
     foreach ($result['classes'] as $line) {
-        $this->line('- '.$line['class'].' : '.$line['subjects'].' matiere(s)');
+        $this->line('- '.$line['class'].' : '.$line['subjects'].' matière(s)');
     }
-})->purpose('Creer les classes et rattacher les matieres LPP');
+})->purpose('Créer les classes et rattacher les matières LPP');
 
 Artisan::command('lpp:setup-tariffs', function () {
     $result = app(TariffDefaultService::class)->applyToActiveAcademicYear();

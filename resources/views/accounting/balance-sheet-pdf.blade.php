@@ -51,7 +51,7 @@
 
     <table class="summary">
         <tr>
-            <td>Entrees : {{ number_format($summary['income'], 0, ',', ' ') }} {{ $currency }}</td>
+            <td>Entrées : {{ number_format($summary['income'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Dépenses : {{ number_format($summary['expenses'], 0, ',', ' ') }} {{ $currency }}</td>
             <td>Solde net : {{ number_format($summary['balance'], 0, ',', ' ') }} {{ $currency }}</td>
         </tr>
@@ -62,7 +62,7 @@
         </tr>
     </table>
 
-    <div class="section-title">Entrees par mode de paiement</div>
+    <div class="section-title">Entrées par mode de paiement</div>
     <table class="list">
         <thead>
             <tr>
@@ -78,7 +78,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td>Aucune entree valide</td>
+                    <td>Aucune entrée validée</td>
                     <td class="right">0 {{ $currency }}</td>
                 </tr>
             @endforelse
@@ -101,7 +101,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td>Aucune depense valide</td>
+                    <td>Aucune dépense validée</td>
                     <td class="right">0 {{ $currency }}</td>
                 </tr>
             @endforelse

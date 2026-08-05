@@ -42,7 +42,7 @@
 
     <div class="title">{{ $title }}</div>
 
-    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectee') as $room => $candidates)
+    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectée') as $room => $candidates)
         <div class="room">{{ $room }} - {{ $candidates->count() }} candidat(s)</div>
         <table class="list">
             <thead>

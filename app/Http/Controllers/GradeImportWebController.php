@@ -38,7 +38,7 @@ class GradeImportWebController extends Controller
 
     public function preview(Request $request, Assessment $assessment, GradeImportService $gradeImport): RedirectResponse
     {
-        abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked, 403, 'Cette évaluation est verrouillée.');
 
         $data = $request->validate([
             'grades_file' => ['required', 'file', 'max:5120', 'mimes:csv,txt,xlsx,pdf'],
@@ -54,14 +54,14 @@ class GradeImportWebController extends Controller
 
     public function store(Request $request, Assessment $assessment, GradeImportService $gradeImport): RedirectResponse
     {
-        abort_if($assessment->is_locked, 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked, 403, 'Cette évaluation est verrouillée.');
 
         $preview = session()->get($this->sessionKey($assessment));
 
         if (! $preview || (int) ($preview['assessment_id'] ?? 0) !== $assessment->id) {
             return redirect()
                 ->route('grades.import', $assessment)
-                ->withErrors(['grades_file' => 'Importe d abord un fichier pour afficher la previsualisation.']);
+                ->withErrors(['grades_file' => 'Importe d’abord un fichier pour afficher la prévisualisation.']);
         }
 
         $result = $gradeImport->import($preview, $assessment, $request->user()?->id);

@@ -26,7 +26,7 @@
 
                 <div class="form-grid">
                     <div class="field wide">
-                        <label>Nom affiche</label>
+                        <label>Nom affiché</label>
                         <input name="name" value="{{ old('name') }}" placeholder="Ex: Certificat médical" required>
                     </div>
 
@@ -116,7 +116,7 @@
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
             <h2>Pieces configurées</h2>
-            <span class="badge">{{ $requiredDocuments->count() }} regle(s)</span>
+            <span class="badge">{{ $requiredDocuments->count() }} règle(s)</span>
         </div>
 
         @if ($requiredDocuments->isEmpty())

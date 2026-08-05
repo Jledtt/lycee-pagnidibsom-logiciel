@@ -44,7 +44,7 @@
             <div class="panel-head">
                 <h2>Détails du paiement</h2>
                 <span class="badge {{ $payment->status === 'valid' ? '' : 'badge-warning' }}">
-                    {{ $payment->status === 'valid' ? 'Valide' : 'Annulé' }}
+                    {{ $payment->status === 'valid' ? 'Validé' : 'Annulé' }}
                 </span>
             </div>
 

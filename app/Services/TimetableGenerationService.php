@@ -100,7 +100,7 @@ class TimetableGenerationService
     {
         if (! $run->canBeApplied()) {
             throw ValidationException::withMessages([
-                'generation' => 'Cette proposition ne peut pas etre appliquee.',
+                'generation' => 'Cette proposition ne peut pas être appliquée.',
             ]);
         }
 
@@ -109,13 +109,13 @@ class TimetableGenerationService
         if ($prepared['diagnostics']['blockers'] !== []
             || $this->fingerprint($freshInput) !== ($run->input_snapshot['fingerprint'] ?? null)) {
             throw ValidationException::withMessages([
-                'generation' => 'Les classes, volumes horaires ou disponibilites ont change. Genere une nouvelle proposition.',
+                'generation' => 'Les classes, les volumes horaires ou les disponibilités ont changé. Génère une nouvelle proposition.',
             ]);
         }
 
         if ($this->solutionErrors($run->input_snapshot, $run->result ?? []) !== []) {
             throw ValidationException::withMessages([
-                'generation' => 'La proposition contient un conflit technique. Genere une nouvelle proposition.',
+                'generation' => 'La proposition contient un conflit technique. Génère une nouvelle proposition.',
             ]);
         }
 
@@ -151,7 +151,7 @@ class TimetableGenerationService
 
                 if ($existing?->status === 'active') {
                     throw ValidationException::withMessages([
-                        'generation' => 'Un emploi du temps est devenu actif depuis la generation. Aucune grille n a ete remplacee.',
+                        'generation' => 'Un emploi du temps est devenu actif depuis la génération. Aucune grille n’a été remplacée.',
                     ]);
                 }
 
@@ -304,26 +304,29 @@ class TimetableGenerationService
         $blockers = [];
         $warnings = [];
         if ($periods->isEmpty()) {
-            $blockers[] = 'Aucun creneau de cours actif n est configure.';
+            $blockers[] = 'Aucun créneau de cours actif n’est configuré.';
         }
         if ($targetClasses->isEmpty()) {
-            $blockers[] = 'Toutes les classes actives ont deja un emploi du temps actif.';
+            $blockers[] = 'Toutes les classes actives ont déjà un emploi du temps actif.';
         }
         if ($activeTimetables->isNotEmpty()) {
-            $warnings[] = $activeTimetables->count().' classe(s) avec une grille active seront conservees sans modification.';
+            $activeCount = $activeTimetables->count();
+            $warnings[] = $activeCount === 1
+                ? 'Une classe possède déjà une grille active, qui sera conservée sans modification.'
+                : $activeCount.' classes possèdent déjà une grille active, qui sera conservée sans modification.';
         }
         foreach ($targetClasses->whereNotIn('id', $assignmentClassIds) as $classWithoutSubjects) {
-            $blockers[] = $classWithoutSubjects->name.' : aucune matiere active n est configuree.';
+            $blockers[] = $classWithoutSubjects->name.' : aucune matière active n’est configurée.';
         }
         if ($invalidLockedEntries->isNotEmpty()) {
-            $blockers[] = 'Des cours verrouilles ne correspondent plus a une affectation active. Corrige-les avant la generation.';
+            $blockers[] = 'Des cours verrouillés ne correspondent plus à une affectation active. Corrige-les avant la génération.';
         }
 
         $assignments = [];
         foreach ($allAssignments as $assignment) {
-            $label = ($assignment->schoolClass?->name ?? 'Classe').' - '.($assignment->subject?->name ?? 'Matiere');
+            $label = ($assignment->schoolClass?->name ?? 'Classe').' - '.($assignment->subject?->name ?? 'Matière');
             if (! $assignment->teacher_id) {
-                $blockers[] = $label.' : aucun professeur affecte.';
+                $blockers[] = $label.' : aucun professeur affecté.';
 
                 continue;
             }
@@ -334,13 +337,13 @@ class TimetableGenerationService
                 continue;
             }
             if (abs($hours - round($hours)) > 0.001) {
-                $blockers[] = $label.' : le volume horaire doit correspondre a un nombre entier de creneaux.';
+                $blockers[] = $label.' : le volume horaire doit correspondre à un nombre entier de créneaux.';
 
                 continue;
             }
             $schedule = $schedules->get($assignment->teacher_id);
             if (! $schedule) {
-                $blockers[] = $label.' : disponibilites du professeur non validees.';
+                $blockers[] = $label.' : disponibilités du professeur non validées.';
 
                 continue;
             }
@@ -369,12 +372,12 @@ class TimetableGenerationService
                 ->count();
 
             if ($fixed->count() > $required) {
-                $blockers[] = $label.' : plus de cours verrouilles que le volume horaire demande.';
+                $blockers[] = $label.' : plus de cours verrouillés que le volume horaire demandé.';
 
                 continue;
             }
             if ($allowed->count() < $required || $fixed->diff($allowed)->isNotEmpty()) {
-                $blockers[] = $label.' : pas assez de creneaux disponibles pour '.$required.' heure(s).';
+                $blockers[] = $label.' : pas assez de créneaux disponibles pour '.$required.' heure(s).';
 
                 continue;
             }
@@ -395,14 +398,14 @@ class TimetableGenerationService
         }
 
         if ($allAssignments->isEmpty() && $targetClasses->isNotEmpty()) {
-            $blockers[] = 'Aucune matiere active n est affectee aux classes a planifier.';
+            $blockers[] = 'Aucune matière active n’est affectée aux classes à planifier.';
         }
 
         foreach (collect($assignments)->groupBy('class_id') as $classId => $classAssignments) {
             $capacity = $periods->count() * count($days);
             if ($classAssignments->sum('required_slots') > $capacity) {
                 $className = $targetClasses->firstWhere('id', $classId)?->name ?? 'Une classe';
-                $blockers[] = $className.' : le volume horaire depasse la capacite de la semaine.';
+                $blockers[] = $className.' : le volume horaire dépasse la capacité de la semaine.';
             }
         }
         foreach (collect($assignments)->groupBy('teacher_id') as $teacherId => $teacherAssignments) {
@@ -412,7 +415,7 @@ class TimetableGenerationService
                 ->count();
             if ($teacherAssignments->sum('required_slots') > $allowedCapacity) {
                 $teacherName = User::query()->whereKey($teacherId)->value('name') ?? 'Un professeur';
-                $blockers[] = $teacherName.' : les disponibilites ne couvrent pas son volume horaire total.';
+                $blockers[] = $teacherName.' : les disponibilités ne couvrent pas son volume horaire total.';
             }
         }
 
@@ -486,7 +489,7 @@ class TimetableGenerationService
 
         foreach ($entries as $entry) {
             if (! is_array($entry)) {
-                $errors[] = 'Le moteur a renvoye une ligne de cours illisible.';
+                $errors[] = 'Le moteur a renvoyé une ligne de cours illisible.';
 
                 continue;
             }
@@ -497,7 +500,7 @@ class TimetableGenerationService
             $slot = $slots->get($slotKey);
 
             if (! $assignment || ! $slot) {
-                $errors[] = 'Le moteur a renvoye un cours ou un creneau inconnu.';
+                $errors[] = 'Le moteur a renvoyé un cours ou un créneau inconnu.';
 
                 continue;
             }
@@ -511,11 +514,11 @@ class TimetableGenerationService
                 || $teacherId !== (int) $assignment['teacher_id']
                 || $day !== (string) $slot['day']
                 || $periodId !== (int) $slot['period_id']) {
-                $errors[] = 'Le moteur a renvoye un cours rattache a une mauvaise classe, un mauvais professeur ou un mauvais creneau.';
+                $errors[] = 'Le moteur a renvoyé un cours rattaché à une mauvaise classe, à un mauvais professeur ou à un mauvais créneau.';
             }
 
             if (! in_array($slotKey, $assignment['allowed_slot_keys'] ?? [], true)) {
-                $errors[] = 'Le moteur a place un cours pendant une indisponibilite.';
+                $errors[] = 'Le moteur a placé un cours pendant une indisponibilité.';
             }
 
             $assignmentSlotKey = $assignmentId.'|'.$slotKey;
@@ -523,13 +526,13 @@ class TimetableGenerationService
             $teacherSlotKey = $teacherId.'|'.$slotKey;
 
             if (isset($assignmentSlots[$assignmentSlotKey])) {
-                $errors[] = 'Le moteur a duplique un cours sur le meme creneau.';
+                $errors[] = 'Le moteur a dupliqué un cours sur le même créneau.';
             }
             if (isset($classSlots[$classSlotKey])) {
-                $errors[] = 'Le moteur a cree un conflit de classe sur un meme creneau.';
+                $errors[] = 'Le moteur a créé un conflit de classe sur un même créneau.';
             }
             if (isset($teacherSlots[$teacherSlotKey])) {
-                $errors[] = 'Le moteur a cree un conflit de professeur sur un meme creneau.';
+                $errors[] = 'Le moteur a créé un conflit de professeur sur un même créneau.';
             }
 
             $assignmentSlots[$assignmentSlotKey] = true;
@@ -540,21 +543,21 @@ class TimetableGenerationService
 
             $mustBeFixed = in_array($slotKey, $assignment['fixed_slot_keys'] ?? [], true);
             if ((bool) ($entry['is_fixed'] ?? false) !== $mustBeFixed) {
-                $errors[] = 'Le moteur n a pas preserve correctement un cours verrouille.';
+                $errors[] = 'Le moteur n’a pas conservé correctement un cours verrouillé.';
             }
         }
 
         foreach ($assignments as $assignmentId => $assignment) {
             $assignmentPlaced = $placed[$assignmentId] ?? [];
             if (count($assignmentPlaced) !== (int) ($assignment['required_slots'] ?? 0)) {
-                $errors[] = 'Le moteur n a pas respecte tous les volumes horaires demandes.';
+                $errors[] = 'Le moteur n’a pas respecté tous les volumes horaires demandés.';
             }
             if (array_diff($assignment['fixed_slot_keys'] ?? [], $assignmentPlaced) !== []) {
-                $errors[] = 'Le moteur a deplace un cours verrouille.';
+                $errors[] = 'Le moteur a déplacé un cours verrouillé.';
             }
             foreach ($daily[$assignmentId] ?? [] as $count) {
                 if ($count > (int) ($assignment['max_slots_per_day'] ?? 2)) {
-                    $errors[] = 'Le moteur a depasse la limite quotidienne d une matiere.';
+                    $errors[] = 'Le moteur a dépassé la limite quotidienne d’une matière.';
                 }
             }
         }

@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Retour</a>
     @can('payments.create')
-        <a class="btn btn-primary" href="{{ route('accounting.expenses.create') }}">Nouvelle depense</a>
+        <a class="btn btn-primary" href="{{ route('accounting.expenses.create') }}">Nouvelle dépense</a>
     @endcan
 @endsection
 
@@ -94,7 +94,7 @@
                     </div>
                 </div>
             @else
-                <div class="empty">Cette depense est valide.</div>
+                <div class="empty">Cette dépense est validée.</div>
 
                 @can('payments.cancel')
                     <form method="POST" action="{{ route('accounting.expenses.cancel', $expense) }}" style="margin-top:16px">
@@ -104,7 +104,7 @@
                             <label for="reason">Motif d’annulation</label>
                             <textarea id="reason" name="reason" required></textarea>
                         </div>
-                        <button class="btn btn-danger" type="submit">Annuler la depense</button>
+                        <button class="btn btn-danger" type="submit">Annuler la dépense</button>
                     </form>
                 @endcan
             @endif

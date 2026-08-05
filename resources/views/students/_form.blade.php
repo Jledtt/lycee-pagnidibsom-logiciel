@@ -56,7 +56,7 @@
         </div>
 
         <div class="field">
-            <label for="nationality">Nationalite</label>
+            <label for="nationality">Nationalité</label>
             <input id="nationality" name="nationality" value="{{ old('nationality', $student->nationality) }}">
         </div>
 
@@ -71,12 +71,12 @@
         </div>
 
         <div class="field">
-            <label for="previous_class">Classe frequentee</label>
+            <label for="previous_class">Classe fréquentée</label>
             <input id="previous_class" name="previous_class" value="{{ old('previous_class', $student->previous_class) }}">
         </div>
 
         <div class="field">
-            <label for="repeated_class">Classe déjà redoublee</label>
+            <label for="repeated_class">Classe déjà redoublée</label>
             <input id="repeated_class" name="repeated_class" value="{{ old('repeated_class', $student->repeated_class) }}">
         </div>
 

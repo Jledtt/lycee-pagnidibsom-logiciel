@@ -2,7 +2,7 @@
     'title' => 'Nouvel élève - Lycée Privé Pagnidibsom',
     'active' => 'students',
     'pageTitle' => 'Nouvel élève',
-    'pageSubtitle' => 'Creation du dossier administratif et du contact tuteur',
+    'pageSubtitle' => 'Création du dossier administratif et du contact du tuteur',
 ])
 
 @section('content')

@@ -81,7 +81,7 @@
         <section class="panel" style="margin-top:16px">
             <div class="panel-head">
                 <h2>{{ $schoolClass->name }}</h2>
-                <span class="badge">{{ $studentRows->count() }} élève(s) affiche(s)</span>
+                <span class="badge">{{ $studentRows->count() }} élève(s) affiché(s)</span>
             </div>
 
             @if ($rows->isEmpty())
@@ -108,7 +108,7 @@
 
                                 <span class="ledger-metric">
                                     <strong class="money">{{ number_format($studentRow['paid'], 0, ',', ' ') }} {{ $currency }}</strong>
-                                    <span>Deja paye</span>
+                                    <span>Déjà payé</span>
                                 </span>
 
                                 <span class="ledger-progress">

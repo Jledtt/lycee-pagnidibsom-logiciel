@@ -4,7 +4,7 @@
 
 <section class="panel">
     <div class="panel-head">
-        <h2>Informations de la depense</h2>
+        <h2>Informations de la dépense</h2>
     </div>
 
     <div class="form-grid">

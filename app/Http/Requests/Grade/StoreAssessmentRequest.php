@@ -66,7 +66,7 @@ class StoreAssessmentRequest extends FormRequest
                 $period = TermPeriod::query()->find($termPeriodId);
 
                 if ($period && (int) $period->term_id !== $this->integer('term_id')) {
-                    $validator->errors()->add('term_period_id', 'La periode choisie ne correspond pas au trimestre.');
+                    $validator->errors()->add('term_period_id', 'La période choisie ne correspond pas au trimestre.');
                 }
             },
         ];

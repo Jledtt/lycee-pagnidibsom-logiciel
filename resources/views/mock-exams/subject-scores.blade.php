@@ -37,7 +37,7 @@
     </section>
 
     @if ($exam->is_locked)
-        <p class="notice" style="margin-top:16px">Session verrouillee : seul l’administrateur peut encore corriger les notes.</p>
+        <p class="notice" style="margin-top:16px">Session verrouillée : seul l’administrateur peut encore corriger les notes.</p>
     @endif
 
     <section class="panel" style="margin-top:16px">

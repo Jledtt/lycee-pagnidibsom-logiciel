@@ -74,12 +74,12 @@
         </tbody>
     </table>
 
-    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectee') as $room => $candidates)
+    @forelse ($exam->candidates->groupBy(fn ($candidate) => $candidate->room_name ?: 'Salle non affectée') as $room => $candidates)
         <div class="room">{{ $room }} - {{ $candidates->count() }} candidat(s)</div>
         <table class="list">
             <tr>
                 <th>Inscrits</th>
-                <th>Present(s)</th>
+                <th>Présent(s)</th>
                 <th>Absent(s)</th>
                 <th>Copies remises</th>
                 <th>Incidents / observations</th>
@@ -100,7 +100,7 @@
                     <th style="width:90px">Anonymat</th>
                     <th>Nom et prénom(s)</th>
                     <th style="width:80px">Classe</th>
-                    <th style="width:80px">Present</th>
+                    <th style="width:80px">Présent</th>
                     <th style="width:80px">Absent</th>
                     <th style="width:110px">Émargement</th>
                 </tr>

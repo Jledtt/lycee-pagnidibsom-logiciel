@@ -10,7 +10,7 @@
     <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
     <a class="btn btn-subtle" href="{{ route('accounting.expenses.pdf', $filters) }}">PDF</a>
     @can('payments.create')
-        <a class="btn btn-primary" href="{{ route('accounting.expenses.create') }}">Nouvelle depense</a>
+        <a class="btn btn-primary" href="{{ route('accounting.expenses.create') }}">Nouvelle dépense</a>
     @endcan
 @endsection
 
@@ -73,7 +73,7 @@
             </div>
 
             @if ($summary['by_category']->isEmpty())
-                <div class="empty">Aucune depense valide sur la période.</div>
+                <div class="empty">Aucune dépense validée sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -100,7 +100,7 @@
             </div>
 
             @if ($summary['by_method']->isEmpty())
-                <div class="empty">Aucune depense valide sur la période.</div>
+                <div class="empty">Aucune dépense validée sur la période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -125,11 +125,11 @@
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
             <h2>Liste des dépenses</h2>
-            <span class="badge">{{ $expenses->total() }} depense(s)</span>
+            <span class="badge">{{ $expenses->total() }} dépense(s)</span>
         </div>
 
         @if ($expenses->isEmpty())
-            <div class="empty">Aucune depense pour ces filtres.</div>
+            <div class="empty">Aucune dépense pour ces filtres.</div>
         @else
             <table class="table">
                 <thead>

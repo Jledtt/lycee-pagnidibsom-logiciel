@@ -19,7 +19,7 @@ class TimetableGridService
     {
         if ($timetable->status === 'active') {
             throw ValidationException::withMessages([
-                'timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant de le modifier.',
+                'timetable' => 'Cet emploi du temps est publié. Repasse-le en brouillon avant de le modifier.',
             ]);
         }
 

@@ -117,7 +117,7 @@ class GradeWebController extends Controller
         abort_if(
             $this->gradeEntryService->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
             403,
-            'Le conseil de classe est verrouille pour ce trimestre.'
+            'Le conseil de classe est verrouillé pour ce trimestre.'
         );
 
         $assessment = $this->gradeEntryService->createAssessment($academicYear, $data, $request->user());
@@ -134,7 +134,7 @@ class GradeWebController extends Controller
 
     public function updateGrades(UpdateGradesRequest $request, Assessment $assessment): RedirectResponse
     {
-        abort_if($assessment->is_locked && ! $request->user()?->can('grades.unlock'), 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked && ! $request->user()?->can('grades.unlock'), 403, 'Cette évaluation est verrouillée.');
 
         $this->gradeEntryService->updateGrades($assessment, $request->validated('grades') ?? [], $request->user());
 
@@ -204,7 +204,7 @@ class GradeWebController extends Controller
             'Classe',
             'Période',
             'Matière',
-            'Evaluation',
+            'Évaluation',
             'Note',
             'Note sur',
             'Note / 20',
@@ -296,7 +296,7 @@ class GradeWebController extends Controller
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse
     {
-        abort_if($assessment->is_locked && ! request()->user()?->can('grades.unlock'), 403, 'Cette evaluation est verrouillee.');
+        abort_if($assessment->is_locked && ! request()->user()?->can('grades.unlock'), 403, 'Cette évaluation est verrouillée.');
 
         $schoolClassId = $assessment->school_class_id;
         $termId = $assessment->term_id;

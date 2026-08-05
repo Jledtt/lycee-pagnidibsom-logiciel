@@ -1,7 +1,7 @@
 @extends('layouts.app', [
-    'title' => 'Situation financiere - ' . $student->full_name,
+    'title' => 'Situation financière - ' . $student->full_name,
     'active' => 'payments',
-    'pageTitle' => 'Situation financiere',
+    'pageTitle' => 'Situation financière',
     'pageSubtitle' => $student->full_name . ' - ' . $student->matricule,
 ])
 

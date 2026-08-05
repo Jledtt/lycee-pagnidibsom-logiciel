@@ -42,7 +42,7 @@
                     <th>Role</th>
                     <th>Ce rôle peut</th>
                     <th>Actions</th>
-                    <th>Modules autorises</th>
+                    <th>Modules autorisés</th>
                     <th></th>
                 </tr>
             </thead>

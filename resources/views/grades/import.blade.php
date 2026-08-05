@@ -7,7 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('grades.index', ['school_class_id' => $assessment->school_class_id, 'term_id' => $assessment->term_id, 'assessment_id' => $assessment->id]) }}">Retour notes</a>
-    <a class="btn btn-subtle" href="{{ route('grades.import.template', $assessment) }}" data-download-feedback="Modele de notes telecharge. Ouvre-le dans Excel puis complete la colonne Note.">Modele Excel</a>
+    <a class="btn btn-subtle" href="{{ route('grades.import.template', $assessment) }}" data-download-feedback="Modèle de notes téléchargé. Ouvre-le dans Excel, puis complète la colonne Note.">Modèle Excel</a>
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
     @endif
 
     @if ($assessment->is_locked)
-        <p class="error">Cette evaluation est verrouillee. Deverrouille-la avant d importer des notes.</p>
+        <p class="error">Cette évaluation est verrouillée. Déverrouille-la avant d’importer des notes.</p>
     @endif
 
     <section class="summary-row">
@@ -58,7 +58,7 @@
             </div>
 
             <p class="notice" style="margin-top:16px">
-                Utilise le modele Excel pour garder les matricules exacts. Pour un PDF, il doit être un PDF texte exporte depuis Excel, Word ou un logiciel scolaire.
+                Utilise le modèle Excel pour conserver les matricules exacts. Le PDF doit contenir du texte exporté depuis Excel, Word ou un logiciel scolaire.
             </p>
         </div>
 

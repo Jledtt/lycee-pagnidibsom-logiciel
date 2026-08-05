@@ -86,7 +86,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="center">Aucune depense pour ces filtres.</td>
+                    <td colspan="8" class="center">Aucune dépense pour ces filtres.</td>
                 </tr>
             @endforelse
         </tbody>

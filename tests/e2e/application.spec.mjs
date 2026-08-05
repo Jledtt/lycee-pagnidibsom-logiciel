@@ -458,7 +458,7 @@ test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
     expect(guideOverflows).toBe(false);
 });
 
-test('la revision visuelle de l emploi du temps reste contenue et explicite', async ({ page }, testInfo) => {
+test('la révision visuelle de l’emploi du temps reste contenue et explicite', async ({ page }, testInfo) => {
     await login(page);
     await page.goto('/timetables');
 
@@ -473,7 +473,7 @@ test('la revision visuelle de l emploi du temps reste contenue et explicite', as
 
     await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
     await expect(page.locator('.topbar h1')).toContainText(/vision/);
-    await expect(page.getByText('Cours places')).toBeVisible();
+    await expect(page.getByText('Cours placés')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Grille visuelle' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Corriger la grille' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
@@ -486,7 +486,7 @@ test('la revision visuelle de l emploi du temps reste contenue et explicite', as
     });
 });
 
-test('la generation automatique produit un brouillon revisable et un PDF valide', async ({ page }, testInfo) => {
+test('la génération automatique produit un brouillon révisable et un PDF valide', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium-desktop', 'Le parcours métier complet est exécuté une fois sur ordinateur.');
 
     await login(page);

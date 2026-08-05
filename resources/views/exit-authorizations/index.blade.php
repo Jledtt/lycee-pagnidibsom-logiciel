@@ -1,8 +1,8 @@
 @extends('layouts.app', [
     'title' => 'Autorisations - Lycée Privé Pagnidibsom',
     'active' => 'exit-authorizations',
-    'pageTitle' => 'Autorisations entree / sortie',
-    'pageSubtitle' => 'Documents remis aux élèves autorises a quitter ou rejoindre l etablissement',
+    'pageTitle' => 'Autorisations d’entrée et de sortie',
+    'pageSubtitle' => 'Documents remis aux élèves autorisés à quitter ou à rejoindre l’établissement',
 ])
 
 @section('page_actions')

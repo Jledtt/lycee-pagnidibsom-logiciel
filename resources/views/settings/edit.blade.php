@@ -1,7 +1,7 @@
 @extends('layouts.app', [
     'title' => 'Paramètres - ' . ($settings->school_name ?? 'Lycée Privé Pagnidibsom'),
     'active' => 'settings',
-    'pageTitle' => 'Paramètres de l école',
+    'pageTitle' => 'Paramètres de l’école',
     'pageSubtitle' => 'Informations officielles utilisees dans les fiches, reçus et certificats',
 ])
 

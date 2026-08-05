@@ -30,7 +30,7 @@ class TimetableReviewTest extends TestCase
         $this->actingAs($user)
             ->get(route('timetables.review', $timetable))
             ->assertOk()
-            ->assertSee('1/2 creneaux places')
+            ->assertSee('1/2 créneaux placés')
             ->assertSee('Publication impossible pour le moment');
 
         $this->actingAs($user)
@@ -112,7 +112,7 @@ class TimetableReviewTest extends TestCase
         $this->actingAs($user)
             ->get(route('timetables.review', $draftTimetable))
             ->assertOk()
-            ->assertSee('La salle laboratoire 1 est deja occupee')
+            ->assertSee('La salle laboratoire 1 est déjà occupée')
             ->assertSee('3e Salle A');
     }
 

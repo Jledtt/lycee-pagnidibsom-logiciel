@@ -2,7 +2,7 @@
     'title' => 'Situation des paiements par classe - Lycée Privé Pagnidibsom',
     'active' => 'reports',
     'pageTitle' => 'Situation des paiements',
-    'pageSubtitle' => 'Suivi financier par classe pour ' . ($academicYear?->name ?? 'l année active'),
+    'pageSubtitle' => 'Suivi financier par classe pour ' . ($academicYear?->name ?? 'l’année active'),
 ])
 
 @section('page_actions')

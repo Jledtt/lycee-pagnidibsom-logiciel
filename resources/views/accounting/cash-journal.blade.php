@@ -129,8 +129,8 @@
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
-            <h2>Operations de caisse</h2>
-            <span class="badge">{{ $payments->total() }} operation(s)</span>
+            <h2>Opérations de caisse</h2>
+            <span class="badge">{{ $payments->total() }} opération(s)</span>
         </div>
 
         @if ($payments->isEmpty())

@@ -18,7 +18,7 @@ class GradeImportService
     {
         return [
             'Matricule',
-            'Nom et prenom',
+            'Nom et prénom',
             'Note',
             'Statut',
             'Commentaire',
@@ -155,7 +155,7 @@ class GradeImportService
         }
 
         if (is_numeric($score) && ((float) $score < 0 || (float) $score > (float) $assessment->max_score)) {
-            $errors[] = 'Note hors barème. Maximum autorise: '.number_format((float) $assessment->max_score, 0, ',', ' ').'.';
+            $errors[] = 'Note hors barème. Maximum autorisé : '.number_format((float) $assessment->max_score, 0, ',', ' ').'.';
         }
 
         if ($status !== Grade::STATUS_GRADED) {

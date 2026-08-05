@@ -51,7 +51,7 @@
         <tr>
             <td><strong>Mode :</strong> {{ $methodLabels[$payment->payment_method] ?? $payment->payment_method }}</td>
             <td><strong>Caissier :</strong> {{ $payment->receiver?->name ?? '-' }}</td>
-            <td><strong>Statut :</strong> {{ $payment->status === 'valid' ? 'Valide' : ucfirst($payment->status) }}</td>
+            <td><strong>Statut :</strong> {{ $payment->status === 'valid' ? 'Validé' : ucfirst($payment->status) }}</td>
         </tr>
     </table>
 

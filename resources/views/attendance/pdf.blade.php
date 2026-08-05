@@ -50,7 +50,7 @@
     <table class="summary">
         <tr>
             <td>Classe : {{ $schoolClass->name }}</td>
-            <td>Presents : {{ $summary['present'] }}</td>
+            <td>Présents : {{ $summary['present'] }}</td>
             <td>Absents : {{ $summary['absent'] }}</td>
             <td>Retards : {{ $summary['late'] }}</td>
             <td>Justifies : {{ $summary['excused'] }}</td>

@@ -73,7 +73,7 @@ class ReportWebController extends Controller
         return $xlsxExport->download($filename, [
             'No',
             'Matricule',
-            'Nom et prenom',
+            'Nom et prénom',
             'Sexe',
             'Date naissance',
             'Tuteur',

@@ -80,7 +80,7 @@
             </div>
             <div class="module">
                 <strong>{{ $lockSummary['locked'] }} / {{ $lockSummary['total'] }}</strong>
-                <span>{{ $lockSummary['is_locked'] ? 'Conseil verrouille' : ($lockSummary['is_partial'] ? 'Verrouillage partiel' : 'Non verrouille') }}</span>
+                <span>{{ $lockSummary['is_locked'] ? 'Conseil verrouillé' : ($lockSummary['is_partial'] ? 'Verrouillage partiel' : 'Non verrouillé') }}</span>
             </div>
         </section>
 
@@ -176,7 +176,7 @@
                                     <td>{{ $reportCard->decision ?: '-' }}</td>
                                     <td>
                                         <span class="badge {{ $reportCard->status === 'draft' ? 'badge-warning' : '' }}">
-                                            {{ ['draft' => 'Brouillon', 'validated' => 'Valide', 'published' => 'Publie'][$reportCard->status] ?? $reportCard->status }}
+                                            {{ ['draft' => 'Brouillon', 'validated' => 'Validé', 'published' => 'Publié'][$reportCard->status] ?? $reportCard->status }}
                                         </span>
                                     </td>
                                     <td>

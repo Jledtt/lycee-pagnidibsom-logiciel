@@ -2,7 +2,7 @@
     'title' => 'Emplois du temps - Lycée Privé Pagnidibsom',
     'active' => 'timetables',
     'pageTitle' => 'Emplois du temps',
-    'pageSubtitle' => 'Creation, modification et impression des grilles hebdomadaires',
+    'pageSubtitle' => 'Création, modification et impression des grilles hebdomadaires',
 ])
 
 @section('page_actions')
@@ -179,7 +179,7 @@
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">
             <h2>Emplois du temps créés</h2>
-            <span class="badge">{{ $timetables->count() }} grille(s)</span>
+            <span class="badge">{{ $timetables->count() }} {{ $timetables->count() === 1 ? 'grille' : 'grilles' }}</span>
         </div>
 
         @if ($timetables->isEmpty())

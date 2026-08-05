@@ -52,7 +52,7 @@ class StudentImportWebController extends Controller
         if (! $preview) {
             return redirect()
                 ->route('students.import')
-                ->withErrors(['students_file' => 'Importe d abord un fichier pour afficher la previsualisation.']);
+                ->withErrors(['students_file' => 'Importe d’abord un fichier pour afficher la prévisualisation.']);
         }
 
         $result = $studentImport->import($preview, $this->activeAcademicYear(), $request->user()?->id);

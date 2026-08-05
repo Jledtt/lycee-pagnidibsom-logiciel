@@ -109,7 +109,7 @@ class MockExamWebController extends Controller
         ]);
 
         if ($mockExam->is_locked && ! $request->user()->hasRole('admin')) {
-            abort(403, 'Seul un administrateur peut corriger une session verrouillee.');
+            abort(403, 'Seul un administrateur peut corriger une session verrouillée.');
         }
 
         $updates = ['result_status' => $data['result_status']];
@@ -332,7 +332,7 @@ class MockExamWebController extends Controller
         return Pdf::loadView('mock-exams.rooms-pdf', [
             'exam' => $mockExam,
             'school' => SchoolSetting::query()->first(),
-            'title' => 'Repartition par salle',
+            'title' => 'Répartition par salle',
         ])
             ->setPaper('a4')
             ->stream('repartition-salles-'.Str::slug($mockExam->name).'.pdf');
@@ -651,7 +651,7 @@ class MockExamWebController extends Controller
     private function ensureExamEditable(Request $request, MockExam $mockExam): void
     {
         if ($mockExam->is_locked && ! $request->user()->hasRole('admin')) {
-            abort(403, 'Session verrouillee. Seul un administrateur peut corriger.');
+            abort(403, 'Session verrouillée. Seul un administrateur peut corriger.');
         }
     }
 

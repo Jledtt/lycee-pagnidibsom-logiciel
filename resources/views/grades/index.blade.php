@@ -2,7 +2,7 @@
     'title' => 'Notes - Lycée Privé Pagnidibsom',
     'active' => 'grades',
     'pageTitle' => 'Notes',
-    'pageSubtitle' => 'Creation des evaluations et saisie des notes',
+    'pageSubtitle' => 'Création des évaluations et saisie des notes',
 ])
 
 @section('page_actions')
@@ -87,7 +87,7 @@
                 <strong>{{ $classSubjects->count() }}</strong>
             </div>
             <div class="stat">
-                <span>Evaluations</span>
+                <span>Évaluations</span>
                 <strong>{{ $assessments->count() }}</strong>
             </div>
         </section>
@@ -95,7 +95,7 @@
         <section class="grid two-col">
             <div class="panel">
                 <div class="panel-head">
-                    <h2>Nouvelle evaluation</h2>
+                    <h2>Nouvelle évaluation</h2>
                 </div>
 
                 @if ($classSubjects->isEmpty())
@@ -150,19 +150,19 @@
                         </div>
 
                         <div class="form-actions wide">
-                            <button class="btn btn-primary" type="submit">Créer l’evaluation</button>
+                            <button class="btn btn-primary" type="submit">Créer l’évaluation</button>
                         </div>
                     </form>
                 @endif
 
                 <div class="panel" style="margin-top:16px">
                     <div class="panel-head">
-                        <h2>Evaluations</h2>
+                        <h2>Évaluations</h2>
                         <span class="badge">{{ $assessments->count() }} ligne(s)</span>
                     </div>
 
                     @if ($assessments->isEmpty())
-                        <div class="empty">Aucune evaluation pour cette classe et ce trimestre.</div>
+                        <div class="empty">Aucune évaluation pour cette classe et ce trimestre.</div>
                     @else
                         <div class="subject-list-scroll">
                             <div class="subject-list-inner ledger-list">
@@ -176,7 +176,7 @@
                                                     {{ $entryModeLabels[$assessment->entry_mode] ?? 'Standard' }}
                                                 </span>
                                                 <span class="badge {{ $assessment->is_locked ? 'badge-warning' : '' }}" style="margin-top:6px">
-                                                    {{ $assessment->is_locked ? 'Verrouillee' : 'Ouverte' }}
+                                                    {{ $assessment->is_locked ? 'Verrouillée' : 'Ouverte' }}
                                                 </span>
                                             </div>
                                             <div class="ledger-metric">
@@ -235,14 +235,14 @@
                 </div>
 
                 @if (! $selectedAssessment)
-                    <div class="empty">Choisis ou créé une evaluation pour saisir les notes.</div>
+                    <div class="empty">Choisis ou crée une évaluation pour saisir les notes.</div>
                 @elseif ($students->isEmpty())
                     <div class="empty">Aucun élève actif dans cette classe.</div>
                 @else
                     @if ($selectedTerm->is_closed || $selectedAssessment->is_locked)
                         <p class="notice">
                             @if ($selectedAssessment->is_locked)
-                                Cette evaluation est verrouillee. Les notes sont en lecture seule.
+                                Cette évaluation est verrouillée. Les notes sont en lecture seule.
                             @else
                                 Ce trimestre est marque ferme, mais les notes restent modifiables.
                             @endif
@@ -252,11 +252,11 @@
                     <p class="notice">
                         Mode de saisie : <strong>{{ $entryModeLabels[$selectedEntryMode] ?? 'Standard' }}</strong>.
                         @if ($isWrittenMode)
-                            Les copies ecrites sont saisies par anonymat, puis rattachees aux eleves.
+                            Les copies écrites sont saisies par anonymat, puis rattachées aux élèves.
                         @elseif ($isOralSportMode)
-                            Les matieres orales et sportives sont saisies directement par eleve.
+                            Les matières orales et sportives sont saisies directement par élève.
                         @else
-                            Saisie classique des notes par eleve.
+                            Saisie classique des notes par élève.
                         @endif
                     </p>
 
@@ -268,7 +268,7 @@
                             <table class="table" style="min-width:720px">
                                 <thead>
                                     <tr>
-                                        <th>{{ $isWrittenMode ? 'Anonymat' : 'Eleve' }}</th>
+                                        <th>{{ $isWrittenMode ? 'Anonymat' : 'Élève' }}</th>
                                         <th>Note / {{ number_format($selectedAssessment->max_score, 0, ',', ' ') }}</th>
                                         <th>Statut</th>
                                         <th>Commentaire</th>

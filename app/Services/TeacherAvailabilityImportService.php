@@ -62,7 +62,7 @@ class TeacherAvailabilityImportService
         $rawRows = $this->readRows($file);
         if (count($rawRows) > 1001) {
             throw ValidationException::withMessages([
-                'availability_file' => 'Le fichier depasse 1 000 lignes. Separe-le en plusieurs imports.',
+                'availability_file' => 'Le fichier dépasse 1 000 lignes. Sépare-le en plusieurs imports.',
             ]);
         }
         $extension = Str::lower($file->getClientOriginalExtension());
@@ -307,7 +307,7 @@ class TeacherAvailabilityImportService
             : collect();
 
         if ($startsAt && $endsAt && $matchedPeriods->isEmpty()) {
-            $errors[] = 'Aucun creneau configure ne se trouve dans cette plage horaire.';
+            $errors[] = 'Aucun créneau configuré ne se trouve dans cette plage horaire.';
         }
 
         if ($teacher && $day && $availabilityStatus) {

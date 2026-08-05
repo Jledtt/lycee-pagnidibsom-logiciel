@@ -2,12 +2,12 @@
     'title' => 'Import élèves - Lycée Privé Pagnidibsom',
     'active' => 'students',
     'pageTitle' => 'Import Excel/PDF des élèves',
-    'pageSubtitle' => 'Ajouter plusieurs dossiers élèves a partir d un fichier CSV, XLSX ou PDF texte',
+    'pageSubtitle' => 'Ajouter plusieurs dossiers d’élèves à partir d’un fichier CSV, XLSX ou PDF texte',
 ])
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('students.index') }}">Retour élèves</a>
-    <a class="btn btn-subtle" href="{{ route('students.import.template') }}" data-download-feedback="Modele d import telecharge. Ouvre-le dans Excel puis complete les lignes.">Modele Excel</a>
+    <a class="btn btn-subtle" href="{{ route('students.import.template') }}" data-download-feedback="Modèle d’import téléchargé. Ouvre-le dans Excel, puis complète les lignes.">Modèle Excel</a>
 @endsection
 
 @section('content')
@@ -39,7 +39,7 @@
             </div>
 
             <p class="notice" style="margin-top:16px">
-                Les PDF scannes ou pris en photo demandent une etape OCR. Pour l instant, l import PDF fonctionne avec les PDF texte exportes depuis Excel, Word ou un logiciel scolaire.
+                Les PDF scannés ou photographiés nécessitent une étape de reconnaissance de texte. Pour l’instant, l’importation fonctionne avec les PDF texte exportés depuis Excel, Word ou un logiciel scolaire.
             </p>
         </div>
 

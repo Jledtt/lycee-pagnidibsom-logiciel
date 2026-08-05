@@ -273,7 +273,7 @@ class StaffRoleWebController extends Controller
     {
         return [
             'admin' => 'Contrôle complet du logiciel, des utilisateurs, des paramètres et des corrections.',
-            'direction' => 'Suivi global de l etablissement, rapports, bulletins et controles sans saisie financiere.',
+            'direction' => 'Suivi global de l’établissement, rapports, bulletins et contrôles sans saisie financière.',
             'secretariat' => 'Gestion quotidienne des dossiers élèves, inscriptions, imports et documents administratifs.',
             'comptable' => 'Paiements, reçus, impayés et rapports financiers, sans accès aux notes ni aux paramètres.',
             'enseignant' => 'Saisie pédagogique : notes, absences et consultation des dossiers utiles.',

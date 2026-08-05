@@ -6,7 +6,7 @@
             <div>
                 <div class="brand-mark">LPP</div>
                 <h1>Lycée Privé Pagnidibsom</h1>
-                <p>Gestion scolaire, administrative et financiere de l’etablissement.</p>
+                <p>Gestion scolaire, administrative et financière de l’établissement.</p>
             </div>
             <p>{{ now()->year }} - Plateforme interne</p>
         </section>

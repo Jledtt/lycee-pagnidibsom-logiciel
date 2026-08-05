@@ -71,7 +71,7 @@
                     <td class="center">{{ $row['missing'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="center">Aucun resultat.</td></tr>
+                <tr><td colspan="8" class="center">Aucun résultat.</td></tr>
             @endforelse
         </tbody>
     </table>

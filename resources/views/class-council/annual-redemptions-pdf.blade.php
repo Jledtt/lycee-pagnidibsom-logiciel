@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Liste des élèves rachetes</title>
+    <title>Liste des élèves rachetés</title>
     <style>
         @page { margin: 22px 26px; }
         body { margin: 0; color: #000; font-family: "DejaVu Serif", serif; font-size: 10px; }
@@ -40,7 +40,7 @@
         </tr>
     </table>
 
-    <div class="title">Liste des élèves rachetes</div>
+    <div class="title">Liste des élèves rachetés</div>
 
     <table class="list">
         <thead>
@@ -74,7 +74,7 @@
         </tbody>
     </table>
 
-    <p>Arrete la presente liste a {{ $eligibleRows->count() }} élève(s) rachete(s).</p>
+    <p>Arrêtée la présente liste à {{ $eligibleRows->count() }} élève(s) racheté(s).</p>
 
     <div class="stamp">
         Ouagadougou, le {{ now()->format('d/m/Y') }}<br>

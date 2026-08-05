@@ -379,7 +379,7 @@ class TimetablePlanningTest extends TestCase
         $teacher = $this->userWithRole('enseignant');
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $protectedClass = $this->schoolClass('Classe protegee');
-        $targetClass = $this->schoolClass('Classe a generer');
+        $targetClass = $this->schoolClass('Classe à générer');
         $subject = Subject::query()->firstOrCreate(['name' => 'Reseaux'], ['code' => 'RES', 'status' => 'active']);
         ClassSubject::query()->create([
             'school_class_id' => $targetClass->id,
@@ -470,7 +470,7 @@ class TimetablePlanningTest extends TestCase
         $this->assertSame(TimetableGenerationRun::STATUS_FAILED, $run->status);
         $this->assertSame('INVALID_SOLUTION', $run->solver_status);
         $this->assertContains(
-            'Le moteur a cree un conflit de professeur sur un meme creneau.',
+            'Le moteur a créé un conflit de professeur sur un même créneau.',
             $run->diagnostics['blockers'],
         );
         $this->assertDatabaseCount('timetables', 0);
@@ -525,7 +525,7 @@ class TimetablePlanningTest extends TestCase
         $readiness = app(TimetableGenerationService::class)->readiness($academicYear);
 
         $this->assertContains(
-            $teacher->name.' : les disponibilites ne couvrent pas son volume horaire total.',
+            $teacher->name.' : les disponibilités ne couvrent pas son volume horaire total.',
             $readiness['blockers'],
         );
     }

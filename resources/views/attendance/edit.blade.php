@@ -15,7 +15,7 @@
 @section('content')
     <section class="summary-row">
         <div class="stat">
-            <span>Presents</span>
+            <span>Présents</span>
             <strong>{{ $summary['present'] }}</strong>
         </div>
         <div class="stat">
@@ -42,7 +42,7 @@
                 @method('PUT')
 
                 <div class="form-actions" style="margin-bottom:12px">
-                    <button class="btn btn-subtle" type="button" data-mark-all-present>Marquer tous presents</button>
+                    <button class="btn btn-subtle" type="button" data-mark-all-present>Marquer tous présents</button>
                     <button class="btn btn-primary" type="submit">Enregistrer le pointage</button>
                 </div>
 
@@ -69,7 +69,7 @@
                                 </td>
                                 <td>
                                     <select name="records[{{ $loop->index }}][status]" data-attendance-status>
-                                        <option value="present" @selected($status === 'present')>Present</option>
+                                        <option value="present" @selected($status === 'present')>Présent</option>
                                         <option value="absent" @selected($status === 'absent')>Absent</option>
                                         <option value="late" @selected($status === 'late')>Retard</option>
                                         <option value="excused" @selected($status === 'excused')>Absence justifiée</option>

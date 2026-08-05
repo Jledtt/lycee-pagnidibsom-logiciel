@@ -38,18 +38,18 @@ class TimetableReviewService
         }
 
         if ($assignments->isEmpty() && $courses->isNotEmpty()) {
-            $warnings[] = 'Cette grille utilise des libelles historiques. Les volumes horaires ne peuvent pas etre controles.';
+            $warnings[] = 'Cette grille utilise des libellés historiques. Les volumes horaires ne peuvent pas être contrôlés.';
         }
 
         $unlinked = $courses->whereNull('class_subject_id');
         if ($unlinked->isNotEmpty() && $assignments->isNotEmpty()) {
-            $warnings[] = $unlinked->count().' cours ne sont pas relies a une affectation pedagogique.';
+            $warnings[] = $unlinked->count().' cours ne sont pas reliés à une affectation pédagogique.';
         }
 
         $invalidLinks = $courses->whereNotNull('class_subject_id')
             ->reject(fn (TimetableEntry $entry): bool => $assignments->contains('id', $entry->class_subject_id));
         if ($invalidLinks->isNotEmpty()) {
-            $blockers[] = $invalidLinks->count().' cours utilisent une affectation inactive ou appartenant a une autre classe.';
+            $blockers[] = $invalidLinks->count().' cours utilisent une affectation inactive ou appartenant à une autre classe.';
         }
 
         $this->availabilityBlocker($timetable, $courses, $blockers);
@@ -78,7 +78,7 @@ class TimetableReviewService
 
         if ($entry->timetable_id !== $timetable->id || ! $this->isCourse($entry)) {
             throw ValidationException::withMessages([
-                'entry' => 'Ce creneau ne peut pas etre verrouille.',
+                'entry' => 'Ce créneau ne peut pas être verrouillé.',
             ]);
         }
 
@@ -105,7 +105,7 @@ class TimetableReviewService
 
         if (! $audit['can_publish']) {
             throw ValidationException::withMessages([
-                'publication' => $audit['blockers'][0] ?? 'La grille doit etre corrigee avant publication.',
+                'publication' => $audit['blockers'][0] ?? 'La grille doit être corrigée avant sa publication.',
             ]);
         }
 
@@ -123,7 +123,7 @@ class TimetableReviewService
     {
         if ($timetable->status !== 'active') {
             throw ValidationException::withMessages([
-                'timetable' => 'Seul un emploi du temps publie peut etre repasse en brouillon.',
+                'timetable' => 'Seul un emploi du temps publié peut être repassé en brouillon.',
             ]);
         }
 
@@ -140,17 +140,17 @@ class TimetableReviewService
             $hours = (float) $assignment->weekly_hours;
             $expected = max(0, (int) round($hours));
             $placed = $courses->where('class_subject_id', $assignment->id)->count();
-            $label = $assignment->subject?->name ?? 'Matiere #'.$assignment->id;
+            $label = $assignment->subject?->name ?? 'Matière #'.$assignment->id;
 
             if (! $assignment->teacher_id) {
-                $blockers[] = $label.' : aucun professeur affecte.';
+                $blockers[] = $label.' : aucun professeur affecté.';
             }
             if ($hours <= 0) {
                 $blockers[] = $label.' : volume horaire hebdomadaire manquant.';
             } elseif (abs($hours - round($hours)) > 0.001) {
-                $blockers[] = $label.' : le volume horaire doit etre un nombre entier de creneaux.';
+                $blockers[] = $label.' : le volume horaire doit être un nombre entier de créneaux.';
             } elseif ($placed !== $expected) {
-                $blockers[] = $label.' : '.$placed.'/'.$expected.' creneaux places.';
+                $blockers[] = $label.' : '.$placed.'/'.$expected.' créneaux placés.';
             }
 
             return [
@@ -197,7 +197,7 @@ class TimetableReviewService
             $conflict = $conflicts->get($this->slotKey($entry, true));
             if ($conflict) {
                 $blockers[] = sprintf(
-                    '%s est deja programme en %s dans la classe %s.',
+                    '%s est déjà programmé en %s dans la classe %s.',
                     $entry->teacher_name,
                     $entry->period_label,
                     $conflict->timetable?->schoolClass?->name ?? 'une autre classe',
@@ -229,7 +229,7 @@ class TimetableReviewService
                 && $this->normalizeRoom($entry->room) === $this->normalizeRoom($other->room));
             if ($conflict) {
                 $blockers[] = sprintf(
-                    'La salle %s est deja occupee en %s par la classe %s.',
+                    'La salle %s est déjà occupée en %s par la classe %s.',
                     $entry->room,
                     $entry->period_label,
                     $conflict->timetable?->schoolClass?->name ?? 'une autre classe',
@@ -242,7 +242,7 @@ class TimetableReviewService
     {
         if ($timetable->status !== 'draft') {
             throw ValidationException::withMessages([
-                'timetable' => 'Cette action est reservee aux emplois du temps en brouillon.',
+                'timetable' => 'Cette action est réservée aux emplois du temps en brouillon.',
             ]);
         }
     }

@@ -69,7 +69,7 @@ class AcademicYearWebController extends Controller
         if ($academicYear->is_active && $data['status'] !== 'active') {
             return redirect()
                 ->route('academic-years.index')
-                ->withErrors(['status' => 'L annee active doit garder le statut active. Active une autre annee avant de la fermer.']);
+                ->withErrors(['status' => 'L’année active doit garder le statut actif. Active une autre année avant de la fermer.']);
         }
 
         $academicYear->update($data);

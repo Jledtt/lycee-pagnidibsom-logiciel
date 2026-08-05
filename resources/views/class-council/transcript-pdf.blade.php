@@ -88,7 +88,7 @@
         <thead>
             <tr>
                 <th>Matière</th>
-                <th>Evaluation</th>
+                <th>Évaluation</th>
                 <th style="width:12%" class="center">Note</th>
                 <th style="width:12%" class="center">Sur</th>
                 <th style="width:12%" class="center">Note / 20</th>
@@ -113,7 +113,7 @@
                     <td>{{ $row['appreciation'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6">Aucune evaluation saisie.</td></tr>
+                <tr><td colspan="6">Aucune évaluation saisie.</td></tr>
             @endforelse
         </tbody>
     </table>

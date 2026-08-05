@@ -39,7 +39,7 @@
                     </label>
                 </div>
                 <div class="form-actions wide">
-                    <button class="btn btn-primary" type="submit">Créer l année</button>
+                    <button class="btn btn-primary" type="submit">Créer l’année</button>
                 </div>
             </form>
         </div>
@@ -136,7 +136,7 @@
                                     <input type="date" name="ends_at" value="{{ $year->ends_at->toDateString() }}" required>
                                 </div>
                                 <div class="form-actions wide">
-                                    <button class="btn btn-subtle" type="submit">Enregistrer l année</button>
+                                    <button class="btn btn-subtle" type="submit">Enregistrer l’année</button>
                                 </div>
                             </form>
 

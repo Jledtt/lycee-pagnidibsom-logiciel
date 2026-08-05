@@ -2,7 +2,7 @@
     'title' => 'Nouvelle classe - Lycée Privé Pagnidibsom',
     'active' => 'classes',
     'pageTitle' => 'Nouvelle classe',
-    'pageSubtitle' => 'Creation d\'une classe pour l\'année ' . ($academicYear?->name ?? 'active'),
+    'pageSubtitle' => 'Création d\'une classe pour l\'année ' . ($academicYear?->name ?? 'active'),
 ])
 
 @section('content')

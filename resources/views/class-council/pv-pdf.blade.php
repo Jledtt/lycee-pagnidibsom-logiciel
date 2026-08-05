@@ -38,7 +38,7 @@
                 <strong>Année scolaire : {{ $academicYear?->name ?? '-' }}</strong><br>
                 Classe : {{ $schoolClass->name }}<br>
                 Trimestre : {{ $term->name }}<br>
-                Verrouillage : {{ $lockSummary['locked'] }} / {{ $lockSummary['total'] }} evaluation(s)
+                Verrouillage : {{ $lockSummary['locked'] }} / {{ $lockSummary['total'] }} évaluation(s)
             </td>
         </tr>
     </table>
@@ -87,7 +87,7 @@
                     <td>{{ $reportCard->decision ?: '-' }}</td>
                     <td>
                         <span class="badge {{ $reportCard->status === 'draft' ? 'warning' : '' }}">
-                            {{ ['draft' => 'Brouillon', 'validated' => 'Valide', 'published' => 'Publie'][$reportCard->status] ?? $reportCard->status }}
+                            {{ ['draft' => 'Brouillon', 'validated' => 'Validé', 'published' => 'Publié'][$reportCard->status] ?? $reportCard->status }}
                         </span>
                     </td>
                 </tr>

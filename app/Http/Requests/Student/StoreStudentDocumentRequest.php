@@ -29,8 +29,8 @@ class StoreStudentDocumentRequest extends FormRequest
     {
         return [
             'document_file.required_unless' => 'Ajoute un fichier PDF ou image, ou marque le document comme manquant.',
-            'document_file.mimes' => 'Le fichier doit etre un PDF ou une image JPG, PNG ou WebP.',
-            'document_file.max' => 'Le fichier ne doit pas depasser 10 Mo.',
+            'document_file.mimes' => 'Le fichier doit être un PDF ou une image JPG, PNG ou WebP.',
+            'document_file.max' => 'Le fichier ne doit pas dépasser 10 Mo.',
         ];
     }
 

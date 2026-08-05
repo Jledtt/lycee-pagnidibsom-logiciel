@@ -12,7 +12,7 @@
 
 @section('content')
     @php($actionLabels = [
-        'created' => 'Creation',
+        'created' => 'Création',
         'updated' => 'Modification',
         'deleted' => 'Suppression',
         'password_changed' => 'Mot de passe change',

@@ -64,7 +64,7 @@
                     <strong>Attestation de frequentation, certificat de radiation, certificat de transfert, carte scolaire.</strong>
                 </div>
                 <div class="detail-item">
-                    <span>Pedagogique</span>
+                    <span>Pédagogique</span>
                     <strong>Bulletins, relevés de notes, listes de classe, convocations aux examens.</strong>
                 </div>
                 <div class="detail-item">

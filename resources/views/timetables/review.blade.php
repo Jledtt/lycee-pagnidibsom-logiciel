@@ -11,7 +11,7 @@
         <a class="btn btn-subtle" href="{{ route('timetables.edit', $timetable) }}">Corriger la grille</a>
     @endif
     @can('timetables.print')
-        <a class="btn btn-subtle" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Telechargement PDF lance.">PDF</a>
+        <a class="btn btn-subtle" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement du PDF lancé.">PDF</a>
     @endcan
 @endsection
 
@@ -32,7 +32,7 @@
         </div>
 
         <div class="planning-metrics timetable-review-metrics">
-            <div><span>Cours places</span><strong>{{ $audit['metrics']['courses'] }}</strong></div>
+            <div><span>Cours placés</span><strong>{{ $audit['metrics']['courses'] }}</strong></div>
             <div><span>Créneaux attendus</span><strong>{{ $audit['metrics']['expected'] }}</strong></div>
             <div><span>Génération automatique</span><strong>{{ $audit['metrics']['automatic'] }}</strong></div>
             <div><span>Corrections manuelles</span><strong>{{ $audit['metrics']['manual'] }}</strong></div>

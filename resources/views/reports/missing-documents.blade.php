@@ -2,7 +2,7 @@
     'title' => 'Pièces manquantes - Lycée Privé Pagnidibsom',
     'active' => 'reports',
     'pageTitle' => 'Pièces manquantes',
-    'pageSubtitle' => 'Contrôle des dossiers administratifs pour ' . ($academicYear?->name ?? 'l année active'),
+    'pageSubtitle' => 'Contrôle des dossiers administratifs pour ' . ($academicYear?->name ?? 'l’année active'),
 ])
 
 @section('page_actions')

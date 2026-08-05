@@ -25,7 +25,7 @@
             <strong class="money">{{ number_format($totalPaid, 0, ',', ' ') }} FCFA</strong>
         </div>
         <div class="stat">
-            <span>Paiements affiches</span>
+            <span>Paiements affichés</span>
             <strong>{{ $payments->total() }}</strong>
         </div>
         <div class="stat">

@@ -2,7 +2,7 @@
     'title' => 'Bilan de caisse - Lycée Privé Pagnidibsom',
     'active' => 'accounting',
     'pageTitle' => 'Bilan de caisse',
-    'pageSubtitle' => 'Synthese des entrees, sorties et solde net',
+    'pageSubtitle' => 'Synthèse des entrées, des sorties et du solde net',
 ])
 
 @section('page_actions')
@@ -29,7 +29,7 @@
 
     <section class="summary-row" style="margin-top:16px">
         <div class="stat">
-            <span>Entrees</span>
+            <span>Entrées</span>
             <strong class="money">{{ number_format($summary['income'], 0, ',', ' ') }} {{ $currency }}</strong>
         </div>
         <div class="stat">
@@ -60,11 +60,11 @@
     <section class="grid two-col" style="margin-top:16px">
         <div class="panel">
             <div class="panel-head">
-                <h2>Entrees par mode</h2>
+                <h2>Entrées par mode</h2>
             </div>
 
             @if ($paymentSummary['by_method']->isEmpty())
-                <div class="empty">Aucune entree valide sur cette période.</div>
+                <div class="empty">Aucune entrée validée sur cette période.</div>
             @else
                 <table class="table">
                     <thead>
@@ -91,7 +91,7 @@
             </div>
 
             @if ($expenseSummary['by_category']->isEmpty())
-                <div class="empty">Aucune depense valide sur cette période.</div>
+                <div class="empty">Aucune dépense validée sur cette période.</div>
             @else
                 <table class="table">
                     <thead>

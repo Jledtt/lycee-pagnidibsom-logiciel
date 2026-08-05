@@ -149,9 +149,12 @@ class TimetablePlanningWebController extends Controller
         $result = $importer->import($preview, $academicYear, $request->user());
         $request->session()->forget(self::IMPORT_SESSION_KEY);
 
+        $teacherLabel = $result['teachers'] === 1 ? 'fiche de disponibilité validée' : 'fiches de disponibilité validées';
+        $rowLabel = $result['rows'] === 1 ? 'ligne' : 'lignes';
+
         return redirect()
             ->route('timetables.planning')
-            ->with('success', $result['teachers'].' fiche(s) de disponibilite validee(s) a partir de '.$result['rows'].' ligne(s).');
+            ->with('success', $result['teachers'].' '.$teacherLabel.' à partir de '.$result['rows'].' '.$rowLabel.'.');
     }
 
     public function clearImport(Request $request): RedirectResponse
@@ -170,8 +173,8 @@ class TimetablePlanningWebController extends Controller
             ->with(
                 $run->canBeApplied() ? 'success' : 'warning',
                 $run->canBeApplied()
-                    ? 'Proposition generee. Verifie les grilles avant de les appliquer.'
-                    : 'Aucune grille n a ete modifiee. Consulte les points a corriger.',
+                    ? 'Proposition générée. Vérifie les grilles avant de les appliquer.'
+                    : 'Aucune grille n’a été modifiée. Consulte les points à corriger.',
             );
     }
 
@@ -187,13 +190,13 @@ class TimetablePlanningWebController extends Controller
 
         return redirect()
             ->route('timetables.planning', ['run' => $timetableGenerationRun->id])
-            ->with('success', 'La proposition a ete appliquee en brouillon. Les emplois du temps actifs ont ete conserves.');
+            ->with('success', 'La proposition a été appliquée en brouillon. Les emplois du temps actifs ont été conservés.');
     }
 
     private function requireActiveAcademicYear(): AcademicYear
     {
         $academicYear = AcademicYear::query()->where('is_active', true)->first();
-        abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
+        abort_if(! $academicYear, 422, 'Aucune année scolaire active.');
 
         return $academicYear;
     }

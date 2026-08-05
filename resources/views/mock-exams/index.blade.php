@@ -195,7 +195,7 @@
                 </div>
 
                 @if ($selectedExam->is_locked)
-                    <p class="notice">Session verrouillee : seul un administrateur peut encore effectuer une correction.</p>
+                    <p class="notice">Session verrouillée : seul un administrateur peut encore effectuer une correction.</p>
                 @endif
 
                 <nav class="exam-workspace-tabs" aria-label="Rubriques de la session">
@@ -351,7 +351,7 @@
                             @can('mock_exams.print')
                                 <a class="btn btn-subtle" href="{{ route('mock-exams.subjects.scores.pdf', [$selectedExam, $subject]) }}" data-download-feedback="Téléchargement de la feuille de notes lancé.">PDF notes</a>
                             @endcan
-                            <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire paye' : ($subject->fee_status === 'approved' ? 'Honoraire valide' : 'A traiter') }}</span>
+                            <span class="badge">{{ $subject->fee_status === 'paid' ? 'Honoraire payé' : ($subject->fee_status === 'approved' ? 'Honoraire validé' : 'À traiter') }}</span>
                         </div>
                     </div>
 
@@ -449,7 +449,7 @@
                             <label>Statut honoraire</label>
                             <select name="fee_status" @disabled(! $canEditExam)>
                                 <option value="pending" @selected($subject->fee_status === 'pending')>A payer</option>
-                                <option value="approved" @selected($subject->fee_status === 'approved')>Valide</option>
+                                <option value="approved" @selected($subject->fee_status === 'approved')>Validé</option>
                                 <option value="paid" @selected($subject->fee_status === 'paid')>Paye</option>
                             </select>
                         </div>

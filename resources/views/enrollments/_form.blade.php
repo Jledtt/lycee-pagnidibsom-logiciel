@@ -51,7 +51,7 @@
                 <option value="active" @selected(old('status', $enrollment->status) === 'active')>Active</option>
                 <option value="pending" @selected(old('status', $enrollment->status) === 'pending')>En attente</option>
                 <option value="completed" @selected(old('status', $enrollment->status) === 'completed')>Terminee</option>
-                <option value="cancelled" @selected(old('status', $enrollment->status) === 'cancelled')>Annulee</option>
+                <option value="cancelled" @selected(old('status', $enrollment->status) === 'cancelled')>Annulée</option>
             </select>
             @error('status') <small class="error">{{ $message }}</small> @enderror
         </div>

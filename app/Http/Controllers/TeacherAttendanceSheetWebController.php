@@ -88,7 +88,7 @@ class TeacherAttendanceSheetWebController extends Controller
         $end = Carbon::parse($data['end_date']);
 
         if ($start->diffInDays($end) > 31) {
-            abort(422, 'La periode ne doit pas depasser 31 jours.');
+            abort(422, 'La période ne doit pas dépasser 31 jours.');
         }
 
         return $data;

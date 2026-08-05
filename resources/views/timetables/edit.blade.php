@@ -127,7 +127,7 @@
 
                                             <div class="timetable-cell-fields {{ $entry?->is_locked ? 'timetable-cell-fields--locked' : '' }}" style="display:grid;gap:6px">
                                                 @if ($entry?->is_locked)
-                                                    <span class="badge">Verrouille</span>
+                                                    <span class="badge">Verrouillé</span>
                                                 @elseif ($entry?->source === 'automatic')
                                                     <span class="badge badge-warning">Automatique</span>
                                                 @endif

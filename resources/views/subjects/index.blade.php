@@ -59,7 +59,7 @@
                 <strong>{{ $subjects->count() }}</strong>
             </div>
             <div class="stat">
-                <span>Proposees pour la classe</span>
+                <span>Proposées pour la classe</span>
                 <strong>{{ count($suggestedSubjects) }}</strong>
             </div>
             <div class="stat">

@@ -112,7 +112,7 @@ return new class extends Migration
             ['sort_order' => 1, 'label' => '7h00-7h55', 'starts_at' => '07:00', 'ends_at' => '07:55', 'is_break' => false],
             ['sort_order' => 2, 'label' => '7h55-8h50', 'starts_at' => '07:55', 'ends_at' => '08:50', 'is_break' => false],
             ['sort_order' => 3, 'label' => '8h50-9h45', 'starts_at' => '08:50', 'ends_at' => '09:45', 'is_break' => false],
-            ['sort_order' => 4, 'label' => 'RECREATION', 'starts_at' => null, 'ends_at' => null, 'is_break' => true],
+            ['sort_order' => 4, 'label' => 'RÉCRÉATION', 'starts_at' => null, 'ends_at' => null, 'is_break' => true],
             ['sort_order' => 5, 'label' => '10h10-11h05', 'starts_at' => '10:10', 'ends_at' => '11:05', 'is_break' => false],
             ['sort_order' => 6, 'label' => '11h05-12h00', 'starts_at' => '11:05', 'ends_at' => '12:00', 'is_break' => false],
             ['sort_order' => 7, 'label' => 'SOIR', 'starts_at' => null, 'ends_at' => null, 'is_break' => true],

@@ -133,7 +133,7 @@
                 <strong>{{ $schoolClass->code ?? '-' }}</strong>
             </div>
             <div class="detail-item">
-                <span>Capacite</span>
+                <span>Capacité</span>
                 <strong>{{ $schoolClass->capacity ?? '-' }}</strong>
             </div>
             <div class="detail-item">

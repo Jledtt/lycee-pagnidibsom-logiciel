@@ -16,13 +16,13 @@ class FrenchAmountInWordsService
     public function convert(int|float|string $amount, string $currency = 'FCFA'): string
     {
         if (! is_numeric($amount)) {
-            throw new InvalidArgumentException('Le montant doit etre numerique.');
+            throw new InvalidArgumentException('Le montant doit être numérique.');
         }
 
         $roundedAmount = (int) round((float) $amount);
 
         if ($roundedAmount < 0) {
-            throw new InvalidArgumentException('Le montant doit etre positif ou nul.');
+            throw new InvalidArgumentException('Le montant doit être positif ou nul.');
         }
 
         $currencyWords = $currency === 'FCFA'
@@ -40,7 +40,7 @@ class FrenchAmountInWordsService
     public function spell(int $number): string
     {
         if ($number < 0) {
-            throw new InvalidArgumentException('Le nombre doit etre positif ou nul.');
+            throw new InvalidArgumentException('Le nombre doit être positif ou nul.');
         }
 
         if ($number === 0) {

@@ -2,7 +2,7 @@
     'title' => 'Rachats conseil - Lycée Privé Pagnidibsom',
     'active' => 'report-cards',
     'pageTitle' => 'Rachats conseil',
-    'pageSubtitle' => 'Élèves proches de 10/20 pouvant être rachetes après conseil',
+    'pageSubtitle' => 'Élèves proches de 10/20 pouvant être rachetés après le conseil',
 ])
 
 @section('page_actions')
@@ -92,7 +92,7 @@
                                 @endforeach
                                 <td><strong>{{ number_format($row['annual_average'], 2, ',', ' ') }}</strong></td>
                                 <td><strong>{{ number_format($row['redeemed_average'], 2, ',', ' ') }}</strong></td>
-                                <td><span class="badge">Rachete - passe</span></td>
+                                <td><span class="badge">Racheté - passe</span></td>
                             </tr>
                         @empty
                             <tr>

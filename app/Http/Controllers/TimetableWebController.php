@@ -116,7 +116,7 @@ class TimetableWebController extends Controller
         if ($timetable->status === 'active') {
             return redirect()
                 ->route('timetables.review', $timetable)
-                ->withErrors(['timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant toute correction.']);
+                ->withErrors(['timetable' => 'Cet emploi du temps est publié. Repasse-le en brouillon avant toute correction.']);
         }
 
         $timetable->load(['schoolClass.level', 'academicYear', 'entries']);
@@ -144,7 +144,7 @@ class TimetableWebController extends Controller
         if ($timetable->status === 'active') {
             return redirect()
                 ->route('timetables.review', $timetable)
-                ->withErrors(['timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant toute correction.']);
+                ->withErrors(['timetable' => 'Cet emploi du temps est publié. Repasse-le en brouillon avant toute correction.']);
         }
 
         $data = $request->validate([
@@ -221,7 +221,7 @@ class TimetableWebController extends Controller
         if (! $this->templates->applyExample($timetable)) {
             return redirect()
                 ->route('timetables.index', ['school_class_id' => $data['school_class_id']])
-                ->withErrors(['school_class_id' => 'Aucun modele 2025-2026 n est disponible pour cette classe.']);
+                ->withErrors(['school_class_id' => 'Aucun modèle 2025-2026 n’est disponible pour cette classe.']);
         }
 
         return redirect()

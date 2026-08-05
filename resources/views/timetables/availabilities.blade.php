@@ -42,7 +42,7 @@
             <div class="availability-overview__identity">
                 <span class="availability-overview__eyebrow">Fiche hebdomadaire</span>
                 <h2 id="availability-teacher-name">{{ $teacher->name }}</h2>
-                <p>{{ $assignments->count() }} affectation(s) pédagogique(s) pour {{ $academicYear->name }}</p>
+                <p>{{ $assignments->count() }} {{ $assignments->count() === 1 ? 'affectation pédagogique' : 'affectations pédagogiques' }} pour {{ $academicYear->name }}</p>
             </div>
             <div class="availability-overview__status">
                 <span>État de la fiche</span>
@@ -67,7 +67,7 @@
 
         @if ($conflicts->isNotEmpty())
             <div class="error" style="margin-top:16px">
-                {{ $conflicts->count() }} cours déjà placé(s) ne correspondent pas à cette disponibilité. La fiche doit rester en brouillon jusqu’à leur correction.
+                {{ $conflicts->count() === 1 ? 'Un cours déjà placé ne correspond' : $conflicts->count().' cours déjà placés ne correspondent' }} pas à cette disponibilité. La fiche doit rester en brouillon jusqu’à {{ $conflicts->count() === 1 ? 'sa correction' : 'leur correction' }}.
             </div>
         @endif
 

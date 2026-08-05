@@ -140,9 +140,9 @@
                                         @elseif ($reportCard->general_average === null)
                                             <span class="badge badge-warning">Non note</span>
                                         @elseif ($reportCard->status === 'validated')
-                                            <span class="badge">Valide</span>
+                                            <span class="badge">Validé</span>
                                         @elseif ($reportCard->status === 'published')
-                                            <span class="badge">Publie</span>
+                                            <span class="badge">Publié</span>
                                         @else
                                             <span class="badge">Brouillon</span>
                                         @endif
@@ -183,8 +183,8 @@
                                                             <label>Statut</label>
                                                             <select name="status" form="update-report-card-{{ $reportCard->id }}">
                                                                 <option value="draft" @selected($reportCard->status === 'draft')>Brouillon</option>
-                                                                <option value="validated" @selected($reportCard->status === 'validated')>Valide</option>
-                                                                <option value="published" @selected($reportCard->status === 'published')>Publie</option>
+                                                                <option value="validated" @selected($reportCard->status === 'validated')>Validé</option>
+                                                                <option value="published" @selected($reportCard->status === 'published')>Publié</option>
                                                             </select>
                                                         </div>
                                                     </div>

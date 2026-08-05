@@ -26,7 +26,7 @@
         </div>
 
         <div class="field">
-            <label for="capacity">Capacite</label>
+            <label for="capacity">Capacité</label>
             <input id="capacity" name="capacity" type="number" min="1" max="500" value="{{ old('capacity', $schoolClass->capacity) }}" placeholder="Ex: 60">
             @error('capacity') <small class="error">{{ $message }}</small> @enderror
         </div>

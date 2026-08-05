@@ -36,7 +36,7 @@ class TimetableReviewWebController extends Controller
         $data = $request->validate(['locked' => ['required', 'boolean']]);
         $this->reviews->setLock($timetable, $entry, (bool) $data['locked']);
 
-        return back()->with('success', $data['locked'] ? 'Creneau verrouille.' : 'Creneau deverrouille.');
+        return back()->with('success', $data['locked'] ? 'Créneau verrouillé.' : 'Créneau déverrouillé.');
     }
 
     public function lockAll(Request $request, Timetable $timetable): RedirectResponse
@@ -44,7 +44,7 @@ class TimetableReviewWebController extends Controller
         $data = $request->validate(['locked' => ['required', 'boolean']]);
         $count = $this->reviews->setAllLocks($timetable, (bool) $data['locked']);
 
-        return back()->with('success', $count.' creneau(x) mis a jour.');
+        return back()->with('success', $count.' '.($count === 1 ? 'créneau mis à jour.' : 'créneaux mis à jour.'));
     }
 
     public function publish(Request $request, Timetable $timetable): RedirectResponse
@@ -54,7 +54,7 @@ class TimetableReviewWebController extends Controller
         $this->auditTrail->record('published', $timetable, $old, $timetable->fresh()->only(['status', 'published_at', 'published_by']));
 
         return redirect()->route('timetables.review', $timetable)
-            ->with('success', 'Emploi du temps publie. Tous les cours sont maintenant verrouilles.');
+            ->with('success', 'Emploi du temps publié. Tous les cours sont maintenant verrouillés.');
     }
 
     public function reopen(Timetable $timetable): RedirectResponse
@@ -64,7 +64,7 @@ class TimetableReviewWebController extends Controller
         $this->auditTrail->record('reopened', $timetable, $old, $timetable->fresh()->only(['status', 'published_at', 'published_by']));
 
         return redirect()->route('timetables.review', $timetable)
-            ->with('success', 'Emploi du temps repasse en brouillon. Deverrouille uniquement les cours a corriger.');
+            ->with('success', 'Emploi du temps repassé en brouillon. Déverrouille uniquement les cours à corriger.');
     }
 
     private function grid(Timetable $timetable): array

@@ -2,7 +2,7 @@
     'title' => 'Liste des élèves par classe - Lycée Privé Pagnidibsom',
     'active' => 'reports',
     'pageTitle' => 'Liste des élèves par classe',
-    'pageSubtitle' => 'Rapport imprimable par classe pour ' . ($academicYear?->name ?? 'l année active'),
+    'pageSubtitle' => 'Rapport imprimable par classe pour ' . ($academicYear?->name ?? 'l’année active'),
 ])
 
 @section('page_actions')

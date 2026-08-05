@@ -23,7 +23,7 @@
     <table class="header">
         <tr>
             <td>
-                <div class="school">{{ $school?->name ?? 'LYCEE PRIVE PAGNIDIBSOM' }}</div>
+                <div class="school">{{ $school?->name ?? 'LYCÉE PRIVÉ PAGNIDIBSOM' }}</div>
                 <div>{{ $school?->address ?? '04 OUAGADOUGOU 04 BP 8825' }}</div>
                 <div>Tel : {{ $school?->phone ?? '(+226) 72 81 61 59 / 78 42 62 06' }}</div>
                 <div>E-mail : {{ $school?->email ?? 'infoslyceepagnidibsom@gmail.com' }}</div>

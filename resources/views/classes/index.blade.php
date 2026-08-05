@@ -45,7 +45,7 @@
                         <th>Classe</th>
                         <th>Niveau</th>
                         <th>Effectif</th>
-                        <th>Capacite</th>
+                        <th>Capacité</th>
                         <th>Statut</th>
                         <th></th>
                     </tr>

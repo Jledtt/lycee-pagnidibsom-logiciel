@@ -2,7 +2,7 @@
     'title' => 'Nouvel utilisateur - Lycée Privé Pagnidibsom',
     'active' => 'staff',
     'pageTitle' => 'Nouvel utilisateur',
-    'pageSubtitle' => 'Creation d un compte pour le personnel de l etablissement',
+    'pageSubtitle' => 'Création d’un compte pour le personnel de l’établissement',
 ])
 
 @section('content')

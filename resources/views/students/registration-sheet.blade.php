@@ -186,14 +186,14 @@
                 <p class="line">Date de naissance: <strong>{{ $student->birth_date?->format('d/m/Y') }}</strong></p>
                 <p class="line">Lieu de naissance: <strong>{{ $student->birth_place }}</strong></p>
                 <p class="line">Sexe: <strong>{{ $student->gender_label }}</strong></p>
-                <p class="line">Nationalite: <strong>{{ $student->nationality }}</strong></p>
+                <p class="line">Nationalité : <strong>{{ $student->nationality }}</strong></p>
                 <p class="line">Ethnie: <strong>{{ $student->ethnicity }}</strong></p>
                 <p class="line">Religion: <strong>{{ $student->religion }}</strong></p>
             </div>
             <div class="cell">
                 <p class="line">École d’origine: <strong>{{ $student->origin_school }}</strong></p>
-                <p class="line">Classe frequentee: <strong>{{ $student->previous_class }}</strong></p>
-                <p class="line">Classe déjà redoublee: <strong>{{ $student->repeated_class }}</strong></p>
+                <p class="line">Classe fréquentée : <strong>{{ $student->previous_class }}</strong></p>
+                <p class="line">Classe déjà redoublée : <strong>{{ $student->repeated_class }}</strong></p>
                 <p class="line">Secteur: <strong>{{ $student->sector }}</strong></p>
                 <p class="line">Quartier: <strong>{{ $student->district }}</strong></p>
                 <p class="line">Tel(dom): <strong>{{ $student->home_phone }}</strong></p>

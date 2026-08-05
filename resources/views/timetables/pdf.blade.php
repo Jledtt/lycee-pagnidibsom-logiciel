@@ -49,7 +49,7 @@
 
     <table class="info">
         <tr>
-            <td style="width:62%"><strong>Professeur principal / équipe pédagogique :</strong> {{ $timetable->principal_teacher ?: 'Non renseignée' }}</td>
+            <td style="width:62%"><strong>Professeur principal / équipe pédagogique :</strong> {{ $timetable->principal_teacher ?: 'Non renseigné' }}</td>
             <td><strong>Dernière mise à jour :</strong> {{ $timetable->updated_at?->format('d/m/Y à H:i') ?? '-' }}</td>
         </tr>
     </table>

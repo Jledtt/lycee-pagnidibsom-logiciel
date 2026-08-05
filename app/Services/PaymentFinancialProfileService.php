@@ -92,7 +92,7 @@ class PaymentFinancialProfileService
 
                     return [
                         'id' => $schedule->id,
-                        'label' => trim(($schedule->period ?: 'Sans periode').' - '.($schedule->feeType?->name ?? 'Frais')),
+                        'label' => trim(($schedule->period ?: 'Sans période').' - '.($schedule->feeType?->name ?? 'Frais')),
                         'amount' => $amount,
                         'paid' => $paid,
                         'remaining' => max($amount - $paid, 0),
