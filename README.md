@@ -36,13 +36,13 @@ Adresse locale :
 http://127.0.0.1:8000
 ```
 
-Compte admin local :
+Avant le premier seed, définissez un mot de passe administrateur dans le fichier `.env` :
 
 ```text
-Identifiant : admin
-E-mail      : infoslyceepagnidibsom@gmail.com
-Mot de passe: Pagnidibsom
+LPP_ADMIN_PASSWORD=utiliser-un-mot-de-passe-long-et-unique
 ```
+
+Ne publiez jamais cette valeur dans le dépôt, le README, les journaux ou une capture d’écran. Si la variable reste vide hors production, le seeder génère un mot de passe aléatoire et l’affiche une seule fois dans la console lors de la création du compte.
 
 ## Tests
 
@@ -162,6 +162,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://votre-domaine.com
 SESSION_SECURE_COOKIE=true
+LPP_ADMIN_PASSWORD=utiliser-un-mot-de-passe-long-et-unique
 ```
 
 Pour MySQL ou MariaDB :
@@ -186,14 +187,16 @@ DB_USERNAME=lpp_user
 DB_PASSWORD=mot_de_passe
 ```
 
-Puis lancer :
+Puis lancer les migrations :
 
 ```powershell
-php artisan migrate --seed --force
+php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
+
+Lors d’une installation initiale uniquement, les données de référence peuvent ensuite être créées avec `php artisan db:seed --force`. Vérifiez auparavant que `LPP_ADMIN_PASSWORD` est bien défini. Les comptes de démonstration par rôle ne sont jamais créés en production.
 
 Verifier aussi :
 
