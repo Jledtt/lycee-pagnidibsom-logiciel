@@ -198,6 +198,24 @@ php artisan view:cache
 
 Lors d’une installation initiale uniquement, les données de référence peuvent ensuite être créées avec `php artisan db:seed --force`. Vérifiez auparavant que `LPP_ADMIN_PASSWORD` est bien défini. Les comptes de démonstration par rôle ne sont jamais créés en production.
 
+### Worker de queue
+
+Les notifications utilisent la queue Laravel `database`. Copiez l’unité fournie, puis remplacez `/CHEMIN/VERS/app-source` dans le fichier installé par le chemin absolu du projet :
+
+```bash
+sudo cp ops/systemd/lpp-queue-worker.service /etc/systemd/system/
+sudo nano /etc/systemd/system/lpp-queue-worker.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now lpp-queue-worker.service
+sudo systemctl status lpp-queue-worker.service
+```
+
+Après chaque déploiement qui modifie le code des jobs, rechargez le worker sans interrompre les tâches en cours :
+
+```bash
+php artisan queue:restart
+```
+
 Verifier aussi :
 
 - le dossier `storage` est sauvegarde et non public

@@ -1,0 +1,17 @@
+[Unit]
+Description=LPP Laravel Queue Worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/CHEMIN/VERS/app-source
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=1 --max-time=3600
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=3600
+
+[Install]
+WantedBy=multi-user.target
