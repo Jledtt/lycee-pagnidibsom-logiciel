@@ -1755,3 +1755,163 @@
         flex: 1 1 100%;
     }
 }
+
+.import-review-overview,
+.import-review-form,
+.import-review-commit {
+    margin-top: 16px;
+}
+
+.import-review-overview h2,
+.import-review-commit h2 {
+    margin: 4px 0;
+}
+
+.import-review-metrics {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 16px;
+    border: 1px solid var(--line);
+}
+
+.import-review-metrics > div {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 14px;
+}
+
+.import-review-metrics > div + div {
+    border-left: 1px solid var(--line);
+}
+
+.import-review-metrics span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.import-review-metrics strong {
+    font-size: 24px;
+}
+
+.planning-diagnostics--warning {
+    margin-top: 12px;
+    border-color: #d9b24a;
+    color: #6d5000;
+    background: #fff9e8;
+}
+
+.import-review-scroll {
+    margin-top: 14px;
+}
+
+.import-review-table {
+    min-width: 1280px;
+}
+
+.import-review-table th:first-child,
+.import-review-table td:first-child {
+    width: 70px;
+    text-align: center;
+}
+
+.import-review-table select,
+.import-review-table input[type="text"],
+.import-review-table input[type="time"] {
+    width: 100%;
+    min-width: 120px;
+}
+
+.import-review-table td:nth-child(2) select {
+    min-width: 220px;
+}
+
+.import-review-row--invalid {
+    background: #fff6f4;
+}
+
+.import-review-control {
+    width: 260px;
+}
+
+.import-review-control ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    color: #9b2638;
+    font-size: 12px;
+}
+
+.import-review-control details {
+    margin-top: 8px;
+    color: var(--muted);
+}
+
+.import-review-control summary {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.import-review-control small {
+    display: block;
+    max-width: 240px;
+    margin-top: 5px;
+    overflow-wrap: anywhere;
+}
+
+.import-review-footer,
+.import-review-commit {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.import-review-commit {
+    justify-content: space-between;
+}
+
+@media (max-width: 900px) {
+    .import-review-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .import-review-metrics > div + div {
+        border-left: 0;
+    }
+
+    .import-review-metrics > div:nth-child(even) {
+        border-left: 1px solid var(--line);
+    }
+
+    .import-review-metrics > div:nth-child(n + 3) {
+        border-top: 1px solid var(--line);
+    }
+
+    .import-review-commit {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) {
+    .import-review-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .import-review-metrics > div:nth-child(even) {
+        border-left: 0;
+    }
+
+    .import-review-metrics > div + div {
+        border-top: 1px solid var(--line);
+    }
+
+    .import-review-footer .btn,
+    .import-review-commit .page-actions,
+    .import-review-commit .page-actions form,
+    .import-review-commit .page-actions .btn {
+        width: 100%;
+    }
+}

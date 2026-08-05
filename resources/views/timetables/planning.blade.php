@@ -43,7 +43,7 @@
             <div class="planning-preview-head">
                 <div>
                     <strong>{{ $importPreview['filename'] }}</strong>
-                    <span>{{ $importPreview['summary']['valid'] }} valide(s), {{ $importPreview['summary']['invalid'] }} à corriger</span>
+                    <span>{{ $importPreview['summary']['valid'] }} valide(s), {{ $importPreview['summary']['invalid'] }} à corriger, {{ $importPreview['summary']['ignored'] ?? 0 }} ignorée(s)</span>
                 </div>
                 <div class="page-actions">
                     <form method="POST" action="{{ route('timetables.planning.import.clear') }}">
@@ -51,37 +51,8 @@
                         @method('DELETE')
                         <button class="btn btn-subtle" type="submit">Retirer l’aperçu</button>
                     </form>
-                    <form method="POST" action="{{ route('timetables.planning.import.apply') }}">
-                        @csrf
-                        <button class="btn btn-primary" type="submit" @disabled(($importPreview['summary']['valid'] ?? 0) < 1 || ($importPreview['summary']['invalid'] ?? 0) > 0)>Importer et valider</button>
-                    </form>
+                    <a class="btn btn-primary" href="{{ route('timetables.planning.import.review') }}">Continuer la révision</a>
                 </div>
-            </div>
-            <div class="subject-list-scroll">
-                <table class="table" style="min-width:820px">
-                    <thead><tr><th>Ligne</th><th>Professeur</th><th>Jour</th><th>Plage</th><th>Statut</th><th>Contrôle</th></tr></thead>
-                    <tbody>
-                        @forelse ($importPreview['rows'] as $row)
-                            <tr>
-                                <td>{{ $row['line'] }}</td>
-                                <td><strong>{{ $row['display']['teacher'] ?: '-' }}</strong></td>
-                                <td>{{ $row['display']['day'] ?: '-' }}</td>
-                                <td>{{ $row['display']['range'] ?: '-' }}</td>
-                                <td>{{ $row['display']['status'] ?: '-' }}</td>
-                                <td>
-                                    @if ($row['status'] === 'valid')
-                                        <span class="badge">Valide</span>
-                                    @else
-                                        <span class="badge badge-warning">À corriger</span>
-                                        <small class="planning-row-errors">{{ implode(' ', $row['errors']) }}</small>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="6"><div class="empty">Aucune ligne exploitable trouvée.</div></td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
             </div>
         @endif
     </section>

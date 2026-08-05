@@ -65,7 +65,34 @@ class TeacherAvailabilityImportService
                 'availability_file' => 'Le fichier depasse 1 000 lignes. Separe-le en plusieurs imports.',
             ]);
         }
-        $headers = array_shift($rawRows) ?? [];
+        $extension = Str::lower($file->getClientOriginalExtension());
+        $warnings = [];
+        $headerIndex = $this->findHeaderIndex($rawRows);
+
+        if ($headerIndex === null && in_array($extension, ['pdf', 'docx'], true)) {
+            $rawRows = $this->readNarrativeRows($file);
+            if (count($rawRows) > 1001) {
+                throw ValidationException::withMessages([
+                    'availability_file' => 'Le document contient plus de 1 000 lignes détectées. Sépare-le en plusieurs imports.',
+                ]);
+            }
+            $headerIndex = $this->findHeaderIndex($rawRows);
+            $warnings[] = 'Le document libre a été interprété automatiquement. Vérifie chaque ligne avant l’import.';
+        }
+
+        if ($headerIndex === null) {
+            $warnings[] = match ($extension) {
+                'pdf' => 'Aucun tableau lisible n’a été détecté. Si le PDF est scanné, convertis-le en PDF avec texte ou utilise le modèle CSV.',
+                'docx' => 'Aucun tableau exploitable n’a été détecté. Utilise un tableau Word avec les colonnes du modèle.',
+                default => 'Les colonnes obligatoires n’ont pas été reconnues. Télécharge le modèle CSV et conserve ses en-têtes.',
+            };
+            $headers = [];
+            $rawRows = [];
+        } else {
+            $headers = $rawRows[$headerIndex];
+            $rawRows = array_slice($rawRows, $headerIndex + 1);
+        }
+
         $mappedHeaders = $this->mapHeaders($headers);
         $missingHeaders = collect(['teacher', 'day', 'starts_at', 'ends_at', 'status'])
             ->reject(fn (string $field): bool => in_array($field, $mappedHeaders, true))
@@ -89,25 +116,87 @@ class TeacherAvailabilityImportService
                 );
             });
 
-        return [
+        $preview = [
             'academic_year_id' => $academicYear->id,
             'filename' => $file->getClientOriginalName(),
+            'source_type' => $extension,
+            'assisted' => in_array($extension, ['pdf', 'docx'], true),
+            'warnings' => array_values(array_unique($warnings)),
+            'expires_at' => now()->addMinutes(30)->timestamp,
             'headers' => $headers,
             'rows' => $rows->all(),
-            'summary' => [
-                'total' => $rows->count(),
-                'valid' => $rows->where('status', 'valid')->count(),
-                'invalid' => $rows->where('status', 'invalid')->count(),
-                'teachers' => $rows->where('status', 'valid')->pluck('data.teacher_id')->unique()->count(),
-            ],
         ];
+
+        return $this->withSummary($preview);
+    }
+
+    public function revise(array $preview, array $submittedRows, AcademicYear $academicYear): array
+    {
+        $periods = $this->coursePeriods($academicYear);
+        $teachers = $this->activeTeachers()->keyBy('id');
+        $seenSlots = [];
+
+        $rows = collect($submittedRows)
+            ->take(1000)
+            ->values()
+            ->map(function (array $row, int $index) use ($periods, $teachers, &$seenSlots): array {
+                $teacher = $teachers->get((int) ($row['teacher_id'] ?? 0));
+                $values = [
+                    'teacher' => $teacher?->name ?? '',
+                    'day' => (string) ($row['day'] ?? ''),
+                    'starts_at' => (string) ($row['starts_at'] ?? ''),
+                    'ends_at' => (string) ($row['ends_at'] ?? ''),
+                    'status' => (string) ($row['availability_status'] ?? ''),
+                    'note' => trim((string) ($row['note'] ?? '')),
+                ];
+
+                return $this->evaluateRow(
+                    $values,
+                    (int) ($row['line'] ?? $index + 1),
+                    $teacher,
+                    $periods,
+                    $seenSlots,
+                    filter_var($row['selected'] ?? false, FILTER_VALIDATE_BOOL),
+                    'reviewed',
+                    (string) ($row['raw'] ?? ''),
+                );
+            });
+
+        $preview['rows'] = $rows->all();
+        $preview['reviewed_at'] = now()->timestamp;
+
+        return $this->withSummary($preview);
+    }
+
+    public function revalidate(array $preview, AcademicYear $academicYear): array
+    {
+        $rows = collect($preview['rows'] ?? [])->map(fn (array $row): array => [
+            'line' => $row['line'] ?? null,
+            'selected' => $row['selected'] ?? true,
+            'teacher_id' => $row['input']['teacher_id'] ?? null,
+            'day' => $row['input']['day'] ?? null,
+            'starts_at' => $row['input']['starts_at'] ?? null,
+            'ends_at' => $row['input']['ends_at'] ?? null,
+            'availability_status' => $row['input']['availability_status'] ?? null,
+            'note' => $row['input']['note'] ?? null,
+            'raw' => $row['raw'] ?? null,
+        ])->all();
+
+        return $this->revise($preview, $rows, $academicYear);
+    }
+
+    public function reviewTeachers(): Collection
+    {
+        return $this->activeTeachers()->sortBy('name')->values();
     }
 
     public function import(array $preview, AcademicYear $academicYear, User $actor): array
     {
         $periods = $this->coursePeriods($academicYear);
         $days = array_keys($this->templates->days());
-        $validRows = collect($preview['rows'] ?? [])->where('status', 'valid');
+        $validRows = collect($preview['rows'] ?? [])
+            ->where('selected', true)
+            ->where('status', 'valid');
         $imported = 0;
 
         DB::transaction(function () use ($validRows, $periods, $days, $academicYear, $actor, &$imported): void {
@@ -161,10 +250,39 @@ class TeacherAvailabilityImportService
             }
         }
 
-        $errors = $missingHeaders
-            ->map(fn (string $field): string => 'Colonne obligatoire absente : '.$this->fieldLabel($field).'.')
-            ->all();
         $teacher = $teachers->get($this->normalizeKey($values['teacher'] ?? ''));
+        $evaluated = $this->evaluateRow(
+            $values,
+            $lineNumber,
+            $teacher,
+            $periods,
+            $seenSlots,
+            true,
+            'detected',
+            implode(' | ', array_filter(array_map('strval', $row))),
+        );
+        $evaluated['errors'] = array_values(array_unique([
+            ...$missingHeaders
+                ->map(fn (string $field): string => 'Colonne obligatoire absente : '.$this->fieldLabel($field).'.')
+                ->all(),
+            ...$evaluated['errors'],
+        ]));
+        $evaluated['status'] = $evaluated['errors'] === [] ? 'valid' : 'invalid';
+
+        return $evaluated;
+    }
+
+    private function evaluateRow(
+        array $values,
+        int $lineNumber,
+        ?User $teacher,
+        Collection $periods,
+        array &$seenSlots,
+        bool $selected,
+        string $confidence,
+        string $raw,
+    ): array {
+        $errors = [];
         $day = $this->normalizeDay($values['day'] ?? '');
         $startsAt = $this->normalizeTime($values['starts_at'] ?? '');
         $endsAt = $this->normalizeTime($values['ends_at'] ?? '');
@@ -205,13 +323,26 @@ class TeacherAvailabilityImportService
 
         return [
             'line' => $lineNumber,
+            'selected' => $selected,
             'status' => $errors === [] ? 'valid' : 'invalid',
+            'confidence' => $confidence,
+            'raw' => Str::limit($raw, 1000, ''),
             'errors' => array_values(array_unique($errors)),
             'display' => [
-                'teacher' => $values['teacher'] ?? '',
-                'day' => $values['day'] ?? '',
+                'teacher' => $teacher?->name ?? ($values['teacher'] ?? ''),
+                'day' => $day ? ($this->templates->days()[$day] ?? $day) : ($values['day'] ?? ''),
                 'range' => trim(($values['starts_at'] ?? '').' - '.($values['ends_at'] ?? ''), ' -'),
-                'status' => $values['status'] ?? '',
+                'status' => $availabilityStatus
+                    ? (TeacherAvailability::labels()[$availabilityStatus] ?? $availabilityStatus)
+                    : ($values['status'] ?? ''),
+            ],
+            'input' => [
+                'teacher_id' => $teacher?->id,
+                'day' => $day,
+                'starts_at' => $startsAt,
+                'ends_at' => $endsAt,
+                'availability_status' => $availabilityStatus,
+                'note' => $values['note'] ?? null,
             ],
             'data' => [
                 'teacher_id' => $teacher?->id,
@@ -223,6 +354,23 @@ class TeacherAvailabilityImportService
         ];
     }
 
+    private function withSummary(array $preview): array
+    {
+        $rows = collect($preview['rows'] ?? []);
+        $selected = $rows->where('selected', true);
+
+        $preview['summary'] = [
+            'total' => $rows->count(),
+            'selected' => $selected->count(),
+            'valid' => $selected->where('status', 'valid')->count(),
+            'invalid' => $selected->where('status', 'invalid')->count(),
+            'ignored' => $rows->where('selected', false)->count(),
+            'teachers' => $selected->where('status', 'valid')->pluck('data.teacher_id')->filter()->unique()->count(),
+        ];
+
+        return $preview;
+    }
+
     private function readRows(UploadedFile $file): array
     {
         return match (Str::lower($file->getClientOriginalExtension())) {
@@ -231,6 +379,72 @@ class TeacherAvailabilityImportService
             'docx' => $this->readDocxRows($file->getRealPath()),
             default => $this->readCsvRows($file->getRealPath()),
         };
+    }
+
+    private function findHeaderIndex(array $rows): ?int
+    {
+        foreach (array_slice($rows, 0, 20, true) as $index => $row) {
+            $mapped = array_filter($this->mapHeaders($row));
+            if (count(array_intersect(['teacher', 'day', 'starts_at', 'ends_at', 'status'], $mapped)) >= 4) {
+                return (int) $index;
+            }
+        }
+
+        return null;
+    }
+
+    private function readNarrativeRows(UploadedFile $file): array
+    {
+        $lines = match (Str::lower($file->getClientOriginalExtension())) {
+            'pdf' => $this->readPdfTextLines($file->getRealPath()),
+            'docx' => $this->readDocxTextLines($file->getRealPath()),
+            default => [],
+        };
+        $rows = [$this->templateHeaders()];
+        $currentTeacher = '';
+
+        foreach ($lines as $line) {
+            if (preg_match('/\b(?:professeur|enseignant|nom)\s*[:\-]\s*(.+)$/ui', $line, $teacherMatch) === 1) {
+                $currentTeacher = trim($teacherMatch[1], " \t\n\r\0\x0B|;,-");
+            }
+
+            $candidate = $this->narrativeCandidate($line, $currentTeacher);
+            if ($candidate !== null) {
+                $rows[] = $candidate;
+            }
+        }
+
+        return count($rows) > 1 ? $rows : [];
+    }
+
+    private function narrativeCandidate(string $line, string $currentTeacher): ?array
+    {
+        if (preg_match('/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi)\b/ui', $line, $dayMatch, PREG_OFFSET_CAPTURE) !== 1) {
+            return null;
+        }
+        if (preg_match(
+            '/\b([01]?\d|2[0-3])(?:\s*(?:h|:|\.)\s*([0-5]?\d))?\s*(?:à|a|au|\-|–|—)\s*([01]?\d|2[0-3])(?:\s*(?:h|:|\.)\s*([0-5]?\d))?\b/ui',
+            $line,
+            $timeMatch,
+        ) !== 1) {
+            return null;
+        }
+
+        $day = $dayMatch[1][0];
+        $prefix = trim(substr($line, 0, $dayMatch[1][1]), " \t\n\r\0\x0B|;,-");
+        $prefix = preg_replace('/^(?:professeur|enseignant|nom)\s*[:\-]\s*/ui', '', $prefix) ?? $prefix;
+        $teacher = filled($prefix) ? trim($prefix) : $currentTeacher;
+        $startsAt = sprintf('%02d:%02d', (int) $timeMatch[1], (int) ($timeMatch[2] ?: 0));
+        $endsAt = sprintf('%02d:%02d', (int) $timeMatch[3], (int) ($timeMatch[4] ?: 0));
+        $normalizedLine = $this->normalizeKey($line);
+        $status = match (true) {
+            str_contains($normalizedLine, 'indisponible') => 'Indisponible',
+            str_contains($normalizedLine, 'prefere') || str_contains($normalizedLine, 'preferentiel') => 'Préféré',
+            str_contains($normalizedLine, 'disponible') => 'Disponible',
+            default => '',
+        };
+
+        return [$teacher, $day, $startsAt, $endsAt, $status, ''];
     }
 
     private function readCsvRows(string $path): array
@@ -259,7 +473,10 @@ class TeacherAvailabilityImportService
             return [];
         }
 
-        $sheet = simplexml_load_string($sheetXml);
+        $sheet = simplexml_load_string($sheetXml, \SimpleXMLElement::class, LIBXML_NONET | LIBXML_NOCDATA);
+        if ($sheet === false) {
+            return [];
+        }
         $rows = [];
         foreach ($sheet->sheetData->row as $row) {
             $values = [];
@@ -295,7 +512,10 @@ class TeacherAvailabilityImportService
             return [];
         }
 
-        $document = simplexml_load_string($xml);
+        $document = simplexml_load_string($xml, \SimpleXMLElement::class, LIBXML_NONET | LIBXML_NOCDATA);
+        if ($document === false) {
+            return [];
+        }
         $document->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
         $rows = [];
         foreach ($document->xpath('//w:tr') ?: [] as $row) {
@@ -311,7 +531,41 @@ class TeacherAvailabilityImportService
         return $rows;
     }
 
+    private function readDocxTextLines(string $path): array
+    {
+        $zip = new ZipArchive;
+        if ($zip->open($path) !== true) {
+            return [];
+        }
+        $xml = $this->safeZipEntry($zip, 'word/document.xml');
+        $zip->close();
+        if ($xml === false) {
+            return [];
+        }
+
+        $document = simplexml_load_string($xml, \SimpleXMLElement::class, LIBXML_NONET | LIBXML_NOCDATA);
+        if ($document === false) {
+            return [];
+        }
+        $document->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+        return collect($document->xpath('//w:p') ?: [])
+            ->map(fn ($paragraph): string => trim(implode(' ', array_map('strval', $paragraph->xpath('.//w:t') ?: []))))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     private function readPdfRows(string $path): array
+    {
+        return collect($this->readPdfTextLines($path))
+            ->map(fn (string $line): array => $this->splitTextLine($line))
+            ->filter(fn (array $row): bool => count($row) > 1)
+            ->values()
+            ->all();
+    }
+
+    private function readPdfTextLines(string $path): array
     {
         try {
             $text = (new PdfTextParser)->parseFile($path)->getText();
@@ -319,13 +573,9 @@ class TeacherAvailabilityImportService
             return [];
         }
 
-        $lines = preg_split('/\R/u', str_replace("\xC2\xA0", ' ', $text)) ?: [];
-
-        return collect($lines)
+        return collect(preg_split('/\R/u', str_replace("\xC2\xA0", ' ', $text)) ?: [])
             ->map(fn (string $line): string => trim($line))
             ->filter()
-            ->map(fn (string $line): array => $this->splitTextLine($line))
-            ->filter(fn (array $row): bool => count($row) > 1)
             ->values()
             ->all();
     }
@@ -363,7 +613,7 @@ class TeacherAvailabilityImportService
     private function teachersByKey(): Collection
     {
         $map = collect();
-        User::query()->role('enseignant')->where('status', 'active')->get()->each(function (User $teacher) use ($map): void {
+        $this->activeTeachers()->each(function (User $teacher) use ($map): void {
             foreach ([$teacher->name, $teacher->username, $teacher->email] as $identifier) {
                 if (filled($identifier)) {
                     $map->put($this->normalizeKey((string) $identifier), $teacher);
@@ -372,6 +622,15 @@ class TeacherAvailabilityImportService
         });
 
         return $map;
+    }
+
+    private function activeTeachers(): Collection
+    {
+        return User::query()
+            ->role('enseignant')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
     }
 
     private function coursePeriods(AcademicYear $academicYear): Collection
@@ -448,7 +707,11 @@ class TeacherAvailabilityImportService
             return [];
         }
         $strings = [];
-        foreach (simplexml_load_string($xml)->si as $item) {
+        $document = simplexml_load_string($xml, \SimpleXMLElement::class, LIBXML_NONET | LIBXML_NOCDATA);
+        if ($document === false) {
+            return [];
+        }
+        foreach ($document->si as $item) {
             $strings[] = isset($item->t)
                 ? (string) $item->t
                 : collect($item->r ?? [])->map(fn ($run): string => (string) $run->t)->implode('');

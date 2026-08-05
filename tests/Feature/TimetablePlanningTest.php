@@ -14,10 +14,12 @@ use App\Models\TimetableGenerationRun;
 use App\Models\TimetablePeriod;
 use App\Models\User;
 use App\Services\TimetableTemplateService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
+use ZipArchive;
 
 class TimetablePlanningTest extends TestCase
 {
@@ -37,7 +39,7 @@ class TimetablePlanningTest extends TestCase
             ->post(route('timetables.planning.import.preview'), [
                 'availability_file' => UploadedFile::fake()->createWithContent('disponibilites.csv', $csv),
             ])
-            ->assertRedirect(route('timetables.planning'))
+            ->assertRedirect(route('timetables.planning.import.review'))
             ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['summary']['valid'] === 1
                 && $preview['summary']['invalid'] === 0);
 
@@ -71,6 +73,193 @@ class TimetablePlanningTest extends TestCase
             ->assertSessionHasErrors('availability_file');
 
         $this->assertDatabaseCount('teacher_availability_schedules', 0);
+    }
+
+    public function test_word_import_is_reviewed_corrected_then_applied(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $document = $this->docxUpload([
+            'Fiche de disponibilités',
+            'Professeur : '.$teacher->name,
+            'Lundi 07h00 - 09h45 Disponible',
+            'Mardi 10h10 à 12h00',
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.import.preview'), ['availability_file' => $document])
+            ->assertRedirect(route('timetables.planning.import.review'))
+            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['assisted'] === true
+                && $preview['summary']['valid'] === 1
+                && $preview['summary']['invalid'] === 1);
+
+        $this->actingAs($user)
+            ->get(route('timetables.planning.import.review'))
+            ->assertOk()
+            ->assertSee('Réviser les disponibilités importées')
+            ->assertSee($teacher->name)
+            ->assertSee('Texte détecté');
+
+        $this->actingAs($user)
+            ->patch(route('timetables.planning.import.revise'), [
+                'rows' => [
+                    [
+                        'line' => 2,
+                        'selected' => true,
+                        'teacher_id' => $teacher->id,
+                        'day' => 'monday',
+                        'starts_at' => '07:00',
+                        'ends_at' => '09:45',
+                        'availability_status' => TeacherAvailability::STATUS_AVAILABLE,
+                        'note' => 'Matinée',
+                    ],
+                    [
+                        'line' => 3,
+                        'selected' => true,
+                        'teacher_id' => $teacher->id,
+                        'day' => 'tuesday',
+                        'starts_at' => '10:10',
+                        'ends_at' => '12:00',
+                        'availability_status' => TeacherAvailability::STATUS_PREFERRED,
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('timetables.planning.import.review'))
+            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['summary']['valid'] === 2
+                && $preview['summary']['invalid'] === 0);
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.import.apply'))
+            ->assertRedirect(route('timetables.planning'));
+
+        $schedule = TeacherAvailabilitySchedule::query()->where('teacher_id', $teacher->id)->firstOrFail();
+        $this->assertSame(3, $schedule->availabilities()->where('status', TeacherAvailability::STATUS_AVAILABLE)->count());
+        $this->assertSame(2, $schedule->availabilities()->where('status', TeacherAvailability::STATUS_PREFERRED)->count());
+    }
+
+    public function test_text_pdf_is_detected_without_writing_before_confirmation(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $binary = Pdf::loadHtml(
+            '<p>Professeur : '.e($teacher->name).'</p><p>Mercredi 07h00 - 09h45 Disponible</p>',
+        )->output();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.import.preview'), [
+                'availability_file' => UploadedFile::fake()->createWithContent('disponibilites.pdf', $binary),
+            ])
+            ->assertRedirect(route('timetables.planning.import.review'))
+            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['source_type'] === 'pdf'
+                && $preview['summary']['valid'] === 1
+                && $preview['summary']['teachers'] === 1);
+
+        $this->assertDatabaseCount('teacher_availability_schedules', 0);
+    }
+
+    public function test_pdf_without_readable_text_displays_guidance_instead_of_importing(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.import.preview'), [
+                'availability_file' => UploadedFile::fake()->createWithContent('scan.pdf', '%PDF-fichier-sans-texte'),
+            ])
+            ->assertRedirect(route('timetables.planning.import.review'))
+            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['summary']['total'] === 0
+                && collect($preview['warnings'])->contains(fn (string $warning): bool => str_contains($warning, 'PDF avec texte')));
+
+        $this->actingAs($user)
+            ->get(route('timetables.planning.import.review'))
+            ->assertOk()
+            ->assertSee('Aucune disponibilité exploitable')
+            ->assertSee('PDF avec texte');
+
+        $this->assertDatabaseCount('teacher_availability_schedules', 0);
+    }
+
+    public function test_invalid_detected_line_can_be_ignored_before_import(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $csv = implode("\n", [
+            'Professeur;Jour;Debut;Fin;Statut;Note',
+            $teacher->name.';Lundi;07:00;09:45;Disponible;',
+            'Inconnu;Mardi;07:00;09:45;Disponible;',
+        ]);
+
+        $this->actingAs($user)->post(route('timetables.planning.import.preview'), [
+            'availability_file' => UploadedFile::fake()->createWithContent('mixte.csv', $csv),
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('timetables.planning.import.revise'), [
+                'rows' => [
+                    [
+                        'line' => 2,
+                        'selected' => true,
+                        'teacher_id' => $teacher->id,
+                        'day' => 'monday',
+                        'starts_at' => '07:00',
+                        'ends_at' => '09:45',
+                        'availability_status' => TeacherAvailability::STATUS_AVAILABLE,
+                    ],
+                    [
+                        'line' => 3,
+                        'selected' => false,
+                    ],
+                ],
+            ])
+            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['summary']['valid'] === 1
+                && $preview['summary']['invalid'] === 0
+                && $preview['summary']['ignored'] === 1);
+
+        $this->actingAs($user)->post(route('timetables.planning.import.apply'))->assertRedirect();
+        $this->assertDatabaseHas('teacher_availability_schedules', ['teacher_id' => $teacher->id, 'source' => 'import']);
+    }
+
+    public function test_import_is_revalidated_if_a_teacher_becomes_inactive_after_preview(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $csv = implode("\n", [
+            'Professeur;Jour;Debut;Fin;Statut;Note',
+            $teacher->name.';Lundi;07:00;09:45;Disponible;',
+        ]);
+
+        $this->actingAs($user)->post(route('timetables.planning.import.preview'), [
+            'availability_file' => UploadedFile::fake()->createWithContent('professeur.csv', $csv),
+        ]);
+        $teacher->update(['status' => 'inactive']);
+
+        $this->actingAs($user)
+            ->from(route('timetables.planning.import.review'))
+            ->post(route('timetables.planning.import.apply'))
+            ->assertRedirect(route('timetables.planning.import.review'))
+            ->assertSessionHasErrors('availability_file');
+
+        $this->assertDatabaseCount('teacher_availability_schedules', 0);
+    }
+
+    public function test_expired_import_preview_is_rejected(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+
+        $this->actingAs($user)
+            ->withSession(['timetables.availability_import_preview' => [
+                'academic_year_id' => $academicYear->id,
+                'expires_at' => now()->subMinute()->timestamp,
+            ]])
+            ->get(route('timetables.planning.import.review'))
+            ->assertRedirect(route('timetables.planning'))
+            ->assertSessionHas('warning');
     }
 
     public function test_generator_creates_a_preview_then_applies_only_a_draft(): void
@@ -211,6 +400,10 @@ class TimetablePlanningTest extends TestCase
         $this->actingAs($this->userWithRole('comptable'))
             ->get(route('timetables.planning'))
             ->assertForbidden();
+
+        $this->actingAs($this->userWithRole('comptable'))
+            ->get(route('timetables.planning.import.review'))
+            ->assertForbidden();
     }
 
     private function validatedAvailability(AcademicYear $academicYear, User $teacher, User $actor): void
@@ -267,6 +460,28 @@ class TimetablePlanningTest extends TestCase
             'capacity' => 60,
             'status' => 'active',
         ]);
+    }
+
+    private function docxUpload(array $paragraphs): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'lpp-docx-');
+        $zip = new ZipArchive;
+        $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $body = collect($paragraphs)
+            ->map(fn (string $paragraph): string => '<w:p><w:r><w:t>'.htmlspecialchars($paragraph, ENT_XML1 | ENT_QUOTES, 'UTF-8').'</w:t></w:r></w:p>')
+            ->implode('');
+        $zip->addFromString(
+            'word/document.xml',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+            .$body
+            .'</w:body></w:document>',
+        );
+        $zip->close();
+        $contents = file_get_contents($path);
+        unlink($path);
+
+        return UploadedFile::fake()->createWithContent('disponibilites.docx', $contents ?: '');
     }
 
     private function useStubSolver(): void

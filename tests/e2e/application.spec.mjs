@@ -166,6 +166,38 @@ test('la planification automatique reste lisible et protège les grilles actives
     });
 });
 
+test('la révision assistée d’un import reste contenue et n’écrit rien immédiatement', async ({ page }, testInfo) => {
+    await login(page);
+    await page.goto('/timetables/planning/automatic');
+    await page.locator('#availability_file').setInputFiles({
+        name: 'disponibilites-a-verifier.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from([
+            'Professeur;Jour;Debut;Fin;Statut;Note',
+            'Professeur à vérifier;Lundi;07:00;09:45;Disponible;Document de test',
+        ].join('\n')),
+    });
+    await page.getByRole('button', { name: 'Analyser le fichier' }).click();
+
+    await expect(page).toHaveURL(/\/timetables\/planning\/availability-review$/);
+    await expect(page.getByRole('heading', { name: 'Réviser les disponibilités importées' })).toBeVisible();
+    await expect(page.getByText('Rien n’est encore enregistré.')).toBeVisible();
+    await expect(page.getByText('Professeur introuvable ou inactif.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Importer les lignes validées' })).toBeDisabled();
+
+    const hasHorizontalOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
+
+    const screenshotPath = testInfo.outputPath(`revision-import-${testInfo.project.name}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await testInfo.attach(`revision-import-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
+});
+
 test('la fenêtre de paiement reste utilisable sur toutes les tailles d’écran', async ({ page }) => {
     await login(page);
     await page.goto('/payments');

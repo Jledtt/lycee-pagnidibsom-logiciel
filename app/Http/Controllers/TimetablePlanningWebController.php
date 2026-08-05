@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Timetable\ReviewTeacherAvailabilityImportRequest;
 use App\Models\AcademicYear;
+use App\Models\TeacherAvailability;
 use App\Models\TimetableGenerationRun;
 use App\Services\TeacherAvailabilityImportService;
 use App\Services\TimetableGenerationService;
@@ -69,7 +71,60 @@ class TimetablePlanningWebController extends Controller
             $importer->preview($data['availability_file'], $academicYear),
         );
 
-        return redirect()->route('timetables.planning');
+        return redirect()->route('timetables.planning.import.review');
+    }
+
+    public function reviewImport(
+        Request $request,
+        TeacherAvailabilityImportService $importer,
+        TimetableTemplateService $templates,
+    ): View|RedirectResponse {
+        $academicYear = $this->requireActiveAcademicYear();
+        $preview = $request->session()->get(self::IMPORT_SESSION_KEY);
+
+        if (! $this->isCurrentPreview($preview, $academicYear)) {
+            $request->session()->forget(self::IMPORT_SESSION_KEY);
+
+            return redirect()
+                ->route('timetables.planning')
+                ->with('warning', 'L’analyse a expiré. Sélectionne de nouveau le document.');
+        }
+
+        return view('timetables.import-review', [
+            'academicYear' => $academicYear,
+            'availabilityLabels' => TeacherAvailability::labels(),
+            'days' => $templates->days(),
+            'preview' => $preview,
+            'teachers' => $importer->reviewTeachers(),
+        ]);
+    }
+
+    public function reviseImport(
+        ReviewTeacherAvailabilityImportRequest $request,
+        TeacherAvailabilityImportService $importer,
+    ): RedirectResponse {
+        $academicYear = $this->requireActiveAcademicYear();
+        $preview = $request->session()->get(self::IMPORT_SESSION_KEY);
+
+        if (! $this->isCurrentPreview($preview, $academicYear)) {
+            $request->session()->forget(self::IMPORT_SESSION_KEY);
+
+            return redirect()
+                ->route('timetables.planning')
+                ->with('warning', 'L’analyse a expiré. Sélectionne de nouveau le document.');
+        }
+
+        $revised = $importer->revise($preview, $request->validated('rows'), $academicYear);
+        $request->session()->put(self::IMPORT_SESSION_KEY, $revised);
+
+        return redirect()
+            ->route('timetables.planning.import.review')
+            ->with(
+                $revised['summary']['invalid'] > 0 ? 'warning' : 'success',
+                $revised['summary']['invalid'] > 0
+                    ? 'Certaines lignes conservées doivent encore être corrigées.'
+                    : 'Toutes les lignes conservées sont prêtes à être importées.',
+            );
     }
 
     public function applyImport(Request $request, TeacherAvailabilityImportService $importer): RedirectResponse
@@ -77,14 +132,17 @@ class TimetablePlanningWebController extends Controller
         $academicYear = $this->requireActiveAcademicYear();
         $preview = $request->session()->get(self::IMPORT_SESSION_KEY);
 
-        if (! is_array($preview) || (int) ($preview['academic_year_id'] ?? 0) !== $academicYear->id) {
+        if (! $this->isCurrentPreview($preview, $academicYear)) {
+            $request->session()->forget(self::IMPORT_SESSION_KEY);
             throw ValidationException::withMessages([
-                'availability_file' => 'Analyse le fichier avant de lancer l import.',
+                'availability_file' => 'L’analyse a expiré. Analyse de nouveau le fichier avant l’import.',
             ]);
         }
+        $preview = $importer->revalidate($preview, $academicYear);
+        $request->session()->put(self::IMPORT_SESSION_KEY, $preview);
         if ((int) ($preview['summary']['valid'] ?? 0) < 1 || (int) ($preview['summary']['invalid'] ?? 0) > 0) {
             throw ValidationException::withMessages([
-                'availability_file' => 'Corrige toutes les lignes invalides avant l import.',
+                'availability_file' => 'Corrige ou ignore toutes les lignes invalides avant l’import.',
             ]);
         }
 
@@ -138,5 +196,12 @@ class TimetablePlanningWebController extends Controller
         abort_if(! $academicYear, 422, 'Aucune annee scolaire active.');
 
         return $academicYear;
+    }
+
+    private function isCurrentPreview(mixed $preview, AcademicYear $academicYear): bool
+    {
+        return is_array($preview)
+            && (int) ($preview['academic_year_id'] ?? 0) === $academicYear->id
+            && (int) ($preview['expires_at'] ?? 0) >= now()->timestamp;
     }
 }

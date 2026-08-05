@@ -347,6 +347,14 @@ Route::post('/timetables/planning/availability-preview', [TimetablePlanningWebCo
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.planning.import.preview');
 
+Route::get('/timetables/planning/availability-review', [TimetablePlanningWebController::class, 'reviewImport'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.import.review');
+
+Route::patch('/timetables/planning/availability-review', [TimetablePlanningWebController::class, 'reviseImport'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.import.revise');
+
 Route::post('/timetables/planning/availability-import', [TimetablePlanningWebController::class, 'applyImport'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.planning.import.apply');
