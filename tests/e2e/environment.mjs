@@ -20,6 +20,7 @@ export const appEnvironment = {
     DB_DATABASE: databasePath,
     DB_URL: '',
     MAIL_MAILER: 'array',
+    LPP_ADMIN_PASSWORD: 'e2e-admin-secret',
     QUEUE_CONNECTION: 'sync',
     SESSION_DRIVER: 'file',
     TIMETABLE_SOLVER_PYTHON: solverPython,

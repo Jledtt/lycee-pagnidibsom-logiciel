@@ -7,7 +7,7 @@ const SEEDED_CLASS = 'E2E 5e A';
 async function login(page) {
     await page.goto('/login');
     await page.getByLabel('Identifiant').fill('admin');
-    await page.getByLabel('Mot de passe').fill('Pagnidibsom');
+    await page.getByLabel('Mot de passe').fill('e2e-admin-secret');
     await page.getByRole('button', { name: 'Se connecter' }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 }

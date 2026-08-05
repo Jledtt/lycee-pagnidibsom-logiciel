@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-async function login(page, username = 'admin', password = 'Pagnidibsom') {
+async function login(page, username = 'admin', password = 'e2e-admin-secret') {
     await page.goto('/login');
     await page.getByLabel('Identifiant').fill(username);
     await page.getByLabel('Mot de passe').fill(password);

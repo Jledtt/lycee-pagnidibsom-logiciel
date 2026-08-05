@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -58,13 +59,63 @@ class RoleLoginUsersSeederTest extends TestCase
         $this->assertDatabaseMissing('roles', ['name' => 'eleve']);
     }
 
-    public function test_admin_password_stays_on_existing_school_password(): void
+    public function test_configured_admin_password_is_used_only_when_the_account_is_created(): void
     {
+        config()->set('lpp.admin_password', 'configured-admin-password');
         $this->seed(DatabaseSeeder::class);
 
         $admin = User::query()->where('username', 'admin')->firstOrFail();
 
         $this->assertTrue($admin->hasRole('admin'));
-        $this->assertTrue(Hash::check('Pagnidibsom', $admin->password));
+        $this->assertTrue(Hash::check('configured-admin-password', $admin->password));
+
+        config()->set('lpp.admin_password', 'replacement-password');
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertTrue(Hash::check('configured-admin-password', $admin->refresh()->password));
+        $this->assertFalse(Hash::check('replacement-password', $admin->password));
+    }
+
+    public function test_production_seed_without_admin_password_does_not_create_admin(): void
+    {
+        Log::spy();
+        config()->set('lpp.admin_password');
+        $this->app->detectEnvironment(fn () => 'production');
+
+        try {
+            (new DatabaseSeeder)->setContainer($this->app)->run();
+        } finally {
+            $this->app->detectEnvironment(fn () => 'testing');
+        }
+
+        $this->assertDatabaseMissing('users', ['username' => 'admin']);
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('Compte administrateur ignoré : LPP_ADMIN_PASSWORD est vide en production.');
+    }
+
+    public function test_existing_admin_is_not_modified_when_production_password_is_missing(): void
+    {
+        $admin = User::factory()->create([
+            'username' => 'admin',
+            'email' => 'admin-existing@example.test',
+            'password' => 'existing-password',
+            'status' => 'inactive',
+        ]);
+        $originalUpdatedAt = $admin->updated_at;
+        config()->set('lpp.admin_password');
+        $this->app->detectEnvironment(fn () => 'production');
+
+        try {
+            (new DatabaseSeeder)->setContainer($this->app)->run();
+        } finally {
+            $this->app->detectEnvironment(fn () => 'testing');
+        }
+
+        $admin->refresh();
+        $this->assertSame('admin-existing@example.test', $admin->email);
+        $this->assertSame('inactive', $admin->status);
+        $this->assertTrue(Hash::check('existing-password', $admin->password));
+        $this->assertTrue($originalUpdatedAt->equalTo($admin->updated_at));
     }
 }
