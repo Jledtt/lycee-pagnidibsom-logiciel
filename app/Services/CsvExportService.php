@@ -38,6 +38,10 @@ class CsvExportService
             return '';
         }
 
+        if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) === 1) {
+            return "'".$value;
+        }
+
         return (string) $value;
     }
 }
