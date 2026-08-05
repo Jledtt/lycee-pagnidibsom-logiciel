@@ -31,12 +31,15 @@ jobs:
 
       - name: Telecharger et verifier l archive chiffree
         id: backup
+        env:
+          LPP_BACKUP_HOST: ${{ secrets.LPP_BACKUP_HOST }}
         run: |
+          test -n "$LPP_BACKUP_HOST"
           filename="lpp-backup-$(date -u +'%Y%m%d-%H%M%S').zip"
           ssh -i "$HOME/.ssh/lpp_backup" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
-            lpp-backup-export@164.132.198.19 > "$filename"
+            "lpp-backup-export@$LPP_BACKUP_HOST" > "$filename"
           test -s "$filename"
           zipinfo -v "$filename" | grep 'file security status:.*encrypted' >/dev/null
           sha256sum "$filename" > "$filename.sha256"
