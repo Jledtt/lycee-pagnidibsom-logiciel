@@ -96,6 +96,7 @@ class PaymentWebController extends Controller
             'Statut',
             'Encaisse par',
             'Date annulation',
+            'Annulé par',
             'Motif annulation',
             'Notes',
         ], $payments->flatMap(function (Payment $payment) {
@@ -115,7 +116,8 @@ class PaymentWebController extends Controller
                 $payment->status,
                 $payment->receiver?->name,
                 $payment->cancelled_at?->format('d/m/Y H:i'),
-                $payment->cancellation_reason,
+                $payment->cancellationActorName(),
+                $payment->cancellationReasonForDisplay(),
                 $payment->notes,
             ]);
         }));
@@ -150,7 +152,7 @@ class PaymentWebController extends Controller
 
     public function show(Request $request, Payment $payment): View
     {
-        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver']);
+        $payment->load(['student.guardians', 'academicYear', 'enrollment.schoolClass.level', 'lines.feeType', 'lines.feeSchedule', 'receiver', 'canceller']);
         $academicYear = $this->activeAcademicYear();
 
         return view('payments.show', [
@@ -302,7 +304,7 @@ class PaymentWebController extends Controller
     private function paymentQuery(Request $request, ?AcademicYear $academicYear)
     {
         return Payment::query()
-            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'lines.feeSchedule', 'receiver'])
+            ->with(['student', 'enrollment.schoolClass', 'lines.feeType', 'lines.feeSchedule', 'receiver', 'canceller'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
             ->when($request->string('search')->toString(), function ($query, string $search) {

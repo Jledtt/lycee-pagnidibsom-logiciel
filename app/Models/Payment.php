@@ -18,6 +18,7 @@ class Payment extends Model
         'payment_method',
         'status',
         'cancelled_at',
+        'cancelled_by',
         'cancellation_reason',
         'received_by',
         'notes',
@@ -49,8 +50,41 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
     public function lines(): HasMany
     {
         return $this->hasMany(PaymentLine::class);
+    }
+
+    public function cancellationReasonForDisplay(): ?string
+    {
+        return $this->legacyCancellationParts()['reason'];
+    }
+
+    public function cancellationActorName(): ?string
+    {
+        return $this->canceller?->name ?? $this->legacyCancellationParts()['actor'];
+    }
+
+    private function legacyCancellationParts(): array
+    {
+        $reason = $this->cancellation_reason;
+
+        if (! is_string($reason) || $reason === '') {
+            return ['reason' => null, 'actor' => null];
+        }
+
+        if (preg_match('/^(.*?)\s*\|\s*Annule par:\s*(.+)$/u', $reason, $matches) === 1) {
+            return [
+                'reason' => trim($matches[1]),
+                'actor' => trim($matches[2]),
+            ];
+        }
+
+        return ['reason' => $reason, 'actor' => null];
     }
 }

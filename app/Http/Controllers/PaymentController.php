@@ -15,7 +15,7 @@ class PaymentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $payments = Payment::query()
-            ->with(['student', 'lines.feeType', 'receiver'])
+            ->with(['student', 'lines.feeType', 'receiver', 'canceller'])
             ->when($request->integer('student_id'), fn ($query, int $studentId) => $query->where('student_id', $studentId))
             ->latest('paid_at')
             ->paginate($request->integer('per_page', 20));

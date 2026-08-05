@@ -138,6 +138,7 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString('Montant ligne', $sheetXml);
         $this->assertStringContainsString('Tranche', $sheetXml);
+        $this->assertStringContainsString('Annulé par', $sheetXml);
         $this->assertStringContainsString('Motif annulation', $sheetXml);
         $this->assertStringContainsString('Scolarité novembre', $sheetXml);
     }
@@ -167,6 +168,50 @@ class PaymentWorkflowPracticalityTest extends TestCase
             'status' => 'valid',
             'cancellation_reason' => null,
         ]);
+    }
+
+    public function test_payment_cancellation_records_actor_and_raw_reason(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        [, , , $payment] = $this->paymentScenario();
+
+        $this->actingAs($user)
+            ->delete(route('payments.destroy', $payment), ['reason' => 'Erreur de montant'])
+            ->assertRedirect(route('payments.show', $payment));
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->id,
+            'status' => 'cancelled',
+            'cancelled_by' => $user->id,
+            'cancellation_reason' => 'Erreur de montant',
+        ]);
+        $this->assertSame($user->id, $payment->refresh()->canceller?->id);
+
+        $this->actingAs($user)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertSee($user->name)
+            ->assertSee('Erreur de montant');
+    }
+
+    public function test_legacy_cancellation_text_remains_readable(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        [, , , $payment] = $this->paymentScenario();
+        $payment->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+            'cancellation_reason' => 'Ancienne erreur | Annule par: Ancien Caissier',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertSee('Ancien Caissier')
+            ->assertSee('Ancienne erreur')
+            ->assertDontSee('Ancienne erreur | Annule par: Ancien Caissier');
     }
 
     public function test_receipt_pdf_lists_schedule_lines_and_clean_totals(): void

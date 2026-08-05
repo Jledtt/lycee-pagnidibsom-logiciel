@@ -91,9 +91,15 @@
                     </div>
                 @endcan
             @else
-                <div class="detail-item" style="margin-top:16px">
-                    <span>Motif d’annulation</span>
-                    <strong>{{ $payment->cancellation_reason ?? '-' }}</strong>
+                <div class="detail-grid" style="margin-top:16px">
+                    <div class="detail-item">
+                        <span>Annulé par</span>
+                        <strong>{{ $payment->cancellationActorName() ?? '-' }}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Motif d’annulation</span>
+                        <strong>{{ $payment->cancellationReasonForDisplay() ?? '-' }}</strong>
+                    </div>
                 </div>
             @endif
         </div>

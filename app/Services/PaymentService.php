@@ -111,16 +111,21 @@ class PaymentService
 
     public function cancel(Payment $payment, User $user, string $reason): Payment
     {
-        if ($payment->status === 'cancelled') {
-            return $payment;
-        }
+        return DB::transaction(function () use ($payment, $user, $reason): Payment {
+            $lockedPayment = Payment::query()
+                ->lockForUpdate()
+                ->findOrFail($payment->getKey());
 
-        $payment->forceFill([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-            'cancellation_reason' => $reason.' | Annule par: '.$user->name,
-        ])->save();
+            if ($lockedPayment->status !== 'cancelled') {
+                $lockedPayment->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now(),
+                    'cancelled_by' => $user->id,
+                    'cancellation_reason' => trim($reason),
+                ]);
+            }
 
-        return $payment;
+            return $lockedPayment->load('canceller');
+        });
     }
 }
