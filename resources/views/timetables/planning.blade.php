@@ -103,10 +103,13 @@
         </div>
 
         @if ($readiness['blockers'])
-            <div class="planning-diagnostics planning-diagnostics--error">
-                <strong>Points bloquants</strong>
+            <details class="planning-diagnostics planning-diagnostics--error" @if (count($readiness['blockers']) <= 5) open @endif>
+                <summary>
+                    <strong>Points bloquants</strong>
+                    <span>{{ count($readiness['blockers']) }} élément(s) à corriger</span>
+                </summary>
                 <ul>@foreach ($readiness['blockers'] as $message)<li>{{ $message }}</li>@endforeach</ul>
-            </div>
+            </details>
         @endif
         @if ($readiness['warnings'])
             <div class="planning-diagnostics">

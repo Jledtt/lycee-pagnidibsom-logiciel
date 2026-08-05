@@ -1374,6 +1374,20 @@
     background: #fff5f6;
 }
 
+.planning-diagnostics summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+}
+
+.planning-diagnostics summary span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .planning-diagnostics ul {
     margin: 8px 0 0;
     padding-left: 20px;

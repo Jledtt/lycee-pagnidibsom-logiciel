@@ -425,10 +425,12 @@ class TimetableGenerationService
                 'warnings' => array_values(array_unique($warnings)),
                 'counts' => [
                     'classes' => $targetClasses->count(),
-                    'assignments' => count($assignments),
-                    'teachers' => collect($assignments)->pluck('teacher_id')->unique()->count(),
+                    'assignments' => $allAssignments->count(),
+                    'teachers' => $teacherIds->count(),
                     'periods' => $periods->count(),
-                    'requested_slots' => collect($assignments)->sum('required_slots'),
+                    'requested_slots' => round($allAssignments->sum(
+                        fn (ClassSubject $assignment): float => max(0, (float) $assignment->weekly_hours),
+                    ), 2),
                 ],
             ],
         ];
