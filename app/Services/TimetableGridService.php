@@ -17,15 +17,26 @@ class TimetableGridService
 
     public function update(Timetable $timetable, array $attributes, array $rows): void
     {
+        if ($timetable->status === 'active') {
+            throw ValidationException::withMessages([
+                'timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant de le modifier.',
+            ]);
+        }
+
         $assignments = ClassSubject::query()
             ->with(['subject', 'teacher'])
             ->where('school_class_id', $timetable->school_class_id)
             ->where('is_active', true)
             ->get()
             ->keyBy('id');
+        $existingEntries = $timetable->entries()->get()->keyBy('id');
 
         $entries = collect($rows)
-            ->map(fn (array $row): array => $this->entryPayload($row, $assignments))
+            ->map(fn (array $row): array => $this->entryPayload(
+                $row,
+                $assignments,
+                filled($row['entry_id'] ?? null) ? $existingEntries->get((int) $row['entry_id']) : null,
+            ))
             ->values();
 
         $this->ensureTeachersAreAvailable($timetable, $entries);
@@ -38,13 +49,18 @@ class TimetableGridService
         });
     }
 
-    private function entryPayload(array $entry, Collection $assignments): array
+    private function entryPayload(array $entry, Collection $assignments, ?TimetableEntry $existing): array
     {
+        if ($existing?->is_locked) {
+            return $this->preservedPayload($existing);
+        }
+
         $assignment = filled($entry['class_subject_id'] ?? null)
             ? $assignments->get((int) $entry['class_subject_id'])
             : null;
 
-        return [
+        $payload = [
+            'generation_run_id' => $existing?->generation_run_id,
             'timetable_period_id' => filled($entry['timetable_period_id'] ?? null) ? (int) $entry['timetable_period_id'] : null,
             'sort_order' => (int) $entry['sort_order'],
             'period_label' => $entry['period_label'],
@@ -60,9 +76,48 @@ class TimetableGridService
                 ?? (filled($entry['teacher_name'] ?? null) ? trim($entry['teacher_name']) : null),
             'room' => filled($entry['room'] ?? null) ? trim($entry['room']) : null,
             'is_break' => (bool) ($entry['is_break'] ?? false),
-            'is_locked' => false,
-            'source' => 'manual',
+            'is_locked' => (bool) ($existing?->is_locked ?? false),
+            'source' => $existing?->source === 'automatic' ? 'automatic' : 'manual',
         ];
+
+        if ($existing?->source === 'automatic' && $this->contentChanged($existing, $payload)) {
+            $payload['source'] = 'manual';
+        }
+
+        return $payload;
+    }
+
+    private function preservedPayload(TimetableEntry $entry): array
+    {
+        return collect($entry->only([
+            'generation_run_id',
+            'timetable_period_id',
+            'sort_order',
+            'period_label',
+            'starts_at',
+            'ends_at',
+            'day_of_week',
+            'class_subject_id',
+            'subject_id',
+            'teacher_id',
+            'subject_name',
+            'teacher_name',
+            'room',
+            'is_break',
+            'is_locked',
+            'source',
+        ]))->all();
+    }
+
+    private function contentChanged(TimetableEntry $existing, array $payload): bool
+    {
+        foreach (['class_subject_id', 'subject_id', 'teacher_id', 'subject_name', 'teacher_name', 'room'] as $field) {
+            if ((string) ($existing->{$field} ?? '') !== (string) ($payload[$field] ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function ensureTeachersAreAvailable(Timetable $timetable, Collection $entries): void

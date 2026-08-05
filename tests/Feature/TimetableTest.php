@@ -59,7 +59,7 @@ class TimetableTest extends TestCase
             'title' => 'Emploi du temps final',
             'principal_teacher' => 'Professeur Principal Test',
             'notes' => 'Version validee',
-            'status' => 'active',
+            'status' => 'draft',
             'entries' => $timetable->entries
                 ->sortBy([['sort_order', 'asc']])
                 ->values()
@@ -67,6 +67,7 @@ class TimetableTest extends TestCase
                     $isTargetCell = $entry->day_of_week === 'monday' && $entry->period_label === '7h00-7h55';
 
                     return [
+                        'entry_id' => $entry->id,
                         'sort_order' => $entry->sort_order,
                         'period_label' => $entry->period_label,
                         'starts_at' => $entry->starts_at ? substr((string) $entry->starts_at, 0, 5) : null,
@@ -83,7 +84,11 @@ class TimetableTest extends TestCase
 
         $this->actingAs($user)
             ->put(route('timetables.update', $timetable), $payload)
-            ->assertRedirect(route('timetables.edit', $timetable));
+            ->assertRedirect(route('timetables.review', $timetable));
+
+        $this->actingAs($user)
+            ->post(route('timetables.publish', $timetable))
+            ->assertRedirect(route('timetables.review', $timetable));
 
         $this->assertDatabaseHas('timetables', [
             'id' => $timetable->id,
@@ -364,7 +369,7 @@ class TimetableTest extends TestCase
                 'status' => 'draft',
                 'entries' => $payload,
             ])
-            ->assertRedirect(route('timetables.edit', $timetable));
+            ->assertRedirect(route('timetables.review', $timetable));
 
         $this->assertDatabaseHas('timetable_entries', [
             'timetable_id' => $timetable->id,
@@ -482,7 +487,7 @@ class TimetableTest extends TestCase
             ->from(route('timetables.edit', $secondTimetable))
             ->put(route('timetables.update', $secondTimetable), [
                 'title' => 'Titre qui ne doit pas être enregistré',
-                'status' => 'active',
+                'status' => 'draft',
                 'entries' => $secondPayload,
             ])
             ->assertRedirect(route('timetables.edit', $secondTimetable))
@@ -766,6 +771,7 @@ class TimetableTest extends TestCase
     private function entryPayload($entry, ?int $classSubjectId = null): array
     {
         return [
+            'entry_id' => $entry->id,
             'timetable_period_id' => $entry->timetable_period_id,
             'sort_order' => $entry->sort_order,
             'period_label' => $entry->period_label,

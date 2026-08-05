@@ -15,7 +15,13 @@ class Timetable extends Model
         'principal_teacher',
         'notes',
         'status',
+        'published_at',
+        'published_by',
         'created_by',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
     ];
 
     public function academicYear(): BelongsTo
@@ -31,6 +37,11 @@ class Timetable extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function publisher(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'published_by');
     }
 
     public function entries(): HasMany

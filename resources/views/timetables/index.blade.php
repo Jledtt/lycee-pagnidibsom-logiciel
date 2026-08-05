@@ -18,7 +18,7 @@
             <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
         @endcan
         @can('timetables.manage')
-            <a class="btn btn-subtle" href="{{ route('timetables.edit', $timetable) }}">Modifier</a>
+            <a class="btn btn-subtle" href="{{ route('timetables.review', $timetable) }}">Reviser</a>
         @endcan
     @endif
 @endsection
@@ -206,6 +206,9 @@
                                 <td>
                                     <div class="page-actions">
                                         <a class="btn btn-subtle" href="{{ route('timetables.index', ['school_class_id' => $item->school_class_id]) }}">Voir</a>
+                                        @can('timetables.manage')
+                                            <a class="btn btn-subtle" href="{{ route('timetables.review', $item) }}">Reviser</a>
+                                        @endcan
                                         @can('timetables.print')
                                             <a class="btn btn-subtle" href="{{ route('timetables.pdf', $item) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
                                         @endcan

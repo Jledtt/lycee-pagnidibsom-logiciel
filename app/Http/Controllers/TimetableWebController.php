@@ -111,8 +111,14 @@ class TimetableWebController extends Controller
             ->with('success', 'Emploi du temps créé. Tu peux maintenant remplir la grille.');
     }
 
-    public function edit(Timetable $timetable): View
+    public function edit(Timetable $timetable): View|RedirectResponse
     {
+        if ($timetable->status === 'active') {
+            return redirect()
+                ->route('timetables.review', $timetable)
+                ->withErrors(['timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant toute correction.']);
+        }
+
         $timetable->load(['schoolClass.level', 'academicYear', 'entries']);
 
         $classSubjects = ClassSubject::query()
@@ -135,12 +141,22 @@ class TimetableWebController extends Controller
 
     public function update(Request $request, Timetable $timetable): RedirectResponse
     {
+        if ($timetable->status === 'active') {
+            return redirect()
+                ->route('timetables.review', $timetable)
+                ->withErrors(['timetable' => 'Cet emploi du temps est publie. Repasse-le en brouillon avant toute correction.']);
+        }
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'principal_teacher' => ['nullable', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:3000'],
-            'status' => ['required', 'in:draft,active,archived'],
+            'status' => ['required', 'in:draft,archived'],
             'entries' => ['required', 'array'],
+            'entries.*.entry_id' => [
+                'nullable',
+                Rule::exists('timetable_entries', 'id')->where('timetable_id', $timetable->id),
+            ],
             'entries.*.sort_order' => ['required', 'integer', 'min:1', 'max:99'],
             'entries.*.period_label' => ['required', 'string', 'max:40'],
             'entries.*.starts_at' => ['nullable', 'date_format:H:i'],
@@ -172,7 +188,7 @@ class TimetableWebController extends Controller
         $this->grids->update($timetable, $attributes, $data['entries']);
 
         return redirect()
-            ->route('timetables.edit', $timetable)
+            ->route('timetables.review', $timetable)
             ->with('success', 'Emploi du temps mis à jour.');
     }
 

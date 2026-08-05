@@ -81,6 +81,6 @@ class UiDialogComponentsTest extends TestCase
             $confirmationForms += preg_match_all('/\sdata-confirm(?:\s|>)/', $contents);
         }
 
-        $this->assertSame(11, $confirmationForms);
+        $this->assertSame(13, $confirmationForms);
     }
 }

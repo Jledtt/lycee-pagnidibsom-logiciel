@@ -42,6 +42,7 @@ use App\Http\Controllers\TeacherFeeStatementWebController;
 use App\Http\Controllers\TeacherWebController;
 use App\Http\Controllers\TeacherWorkSessionWebController;
 use App\Http\Controllers\TimetablePlanningWebController;
+use App\Http\Controllers\TimetableReviewWebController;
 use App\Http\Controllers\TimetableWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -361,6 +362,26 @@ Route::post('/timetables/planning/generate', [TimetablePlanningWebController::cl
 Route::post('/timetables/planning/runs/{timetableGenerationRun}/apply', [TimetablePlanningWebController::class, 'apply'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.planning.apply');
+
+Route::get('/timetables/{timetable}/review', [TimetableReviewWebController::class, 'show'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.review');
+
+Route::patch('/timetables/{timetable}/entries/{entry}/lock', [TimetableReviewWebController::class, 'lock'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.entries.lock');
+
+Route::patch('/timetables/{timetable}/locks', [TimetableReviewWebController::class, 'lockAll'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.locks.update');
+
+Route::post('/timetables/{timetable}/publish', [TimetableReviewWebController::class, 'publish'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.publish');
+
+Route::post('/timetables/{timetable}/reopen', [TimetableReviewWebController::class, 'reopen'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.reopen');
 
 Route::get('/timetables/{timetable}/edit', [TimetableWebController::class, 'edit'])
     ->middleware(['auth', 'permission:timetables.manage'])

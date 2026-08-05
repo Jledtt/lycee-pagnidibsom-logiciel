@@ -9,6 +9,7 @@ class TimetableEntry extends Model
 {
     protected $fillable = [
         'timetable_id',
+        'generation_run_id',
         'timetable_period_id',
         'sort_order',
         'period_label',
@@ -34,6 +35,11 @@ class TimetableEntry extends Model
     public function timetable(): BelongsTo
     {
         return $this->belongsTo(Timetable::class);
+    }
+
+    public function generationRun(): BelongsTo
+    {
+        return $this->belongsTo(TimetableGenerationRun::class, 'generation_run_id');
     }
 
     public function subject(): BelongsTo

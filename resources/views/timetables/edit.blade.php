@@ -7,6 +7,7 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('timetables.index', ['school_class_id' => $timetable->school_class_id]) }}">Retour</a>
+    <a class="btn btn-subtle" href="{{ route('timetables.review', $timetable) }}">Reviser</a>
     @can('timetables.print')
         <a class="btn btn-primary" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement PDF de l’emploi du temps lancé.">PDF</a>
     @endcan
@@ -36,7 +37,6 @@
                     <label>Statut</label>
                     <select name="status">
                         <option value="draft" @selected(old('status', $timetable->status) === 'draft')>Brouillon</option>
-                        <option value="active" @selected(old('status', $timetable->status) === 'active')>Actif</option>
                         <option value="archived" @selected(old('status', $timetable->status) === 'archived')>Archive</option>
                     </select>
                 </div>
@@ -86,6 +86,8 @@
                                     <td>
                                         <strong>{{ $row['period_label'] }}</strong>
                                         @foreach (array_keys($days) as $dayKey)
+                                            @php($entry = $row['days'][$dayKey] ?? null)
+                                            <input type="hidden" name="entries[{{ $entryIndex }}][entry_id]" value="{{ $entry?->id }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][sort_order]" value="{{ $row['sort_order'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][timetable_period_id]" value="{{ $row['id'] ?? '' }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][period_label]" value="{{ $row['period_label'] }}">
@@ -114,6 +116,7 @@
                                     @foreach (array_keys($days) as $dayKey)
                                         @php($entry = $row['days'][$dayKey] ?? null)
                                         <td>
+                                            <input type="hidden" name="entries[{{ $entryIndex }}][entry_id]" value="{{ $entry?->id }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][sort_order]" value="{{ $row['sort_order'] }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][timetable_period_id]" value="{{ $row['id'] ?? '' }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][period_label]" value="{{ $row['period_label'] }}">
@@ -122,7 +125,12 @@
                                             <input type="hidden" name="entries[{{ $entryIndex }}][day_of_week]" value="{{ $dayKey }}">
                                             <input type="hidden" name="entries[{{ $entryIndex }}][is_break]" value="0">
 
-                                            <div class="timetable-cell-fields" style="display:grid;gap:6px">
+                                            <div class="timetable-cell-fields {{ $entry?->is_locked ? 'timetable-cell-fields--locked' : '' }}" style="display:grid;gap:6px">
+                                                @if ($entry?->is_locked)
+                                                    <span class="badge">Verrouille</span>
+                                                @elseif ($entry?->source === 'automatic')
+                                                    <span class="badge badge-warning">Automatique</span>
+                                                @endif
                                                 <select name="entries[{{ $entryIndex }}][class_subject_id]" data-timetable-assignment aria-label="Affectation pédagogique">
                                                     <option value="">Activité ou ancien libellé</option>
                                                     @foreach ($classSubjects as $classSubject)

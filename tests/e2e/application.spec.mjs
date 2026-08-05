@@ -249,6 +249,7 @@ test('le résumé de l’emploi du temps reste lisible avec une équipe pédagog
             'Oumar Tablette (Philosophie)',
         ].join('; '));
         await page.getByRole('button', { name: 'Enregistrer l’emploi du temps' }).click();
+        await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
         await page.getByRole('link', { name: 'Retour' }).click();
     }
 
@@ -411,4 +412,32 @@ test('la documentation reste lisible et ouvre un guide', async ({ page }) => {
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     );
     expect(guideOverflows).toBe(false);
+});
+
+test('la revision visuelle de l emploi du temps reste contenue et explicite', async ({ page }, testInfo) => {
+    await login(page);
+    await page.goto('/timetables');
+
+    const reviewLink = page.getByRole('link', { name: 'Reviser' }).first();
+    if (!await reviewLink.isVisible()) {
+        await page.getByRole('button', { name: /grille vide/i }).click();
+        await expect(page).toHaveURL(/\/timetables\/\d+\/edit$/);
+        await page.getByRole('button', { name: /Enregistrer/ }).click();
+    } else {
+        await reviewLink.click();
+    }
+
+    await expect(page).toHaveURL(/\/timetables\/\d+\/review$/);
+    await expect(page.locator('.topbar h1')).toContainText(/vision/);
+    await expect(page.getByText('Cours places')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Grille visuelle' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Corriger la grille' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+
+    const screenshotPath = testInfo.outputPath(`timetable-review-${testInfo.project.name}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: false });
+    await testInfo.attach(`timetable-review-${testInfo.project.name}`, {
+        path: screenshotPath,
+        contentType: 'image/png',
+    });
 });

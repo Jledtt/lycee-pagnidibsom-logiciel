@@ -155,6 +155,7 @@ class TimetableGenerationService
                         $assignment = $solution ? $assignments->get($solution['class_subject_id']) : null;
                         $lockedEntry = $lockedBySlot->get($classId.'|'.$day.'|'.$period->id);
                         $entries[] = [
+                            'generation_run_id' => $run->id,
                             'timetable_period_id' => $period->id,
                             'sort_order' => $period->sort_order,
                             'period_label' => $period->label,
