@@ -228,7 +228,7 @@ class TroisiemeDemoPresentationSeeder extends Seeder
                         'type' => 'renewal',
                         'status' => 'active',
                         'previous_school' => $profile['origin_school'],
-                        'notes' => 'Profil complet cree pour la demonstration.',
+                        'notes' => 'Profil complet créé pour la démonstration.',
                         'created_by' => $this->adminUser()?->id,
                     ],
                 );
@@ -324,7 +324,7 @@ class TroisiemeDemoPresentationSeeder extends Seeder
             $values = [
                 'score' => $this->scoreFor($studentIndex, $subjectIndex, $assessmentIndex),
                 'is_absent' => false,
-                'comment' => 'Note de demonstration',
+                'comment' => 'Note de démonstration',
                 'entered_by' => $admin?->id,
             ];
 
@@ -346,7 +346,7 @@ class TroisiemeDemoPresentationSeeder extends Seeder
             'starts_on' => '2027-03-02',
             'ends_on' => '2027-03-06',
             'status' => 'finished',
-            'notes' => 'Examen blanc cree pour la presentation de la classe de 3e.',
+            'notes' => 'Examen blanc créé pour la présentation de la classe de 3e.',
         ];
 
         if (Schema::hasColumn('mock_exams', 'term_id')) {

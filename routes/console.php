@@ -140,7 +140,7 @@ Artisan::command('lpp:setup-tariffs', function () {
 
     $this->info('Tarifs appliques pour '.$result['academic_year'].'.');
     $this->line('- Classes traitees : '.$result['classes']);
-    $this->line('- Lignes creees ou mises a jour : '.$result['lines']);
+    $this->line('- Lignes créées ou mises à jour : '.$result['lines']);
 })->purpose('Appliquer les tarifs officiels LPP aux classes actives');
 
 Schedule::command('backup:run')

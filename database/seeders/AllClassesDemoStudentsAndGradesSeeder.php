@@ -230,7 +230,7 @@ class AllClassesDemoStudentsAndGradesSeeder extends Seeder
                         'type' => $studentIndex % 3 === 0 ? 'new' : 'renewal',
                         'status' => 'active',
                         'previous_school' => $profile['origin_school'],
-                        'notes' => 'Profil de demonstration complet pour presentation.',
+                        'notes' => 'Profil de démonstration complet pour présentation.',
                     ],
                 );
 

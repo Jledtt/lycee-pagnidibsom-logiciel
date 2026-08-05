@@ -46,7 +46,7 @@
 
     <table class="meta">
         <tr>
-            <td><strong>FICHE d’EMARGEMENT DES PROFESSEURS</strong></td>
+            <td><strong>FICHE D’ÉMARGEMENT DES PROFESSEURS</strong></td>
             <td style="text-align:center">Période : {{ $start->format('d/m/Y') }} au {{ $end->format('d/m/Y') }}</td>
             <td style="text-align:right">Année scolaire : {{ $academicYear?->name ?? '-' }}</td>
         </tr>

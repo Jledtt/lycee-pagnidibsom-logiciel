@@ -74,7 +74,7 @@
                                 <th>{{ $term->name }}</th>
                             @endforeach
                             <th>Moyenne annuelle</th>
-                            <th>Apres rachat</th>
+                            <th>Après rachat</th>
                             <th>Décision proposée</th>
                         </tr>
                     </thead>

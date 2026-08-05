@@ -31,7 +31,7 @@ return new class extends Migration
         foreach ([
             [
                 'type' => 'student_matricule',
-                'label' => 'Matricule eleve',
+                'label' => 'Matricule élève',
                 'prefix' => 'LPP',
                 'format' => '{PREFIX}-{YEAR}-{NUMBER}',
                 'padding' => 4,

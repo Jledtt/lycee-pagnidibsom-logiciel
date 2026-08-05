@@ -90,7 +90,7 @@ class TerminaleDemoStudentSeeder extends Seeder
                     'type' => 'new',
                     'status' => 'active',
                     'previous_school' => $item['student']['origin_school'],
-                    'notes' => 'Profil de demonstration Terminale.',
+                    'notes' => 'Profil de démonstration Terminale.',
                 ],
             );
         }

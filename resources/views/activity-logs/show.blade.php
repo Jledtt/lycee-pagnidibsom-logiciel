@@ -68,7 +68,7 @@
     </section>
 
     <section class="grid two-col" style="margin-top:16px">
-        @foreach (['old_values' => 'Avant', 'new_values' => 'Apres'] as $field => $title)
+        @foreach (['old_values' => 'Avant', 'new_values' => 'Après'] as $field => $title)
             <div class="panel">
                 <div class="panel-head">
                     <h2>{{ $title }}</h2>

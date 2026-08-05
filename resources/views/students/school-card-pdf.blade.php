@@ -154,7 +154,7 @@
                     </td>
                     <td class="school-info">
                         Enseignement technique et general<br>
-                        Autorisation: N 2021-01552/MENAPLN/SG/DEP<br>
+                        Autorisation : N° 2021-01552/MENAPLN/SG/DEP<br>
                         {{ $school?->postal_box ?? '04 BP 8825' }} {{ str($school?->city ?? 'Ouagadougou')->upper() }} 04-BF<br>
                         Email: {{ $school?->email ?? 'lyceepagnidibsom@gmail.com' }}<br>
                         Tel: {{ $school?->phone ?? '+226 72 81 61 59 / 78 42 62 06' }}

@@ -85,7 +85,7 @@ class MockExam extends Model
         return match ($this->result_status) {
             'provisoire' => 'Provisoire',
             'corrige' => 'Corrigé',
-            'definitif' => 'Definitif',
+            'definitif' => 'Définitif',
             'verrouille' => 'Verrouillé',
             default => 'Preparation',
         };

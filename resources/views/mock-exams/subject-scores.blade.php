@@ -100,7 +100,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">Aucun candidat. Synchronise d’abord les candidats de la session.</td>
+                                <td colspan="8">Aucun candidat. Synchronisez d’abord les candidats de la session.</td>
                             </tr>
                         @endforelse
                     </tbody>

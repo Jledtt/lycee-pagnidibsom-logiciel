@@ -10,6 +10,10 @@ return new class extends Migration
         DB::table('timetable_periods')
             ->where('label', 'RECREATION')
             ->update(['label' => 'RÉCRÉATION']);
+
+        DB::table('numbering_settings')
+            ->where('label', 'Matricule eleve')
+            ->update(['label' => 'Matricule élève']);
     }
 
     public function down(): void
@@ -17,5 +21,9 @@ return new class extends Migration
         DB::table('timetable_periods')
             ->where('label', 'RÉCRÉATION')
             ->update(['label' => 'RECREATION']);
+
+        DB::table('numbering_settings')
+            ->where('label', 'Matricule élève')
+            ->update(['label' => 'Matricule eleve']);
     }
 };
