@@ -1249,18 +1249,6 @@ parameters:
 			path: app/Http/Controllers/ReportCardWebController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PaymentLine\:\:\$student_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PaymentLine\:\:\$total_paid\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1275,13 +1263,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student_id\.$#'
-			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
@@ -1321,18 +1303,6 @@ parameters:
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterInstallmentStudentRows\(\) has parameter \$studentRows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterInstallmentStudentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterMissingDocumentRows\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -1340,18 +1310,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterMissingDocumentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterPaymentRows\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:filterPaymentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Http/Controllers/ReportWebController.php
@@ -1387,50 +1345,8 @@ parameters:
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentSituationPdf\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentStudentRows\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentStudentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentStudentSummary\(\) has parameter \$studentRows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentStudentSummary\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentSummary\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:installmentSummary\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Controllers/ReportWebController.php
 
@@ -1459,12 +1375,6 @@ parameters:
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentSituationExport\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -1473,24 +1383,6 @@ parameters:
 		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentSituationPdf\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentStatus\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentSummary\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:paymentSummary\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Controllers/ReportWebController.php
 
@@ -1543,36 +1435,6 @@ parameters:
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:studentInstallmentStatus\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:studentPaymentContact\(\) has parameter \$student with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Parameter \#1 \$student of method App\\Services\\RequiredStudentDocumentService\:\:missingForStudent\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1581,36 +1443,6 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$schoolClass of method App\\Services\\RequiredStudentDocumentService\:\:missingForStudent\(\) expects App\\Models\\SchoolClass\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:groupBy\(\)$#'
-			identifier: argument.templateType
 			count: 1
 			path: app/Http/Controllers/ReportWebController.php
 
@@ -1629,7 +1461,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>full_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 5
+			count: 4
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
@@ -1641,7 +1473,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>matricule" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 3
+			count: 2
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
@@ -1652,12 +1484,6 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>phone_primary" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>phone_secondary" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/ReportWebController.php
@@ -4517,6 +4343,210 @@ parameters:
 			identifier: argument.unresolvableType
 			count: 1
 			path: app/Services/ReportCardService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PaymentLine\:\:\$student_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PaymentLine\:\:\$total_paid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_primary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_secondary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:filterInstallmentStudentRows\(\) has parameter \$studentRows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:filterInstallmentStudentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:filterPaymentRows\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:filterPaymentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentStudentRows\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentStudentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentStudentSummary\(\) has parameter \$studentRows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentStudentSummary\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentSummary\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:installmentSummary\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:paymentRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:paymentStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:paymentSummary\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:paymentSummary\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Method App\\Services\\ReportFinancialDataService\:\:studentInstallmentStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:groupBy\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>full_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>matricule" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone_primary" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone_secondary" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ReportFinancialDataService.php
 
 		-
 			message: '#^Method App\\Services\\RequiredStudentDocumentService\:\:availableDocumentTypes\(\) return type has no value type specified in iterable type array\.$#'
