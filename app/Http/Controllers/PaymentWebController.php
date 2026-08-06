@@ -110,8 +110,8 @@ class PaymentWebController extends Controller
                 $payment->enrollment?->schoolClass?->name,
                 $line?->feeType?->name ?? '',
                 $line?->feeSchedule?->period ?? '',
-                $line ? (float) $line->amount : (float) $payment->amount,
-                (float) $payment->amount,
+                $line ? (int) $line->amount : (int) $payment->amount,
+                (int) $payment->amount,
                 $payment->payment_method,
                 $payment->status,
                 $payment->receiver?->name,
@@ -178,7 +178,7 @@ class PaymentWebController extends Controller
 
                 return [
                     'designation' => $period ? $feeName.' - '.$period : $feeName,
-                    'amount' => (float) $lines->sum('amount'),
+                    'amount' => (int) $lines->sum('amount'),
                 ];
             })
             ->values();
@@ -340,7 +340,7 @@ class PaymentWebController extends Controller
                 return [
                     'fee_type_id' => $schedule?->fee_type_id ?? (int) ($line['fee_type_id'] ?? 0),
                     'fee_schedule_id' => $schedule?->id,
-                    'amount' => (float) $line['amount'],
+                    'amount' => (int) $line['amount'],
                 ];
             })
             ->values();

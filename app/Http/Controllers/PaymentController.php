@@ -39,7 +39,7 @@ class PaymentController extends Controller
                 Rule::exists('fee_schedules', 'id')
                     ->where('academic_year_id', $academicYear->id),
             ],
-            'lines.*.amount' => ['required', 'numeric', 'min:1'],
+            'lines.*.amount' => ['required', 'integer', 'min:0'],
         ]);
 
         $student = Student::findOrFail($data['student_id']);

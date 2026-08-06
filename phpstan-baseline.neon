@@ -961,7 +961,7 @@ parameters:
 			path: app/Http/Controllers/PaymentWebController.php
 
 		-
-			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, float, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, float, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, float, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, float, \.\.\.\}\>\.$#'
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, int, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, int, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, int, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, int, \.\.\.\}\>\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/PaymentWebController.php

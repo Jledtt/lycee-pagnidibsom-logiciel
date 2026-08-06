@@ -32,7 +32,7 @@ class PaymentService
         }
 
         $payment = DB::transaction(function () use ($student, $academicYear, $receiver, $lines, $data) {
-            $amount = collect($lines)->sum(fn (array $line) => (float) $line['amount']);
+            $amount = collect($lines)->sum(fn (array $line): int => (int) $line['amount']);
             $enrollment = Enrollment::query()
                 ->where('academic_year_id', $academicYear->id)
                 ->where('student_id', $student->id)
@@ -97,7 +97,7 @@ class PaymentService
                 $payment->lines()->create([
                     'fee_type_id' => $line['fee_type_id'],
                     'fee_schedule_id' => $line['fee_schedule_id'] ?? null,
-                    'amount' => $line['amount'],
+                    'amount' => (int) $line['amount'],
                 ]);
             }
 

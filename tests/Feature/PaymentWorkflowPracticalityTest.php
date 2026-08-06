@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\FrenchAmountInWordsService;
 use App\Services\PaymentFinancialProfileService;
+use App\Services\PaymentService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -84,6 +85,47 @@ class PaymentWorkflowPracticalityTest extends TestCase
             'fee_schedule_id' => $schedule->id,
             'amount' => 5000,
         ]);
+    }
+
+    public function test_payment_amounts_are_validated_and_summed_as_fcfa_integers(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('comptable');
+        [$student] = $this->paymentScenario();
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schedule = FeeSchedule::query()->where('period', 'Novembre')->firstOrFail();
+
+        $this->actingAs($user)
+            ->post(route('payments.store'), [
+                'student_id' => $student->id,
+                'payment_method' => 'cash',
+                'lines' => [[
+                    'fee_schedule_id' => $schedule->id,
+                    'amount' => '5000.50',
+                ]],
+            ])
+            ->assertSessionHasErrors('lines.0.amount');
+
+        $payment = app(PaymentService::class)->createPayment(
+            $student,
+            $academicYear,
+            $user,
+            [
+                [
+                    'fee_type_id' => $schedule->fee_type_id,
+                    'fee_schedule_id' => $schedule->id,
+                    'amount' => 100_000_001,
+                ],
+                [
+                    'fee_type_id' => $schedule->fee_type_id,
+                    'fee_schedule_id' => $schedule->id,
+                    'amount' => 99_999_999,
+                ],
+            ],
+        );
+
+        $this->assertSame(200_000_000, (int) $payment->amount);
+        $this->assertSame(200_000_000, (int) $payment->lines()->sum('amount'));
     }
 
     public function test_invalid_payment_reopens_the_modal_with_errors(): void
