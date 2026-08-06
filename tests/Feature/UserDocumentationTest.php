@@ -68,6 +68,19 @@ class UserDocumentationTest extends TestCase
             ->assertDontSee('Créer une évaluation et saisir les notes');
     }
 
+    public function test_automatic_timetable_guide_explains_the_complete_workflow(): void
+    {
+        $secretariat = $this->userWithRole('secretariat');
+
+        $this->actingAs($secretariat)
+            ->get(route('help.show', 'automatic-timetable-planning'))
+            ->assertOk()
+            ->assertSee('Générer automatiquement un emploi du temps')
+            ->assertSee('Disponible, Préféré ou Indisponible')
+            ->assertSee('Appliquer en brouillon')
+            ->assertSee('empêche qu’une classe ou un professeur ait deux cours au même moment');
+    }
+
     public function test_every_documented_module_route_exists_and_every_topic_has_steps(): void
     {
         foreach (config('user_documentation.topics') as $slug => $topic) {

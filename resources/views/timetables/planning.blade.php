@@ -61,10 +61,23 @@
         <div class="panel-head">
             <div>
                 <h2>2. Générer une proposition</h2>
-                <p class="panel-subtitle">Les classes avec un emploi du temps actif sont protégées et restent inchangées.</p>
+                <p class="panel-subtitle">Choisis une classe pour un essai ciblé, ou toutes les classes pour une planification globale. Les classes avec un emploi du temps actif sont protégées et restent inchangées.</p>
             </div>
             <span class="badge">{{ $academicYear->name }}</span>
         </div>
+
+        <form method="GET" action="{{ route('timetables.planning') }}" class="planning-import" style="margin-bottom:16px">
+            <div class="field">
+                <label for="planning_school_class_id">Classe à planifier</label>
+                <select id="planning_school_class_id" name="school_class_id">
+                    <option value="">Toutes les classes sans grille active</option>
+                    @foreach ($classes as $classOption)
+                        <option value="{{ $classOption->id }}" @selected($selectedClass?->id === $classOption->id)>{{ $classOption->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button class="btn btn-subtle" type="submit">Vérifier cette sélection</button>
+        </form>
 
         <div class="planning-metrics">
             <div><span>Classes</span><strong>{{ $readiness['counts']['classes'] }}</strong></div>
@@ -91,6 +104,9 @@
 
         <form method="POST" action="{{ route('timetables.planning.generate') }}">
             @csrf
+            @if ($selectedClass)
+                <input type="hidden" name="school_class_id" value="{{ $selectedClass->id }}">
+            @endif
             <button class="btn btn-primary" type="submit" @disabled($readiness['blockers'] !== [])>Générer la proposition</button>
         </form>
     </section>

@@ -498,7 +498,7 @@ test('la génération automatique produit un brouillon révisable et un PDF vali
 
     await expect(page.getByRole('heading', { name: /Proposition n°/ })).toBeVisible();
     await expect(page.getByText(/Solution (optimale|réalisable)/)).toBeVisible();
-    await expect(page.getByText('E2E 5e A').first()).toBeVisible();
+    await expect(page.locator('.planning-class summary strong', { hasText: 'E2E 5e A' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Appliquer en brouillon' }).click();
     const confirmation = page.locator('#app-confirmation-dialog');

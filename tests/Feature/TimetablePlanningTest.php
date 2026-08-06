@@ -170,8 +170,12 @@ class TimetablePlanningTest extends TestCase
                 'availability_file' => UploadedFile::fake()->createWithContent('scan.pdf', '%PDF-fichier-sans-texte'),
             ])
             ->assertRedirect(route('timetables.planning.import.review'))
-            ->assertSessionHas('timetables.availability_import_preview', fn (array $preview): bool => $preview['summary']['total'] === 0
-                && collect($preview['warnings'])->contains(fn (string $warning): bool => str_contains($warning, 'PDF avec texte')));
+            ->assertSessionHas('timetables.availability_import_preview', function (array $preview): bool {
+                $warnings = is_array($preview['warnings'] ?? null) ? $preview['warnings'] : [];
+
+                return $preview['summary']['total'] === 0
+                    && in_array('Aucun tableau lisible n’a été détecté. Si le PDF est scanné, convertis-le en PDF avec texte ou utilise le modèle CSV.', $warnings, true);
+            });
 
         $this->actingAs($user)
             ->get(route('timetables.planning.import.review'))
@@ -293,12 +297,48 @@ class TimetablePlanningTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('timetables.planning.apply', $run))
-            ->assertRedirect(route('timetables.planning', ['run' => $run->id]));
+            ->assertRedirect(route('timetables.planning', [
+                'run' => $run->id,
+                'school_class_id' => $schoolClass->id,
+            ]));
 
         $timetable = Timetable::query()->where('school_class_id', $schoolClass->id)->firstOrFail();
         $this->assertSame('draft', $timetable->status);
         $this->assertSame(2, $timetable->entries()->where('source', 'automatic')->count());
         $this->assertSame(TimetableGenerationRun::STATUS_APPLIED, $run->fresh()->status);
+    }
+
+    public function test_generator_can_target_one_ready_class_when_another_class_is_incomplete(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $readyClass = $this->schoolClass('Classe prête');
+        $this->schoolClass('Classe incomplète');
+        $subject = Subject::query()->firstOrCreate(
+            ['name' => 'Informatique ciblée'],
+            ['code' => 'INFO-CIBLE', 'status' => 'active'],
+        );
+        ClassSubject::query()->create([
+            'school_class_id' => $readyClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'), ['school_class_id' => $readyClass->id])
+            ->assertRedirect();
+
+        $run = TimetableGenerationRun::query()->firstOrFail();
+        $this->assertTrue($run->canBeApplied());
+        $this->assertSame([$readyClass->id], $run->input_snapshot['target_class_ids']);
     }
 
     public function test_generator_refuses_to_apply_a_stale_proposal(): void
@@ -599,6 +639,9 @@ class TimetablePlanningTest extends TestCase
         ]);
     }
 
+    /**
+     * @param  array<int, string>  $paragraphs
+     */
     private function docxUpload(array $paragraphs): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'lpp-docx-');

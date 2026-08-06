@@ -2389,24 +2389,6 @@ parameters:
 			path: app/Models/AttendanceSession.php
 
 		-
-			message: '#^Method App\\Models\\ClassSubject\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ClassSubject.php
-
-		-
-			message: '#^Method App\\Models\\ClassSubject\:\:subject\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ClassSubject.php
-
-		-
-			message: '#^Method App\\Models\\ClassSubject\:\:teacher\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ClassSubject.php
-
-		-
 			message: '#^Method App\\Models\\CommunicationCampaign\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -5341,12 +5323,6 @@ parameters:
 			path: app/Services/TermPeriodService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/TimetableGenerationService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$school_class_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5531,12 +5507,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/TimetablePeriodService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TimetableReviewService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schoolClass\.$#'

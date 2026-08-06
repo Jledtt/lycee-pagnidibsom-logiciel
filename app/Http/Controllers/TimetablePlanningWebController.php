@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Timetable\ReviewTeacherAvailabilityImportRequest;
 use App\Models\AcademicYear;
+use App\Models\SchoolClass;
 use App\Models\TeacherAvailability;
 use App\Models\TimetableGenerationRun;
 use App\Services\TeacherAvailabilityImportService;
@@ -12,6 +13,7 @@ use App\Services\TimetableTemplateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,6 +28,17 @@ class TimetablePlanningWebController extends Controller
         TimetableTemplateService $templates,
     ): View {
         $academicYear = $this->requireActiveAcademicYear();
+        $classes = $academicYear->classes()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+        $selectedClassId = $request->integer('school_class_id');
+        $selectedClass = $selectedClassId
+            ? SchoolClass::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('status', 'active')
+                ->find($selectedClassId)
+            : null;
         $run = TimetableGenerationRun::query()
             ->with(['requester', 'appliedBy'])
             ->where('academic_year_id', $academicYear->id)
@@ -35,11 +48,13 @@ class TimetablePlanningWebController extends Controller
 
         return view('timetables.planning', [
             'academicYear' => $academicYear,
+            'classes' => $classes,
             'days' => $templates->days(),
             'gridPreview' => $run ? $generation->previewGrid($run) : [],
             'importPreview' => $request->session()->get(self::IMPORT_SESSION_KEY),
-            'readiness' => $generation->readiness($academicYear),
+            'readiness' => $generation->readiness($academicYear, $selectedClass ? [$selectedClass->id] : []),
             'run' => $run,
+            'selectedClass' => $selectedClass,
         ]);
     }
 
@@ -166,10 +181,24 @@ class TimetablePlanningWebController extends Controller
 
     public function generate(Request $request, TimetableGenerationService $generation): RedirectResponse
     {
-        $run = $generation->generate($this->requireActiveAcademicYear(), $request->user());
+        $academicYear = $this->requireActiveAcademicYear();
+        $data = $request->validate([
+            'school_class_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('school_classes', 'id')
+                    ->where('academic_year_id', $academicYear->id)
+                    ->where('status', 'active'),
+            ],
+        ]);
+        $classIds = filled($data['school_class_id'] ?? null) ? [(int) $data['school_class_id']] : [];
+        $run = $generation->generate($academicYear, $request->user(), $classIds);
 
         return redirect()
-            ->route('timetables.planning', ['run' => $run->id])
+            ->route('timetables.planning', [
+                'run' => $run->id,
+                'school_class_id' => $data['school_class_id'] ?? null,
+            ])
             ->with(
                 $run->canBeApplied() ? 'success' : 'warning',
                 $run->canBeApplied()
@@ -189,7 +218,12 @@ class TimetablePlanningWebController extends Controller
         $generation->apply($timetableGenerationRun, $request->user());
 
         return redirect()
-            ->route('timetables.planning', ['run' => $timetableGenerationRun->id])
+            ->route('timetables.planning', [
+                'run' => $timetableGenerationRun->id,
+                'school_class_id' => count($timetableGenerationRun->input_snapshot['target_class_ids'] ?? []) === 1
+                    ? $timetableGenerationRun->input_snapshot['target_class_ids'][0]
+                    : null,
+            ])
             ->with('success', 'La proposition a été appliquée en brouillon. Les emplois du temps actifs ont été conservés.');
     }
 

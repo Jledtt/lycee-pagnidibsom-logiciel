@@ -7,13 +7,18 @@ $usedTeachers = [];
 
 foreach ($input['assignments'] as $assignment) {
     $selected = [];
+    $dailyCounts = [];
     foreach (array_unique([...$assignment['fixed_slot_keys'], ...$assignment['allowed_slot_keys']]) as $slotKey) {
+        [$day] = explode('|', $slotKey);
         $classKey = $assignment['class_id'].'|'.$slotKey;
         $teacherKey = $assignment['teacher_id'].'|'.$slotKey;
-        if (isset($usedClasses[$classKey]) || isset($usedTeachers[$teacherKey])) {
+        if (isset($usedClasses[$classKey])
+            || isset($usedTeachers[$teacherKey])
+            || ($dailyCounts[$day] ?? 0) >= ($assignment['max_slots_per_day'] ?? 2)) {
             continue;
         }
         $selected[] = $slotKey;
+        $dailyCounts[$day] = ($dailyCounts[$day] ?? 0) + 1;
         $usedClasses[$classKey] = true;
         $usedTeachers[$teacherKey] = true;
         if (count($selected) === $assignment['required_slots']) {

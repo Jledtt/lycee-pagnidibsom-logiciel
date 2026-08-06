@@ -23,9 +23,12 @@ class TimetableGenerationService
         private readonly TimetableTemplateService $templates,
     ) {}
 
-    public function readiness(AcademicYear $academicYear): array
+    /**
+     * @param  array<int, int|string>  $schoolClassIds
+     */
+    public function readiness(AcademicYear $academicYear, array $schoolClassIds = []): array
     {
-        $prepared = $this->prepare($academicYear);
+        $prepared = $this->prepare($academicYear, $schoolClassIds);
 
         return [
             'blockers' => $prepared['diagnostics']['blockers'],
@@ -34,9 +37,12 @@ class TimetableGenerationService
         ];
     }
 
-    public function generate(AcademicYear $academicYear, User $actor): TimetableGenerationRun
+    /**
+     * @param  array<int, int|string>  $schoolClassIds
+     */
+    public function generate(AcademicYear $academicYear, User $actor, array $schoolClassIds = []): TimetableGenerationRun
     {
-        $prepared = $this->prepare($academicYear);
+        $prepared = $this->prepare($academicYear, $schoolClassIds);
         $input = $prepared['input'];
         $diagnostics = $prepared['diagnostics'];
         $input['fingerprint'] = $this->fingerprint($input);
@@ -104,7 +110,10 @@ class TimetableGenerationService
             ]);
         }
 
-        $prepared = $this->prepare($run->academicYear);
+        $prepared = $this->prepare(
+            $run->academicYear,
+            array_map('intval', $run->input_snapshot['target_class_ids'] ?? []),
+        );
         $freshInput = $prepared['input'];
         if ($prepared['diagnostics']['blockers'] !== []
             || $this->fingerprint($freshInput) !== ($run->input_snapshot['fingerprint'] ?? null)) {
@@ -242,8 +251,17 @@ class TimetableGenerationService
             ->all();
     }
 
-    private function prepare(AcademicYear $academicYear): array
+    /**
+     * @param  array<int, int|string>  $schoolClassIds
+     */
+    private function prepare(AcademicYear $academicYear, array $schoolClassIds = []): array
     {
+        $schoolClassIds = collect($schoolClassIds)
+            ->map(fn (mixed $id): int => (int) $id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
         $this->templates->ensurePeriods($academicYear);
         $periods = TimetablePeriod::query()
             ->where('academic_year_id', $academicYear->id)
@@ -255,6 +273,7 @@ class TimetableGenerationService
         $classes = SchoolClass::query()
             ->where('academic_year_id', $academicYear->id)
             ->where('status', 'active')
+            ->when($schoolClassIds !== [], fn ($query) => $query->whereIn('id', $schoolClassIds))
             ->orderBy('name')
             ->get();
         $activeTimetables = Timetable::query()
