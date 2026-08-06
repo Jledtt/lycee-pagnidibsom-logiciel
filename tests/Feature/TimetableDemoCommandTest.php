@@ -10,6 +10,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class TimetableDemoCommandTest extends TestCase
@@ -19,6 +20,7 @@ class TimetableDemoCommandTest extends TestCase
     public function test_command_prepares_demo_teachers_and_applies_a_draft_for_one_class(): void
     {
         $this->seed(DatabaseSeeder::class);
+        $this->assertSame('text', Schema::getColumnType('timetables', 'principal_teacher'));
         config()->set('services.timetable_solver.python', PHP_BINARY);
         config()->set('services.timetable_solver.script', base_path('tests/Fixtures/timetable_solver_stub.php'));
         $this->assertSame(0, Artisan::call('lpp:setup-classes-subjects'), Artisan::output());
