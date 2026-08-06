@@ -104,7 +104,8 @@ class TermPeriodGradeTest extends TestCase
         ]);
         $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));
         $this->assertSame(18.0, $calculator->generalAverage($student, $schoolClass, $term, $secondPeriod->id));
-        $this->assertSame(16.0, $calculator->generalAverage($student, $schoolClass, $term));
+        // Moyenne des devoirs 14 × 40 % + composition 20 × 60 %.
+        $this->assertSame(17.6, $calculator->generalAverage($student, $schoolClass, $term));
 
         $interrogation = Assessment::query()->create([
             'academic_year_id' => $academicYear->id,

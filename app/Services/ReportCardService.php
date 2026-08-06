@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ReportCard;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Term;
 
 class ReportCardService
@@ -13,6 +14,34 @@ class ReportCardService
     ) {}
 
     public function generateForClass(SchoolClass $schoolClass, Term $term): array
+    {
+        $rows = $this->previewForClass($schoolClass, $term);
+
+        foreach ($rows as $index => $row) {
+            $reportCard = ReportCard::query()->firstOrNew([
+                'academic_year_id' => $schoolClass->academic_year_id,
+                'term_id' => $term->id,
+                'student_id' => $row['student']->id,
+            ]);
+
+            $reportCard->fill([
+                'school_class_id' => $schoolClass->id,
+                'general_average' => $row['average'],
+                'rank' => $row['average'] === null ? null : $index + 1,
+                'class_size' => count($rows),
+                'appreciation' => $this->appreciationForAverage($row['average']),
+                'decision' => $reportCard->decision ?: $this->decisionForAverage($row['average']),
+                'status' => $reportCard->exists ? $reportCard->status : 'draft',
+            ])->save();
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array{student: Student, average: float|null}>
+     */
+    public function previewForClass(SchoolClass $schoolClass, Term $term): array
     {
         $enrollments = $schoolClass->enrollments()
             ->with('student')
@@ -35,24 +64,6 @@ class ReportCardService
         }
 
         usort($rows, fn (array $a, array $b) => ($b['average'] ?? -1) <=> ($a['average'] ?? -1));
-
-        foreach ($rows as $index => $row) {
-            $reportCard = ReportCard::query()->firstOrNew([
-                'academic_year_id' => $schoolClass->academic_year_id,
-                'term_id' => $term->id,
-                'student_id' => $row['student']->id,
-            ]);
-
-            $reportCard->fill([
-                'school_class_id' => $schoolClass->id,
-                'general_average' => $row['average'],
-                'rank' => $row['average'] === null ? null : $index + 1,
-                'class_size' => count($rows),
-                'appreciation' => $this->appreciationForAverage($row['average']),
-                'decision' => $reportCard->decision ?: $this->decisionForAverage($row['average']),
-                'status' => $reportCard->exists ? $reportCard->status : 'draft',
-            ])->save();
-        }
 
         return $rows;
     }

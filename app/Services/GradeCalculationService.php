@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Assessment;
+use App\Models\AssessmentType;
 use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -21,9 +22,12 @@ class GradeCalculationService
             ->get();
 
         $scores = [];
+        $groups = [];
 
         foreach ($assessments as $assessment) {
-            if ($assessment->assessmentType?->status !== 'active') {
+            $assessmentType = $assessment->assessmentType;
+
+            if (! $assessmentType instanceof AssessmentType || $assessmentType->status !== 'active') {
                 continue;
             }
 
@@ -33,15 +37,51 @@ class GradeCalculationService
                 continue;
             }
 
-            $normalizedScore = ((float) $grade->score / (float) $assessment->max_score) * 20;
+            $maxScore = (float) $assessment->max_score;
+
+            if ($maxScore <= 0) {
+                continue;
+            }
+
+            $normalizedScore = ((float) $grade->score / $maxScore) * 20;
             $scores[] = $normalizedScore;
+
+            $weight = (float) $assessmentType->weight;
+
+            if ($weight <= 0) {
+                continue;
+            }
+
+            $groupKey = (int) $assessmentType->id;
+            $groups[$groupKey] ??= [
+                'scores' => [],
+                'weight' => $weight,
+            ];
+            $groups[$groupKey]['scores'][] = $normalizedScore;
         }
 
-        if (empty($scores)) {
+        if (! config('lpp.grades.weighted_averages', true)) {
+            if (empty($scores)) {
+                return null;
+            }
+
+            return round(array_sum($scores) / count($scores), 2);
+        }
+
+        if (empty($groups)) {
             return null;
         }
 
-        return round(array_sum($scores) / count($scores), 2);
+        $weightedTotal = 0.0;
+        $presentWeights = 0.0;
+
+        foreach ($groups as $group) {
+            $groupAverage = array_sum($group['scores']) / count($group['scores']);
+            $weightedTotal += $groupAverage * $group['weight'];
+            $presentWeights += $group['weight'];
+        }
+
+        return round($weightedTotal / $presentWeights, 2);
     }
 
     public function generalAverage(Student $student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): ?float
