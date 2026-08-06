@@ -70,7 +70,7 @@ test('paiement, reçu PDF puis annulation motivée', async ({ page }) => {
     await selectOptionContaining(paymentDialog.locator('[data-payment-student]'), SEEDED_MATRICULE);
     await selectOptionContaining(paymentDialog.locator('[data-payment-schedule]').first(), 'Inscription E2E');
     await expect(paymentDialog.locator('[data-payment-amount]').first()).toHaveValue('25000');
-    await paymentDialog.locator('input[name="paid_at"]').fill('2026-10-10T10:30');
+    await expect(paymentDialog.locator('input[name="paid_at"]')).not.toHaveValue('');
     await paymentDialog.getByRole('button', { name: 'Enregistrer le paiement' }).click({ clickCount: 2, delay: 10 });
 
     await expect(page).toHaveURL(/\/payments\/\d+$/);
