@@ -132,7 +132,7 @@
                                         {{ $reportCard?->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') . ' / 20' }}
                                     </td>
                                     <td>
-                                        {{ $reportCard?->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}
+                                        {{ $reportCard?->rank_label ? $reportCard->rank_label . ' / ' . $reportCard->class_size : '-' }}
                                     </td>
                                     <td>
                                         @if (! $reportCard)

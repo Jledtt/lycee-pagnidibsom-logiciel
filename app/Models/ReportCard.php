@@ -14,6 +14,7 @@ class ReportCard extends Model
         'school_class_id',
         'general_average',
         'rank',
+        'rank_is_tied',
         'class_size',
         'appreciation',
         'decision',
@@ -26,8 +27,18 @@ class ReportCard extends Model
 
     protected $casts = [
         'general_average' => 'decimal:2',
+        'rank_is_tied' => 'boolean',
         'validated_at' => 'datetime',
     ];
+
+    public function getRankLabelAttribute(): ?string
+    {
+        if ($this->rank === null) {
+            return null;
+        }
+
+        return $this->rank.'e'.($this->rank_is_tied ? ' ex æquo' : '');
+    }
 
     public function academicYear(): BelongsTo
     {

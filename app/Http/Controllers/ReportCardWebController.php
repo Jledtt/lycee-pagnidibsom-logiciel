@@ -13,6 +13,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Term;
 use App\Models\TermPeriod;
+use App\Services\CompetitionRankingService;
 use App\Services\GradeCalculationService;
 use App\Services\ReportCardService;
 use App\Services\TermPeriodService;
@@ -30,6 +31,7 @@ class ReportCardWebController extends Controller
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly ReportCardService $reportCardService,
         private readonly TermPeriodService $termPeriodService,
+        private readonly CompetitionRankingService $competitionRankingService,
     ) {}
 
     public function index(Request $request): View
@@ -171,7 +173,7 @@ class ReportCardWebController extends Controller
         abort_unless((int) $period->term_id === (int) $term->id, 422, 'Cette période ne correspond pas au trimestre sélectionné.');
 
         $students = $this->studentsForClass($schoolClass->academic_year_id, $schoolClass->id);
-        $rows = $students
+        $unrankedRows = $students
             ->map(function ($student) use ($schoolClass, $term, $period) {
                 $average = $this->gradeCalculationService->generalAverage($student, $schoolClass, $term, $period->id);
 
@@ -182,10 +184,10 @@ class ReportCardWebController extends Controller
                     'subjectRows' => $this->subjectRowsForStudent($student, $schoolClass, $term, $period->id),
                 ];
             })
-            ->sortByDesc(fn (array $row) => $row['average'] ?? -1)
             ->values()
-            ->map(function (array $row, int $index) use ($students) {
-                $row['rank'] = $row['average'] === null ? null : $index + 1;
+            ->all();
+        $rows = collect($this->competitionRankingService->rank($unrankedRows))
+            ->map(function (array $row) use ($students) {
                 $row['classSize'] = $students->count();
 
                 return $row;
@@ -246,7 +248,7 @@ class ReportCardWebController extends Controller
             'Décision',
             'Statut',
         ], $reportCards->map(fn (ReportCard $reportCard) => [
-            $reportCard->rank,
+            $reportCard->rank_label,
             $reportCard->student?->matricule,
             $reportCard->student?->full_name,
             $schoolClass->name,
@@ -444,7 +446,7 @@ class ReportCardWebController extends Controller
             ->groupBy('student_id');
         $students = $this->studentsForClass($academicYearId, $schoolClassId);
 
-        $rows = $students
+        $unrankedRows = $students
             ->map(function ($student) use ($cardsByStudent, $terms) {
                 $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
                 $termAverages = $terms->map(fn (Term $term) => [
@@ -465,10 +467,16 @@ class ReportCardWebController extends Controller
                     'stored_decision' => $cards->get($terms->last()?->id)?->decision,
                 ];
             })
-            ->sortByDesc(fn (array $row) => $row['annual_average'] ?? -1)
             ->values()
-            ->map(function (array $row, int $index) {
-                $row['annual_rank'] = $row['annual_average'] === null ? null : $index + 1;
+            ->all();
+        $rows = collect($this->competitionRankingService->rank(
+            $unrankedRows,
+            'annual_average',
+            'annual_rank',
+            'annual_rank_is_tied',
+            'annual_rank_label',
+        ))
+            ->map(function (array $row) {
                 $row['decision'] = $row['stored_decision']
                     ?: ($row['annual_average'] === null
                         ? 'Résultats incomplets'

@@ -166,7 +166,7 @@
                         <tbody>
                             @foreach ($reportCards as $reportCard)
                                 <tr>
-                                    <td><strong>{{ $reportCard->rank ? $reportCard->rank . 'e' : '-' }}</strong></td>
+                                    <td><strong>{{ $reportCard->rank_label ?: '-' }}</strong></td>
                                     <td>
                                         <strong>{{ $reportCard->student?->full_name }}</strong><br>
                                         <span class="badge">{{ $reportCard->student?->matricule }}</span>

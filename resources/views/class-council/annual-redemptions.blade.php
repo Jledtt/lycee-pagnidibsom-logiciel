@@ -81,7 +81,7 @@
                     <tbody>
                         @forelse ($eligibleRows as $row)
                             <tr>
-                                <td>{{ $row['rank'] ? $row['rank'] . 'e' : '-' }}</td>
+                                <td>{{ $row['rank_label'] ?: '-' }}</td>
                                 <td>
                                     <strong>{{ $row['student']->full_name }}</strong><br>
                                     <span class="badge">{{ $row['student']->matricule }}</span>

@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
+use App\Services\CompetitionRankingService;
 use App\Services\GradeCalculationService;
 use App\Services\ReportCardService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -27,6 +28,7 @@ class ClassCouncilWebController extends Controller
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly ReportCardService $reportCardService,
+        private readonly CompetitionRankingService $competitionRankingService,
     ) {}
 
     public function index(Request $request): View
@@ -295,7 +297,7 @@ class ClassCouncilWebController extends Controller
             ->get()
             ->pluck('student');
 
-        return $students
+        $rows = $students
             ->map(function (Student $student) use ($cardsByStudent, $terms, $threshold) {
                 $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
                 $averages = $terms->mapWithKeys(fn (Term $term) => [
@@ -313,13 +315,10 @@ class ClassCouncilWebController extends Controller
                     'terms_count' => $knownAverages->count(),
                 ];
             })
-            ->sortByDesc(fn (array $row) => $row['annual_average'] ?? -1)
             ->values()
-            ->map(function (array $row, int $index) {
-                $row['rank'] = $row['annual_average'] === null ? null : $index + 1;
+            ->all();
 
-                return $row;
-            });
+        return collect($this->competitionRankingService->rank($rows, 'annual_average'));
     }
 
     private function subjectRows(ReportCard $reportCard): Collection

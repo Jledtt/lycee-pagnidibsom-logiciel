@@ -79,7 +79,7 @@
         <tbody>
             @forelse ($reportCards as $reportCard)
                 <tr>
-                    <td><strong>{{ $reportCard->rank ?: '-' }}</strong></td>
+                    <td><strong>{{ $reportCard->rank_label ?: '-' }}</strong></td>
                     <td>{{ $reportCard->student?->matricule }}</td>
                     <td><strong>{{ $reportCard->student?->full_name }}</strong></td>
                     <td>{{ $reportCard->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') }}</td>

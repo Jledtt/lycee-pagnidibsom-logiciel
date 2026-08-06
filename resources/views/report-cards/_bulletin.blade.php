@@ -116,7 +116,7 @@
             <td colspan="2"><strong>Absences :</strong> -</td>
             <td colspan="2"><strong>Conduite :</strong> Bonne</td>
             <td colspan="2"><strong>Moyenne :</strong> {{ $format($reportCard->general_average) }} / 20</td>
-            <td colspan="3"><strong>Rang :</strong> {{ $reportCard->rank ? $reportCard->rank.' / '.$reportCard->class_size : '-' }}</td>
+            <td colspan="3"><strong>Rang :</strong> {{ $reportCard->rank_label ? $reportCard->rank_label.' / '.$reportCard->class_size : '-' }}</td>
         </tr>
         <tr>
             <td colspan="3"><strong>Appréciation générale :</strong> {{ $reportCard->appreciation ?: '-' }}</td>
@@ -136,7 +136,7 @@
                 </td>
             @endforeach
             <td><span class="summary-label">Moyenne annuelle</span>{{ $format($annualSummary['annual_average']) }}</td>
-            <td><span class="summary-label">Rang annuel</span>{{ $annualSummary['annual_rank'] ? $annualSummary['annual_rank'].' / '.$annualSummary['class_size'] : '-' }}</td>
+            <td><span class="summary-label">Rang annuel</span>{{ $annualSummary['annual_rank_label'] ? $annualSummary['annual_rank_label'].' / '.$annualSummary['class_size'] : '-' }}</td>
             <td><span class="summary-label">Moyenne annuelle classe</span>{{ $format($annualSummary['annual_class_average']) }}</td>
             <td><span class="summary-label">Décision finale</span>{{ $annualSummary['decision'] }}</td>
         </tr>

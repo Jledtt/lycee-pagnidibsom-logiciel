@@ -166,7 +166,7 @@
             <table class="summary-grid" style="margin-top:7px">
                 <tr>
                     <td><span class="summary-label">Moyenne</span>{{ $item['average'] === null ? '-' : number_format($item['average'], 2, ',', ' ').' / 20' }}</td>
-                    <td><span class="summary-label">Rang</span>{{ $item['rank'] ? $item['rank'].' / '.$item['classSize'] : '-' }}</td>
+                    <td><span class="summary-label">Rang</span>{{ $item['rank_label'] ? $item['rank_label'].' / '.$item['classSize'] : '-' }}</td>
                     <td><span class="summary-label">Moyenne de classe</span>{{ $classStats['average'] === null ? '-' : number_format($classStats['average'], 2, ',', ' ') }}</td>
                     <td><span class="summary-label">Meilleure moyenne</span>{{ $classStats['best'] === null ? '-' : number_format($classStats['best'], 2, ',', ' ') }}</td>
                     <td><span class="summary-label">Plus faible moyenne</span>{{ $classStats['weakest'] === null ? '-' : number_format($classStats['weakest'], 2, ',', ' ') }}</td>

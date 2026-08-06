@@ -58,7 +58,7 @@
         <tbody>
             @forelse ($eligibleRows as $row)
                 <tr>
-                    <td class="center">{{ $row['rank'] ?: '-' }}</td>
+                    <td class="center">{{ $row['rank_label'] ?: '-' }}</td>
                     <td>{{ $row['student']->matricule }}</td>
                     <td><strong>{{ $row['student']->full_name }}</strong></td>
                     @foreach ($terms as $term)

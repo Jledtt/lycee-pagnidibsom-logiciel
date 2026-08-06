@@ -51,7 +51,7 @@
             <td>Moyenne generale : {{ $reportCard->general_average === null ? '-' : number_format($reportCard->general_average, 2, ',', ' ') . ' / 20' }}</td>
         </tr>
         <tr>
-            <td>Rang : {{ $reportCard->rank ? $reportCard->rank . ' / ' . $reportCard->class_size : '-' }}</td>
+            <td>Rang : {{ $reportCard->rank_label ? $reportCard->rank_label . ' / ' . $reportCard->class_size : '-' }}</td>
             <td>Appreciation : {{ $reportCard->appreciation ?: '-' }}</td>
             <td>Décision : {{ $reportCard->decision ?: '-' }}</td>
         </tr>

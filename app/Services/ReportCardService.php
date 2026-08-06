@@ -4,20 +4,20 @@ namespace App\Services;
 
 use App\Models\ReportCard;
 use App\Models\SchoolClass;
-use App\Models\Student;
 use App\Models\Term;
 
 class ReportCardService
 {
     public function __construct(
-        private readonly GradeCalculationService $gradeCalculationService
+        private readonly GradeCalculationService $gradeCalculationService,
+        private readonly CompetitionRankingService $competitionRankingService,
     ) {}
 
     public function generateForClass(SchoolClass $schoolClass, Term $term): array
     {
         $rows = $this->previewForClass($schoolClass, $term);
 
-        foreach ($rows as $index => $row) {
+        foreach ($rows as $row) {
             $reportCard = ReportCard::query()->firstOrNew([
                 'academic_year_id' => $schoolClass->academic_year_id,
                 'term_id' => $term->id,
@@ -27,7 +27,8 @@ class ReportCardService
             $reportCard->fill([
                 'school_class_id' => $schoolClass->id,
                 'general_average' => $row['average'],
-                'rank' => $row['average'] === null ? null : $index + 1,
+                'rank' => $row['rank'],
+                'rank_is_tied' => $row['rank_is_tied'],
                 'class_size' => count($rows),
                 'appreciation' => $this->appreciationForAverage($row['average']),
                 'decision' => $reportCard->decision ?: $this->decisionForAverage($row['average']),
@@ -39,7 +40,7 @@ class ReportCardService
     }
 
     /**
-     * @return list<array{student: Student, average: float|null}>
+     * @return list<array<string, mixed>>
      */
     public function previewForClass(SchoolClass $schoolClass, Term $term): array
     {
@@ -63,9 +64,7 @@ class ReportCardService
             ];
         }
 
-        usort($rows, fn (array $a, array $b) => ($b['average'] ?? -1) <=> ($a['average'] ?? -1));
-
-        return $rows;
+        return $this->competitionRankingService->rank($rows);
     }
 
     public function appreciationForAverage(?float $average): string
