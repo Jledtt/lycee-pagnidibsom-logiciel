@@ -62,7 +62,7 @@ class PaymentWorkflowPracticalityTest extends TestCase
         $response = $this->actingAs($user)->post(route('payments.store'), [
             'student_id' => $student->id,
             'payment_method' => 'cash',
-            'paid_at' => '2026-07-20 10:00:00',
+            'paid_at' => now()->subHour()->format('Y-m-d H:i:s'),
             'lines' => [[
                 'fee_schedule_id' => $schedule->id,
                 'amount' => 5000,

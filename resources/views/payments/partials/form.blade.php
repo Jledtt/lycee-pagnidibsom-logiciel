@@ -45,7 +45,7 @@
 
                 <div class="field">
                     <label for="{{ $formId }}-paid-at">Date et heure</label>
-                    <input id="{{ $formId }}-paid-at" name="paid_at" type="datetime-local" value="{{ old('paid_at', now()->format('Y-m-d\TH:i')) }}" autocomplete="off">
+                    <input id="{{ $formId }}-paid-at" name="paid_at" type="datetime-local" value="{{ old('paid_at', now()->format('Y-m-d\TH:i')) }}" max="{{ now()->format('Y-m-d\TH:i') }}" autocomplete="off">
                     @error('paid_at') <small class="error">{{ $message }}</small> @enderror
                 </div>
 

@@ -16,6 +16,7 @@ class PaymentService
     public function __construct(
         private readonly ReceiptNumberService $receiptNumberService,
         private readonly CommunicationService $communicationService,
+        private readonly AuditTrailService $auditTrailService,
     ) {}
 
     public function createPayment(
@@ -103,6 +104,19 @@ class PaymentService
 
             return $payment->load(['student', 'lines.feeType', 'receiver']);
         });
+
+        if ($payment->isBackdated()) {
+            $this->auditTrailService->record(
+                'payment.backdated',
+                $payment,
+                [],
+                [
+                    'paid_at' => $payment->paid_at->toIso8601String(),
+                    'created_at' => $payment->created_at->toIso8601String(),
+                ],
+                'Paiement antidaté : '.$payment->receipt_number,
+            );
+        }
 
         $this->communicationService->queuePayment($payment, $receiver);
 

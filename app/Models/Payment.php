@@ -71,6 +71,16 @@ class Payment extends Model
         return $this->canceller?->name ?? $this->legacyCancellationParts()['actor'];
     }
 
+    public function isBackdated(): bool
+    {
+        return ! $this->paid_at->isSameDay($this->created_at);
+    }
+
+    public function backdatedEntryLabel(): ?string
+    {
+        return $this->isBackdated() ? 'saisi le '.$this->created_at->format('d/m') : null;
+    }
+
     /**
      * @return array{reason: ?string, actor: ?string}
      */

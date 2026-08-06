@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Payment;
 
 use App\Models\AcademicYear;
+use App\Rules\ValidPaymentDate;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ class StorePaymentRequest extends FormRequest
         return [
             'student_id' => ['required', 'exists:students,id'],
             'payment_method' => ['required', 'in:cash,mobile_money,bank_transfer,other'],
-            'paid_at' => ['nullable', 'date'],
+            'paid_at' => ['nullable', 'date', new ValidPaymentDate($this->user())],
             'notes' => ['nullable', 'string'],
             'lines' => ['required', 'array'],
             'lines.*.fee_type_id' => ['nullable', 'exists:fee_types,id'],

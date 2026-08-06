@@ -152,7 +152,12 @@
                 <tbody>
                     @foreach ($payments as $payment)
                         <tr>
-                            <td>{{ $payment->paid_at?->format('d/m/Y H:i') }}</td>
+                            <td>
+                                {{ $payment->paid_at?->format('d/m/Y H:i') }}
+                                @if ($payment->isBackdated())
+                                    <br><span class="badge">{{ $payment->backdatedEntryLabel() }}</span>
+                                @endif
+                            </td>
                             <td><a href="{{ route('payments.show', $payment) }}"><strong>{{ $payment->receipt_number }}</strong></a></td>
                             <td>{{ $payment->student?->full_name ?? '-' }}</td>
                             <td>{{ $payment->enrollment?->schoolClass?->name ?? '-' }}</td>

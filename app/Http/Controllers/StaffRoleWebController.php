@@ -113,6 +113,7 @@ class StaffRoleWebController extends Controller
             'Paiements' => [
                 'payments.view' => 'Voir les paiements',
                 'payments.create' => 'Enregistrer un paiement',
+                'payments.backdate' => 'Antidater un paiement',
                 'payments.cancel' => 'Annuler un paiement',
                 'payments.print_receipt' => 'Imprimer les reçus',
                 'payments.reports' => 'Voir encaissements, impayés et rapports financiers',
@@ -192,6 +193,7 @@ class StaffRoleWebController extends Controller
             'enrollments.cancel' => 'modify',
             'payments.view' => 'view',
             'payments.create' => 'modify',
+            'payments.backdate' => 'manage',
             'payments.cancel' => 'modify',
             'payments.print_receipt' => 'print',
             'payments.reports' => 'report',

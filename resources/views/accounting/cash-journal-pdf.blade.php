@@ -106,7 +106,12 @@
         <tbody>
             @forelse ($payments as $payment)
                 <tr>
-                    <td>{{ $payment->paid_at?->format('d/m/Y H:i') }}</td>
+                    <td>
+                        {{ $payment->paid_at?->format('d/m/Y H:i') }}
+                        @if ($payment->isBackdated())
+                            <br><small>{{ $payment->backdatedEntryLabel() }}</small>
+                        @endif
+                    </td>
                     <td>{{ $payment->receipt_number }}</td>
                     <td>{{ $payment->student?->full_name ?? '-' }}</td>
                     <td>{{ $payment->enrollment?->schoolClass?->name ?? '-' }}</td>

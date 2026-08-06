@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Payment;
 use App\Models\Student;
+use App\Rules\ValidPaymentDate;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class PaymentController extends Controller
         $data = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'payment_method' => ['nullable', 'in:cash,mobile_money,bank_transfer,other'],
-            'paid_at' => ['nullable', 'date'],
+            'paid_at' => ['nullable', 'date', new ValidPaymentDate($request->user())],
             'notes' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.fee_type_id' => ['required', 'exists:fee_types,id'],
