@@ -1,4 +1,15 @@
-const configuration = window.LPP_GUIDED_TOURS;
+const configurationElement = document.getElementById('lpp-guided-tours-config');
+let configuration = null;
+
+try {
+    configuration = configurationElement
+        ? JSON.parse(configurationElement.textContent ?? '{}')
+        : null;
+} catch {
+    configuration = null;
+}
+
+window.LPP_GUIDED_TOURS = configuration;
 
 if (configuration?.userId && Array.isArray(configuration.tours)) {
     const deferredDuration = 7 * 24 * 60 * 60 * 1000;

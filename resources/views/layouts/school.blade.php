@@ -6,13 +6,11 @@
     <meta name="theme-color" content="#8b1e2d">
     <title>{{ $title ?? 'Lycée Privé Pagnidibsom' }}</title>
     @if (auth()->check())
-        <script>
-            window.LPP_GUIDED_TOURS = {{ Illuminate\Support\Js::from([
+        <script type="application/json" id="lpp-guided-tours-config">{!! Illuminate\Support\Js::encode([
                 'userId' => auth()->id(),
                 'route' => request()->route()?->getName(),
                 'tours' => ($guidedTours ?? collect())->values(),
-            ]) }};
-        </script>
+            ]) !!}</script>
     @endif
     @vite('resources/js/app.js')
     <style>
