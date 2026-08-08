@@ -1,5 +1,6 @@
 import '../css/school-ui.css';
 import './school-ui';
+import './guided-tours';
 import './payment-form';
 import './student-document-form';
 import './attendance-record-dialog';

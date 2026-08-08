@@ -58,6 +58,32 @@ class TimetablePlanningWebController extends Controller
         ]);
     }
 
+    public function blockers(Request $request, TimetableGenerationService $generation): View
+    {
+        $academicYear = $this->requireActiveAcademicYear();
+        $classes = $academicYear->classes()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+        $selectedClassId = $request->integer('school_class_id');
+        $selectedClass = $selectedClassId
+            ? SchoolClass::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('status', 'active')
+                ->find($selectedClassId)
+            : null;
+        $readiness = $generation->readiness($academicYear, $selectedClass ? [$selectedClass->id] : []);
+
+        return view('timetables.planning-blockers', [
+            'academicYear' => $academicYear,
+            'classes' => $classes,
+            'readiness' => $readiness,
+            'selectedClass' => $selectedClass,
+            'blockerGroups' => $this->groupPlanningMessages($readiness['blockers']),
+            'warningGroups' => $this->groupPlanningMessages($readiness['warnings']),
+        ]);
+    }
+
     public function template(TeacherAvailabilityImportService $importer): StreamedResponse
     {
         $academicYear = $this->requireActiveAcademicYear();
@@ -240,5 +266,59 @@ class TimetablePlanningWebController extends Controller
         return is_array($preview)
             && (int) ($preview['academic_year_id'] ?? 0) === $academicYear->id
             && (int) ($preview['expires_at'] ?? 0) >= now()->timestamp;
+    }
+
+    /**
+     * @param  array<int, string>  $messages
+     * @return array<string, array{title: string, description: string, action: string, messages: array<int, string>}>
+     */
+    private function groupPlanningMessages(array $messages): array
+    {
+        $groups = [
+            'teacher' => [
+                'title' => 'Professeurs et disponibilités',
+                'description' => 'Un professeur manque, ses disponibilités ne sont pas validées ou elles ne couvrent pas ses heures.',
+                'action' => 'Ouvre Disponibilités, complète le professeur concerné, puis valide la fiche.',
+                'messages' => [],
+            ],
+            'hours' => [
+                'title' => 'Volumes horaires',
+                'description' => 'Une matière n’a pas assez d’heures, trop d’heures ou un volume impossible à placer.',
+                'action' => 'Corrige les heures hebdomadaires dans Matières et coefficients pour la classe.',
+                'messages' => [],
+            ],
+            'class' => [
+                'title' => 'Classes et matières',
+                'description' => 'Une classe active n’a pas encore de matières exploitables pour la génération.',
+                'action' => 'Vérifie la classe, les matières actives et les affectations de l’année scolaire.',
+                'messages' => [],
+            ],
+            'schedule' => [
+                'title' => 'Créneaux et grilles existantes',
+                'description' => 'Les périodes de cours, les cours verrouillés ou les grilles actives empêchent la génération.',
+                'action' => 'Corrige les créneaux, rouvre la grille si nécessaire ou cible une autre classe.',
+                'messages' => [],
+            ],
+            'system' => [
+                'title' => 'Moteur de génération',
+                'description' => 'La configuration est lisible, mais le moteur n’a pas pu produire une proposition utilisable.',
+                'action' => 'Réessaie après correction des données, puis consulte les journaux si le moteur reste indisponible.',
+                'messages' => [],
+            ],
+        ];
+
+        foreach ($messages as $message) {
+            $key = match (true) {
+                str_contains($message, 'professeur'), str_contains($message, 'disponibilit') => 'teacher',
+                str_contains($message, 'volume horaire'), str_contains($message, 'heure(s)'), str_contains($message, 'capacit') => 'hours',
+                str_contains($message, 'mati'), str_contains($message, 'classe active') => 'class',
+                str_contains($message, 'cr'), str_contains($message, 'verrouill'), str_contains($message, 'grille active'), str_contains($message, 'emploi du temps actif') => 'schedule',
+                default => 'system',
+            };
+
+            $groups[$key]['messages'][] = $message;
+        }
+
+        return array_filter($groups, fn (array $group): bool => $group['messages'] !== []);
     }
 }

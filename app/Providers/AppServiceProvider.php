@@ -30,6 +30,7 @@ use App\Models\Timetable;
 use App\Models\TimetableEntry;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
+use App\Services\GuidedTourService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -69,6 +70,15 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('schoolSettings', $settings);
+        });
+
+        View::composer('layouts.app', function ($view): void {
+            $user = request()->user();
+
+            $view->with(
+                'guidedTours',
+                $user ? app(GuidedTourService::class)->visibleFor($user) : collect(),
+            );
         });
     }
 

@@ -339,6 +339,10 @@ Route::get('/timetables/planning/automatic', [TimetablePlanningWebController::cl
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.planning');
 
+Route::get('/timetables/planning/blockers', [TimetablePlanningWebController::class, 'blockers'])
+    ->middleware(['auth', 'permission:timetables.manage'])
+    ->name('timetables.planning.blockers');
+
 Route::get('/timetables/planning/availability-template', [TimetablePlanningWebController::class, 'template'])
     ->middleware(['auth', 'permission:timetables.manage'])
     ->name('timetables.planning.template');

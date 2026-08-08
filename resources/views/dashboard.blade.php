@@ -13,7 +13,7 @@
 
 @section('content')
     <section class="panel">
-        <div class="panel-head">
+        <div class="panel-head" data-tour-target="dashboard-quick-actions">
             <div>
                 <h2>Actions rapides</h2>
                 <p style="margin:4px 0 0;color:var(--muted)">Les opérations les plus fréquentes sont accessibles ici.</p>
@@ -81,7 +81,7 @@
     @canany(['students.view', 'classes.manage', 'enrollments.view', 'payments.reports', 'attendance.view', 'settings.manage', 'grades.view', 'report_cards.view'])
         <section class="grid two-col">
             <div class="panel">
-                <div class="panel-head">
+                <div class="panel-head" data-tour-target="dashboard-alerts">
                     <h2>Alertes importantes</h2>
                     <span class="badge">À traiter</span>
                 </div>
@@ -167,7 +167,7 @@
             </div>
 
             <div class="panel">
-                <div class="panel-head">
+                <div class="panel-head" data-tour-target="dashboard-indicators">
                     <h2>Chiffres utiles</h2>
                     <span class="badge">{{ $academicYear?->name ?? 'Année active' }}</span>
                 </div>

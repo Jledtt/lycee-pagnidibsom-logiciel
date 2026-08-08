@@ -7,18 +7,18 @@
 
 @section('page_actions')
     @can('students.import')
-        <a class="btn btn-subtle" href="{{ route('students.import') }}">Importer</a>
+        <a class="btn btn-subtle" href="{{ route('students.import') }}" data-tour-target="students-import">Importer</a>
     @endcan
     @can('students.export')
         <a class="btn btn-subtle" href="{{ route('students.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des élèves lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('students.create')
-        <a class="btn btn-primary" href="{{ route('students.create') }}">Nouvel élève</a>
+        <a class="btn btn-primary" href="{{ route('students.create') }}" data-tour-target="students-create">Nouvel élève</a>
     @endcan
 @endsection
 
 @section('content')
-    <section class="panel">
+    <section class="panel" data-tour-target="students-search">
         <div class="panel-head">
             <h2>Recherche</h2>
         </div>
@@ -43,7 +43,7 @@
         </form>
     </section>
 
-    <section class="panel" style="margin-top:16px">
+    <section class="panel" style="margin-top:16px" data-tour-target="students-list">
         <div class="panel-head">
             <h2>Liste des élèves</h2>
             <span class="badge">{{ $students->total() }} dossier(s)</span>

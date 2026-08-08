@@ -570,12 +570,45 @@ class TimetablePlanningTest extends TestCase
         );
     }
 
+    public function test_manager_can_open_planning_blockers_page_for_a_target_class(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $schoolClass = $this->schoolClass('Classe diagnostic');
+        $subject = Subject::query()->create([
+            'name' => 'Matiere sans professeur',
+            'code' => 'DIAG',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => null,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('timetables.planning.blockers', ['school_class_id' => $schoolClass->id]))
+            ->assertOk()
+            ->assertSee('Checklist de correction')
+            ->assertSee('Professeurs et disponibilités')
+            ->assertSee('Matiere sans professeur')
+            ->assertSee('aucun professeur affecté');
+    }
+
     public function test_non_manager_cannot_access_automatic_planning(): void
     {
         $this->seed(DatabaseSeeder::class);
 
         $this->actingAs($this->userWithRole('comptable'))
             ->get(route('timetables.planning'))
+            ->assertForbidden();
+
+        $this->actingAs($this->userWithRole('comptable'))
+            ->get(route('timetables.planning.blockers'))
             ->assertForbidden();
 
         $this->actingAs($this->userWithRole('comptable'))

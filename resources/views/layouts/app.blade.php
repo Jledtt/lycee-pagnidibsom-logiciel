@@ -21,10 +21,10 @@
                 </button>
             </div>
 
-            <nav class="nav" id="sidebar-navigation" aria-label="Navigation principale">
+            <nav class="nav" id="sidebar-navigation" aria-label="Navigation principale" data-tour-target="main-navigation">
                 <x-navigation.section title="Accueil" :active="$activeIn(['dashboard', 'help'])">
                     <x-navigation.link :href="route('dashboard')" :active="$activeKey === 'dashboard'">Tableau de bord</x-navigation.link>
-                    <x-navigation.link :href="route('help.index')" :active="$activeKey === 'help'">Documentation</x-navigation.link>
+                    <x-navigation.link :href="route('help.index')" :active="$activeKey === 'help'" data-tour-target="documentation-link">Documentation</x-navigation.link>
                 </x-navigation.section>
 
                 @can('students.view')

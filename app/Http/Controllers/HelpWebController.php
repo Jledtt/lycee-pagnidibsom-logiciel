@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\GuidedTourService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,10 @@ use Illuminate\View\View;
 
 class HelpWebController extends Controller
 {
+    public function __construct(
+        private readonly GuidedTourService $guidedTourService,
+    ) {}
+
     public function index(Request $request): View
     {
         $topics = $this->visibleTopics($request->user());
@@ -35,6 +40,7 @@ class HelpWebController extends Controller
             'filteredTopics' => $filteredTopics,
             'search' => $search,
             'selectedCategory' => $category,
+            'guidedTours' => $this->guidedTourService->visibleFor($request->user()),
         ]);
     }
 

@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#8b1e2d">
     <title>{{ $title ?? 'Lycée Privé Pagnidibsom' }}</title>
+    @if (auth()->check())
+        <script>
+            window.LPP_GUIDED_TOURS = {{ Illuminate\Support\Js::from([
+                'userId' => auth()->id(),
+                'route' => request()->route()?->getName(),
+                'tours' => ($guidedTours ?? collect())->values(),
+            ]) }};
+        </script>
+    @endif
     @vite('resources/js/app.js')
     <style>
         :root {

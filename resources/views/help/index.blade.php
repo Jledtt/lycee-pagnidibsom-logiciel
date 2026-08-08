@@ -18,6 +18,35 @@
         </div>
     </section>
 
+    @if ($guidedTours->isNotEmpty())
+        <section class="guided-tour-library" aria-labelledby="guided-tour-library-title">
+            <div class="guided-tour-library__head">
+                <div>
+                    <span class="doc-kicker">Aide interactive</span>
+                    <h2 id="guided-tour-library-title">Visites guidées</h2>
+                    <p>Laissez l’application vous montrer les principales actions directement sur chaque écran.</p>
+                </div>
+                <button class="btn btn-subtle" type="button" data-guided-tours-reset>Réinitialiser mes visites</button>
+            </div>
+
+            <div class="guided-tour-library__grid">
+                @foreach ($guidedTours as $tour)
+                    <article class="guided-tour-library__card" data-guided-tour-card="{{ $tour['key'] }}">
+                        <div class="guided-tour-library__meta">
+                            <span data-guided-tour-status data-status="new">À découvrir</span>
+                            <span>{{ $tour['stepCount'] }} {{ Str::plural('étape', $tour['stepCount']) }}</span>
+                        </div>
+                        <h3>{{ $tour['title'] }}</h3>
+                        <p>{{ $tour['description'] }}</p>
+                        @if ($tour['url'])
+                            <a class="btn btn-subtle" href="{{ $tour['url'] }}" data-guided-tour-action>Démarrer</a>
+                        @endif
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <form class="doc-toolbar" method="GET" action="{{ route('help.index') }}">
         <label class="doc-search" for="documentation-search">
             <span>Rechercher dans la documentation</span>

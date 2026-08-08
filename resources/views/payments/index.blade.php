@@ -14,12 +14,12 @@
         <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
     @endcan
     @can('payments.create')
-        <a class="btn btn-primary" href="{{ route('payments.create') }}" data-dialog-open="payment-create-dialog">Nouveau paiement</a>
+        <a class="btn btn-primary" href="{{ route('payments.create') }}" data-dialog-open="payment-create-dialog" data-tour-target="payments-create">Nouveau paiement</a>
     @endcan
 @endsection
 
 @section('content')
-    <section class="summary-row">
+    <section class="summary-row" data-tour-target="payments-summary">
         <div class="stat">
             <span>Total encaisse</span>
             <strong class="money">{{ number_format($totalPaid, 0, ',', ' ') }} FCFA</strong>
@@ -34,7 +34,7 @@
         </div>
     </section>
 
-    <section class="panel" style="margin-top:16px">
+    <section class="panel" style="margin-top:16px" data-tour-target="payments-search">
         <div class="panel-head">
             <h2>Recherche</h2>
         </div>
@@ -51,7 +51,7 @@
         </form>
     </section>
 
-    <section class="panel" style="margin-top:16px">
+    <section class="panel" style="margin-top:16px" data-tour-target="payments-list">
         <div class="panel-head">
             <h2>Liste des paiements</h2>
             <span class="badge">{{ $payments->total() }} paiement(s)</span>

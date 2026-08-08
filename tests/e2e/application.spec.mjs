@@ -146,12 +146,12 @@ test('la planification automatique reste lisible et protège les grilles actives
     const response = await page.goto('/timetables/planning/automatic');
 
     expect(response?.status()).toBe(200);
-    await expect(page.locator('.topbar h1')).toHaveText('Planification automatique');
-    await expect(page.getByRole('list', { name: 'Étapes de planification' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '1. Importer les disponibilités' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '2. Générer une proposition' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Télécharger le modèle CSV' })).toBeVisible();
-    await expect(page.getByText('Les classes avec un emploi du temps actif sont protégées et restent inchangées.')).toBeVisible();
+    await expect(page.locator('.topbar h1')).toHaveText('Assistant emploi du temps');
+    await expect(page.getByRole('list', { name: 'Étapes de l’assistant emploi du temps' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1. Ajouter les disponibilités des professeurs' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '2. Préparer l’essai de grille' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Modèle CSV' })).toBeVisible();
+    await expect(page.getByText('Les grilles déjà actives restent protégées.')).toBeVisible();
 
     const hasHorizontalOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
@@ -492,19 +492,19 @@ test('la génération automatique produit un brouillon révisable et un PDF vali
     await login(page);
     await page.goto('/timetables/planning/automatic');
 
-    const generateButton = page.getByRole('button', { name: 'Générer la proposition' });
+    const generateButton = page.getByRole('button', { name: 'Créer un essai de grille' });
     await expect(generateButton).toBeEnabled();
     await generateButton.click();
 
-    await expect(page.getByRole('heading', { name: /Proposition n°/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Essai de grille n°/ })).toBeVisible();
     await expect(page.getByText(/Solution (optimale|réalisable)/)).toBeVisible();
     await expect(page.locator('.planning-class summary strong', { hasText: 'E2E 5e A' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Appliquer en brouillon' }).click();
+    await page.getByRole('button', { name: 'Utiliser ce brouillon' }).click();
     const confirmation = page.locator('#app-confirmation-dialog');
     await expect(confirmation).toBeVisible();
-    await confirmation.getByRole('button', { name: 'Appliquer les brouillons' }).click();
-    await expect(page.getByText(/Proposition appliquée le/)).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Utiliser ce brouillon' }).click();
+    await expect(page.getByText(/Essai appliqué le/)).toBeVisible();
 
     await page.goto('/timetables');
     await page.locator('.topbar__page-actions a[href$="/review"]').click();
