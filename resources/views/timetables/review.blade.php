@@ -8,7 +8,7 @@
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('timetables.index', ['school_class_id' => $timetable->school_class_id]) }}">Retour</a>
     @if ($timetable->status !== 'active')
-        <a class="btn btn-subtle" href="{{ route('timetables.edit', $timetable) }}">Corriger la grille</a>
+        <a class="btn btn-primary" href="{{ route('timetables.edit', $timetable) }}">Modifier la grille</a>
     @endif
     @can('timetables.print')
         <a class="btn btn-subtle" href="{{ route('timetables.pdf', $timetable) }}" data-download-feedback="Téléchargement du PDF lancé.">PDF</a>

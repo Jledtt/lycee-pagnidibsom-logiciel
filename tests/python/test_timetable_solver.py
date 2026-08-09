@@ -41,6 +41,7 @@ class TimetableSolverTest(unittest.TestCase):
             "slots": [
                 slot("monday|1", "monday", 1, 1),
                 slot("monday|2", "monday", 2, 2),
+                slot("monday|3", "monday", 3, 3),
                 slot("tuesday|1", "tuesday", 1, 1),
             ],
             "class_ids": sorted({item["class_id"] for item in assignments}),
@@ -85,6 +86,23 @@ class TimetableSolverTest(unittest.TestCase):
         self.assertEqual({"monday|2", "tuesday|1"}, selected)
         fixed = next(item for item in result["assignments"] if item["slot_key"] == "tuesday|1")
         self.assertTrue(fixed["is_fixed"])
+
+    def test_an_available_period_fills_an_avoidable_gap_before_a_later_preference(self) -> None:
+        result = solve(self.payload([
+            assignment(1, 10, 50, 1, ["monday|1"], fixed=["monday|1"]),
+            assignment(
+                2,
+                10,
+                60,
+                1,
+                ["monday|2", "monday|3"],
+                preferred=["monday|3"],
+            ),
+        ]))
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        selected = {item["slot_key"] for item in result["assignments"]}
+        self.assertEqual({"monday|1", "monday|2"}, selected)
 
 
 if __name__ == "__main__":

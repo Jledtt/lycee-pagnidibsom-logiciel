@@ -297,15 +297,20 @@ class TimetablePlanningTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('timetables.planning.apply', $run))
-            ->assertRedirect(route('timetables.planning', [
-                'run' => $run->id,
-                'school_class_id' => $schoolClass->id,
-            ]));
+            ->assertRedirect(route('timetables.edit', Timetable::query()
+                ->where('school_class_id', $schoolClass->id)
+                ->firstOrFail()));
 
         $timetable = Timetable::query()->where('school_class_id', $schoolClass->id)->firstOrFail();
         $this->assertSame('draft', $timetable->status);
         $this->assertSame(2, $timetable->entries()->where('source', 'automatic')->count());
         $this->assertSame(TimetableGenerationRun::STATUS_APPLIED, $run->fresh()->status);
+
+        $this->actingAs($user)
+            ->get(route('timetables.review', $timetable))
+            ->assertOk()
+            ->assertSee('Modifier la grille')
+            ->assertSee(route('timetables.edit', $timetable), false);
     }
 
     public function test_generator_can_target_one_ready_class_when_another_class_is_incomplete(): void

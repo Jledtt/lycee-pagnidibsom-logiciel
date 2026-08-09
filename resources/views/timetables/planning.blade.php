@@ -187,18 +187,30 @@
             @endforeach
 
             @if ($run->canBeApplied())
+                @php($singleClassRun = count($run->input_snapshot['target_class_ids'] ?? []) === 1)
                 <form method="POST" action="{{ route('timetables.planning.apply', $run) }}" style="margin-top:16px"
                     data-confirm
                     data-confirm-title="Utiliser cet essai"
                     data-confirm-object="{{ $readiness['counts']['classes'] }} {{ $readiness['counts']['classes'] === 1 ? 'classe' : 'classes' }} — {{ $academicYear->name }}"
                     data-confirm-message="Les grilles non actives seront remplacées par ces brouillons automatiques. Les emplois du temps actifs resteront inchangés."
-                    data-confirm-action="Utiliser ce brouillon"
+                    data-confirm-action="{{ $singleClassRun ? 'Utiliser et modifier' : 'Utiliser les brouillons' }}"
                     data-confirm-tone="primary">
                     @csrf
-                    <button class="btn btn-primary" type="submit">Utiliser ce brouillon</button>
+                    <button class="btn btn-primary" type="submit">
+                        {{ $singleClassRun ? 'Utiliser puis modifier la grille' : 'Utiliser ces brouillons' }}
+                    </button>
                 </form>
             @elseif ($run->status === \App\Models\TimetableGenerationRun::STATUS_APPLIED)
                 <div class="notice">Essai appliqué le {{ $run->applied_at?->format('d/m/Y à H:i') }} par {{ $run->appliedBy?->name ?? 'utilisateur supprimé' }}.</div>
+                @if ($appliedTimetables->isNotEmpty())
+                    <div class="form-actions" style="margin-top:12px">
+                        @foreach ($appliedTimetables as $timetable)
+                            <a class="btn btn-primary" href="{{ route('timetables.edit', $timetable) }}">
+                                Modifier la grille {{ $timetable->schoolClass->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             @endif
         </section>
     @endif

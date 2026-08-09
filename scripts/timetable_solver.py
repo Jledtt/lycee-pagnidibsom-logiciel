@@ -12,6 +12,7 @@ def solve(payload: dict) -> dict:
     slots = payload["slots"]
     assignments = payload["assignments"]
     variables = {}
+    class_occupancies = {}
 
     for assignment in assignments:
         assignment_id = assignment["id"]
@@ -51,6 +52,9 @@ def solve(payload: dict) -> dict:
             ]
             if class_variables:
                 model.add(sum(class_variables) <= 1)
+                occupied = model.new_bool_var(f"class_{class_id}_{key}_occupied")
+                model.add(occupied == sum(class_variables))
+                class_occupancies[(class_id, key)] = occupied
 
         for teacher_id in payload["teacher_ids"]:
             teacher_variables = [
@@ -69,6 +73,40 @@ def solve(payload: dict) -> dict:
             preference_score = 30 if slot["key"] in preferred else 10
             early_score = max(0, 8 - int(slot["period_order"]))
             objective_terms.append((preference_score + early_score) * variable)
+
+    # A free teaching period between two courses is much more disruptive than
+    # using a merely available (rather than preferred) period. Official breaks
+    # are absent from payload["slots"], so they are never treated as gaps.
+    gap_variables = []
+    for class_id in payload["class_ids"]:
+        for day in payload["days"]:
+            day_slots = sorted(
+                (slot for slot in slots if slot["day"] == day),
+                key=lambda slot: int(slot["period_order"]),
+            )
+            for index in range(1, len(day_slots) - 1):
+                current = class_occupancies[(class_id, day_slots[index]["key"])]
+                before = model.new_bool_var(f"class_{class_id}_{day}_{index}_before")
+                after = model.new_bool_var(f"class_{class_id}_{day}_{index}_after")
+                gap = model.new_bool_var(f"class_{class_id}_{day}_{index}_gap")
+
+                model.add_max_equality(
+                    before,
+                    [class_occupancies[(class_id, slot["key"])] for slot in day_slots[:index]],
+                )
+                model.add_max_equality(
+                    after,
+                    [class_occupancies[(class_id, slot["key"])] for slot in day_slots[index + 1 :]],
+                )
+                model.add(gap <= before)
+                model.add(gap <= after)
+                model.add(gap + current <= 1)
+                model.add(gap >= before + after - current - 1)
+                gap_variables.append(gap)
+
+    # One avoided gap must outweigh every possible preference gain in the run.
+    gap_penalty = (len(assignments) * len(slots) * 50) + 1
+    objective_terms.extend(-gap_penalty * gap for gap in gap_variables)
 
     model.maximize(sum(objective_terms))
 

@@ -6,6 +6,7 @@ use App\Http\Requests\Timetable\ReviewTeacherAvailabilityImportRequest;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\TeacherAvailability;
+use App\Models\Timetable;
 use App\Models\TimetableGenerationRun;
 use App\Services\TeacherAvailabilityImportService;
 use App\Services\TimetableGenerationService;
@@ -45,6 +46,14 @@ class TimetablePlanningWebController extends Controller
             ->when($request->integer('run'), fn ($query) => $query->whereKey($request->integer('run')))
             ->latest()
             ->first();
+        $appliedTimetables = $run?->status === TimetableGenerationRun::STATUS_APPLIED
+            ? Timetable::query()
+                ->with('schoolClass:id,name')
+                ->where('academic_year_id', $academicYear->id)
+                ->whereIn('school_class_id', $run->input_snapshot['target_class_ids'] ?? [])
+                ->orderBy('school_class_id')
+                ->get()
+            : collect();
 
         return view('timetables.planning', [
             'academicYear' => $academicYear,
@@ -55,6 +64,7 @@ class TimetablePlanningWebController extends Controller
             'readiness' => $generation->readiness($academicYear, $selectedClass ? [$selectedClass->id] : []),
             'run' => $run,
             'selectedClass' => $selectedClass,
+            'appliedTimetables' => $appliedTimetables,
         ]);
     }
 
@@ -243,12 +253,22 @@ class TimetablePlanningWebController extends Controller
 
         $generation->apply($timetableGenerationRun, $request->user());
 
+        $targetClassIds = array_map('intval', $timetableGenerationRun->input_snapshot['target_class_ids'] ?? []);
+        if (count($targetClassIds) === 1) {
+            $timetable = Timetable::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_class_id', $targetClassIds[0])
+                ->firstOrFail();
+
+            return redirect()
+                ->route('timetables.edit', $timetable)
+                ->with('success', 'Le brouillon a été créé. Tu peux déplacer ou remplacer les cours avant de le publier.');
+        }
+
         return redirect()
             ->route('timetables.planning', [
                 'run' => $timetableGenerationRun->id,
-                'school_class_id' => count($timetableGenerationRun->input_snapshot['target_class_ids'] ?? []) === 1
-                    ? $timetableGenerationRun->input_snapshot['target_class_ids'][0]
-                    : null,
+                'school_class_id' => null,
             ])
             ->with('success', 'La proposition a été appliquée en brouillon. Les emplois du temps actifs ont été conservés.');
     }

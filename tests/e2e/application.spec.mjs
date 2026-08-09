@@ -270,7 +270,7 @@ test('le résumé de l’emploi du temps reste lisible avec une équipe pédagog
         await expect(page).toHaveURL(/\/timetables\/\d+\/edit$/);
     } else {
         await page.locator('.topbar__page-actions a[href$="/review"]').click();
-        await page.getByRole('link', { name: 'Corriger la grille' }).click();
+        await page.getByRole('link', { name: 'Modifier la grille' }).click();
     }
 
     await page.locator('input[name="title"]').fill('Emploi du temps provisoire');
@@ -475,7 +475,7 @@ test('la révision visuelle de l’emploi du temps reste contenue et explicite',
     await expect(page.locator('.topbar h1')).toContainText(/vision/);
     await expect(page.getByText('Cours placés')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Grille visuelle' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Corriger la grille' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Modifier la grille' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
 
     const screenshotPath = testInfo.outputPath(`timetable-review-${testInfo.project.name}.png`);
@@ -500,11 +500,12 @@ test('la génération automatique produit un brouillon révisable et un PDF vali
     await expect(page.getByText(/Solution (optimale|réalisable)/)).toBeVisible();
     await expect(page.locator('.planning-class summary strong', { hasText: 'E2E 5e A' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Utiliser ce brouillon' }).click();
+    await page.getByRole('button', { name: 'Utiliser puis modifier la grille' }).click();
     const confirmation = page.locator('#app-confirmation-dialog');
     await expect(confirmation).toBeVisible();
-    await confirmation.getByRole('button', { name: 'Utiliser ce brouillon' }).click();
-    await expect(page.getByText(/Essai appliqué le/)).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Utiliser et modifier' }).click();
+    await expect(page).toHaveURL(/\/timetables\/\d+\/edit$/);
+    await expect(page.getByRole('button', { name: 'Enregistrer l’emploi du temps' })).toBeVisible();
 
     await page.goto('/timetables');
     await page.locator('.topbar__page-actions a[href$="/review"]').click();
