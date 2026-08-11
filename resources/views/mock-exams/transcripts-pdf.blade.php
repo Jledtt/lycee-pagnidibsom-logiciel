@@ -12,8 +12,8 @@
             margin: 0;
             color: #111;
             font-family: "DejaVu Sans", sans-serif;
-            font-size: 8.4px;
-            line-height: 1.18;
+            font-size: 12.8px;
+            line-height: 1.12;
         }
 
         table {
@@ -52,13 +52,13 @@
 
         .school-name {
             margin-bottom: 5px;
-            font-size: 14px;
+            font-size: 16px;
             text-transform: uppercase;
         }
 
         .school-details {
-            font-size: 10px;
-            line-height: 1.55;
+            font-size: 13.4px;
+            line-height: 1.42;
         }
 
         .header-session {
@@ -67,9 +67,9 @@
             top: 0;
             width: 230px;
             text-align: center;
-            font-size: 10px;
+            font-size: 13.4px;
             font-weight: bold;
-            line-height: 1.75;
+            line-height: 1.55;
         }
 
         .document-title {
@@ -78,19 +78,19 @@
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 15px;
+            font-size: 18px;
             font-weight: bold;
         }
 
         .identity {
             height: 72px;
             padding: 0 7px;
-            font-size: 9.2px;
+            font-size: 13.2px;
             font-weight: bold;
         }
 
         .identity-row {
-            height: 19px;
+            height: 20px;
             white-space: nowrap;
         }
 
@@ -107,7 +107,7 @@
 
         .identity-birth-date {
             display: inline-block;
-            width: 190px;
+            width: 250px;
         }
 
         .results-grid {
@@ -130,21 +130,21 @@
 
         .panel {
             height: 530px;
-            border: 1px solid #222;
+            border: 1.35px solid #111;
             border-right: 0;
             overflow: hidden;
             position: relative;
         }
 
-        .summary-round .panel { border-right: 1px solid #222; }
+        .summary-round .panel { border-right: 1.35px solid #111; }
 
         .panel-title {
-            height: 25px;
-            border-bottom: 1px solid #222;
+            height: 28px;
+            border-bottom: 1.35px solid #111;
             text-align: center;
-            font-size: 10.4px;
+            font-size: 13.4px;
             font-weight: bold;
-            line-height: 24px;
+            line-height: 27px;
         }
 
         .score-table {
@@ -154,9 +154,9 @@
         .score-table th,
         .score-table td {
             height: 22px;
-            border-right: 1px solid #222;
-            border-bottom: 1px solid #222;
-            padding: 1px 4px;
+            border-right: 1.35px solid #111;
+            border-bottom: 1.35px solid #111;
+            padding: 1px 5px;
             vertical-align: middle;
         }
 
@@ -165,10 +165,24 @@
 
         .score-table th {
             height: 24px;
-            background: #bdbdbd;
-            font-size: 8.5px;
+            background: #b8b8b8;
+            font-size: 12px;
             font-weight: bold;
             text-align: left;
+        }
+
+        .score-table td {
+            font-size: 12.6px;
+        }
+
+        .subject-cell {
+            line-height: 1.05;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .subject-cell--compact {
+            font-size: 7.8px !important;
         }
 
         .score-table .subject { width: 60%; }
@@ -183,15 +197,15 @@
 
         .totals-table {
             table-layout: fixed;
-            font-size: 8.5px;
+            font-size: 12px;
             font-weight: bold;
         }
 
         .totals-table td {
-            height: 24px;
-            border-right: 1px solid #222;
-            border-bottom: 1px solid #222;
-            padding: 2px 4px;
+            height: 28px;
+            border-right: 1.35px solid #111;
+            border-bottom: 1.35px solid #111;
+            padding: 2px 6px;
             vertical-align: middle;
         }
 
@@ -202,24 +216,24 @@
 
         .average-table {
             table-layout: fixed;
-            font-size: 8.5px;
+            font-size: 12px;
             font-weight: bold;
         }
 
         .average-table td {
-            height: 24px;
-            border-right: 1px solid #222;
-            border-bottom: 1px solid #222;
-            padding: 2px 4px;
+            height: 28px;
+            border-right: 1.35px solid #111;
+            border-bottom: 1.35px solid #111;
+            padding: 2px 6px;
         }
 
         .average-table td:last-child { border-right: 0; }
 
         .decision-block {
-            height: 170px;
-            padding: 5px 8px;
+            height: 129px;
+            padding: 6px 8px;
             text-align: center;
-            font-size: 8.6px;
+            font-size: 11.5px;
             font-weight: bold;
         }
 
@@ -230,9 +244,9 @@
             text-decoration: underline;
         }
 
-        .jury-date { margin-top: 4px; }
-        .jury-title { margin-top: 12px; }
-        .jury-name { margin-top: 65px; }
+        .jury-date { margin-top: 5px; }
+        .jury-title { margin-top: 10px; }
+        .jury-name { margin-top: 42px; }
 
         .first-round .panel > .score-table,
         .summary-round .panel > .score-table,
@@ -249,32 +263,32 @@
             width: 100%;
         }
 
-        .first-round .panel > .score-table { top: 25px; }
-        .totals-table { top: 310px; }
-        .average-table { top: 335px; }
-        .decision-block { top: 360px; }
+        .first-round .panel > .score-table { top: 28px; }
+        .totals-table { top: 330px; }
+        .average-table { top: 358px; }
+        .decision-block { top: 386px; }
 
-        .control-top { top: 25px; height: 80px; }
+        .control-top { top: 28px; height: 80px; }
 
         .control-message {
-            top: 105px;
-            height: 210px;
-            padding: 136px 28px 0;
+            top: 108px;
+            height: 222px;
+            padding: 139px 22px 0;
             text-align: center;
-            font-size: 11px;
+            font-size: 14.2px;
             font-weight: bold;
-            line-height: 1.55;
+            line-height: 1.45;
         }
 
         .retained-table { top: 311px; height: 80px; }
 
         .notice {
             top: 385px;
-            height: 135px;
-            padding: 2px 35px 0;
+            height: 145px;
+            padding: 7px 28px 0;
             text-align: center;
-            font-size: 8.7px;
-            line-height: 1.45;
+            font-size: 11.2px;
+            line-height: 1.38;
         }
 
         .contest-block {
@@ -282,18 +296,18 @@
             height: 250px;
             padding-top: 72px;
             text-align: center;
-            font-size: 10px;
+            font-size: 13px;
             font-weight: bold;
         }
 
         .contest-title {
             display: inline-block;
             margin-bottom: 10px;
-            border-bottom: 1px solid #111;
-            font-size: 11px;
+            border-bottom: 1.35px solid #111;
+            font-size: 14px;
         }
 
-        .summary-round .panel > .score-table { top: 25px; }
+        .summary-round .panel > .score-table { top: 28px; }
     </style>
 </head>
 <body>
@@ -430,7 +444,12 @@
                                                 : $normalized * (float) $subject->coefficient;
                                         @endphp
                                         <tr>
-                                            <td>{{ $subject?->subject?->name ?? '' }}</td>
+                                            @php
+                                                $subjectName = $subject?->subject?->name ?? '';
+                                            @endphp
+                                            <td class="subject-cell {{ mb_strlen($subjectName) > 29 ? 'subject-cell--compact' : '' }}">
+                                                {{ $subjectName }}
+                                            </td>
                                             <td class="score">
                                                 @if ($score?->is_absent)
                                                     ABS
@@ -550,7 +569,12 @@
                                 <tbody>
                                     @for ($rowIndex = 0; $rowIndex < 9; $rowIndex++)
                                         <tr>
-                                            <td>{{ $recapSubjects[$rowIndex] ?? '' }}</td>
+                                            @php
+                                                $recapSubject = $recapSubjects[$rowIndex] ?? '';
+                                            @endphp
+                                            <td class="subject-cell {{ mb_strlen($recapSubject) > 25 ? 'subject-cell--compact' : '' }}">
+                                                {{ $recapSubject }}
+                                            </td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
