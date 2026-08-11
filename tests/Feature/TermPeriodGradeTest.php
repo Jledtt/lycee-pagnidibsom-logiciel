@@ -138,6 +138,20 @@ class TermPeriodGradeTest extends TestCase
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
 
+        $paperSheetPdf = $this->actingAs($user)
+            ->get(route('grades.assessments.paper-sheet-pdf', $firstAssessment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->assertMatchesRegularExpression(
+            '/\/MediaBox\s*\[\s*0(?:\.0+)?\s+0(?:\.0+)?\s+595(?:\.\d+)?\s+841(?:\.\d+)?\s*\]/',
+            $paperSheetPdf->getContent(),
+            'La fiche papier des notes doit rester en A4 portrait.',
+        );
+
+        preg_match_all('/\/Type\s*\/Page\b/', $paperSheetPdf->getContent(), $paperSheetPages);
+        $this->assertCount(1, $paperSheetPages[0], 'Une petite classe ne doit pas produire de page PDF blanche.');
+
         $this->actingAs($user)
             ->get(route('report-cards.period-class-pdf', [
                 'school_class_id' => $schoolClass->id,

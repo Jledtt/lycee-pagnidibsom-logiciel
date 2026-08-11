@@ -11,7 +11,7 @@
             @include('pdf.partials.logo-with-motto', [
                 'logoPath' => $documentLogoPath,
                 'logoWidth' => $documentLogoSize,
-                'mottoSize' => 10,
+                'mottoSize' => $mottoSize ?? 10,
             ])
         </td>
         <td style="vertical-align:top; text-align:{{ ($centerSchool ?? false) ? 'center' : 'left' }}; font-weight:bold;">
@@ -24,7 +24,7 @@
                 E-mail : {{ $documentSchool?->email ?? 'infoslyceepagnidibsom@gmail.com' }}
             </div>
         </td>
-        <td style="width:{{ $rightWidth ?? 190 }}px; vertical-align:top; text-align:right; font-size:{{ $rightSize ?? 11 }}px; line-height:1.45; font-weight:bold;">
+        <td style="width:{{ $rightWidth ?? 190 }}px; vertical-align:top; text-align:{{ $rightAlign ?? 'right' }}; font-size:{{ $rightSize ?? 11 }}px; line-height:1.45; font-weight:bold;">
             @foreach ($documentRightLines as $line)
                 <div>{{ $line }}</div>
             @endforeach

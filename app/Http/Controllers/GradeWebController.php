@@ -190,6 +190,54 @@ class GradeWebController extends Controller
             ->stream($filename);
     }
 
+    public function paperSheetPdf(Assessment $assessment)
+    {
+        $assessment->load([
+            'academicYear',
+            'term',
+            'termPeriod',
+            'schoolClass.level',
+            'subject',
+            'teacher.roles',
+        ]);
+
+        $classSubject = ClassSubject::query()
+            ->with('teacher')
+            ->where('school_class_id', $assessment->school_class_id)
+            ->where('subject_id', $assessment->subject_id)
+            ->where('is_active', true)
+            ->first();
+        $teacher = $classSubject?->teacher;
+
+        if (! $teacher && $assessment->teacher?->hasRole('teacher')) {
+            $teacher = $assessment->teacher;
+        }
+
+        $students = $this->gradeEntryService->studentsForClass(
+            $assessment->academic_year_id,
+            $assessment->school_class_id,
+        );
+        $studentPages = $students->chunk(24)->values();
+
+        if ($studentPages->isEmpty()) {
+            $studentPages = collect([collect()]);
+        }
+
+        $filename = 'fiche-papier-notes-'.Str::slug(
+            $assessment->schoolClass->name.'-'.$assessment->subject->name.'-'.$assessment->term->name
+        ).'.pdf';
+
+        return Pdf::loadView('grades.paper-sheet-pdf', [
+            'assessment' => $assessment,
+            'coefficient' => $classSubject?->coefficient,
+            'school' => SchoolSetting::query()->first(),
+            'studentPages' => $studentPages,
+            'teacher' => $teacher,
+        ])
+            ->setPaper('a4')
+            ->stream($filename);
+    }
+
     public function assessmentExport(Assessment $assessment, XlsxExportService $xlsxExport)
     {
         $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);

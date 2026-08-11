@@ -583,6 +583,10 @@ Route::get('/grades/assessments/{assessment}/pdf', [GradeWebController::class, '
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.assessments.pdf');
 
+Route::get('/grades/assessments/{assessment}/paper-sheet/pdf', [GradeWebController::class, 'paperSheetPdf'])
+    ->middleware(['auth', 'permission:grades.view'])
+    ->name('grades.assessments.paper-sheet-pdf');
+
 Route::get('/grades/assessments/{assessment}/register/pdf', [GradeWebController::class, 'registerPdf'])
     ->middleware(['auth', 'permission:grades.view'])
     ->name('grades.assessments.register-pdf');
