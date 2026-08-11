@@ -416,7 +416,7 @@ class MockExamWebController extends Controller
             'items' => $this->resultRows($mockExam),
             'school' => SchoolSetting::query()->first(),
         ])
-            ->setPaper('a4')
+            ->setPaper('a4', 'landscape')
             ->stream('releves-notes-'.Str::slug($mockExam->name).'.pdf');
     }
 
@@ -435,7 +435,7 @@ class MockExamWebController extends Controller
             'items' => collect([$item]),
             'school' => SchoolSetting::query()->first(),
         ])
-            ->setPaper('a4')
+            ->setPaper('a4', 'landscape')
             ->stream('releve-notes-'.Str::slug($mockExamCandidate->student?->full_name.'-'.$mockExam->name).'.pdf');
     }
 

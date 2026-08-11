@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class PdfLayoutConventionTest extends TestCase
 {
-    public function test_only_teacher_attendance_sheet_uses_landscape_orientation(): void
+    public function test_only_approved_documents_use_landscape_orientation(): void
     {
         $controllers = collect(new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(app_path('Http/Controllers')),
@@ -20,9 +20,22 @@ class PdfLayoutConventionTest extends TestCase
             ])
             ->filter(fn (string $contents): bool => str_contains($contents, "'landscape'"));
 
-        $this->assertCount(1, $controllers);
-        $this->assertStringEndsWith('TeacherAttendanceSheetWebController.php', $controllers->keys()->first());
-        $this->assertStringContainsString("->setPaper('a4', 'landscape')", $controllers->first());
+        $this->assertCount(2, $controllers);
+
+        $landscapeControllers = $controllers->keys()
+            ->map(fn (string $path): string => basename($path))
+            ->sort()
+            ->values()
+            ->all();
+
+        $this->assertSame([
+            'MockExamWebController.php',
+            'TeacherAttendanceSheetWebController.php',
+        ], $landscapeControllers);
+
+        $controllers->each(function (string $contents): void {
+            $this->assertStringContainsString("->setPaper('a4', 'landscape')", $contents);
+        });
     }
 
     public function test_wide_register_is_split_into_readable_portrait_sections(): void

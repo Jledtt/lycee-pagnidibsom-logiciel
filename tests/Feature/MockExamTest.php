@@ -246,6 +246,17 @@ class MockExamTest extends TestCase
                 ->assertHeader('content-type', 'application/pdf');
         }
 
+        $transcriptPdf = $this->actingAs($user)
+            ->get(route('mock-exams.candidates.transcript.pdf', [$exam, $exam->candidates->first()]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->assertMatchesRegularExpression(
+            '/\/MediaBox\s*\[\s*0(?:\.0+)?\s+0(?:\.0+)?\s+841(?:\.\d+)?\s+595(?:\.\d+)?\s*\]/',
+            $transcriptPdf->getContent(),
+            'Le relevé individuel d’examen blanc doit rester en A4 paysage.',
+        );
+
         $this->actingAs($user)
             ->get(route('mock-exams.decision-lists.pdf', [$exam, 'inconnue']))
             ->assertNotFound();
