@@ -181,7 +181,7 @@ class GradeCalculationServiceTest extends TestCase
         $this->grade($this->devoir, 15);
         $this->grade($this->composition, 8);
 
-        ReportCard::query()->create([
+        $reportCard = ReportCard::query()->create([
             'academic_year_id' => $this->academicYear->id,
             'term_id' => $this->term->id,
             'student_id' => $this->student->id,
@@ -189,6 +189,10 @@ class GradeCalculationServiceTest extends TestCase
             'general_average' => 11.5,
             'rank' => 1,
             'class_size' => 1,
+            'decision' => 'Passe en classe supérieure',
+            'conduct' => 'Très bonne',
+            'distinction' => ReportCard::DISTINCTION_HONOR_ROLL,
+            'principal_observation' => 'Observation validée par la direction',
             'status' => 'draft',
         ]);
 
@@ -197,6 +201,7 @@ class GradeCalculationServiceTest extends TestCase
             '--term' => (string) $this->term->id,
             '--dry-run' => true,
         ])
+            ->expectsOutputToContain('R.av. = ancien rang ; R.ap. = nouveau rang.')
             ->expectsOutputToContain('Simulation terminée')
             ->assertSuccessful();
 
@@ -214,6 +219,12 @@ class GradeCalculationServiceTest extends TestCase
             'student_id' => $this->student->id,
             'general_average' => 10.8,
         ]);
+
+        $reportCard->refresh();
+        $this->assertSame('Passe en classe supérieure', $reportCard->decision);
+        $this->assertSame('Très bonne', $reportCard->conduct);
+        $this->assertSame(ReportCard::DISTINCTION_HONOR_ROLL, $reportCard->distinction);
+        $this->assertSame('Observation validée par la direction', $reportCard->principal_observation);
     }
 
     private function average(): ?float

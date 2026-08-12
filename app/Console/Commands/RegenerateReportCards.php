@@ -50,7 +50,8 @@ class RegenerateReportCards extends Command
                     ->keyBy('student_id');
 
                 foreach ($rows as $row) {
-                    $oldAverage = $existing->get($row['student']->id)?->general_average;
+                    $existingCard = $existing->get($row['student']->id);
+                    $oldAverage = $existingCard?->general_average;
                     $newAverage = $row['average'];
 
                     $comparisons[] = [
@@ -60,6 +61,8 @@ class RegenerateReportCards extends Command
                         $this->formatAverage($oldAverage === null ? null : (float) $oldAverage),
                         $this->formatAverage($newAverage),
                         $this->formatDifference($oldAverage === null ? null : (float) $oldAverage, $newAverage),
+                        $this->formatRank($existingCard?->rank),
+                        $this->formatRank($row['rank']),
                     ];
                 }
 
@@ -73,8 +76,9 @@ class RegenerateReportCards extends Command
             return self::SUCCESS;
         }
 
+        $this->line('R.av. = ancien rang ; R.ap. = nouveau rang.');
         $this->table(
-            ['Classe', 'Trimestre', 'Élève', 'Ancienne moyenne', 'Nouvelle moyenne', 'Écart'],
+            ['Classe', 'Trim.', 'Élève', 'M.av.', 'M.ap.', 'Écart', 'R.av.', 'R.ap.'],
             $comparisons,
         );
 
@@ -139,5 +143,10 @@ class RegenerateReportCards extends Command
         }
 
         return sprintf('%+.2f', $newAverage - $oldAverage);
+    }
+
+    private function formatRank(mixed $rank): string
+    {
+        return $rank === null ? '-' : (string) $rank;
     }
 }
