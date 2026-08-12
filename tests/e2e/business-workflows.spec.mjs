@@ -104,7 +104,7 @@ test('saisie des notes, verrouillage et génération du bulletin PDF', async ({ 
     const selection = page.locator('form.searchbar').first();
     await selectOptionContaining(selection.locator('select[name="school_class_id"]'), SEEDED_CLASS);
     await selection.locator('select[name="term_id"]').selectOption({ label: 'Trimestre 1' });
-    await selection.locator('select[name="term_period_id"]').selectOption({ label: '1er devoir' });
+    await selection.locator('select[name="term_period_id"]').selectOption({ label: 'Octobre' });
     await selection.getByRole('button', { name: 'Afficher' }).click();
 
     const assessment = page.locator('input[name="title"]').locator('xpath=ancestor::form');

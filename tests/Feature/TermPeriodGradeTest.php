@@ -23,6 +23,33 @@ class TermPeriodGradeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_default_periods_use_the_school_months_for_each_term(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $expectedPeriods = [
+            1 => ['Octobre', 'Novembre', 'Composition'],
+            2 => ['Janvier', 'Février', 'Composition'],
+            3 => ['Avril', 'Composition'],
+        ];
+
+        foreach ($expectedPeriods as $termPosition => $expectedNames) {
+            $term = Term::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('position', $termPosition)
+                ->firstOrFail();
+
+            $actualNames = $term->periods()
+                ->where('status', 'active')
+                ->orderBy('position')
+                ->pluck('name')
+                ->all();
+
+            $this->assertSame($expectedNames, $actualNames);
+        }
+    }
+
     public function test_grade_periods_separate_monthly_devoirs_and_feed_the_trimester_average(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -39,13 +66,13 @@ class TermPeriodGradeTest extends TestCase
                 'term_period_id' => $firstPeriod->id,
                 'subject_id' => $subject->id,
                 'assessment_type_id' => $assessmentType->id,
-                'title' => '1er devoir - Français',
+                'title' => 'Octobre - Français',
                 'max_score' => 20,
                 'assessment_date' => now()->toDateString(),
             ])
             ->assertRedirect();
 
-        $firstAssessment = Assessment::query()->where('title', '1er devoir - Français')->firstOrFail();
+        $firstAssessment = Assessment::query()->where('title', 'Octobre - Français')->firstOrFail();
 
         Grade::query()->create([
             'assessment_id' => $firstAssessment->id,
@@ -62,7 +89,7 @@ class TermPeriodGradeTest extends TestCase
             'school_class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'assessment_type_id' => $assessmentType->id,
-            'title' => '2e devoir - Français',
+            'title' => 'Novembre - Français',
             'max_score' => 20,
             'assessment_date' => now()->toDateString(),
             'teacher_id' => $user->id,
@@ -99,7 +126,7 @@ class TermPeriodGradeTest extends TestCase
         $calculator = app(GradeCalculationService::class);
 
         $this->assertDatabaseHas('assessments', [
-            'title' => '1er devoir - Français',
+            'title' => 'Octobre - Français',
             'term_period_id' => $firstPeriod->id,
         ]);
         $this->assertSame(10.0, $calculator->generalAverage($student, $schoolClass, $term, $firstPeriod->id));

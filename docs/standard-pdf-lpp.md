@@ -204,8 +204,8 @@ PDF : le modèle complet sera activé après ajout de ces champs.
 - commentaire ou appréciation.
 
 Le modèle actuel imprime une évaluation à la fois. Une feuille récapitulative
-avec `Devoir 1`, `Devoir 2`, `Interrogation`, `Composition`, `Moyenne` et
-`Note pondérée` nécessite un nouvel export multi-évaluations.
+avec les mois du trimestre, `Composition`, `Moyenne` et `Note pondérée`
+nécessite un nouvel export multi-évaluations.
 
 ### Relevé individuel d'une période
 

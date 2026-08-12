@@ -476,13 +476,13 @@ return [
         'grades' => [
             'category' => 'pedagogy',
             'title' => 'Créer une évaluation et saisir les notes',
-            'summary' => 'Préparer un devoir, noter les élèves et verrouiller la saisie.',
+            'summary' => 'Préparer une évaluation mensuelle, noter les élèves et verrouiller la saisie.',
             'route' => 'grades.index',
             'permissions' => ['grades.view'],
             'roles' => ['Enseignant', 'Direction'],
-            'keywords' => ['note', 'devoir', 'évaluation', 'verrouillage', 'moyenne'],
+            'keywords' => ['note', 'mois', 'octobre', 'novembre', 'janvier', 'février', 'avril', 'composition', 'évaluation', 'verrouillage', 'moyenne'],
             'steps' => [
-                'Choisissez l’année, la classe, la période et la matière.',
+                'Choisissez la classe, le trimestre puis le mois ou la composition.',
                 'Créez l’évaluation avec son titre, son type, sa date et son barème.',
                 'Saisissez une note ou un statut d’absence pour chaque élève.',
                 'Enregistrez et vérifiez les statistiques de l’évaluation.',

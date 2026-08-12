@@ -60,7 +60,7 @@
             @can('grades.view')
                 <a class="action-card" href="{{ route('grades.index') }}">
                     <strong>Saisie notes</strong>
-                    <span>Créer un devoir ou saisir les notes.</span>
+                    <span>Créer une évaluation mensuelle ou saisir les notes.</span>
                 </a>
             @endcan
             @can('report_cards.view')

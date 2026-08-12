@@ -97,7 +97,7 @@
                     @can('report_cards.print')
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}">PDF classe</a>
                         @if ($selectedTermPeriod)
-                            <a class="btn btn-subtle" href="{{ route('report-cards.period-class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $selectedTermPeriod->id]) }}" data-download-feedback="Téléchargement du relevé par devoir lancé.">PDF {{ $selectedTermPeriod->name }}</a>
+                            <a class="btn btn-subtle" href="{{ route('report-cards.period-class-pdf', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id, 'term_period_id' => $selectedTermPeriod->id]) }}" data-download-feedback="Téléchargement du relevé mensuel lancé.">PDF {{ $selectedTermPeriod->name }}</a>
                         @endif
                         <a class="btn btn-subtle" href="{{ route('report-cards.class-export', ['school_class_id' => $selectedClass->id, 'term_id' => $selectedTerm->id]) }}" data-download-feedback="Téléchargement Excel des bulletins lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
                     @endcan

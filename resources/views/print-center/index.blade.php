@@ -229,7 +229,7 @@
                     <div class="panel-head"><h2>Notes et bulletins</h2></div>
                     <div class="ledger-list">
                         <a class="ledger-item" href="{{ route('grades.index') }}">
-                            <div class="ledger-person"><strong>Évaluations</strong><span>PDF et Excel des devoirs mensuels.</span></div>
+                            <div class="ledger-person"><strong>Évaluations</strong><span>PDF et Excel des évaluations mensuelles.</span></div>
                         </a>
                         <a class="ledger-item" href="{{ route('report-cards.index') }}">
                             <div class="ledger-person"><strong>Bulletins</strong><span>Bulletins par élève ou par classe.</span></div>

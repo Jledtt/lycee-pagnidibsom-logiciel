@@ -3,13 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\AcademicYear;
-use App\Models\Assessment;
 use App\Models\AssessmentType;
 use App\Models\FeeType;
 use App\Models\Level;
 use App\Models\SchoolSetting;
 use App\Models\Subject;
-use App\Models\TermPeriod;
+use App\Services\TermPeriodService;
 use Illuminate\Database\Seeder;
 
 class AcademicBaselineSeeder extends Seeder
@@ -59,29 +58,7 @@ class AcademicBaselineSeeder extends Seeder
                 ]
             );
 
-            foreach ([
-                ['position' => 1, 'name' => '1er devoir'],
-                ['position' => 2, 'name' => '2e devoir'],
-                ['position' => 3, 'name' => '3e devoir'],
-            ] as $period) {
-                $createdPeriod = TermPeriod::firstOrCreate(
-                    [
-                        'term_id' => $createdTerm->id,
-                        'position' => $period['position'],
-                    ],
-                    [
-                        'name' => $period['name'],
-                        'status' => 'active',
-                    ],
-                );
-
-                if ((int) $period['position'] === 1) {
-                    Assessment::query()
-                        ->where('term_id', $createdTerm->id)
-                        ->whereNull('term_period_id')
-                        ->update(['term_period_id' => $createdPeriod->id]);
-                }
-            }
+            app(TermPeriodService::class)->ensureDefaults($createdTerm);
         }
 
         foreach ([

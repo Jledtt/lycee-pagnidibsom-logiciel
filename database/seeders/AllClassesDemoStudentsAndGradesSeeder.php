@@ -106,9 +106,9 @@ class AllClassesDemoStudentsAndGradesSeeder extends Seeder
     private function termPeriods(Term $term): Collection
     {
         return collect([
-            ['name' => '1er devoir', 'position' => 1, 'starts_on' => '2026-10-01', 'ends_on' => '2026-10-31'],
-            ['name' => '2e devoir', 'position' => 2, 'starts_on' => '2026-11-01', 'ends_on' => '2026-11-30'],
-            ['name' => '3e devoir', 'position' => 3, 'starts_on' => '2026-12-01', 'ends_on' => '2026-12-31'],
+            ['name' => 'Octobre', 'position' => 1, 'starts_on' => '2026-10-01', 'ends_on' => '2026-10-31'],
+            ['name' => 'Novembre', 'position' => 2, 'starts_on' => '2026-11-01', 'ends_on' => '2026-11-30'],
+            ['name' => 'Composition', 'position' => 3, 'starts_on' => '2026-12-01', 'ends_on' => '2026-12-31'],
         ])->map(fn (array $item) => TermPeriod::query()->updateOrCreate(
             [
                 'term_id' => $term->id,
