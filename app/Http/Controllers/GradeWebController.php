@@ -13,6 +13,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\Term;
+use App\Services\GradeCalculationService;
 use App\Services\GradeEntryService;
 use App\Services\TermPeriodService;
 use App\Services\XlsxExportService;
@@ -25,6 +26,7 @@ use Illuminate\View\View;
 class GradeWebController extends Controller
 {
     public function __construct(
+        private readonly GradeCalculationService $gradeCalculationService,
         private readonly GradeEntryService $gradeEntryService,
         private readonly TermPeriodService $termPeriodService,
     ) {}
@@ -303,22 +305,17 @@ class GradeWebController extends Controller
             ->where('school_class_id', $assessment->school_class_id)
             ->where('subject_id', $assessment->subject_id)
             ->value('coefficient') ?? 0);
-        $rows = $students->map(function (Student $student) use ($assessments, $coefficient) {
+        $rows = $students->map(function (Student $student) use ($assessment, $assessments, $coefficient) {
             $grades = $assessments->mapWithKeys(fn (Assessment $item) => [
                 $item->id => $item->grades->firstWhere('student_id', $student->id),
             ]);
-            $normalizedScores = $assessments
-                ->map(function (Assessment $item) use ($grades) {
-                    $grade = $grades->get($item->id);
-
-                    if (! $grade?->isCounted() || $grade->score === null || (float) $item->max_score <= 0) {
-                        return null;
-                    }
-
-                    return ((float) $grade->score / (float) $item->max_score) * 20;
-                })
-                ->filter(fn ($score) => $score !== null);
-            $average = $normalizedScores->isEmpty() ? null : round($normalizedScores->avg(), 2);
+            $average = $this->gradeCalculationService->subjectAverage(
+                $student,
+                $assessment->term,
+                $assessment->subject_id,
+                $assessment->school_class_id,
+                $assessment->term_period_id,
+            );
 
             return [
                 'student' => $student,

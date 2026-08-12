@@ -117,6 +117,13 @@ class GradeCalculationServiceTest extends TestCase
         $this->assertSame(12.0, $this->average());
     }
 
+    public function test_score_with_maximum_of_forty_is_normalized_to_twenty(): void
+    {
+        $this->grade($this->devoir, 30, 40);
+
+        $this->assertSame(15.0, $this->average());
+    }
+
     public function test_inactive_and_zero_weight_types_are_excluded(): void
     {
         $zeroWeight = AssessmentType::query()->create([
@@ -152,6 +159,21 @@ class GradeCalculationServiceTest extends TestCase
         $this->grade($this->composition, 8);
 
         $this->assertSame(11.5, $this->average());
+    }
+
+    public function test_disabled_flag_still_excludes_zero_weight_types(): void
+    {
+        config()->set('lpp.grades.weighted_averages', false);
+        $zeroWeight = AssessmentType::query()->create([
+            'name' => 'Type informatif',
+            'weight' => 0,
+            'status' => 'active',
+        ]);
+
+        $this->grade($this->devoir, 12);
+        $this->grade($zeroWeight, 20);
+
+        $this->assertSame(12.0, $this->average());
     }
 
     public function test_regeneration_command_can_preview_then_apply_the_difference(): void

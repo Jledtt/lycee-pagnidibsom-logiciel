@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AssessmentType extends Model
 {
+    public const NAME_DEVOIR = 'Devoir';
+
+    public const NAME_COMPOSITION = 'Composition';
+
     protected $fillable = [
         'name',
         'weight',

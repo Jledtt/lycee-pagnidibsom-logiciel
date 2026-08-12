@@ -121,7 +121,7 @@
         <tr>
             <td colspan="3"><strong>Appréciation générale :</strong> {{ $reportCard->appreciation ?: '-' }}</td>
             <td colspan="3"><strong>Moyenne de classe :</strong> {{ $format($classStats['average'] ?? null) }}</td>
-            <td colspan="3"><strong>Extrêmes :</strong> {{ $format($classStats['weakest']?->general_average ?? null) }} à {{ $format($classStats['best']?->general_average ?? null) }}</td>
+            <td colspan="3"><strong>Extrêmes :</strong> {{ $format($classStats['weakest'] ?? null) }} à {{ $format($classStats['best'] ?? null) }}</td>
         </tr>
     </tbody>
 </table>

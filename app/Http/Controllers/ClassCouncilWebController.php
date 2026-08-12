@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Assessment;
-use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\ReportCard;
@@ -323,31 +322,19 @@ class ClassCouncilWebController extends Controller
 
     private function subjectRows(ReportCard $reportCard): Collection
     {
-        return ClassSubject::query()
-            ->with('subject')
-            ->where('school_class_id', $reportCard->school_class_id)
-            ->where('is_active', true)
-            ->join('subjects', 'subjects.id', '=', 'class_subjects.subject_id')
-            ->orderBy('subjects.name')
-            ->select('class_subjects.*')
-            ->get()
-            ->map(function (ClassSubject $classSubject) use ($reportCard) {
-                $average = $this->gradeCalculationService->subjectAverage(
-                    $reportCard->student,
-                    $reportCard->term,
-                    $classSubject->subject_id,
-                    $reportCard->school_class_id,
-                );
-                $coefficient = (float) $classSubject->coefficient;
-
+        return $this->gradeCalculationService
+            ->termSummary($reportCard->student, $reportCard->schoolClass, $reportCard->term)['rows']
+            ->sortBy(fn (array $row): string => $row['class_subject']->subject->name)
+            ->map(function (array $row): array {
                 return [
-                    'subject' => $classSubject->subject,
-                    'coefficient' => $coefficient,
-                    'average' => $average,
-                    'points' => $average === null ? null : round($average * $coefficient, 2),
-                    'appreciation' => $this->reportCardService->appreciationForAverage($average),
+                    'subject' => $row['class_subject']->subject,
+                    'coefficient' => $row['coefficient'],
+                    'average' => $row['general'],
+                    'points' => $row['points'],
+                    'appreciation' => $this->reportCardService->appreciationForAverage($row['general']),
                 ];
-            });
+            })
+            ->values();
     }
 
     private function assessmentRows(ReportCard $reportCard): Collection

@@ -29,6 +29,18 @@ class CompetitionRankingServiceTest extends TestCase
         $this->assertSame([true, true, false], array_column($rows, 'rank_is_tied'));
     }
 
+    public function test_standard_competition_ranking_uses_one_two_two_four(): void
+    {
+        $rows = $this->ranking->rank([
+            ['student' => 'A', 'average' => 15.00],
+            ['student' => 'B', 'average' => 14.50],
+            ['student' => 'C', 'average' => 14.50],
+            ['student' => 'D', 'average' => 13.20],
+        ]);
+
+        $this->assertSame([1, 2, 2, 4], array_column($rows, 'rank'));
+    }
+
     public function test_triple_tie_skips_all_shared_positions(): void
     {
         $rows = $this->ranking->rank([
