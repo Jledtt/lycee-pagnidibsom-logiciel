@@ -192,6 +192,10 @@
                 <strong>{{ $student->repeated_class ?? '-' }}</strong>
             </div>
             <div class="detail-item">
+                <span>Bourse scolaire</span>
+                <strong>{{ $student->is_scholarship ? 'Boursier' : 'Non boursier' }}</strong>
+            </div>
+            <div class="detail-item">
                 <span>Nationalité</span>
                 <strong>{{ $student->nationality ?? '-' }}</strong>
             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AttendanceRecord;
 use App\Models\ReportCard;
 use App\Models\SchoolClass;
 use App\Models\Term;
@@ -17,6 +18,8 @@ class ReportCardService
     public function generateForClass(SchoolClass $schoolClass, Term $term): array
     {
         $rows = $this->previewForClass($schoolClass, $term);
+        $rankedCount = collect($rows)->whereNotNull('average')->count();
+        $unrankedCount = count($rows) - $rankedCount;
 
         foreach ($rows as $row) {
             $reportCard = ReportCard::query()->firstOrNew([
@@ -25,16 +28,26 @@ class ReportCardService
                 'student_id' => $row['student']->id,
             ]);
 
-            $reportCard->fill([
+            $generatedValues = [
                 'school_class_id' => $schoolClass->id,
                 'general_average' => $row['average'],
                 'rank' => $row['rank'],
                 'rank_is_tied' => $row['rank_is_tied'],
                 'class_size' => count($rows),
+                'class_size_ranked' => $rankedCount,
+                'class_size_unranked' => $unrankedCount,
                 'appreciation' => $this->appreciationForAverage($row['average']),
                 'decision' => $reportCard->decision ?: $this->decisionForAverage($row['average']),
+                'absence_hours' => $this->absenceHoursFor($row['student']->id, $term),
                 'status' => $reportCard->exists ? $reportCard->status : 'draft',
-            ])->save();
+            ];
+
+            if (! $reportCard->exists) {
+                $generatedValues['conduct'] = 'Bonne';
+                $generatedValues['distinction'] = $this->suggestedDistinction($row['average']);
+            }
+
+            $reportCard->fill($generatedValues)->save();
         }
 
         return $rows;
@@ -66,6 +79,38 @@ class ReportCardService
         }
 
         return $this->competitionRankingService->rank($rows);
+    }
+
+    public function absenceHoursFor(int $studentId, Term $term): float
+    {
+        if ($term->starts_at === null || $term->ends_at === null) {
+            return 0.0;
+        }
+
+        // 1 enregistrement = 1 heure, à affiner si la durée de session est ajoutée.
+        return (float) AttendanceRecord::query()
+            ->where('student_id', $studentId)
+            ->where('status', 'absent')
+            ->whereNull('justified_at')
+            ->whereHas('session', fn ($query) => $query->whereBetween('session_date', [
+                $term->starts_at->toDateString(),
+                $term->ends_at->toDateString(),
+            ]))
+            ->count();
+    }
+
+    public function suggestedDistinction(?float $average): ?string
+    {
+        if ($average === null) {
+            return null;
+        }
+
+        return match (true) {
+            $average >= 16 => ReportCard::DISTINCTION_HIGH_HONORS_CONGRATULATIONS,
+            $average >= 14 => ReportCard::DISTINCTION_HIGH_HONORS_ENCOURAGEMENT,
+            $average >= 12 => ReportCard::DISTINCTION_HONOR_ROLL,
+            default => null,
+        };
     }
 
     /**

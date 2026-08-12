@@ -28,6 +28,7 @@ class Student extends Model implements HasMedia
         'origin_school',
         'previous_class',
         'repeated_class',
+        'is_scholarship',
         'address',
         'nationality',
         'ethnicity',
@@ -48,6 +49,7 @@ class Student extends Model implements HasMedia
         'birth_date' => 'date',
         'health_conditions' => 'array',
         'sport_aptitude' => 'boolean',
+        'is_scholarship' => 'boolean',
     ];
 
     public function user(): BelongsTo

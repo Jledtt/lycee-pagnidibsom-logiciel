@@ -269,6 +269,8 @@ class ReportCardWebController extends Controller
             'decision' => $data['decision'] ?: $this->reportCardService->decisionForAverage(
                 $reportCard->general_average === null ? null : (float) $reportCard->general_average,
             ),
+            'conduct' => $data['conduct'] ?: null,
+            'distinction' => $data['distinction'] ?: null,
             'principal_observation' => $data['principal_observation'] ?? null,
             'status' => $data['status'],
         ];

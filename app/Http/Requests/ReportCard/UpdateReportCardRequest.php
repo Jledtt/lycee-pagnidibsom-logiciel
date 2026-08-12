@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\ReportCard;
 
+use App\Models\ReportCard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +17,8 @@ class UpdateReportCardRequest extends FormRequest
     {
         return [
             'decision' => ['nullable', 'string', 'max:255'],
+            'conduct' => ['nullable', 'string', 'max:255'],
+            'distinction' => ['nullable', Rule::in(ReportCard::distinctions())],
             'principal_observation' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['draft', 'validated', 'published'])],
         ];

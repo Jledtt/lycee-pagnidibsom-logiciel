@@ -165,6 +165,19 @@
                                                             <option value="{{ $decision }}" @selected(($reportCard->decision ?: 'A deliberer') === $decision)>{{ $decision }}</option>
                                                         @endforeach
                                                     </select>
+                                                    <select name="distinction" style="margin-top:8px" aria-label="Distinction ou sanction">
+                                                        <option value="">Aucune distinction ou sanction</option>
+                                                        @foreach (\App\Models\ReportCard::distinctions() as $distinction)
+                                                            <option value="{{ $distinction }}" @selected($reportCard->distinction === $distinction)>{{ $distinction }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <input
+                                                        name="conduct"
+                                                        value="{{ $reportCard->conduct }}"
+                                                        placeholder="Conduite"
+                                                        aria-label="Conduite"
+                                                        style="margin-top:8px"
+                                                    >
                                                     <textarea name="principal_observation" rows="2" placeholder="Observation administrative" style="margin-top:8px">{{ $reportCard->principal_observation }}</textarea>
                                                 </form>
                                             @else

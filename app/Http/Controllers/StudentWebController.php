@@ -263,6 +263,7 @@ class StudentWebController extends Controller
             'origin_school' => ['nullable', 'string', 'max:255'],
             'previous_class' => ['nullable', 'string', 'max:255'],
             'repeated_class' => ['nullable', 'string', 'max:255'],
+            'is_scholarship' => ['nullable', 'boolean'],
             'address' => ['nullable', 'string', 'max:255'],
             'nationality' => ['nullable', 'string', 'max:255'],
             'ethnicity' => ['nullable', 'string', 'max:255'],

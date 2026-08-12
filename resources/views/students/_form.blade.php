@@ -81,6 +81,22 @@
         </div>
 
         <div class="field">
+            <span class="field-label">Bourse scolaire</span>
+            <input type="hidden" name="is_scholarship" value="0">
+            <label for="is_scholarship" style="display:flex;align-items:center;gap:10px;min-height:48px">
+                <input
+                    id="is_scholarship"
+                    name="is_scholarship"
+                    type="checkbox"
+                    value="1"
+                    @checked((bool) old('is_scholarship', $student->is_scholarship))
+                    style="width:20px;height:20px"
+                >
+                Boursier
+            </label>
+        </div>
+
+        <div class="field">
             <label for="sector">Secteur</label>
             <input id="sector" name="sector" value="{{ old('sector', $student->sector) }}">
         </div>
