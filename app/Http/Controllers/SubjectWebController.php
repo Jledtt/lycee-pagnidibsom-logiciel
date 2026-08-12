@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Rules\ValidClassSubjectCoefficient;
 use App\Services\PagnidibsomClassSubjectSetupService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -101,7 +102,7 @@ class SubjectWebController extends Controller
         $data = $request->validate([
             'school_class_id' => ['required', 'exists:school_classes,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'coefficient' => ['required', 'numeric', 'min:0', 'max:99.99'],
+            'coefficient' => ['required', new ValidClassSubjectCoefficient],
             'weekly_hours' => ['nullable', 'numeric', 'min:0', 'max:60'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -126,7 +127,7 @@ class SubjectWebController extends Controller
     public function updateClassSubject(Request $request, ClassSubject $classSubject): RedirectResponse
     {
         $data = $request->validate([
-            'coefficient' => ['required', 'numeric', 'min:0', 'max:99.99'],
+            'coefficient' => ['required', new ValidClassSubjectCoefficient],
             'weekly_hours' => ['nullable', 'numeric', 'min:0', 'max:60'],
             'is_active' => ['required', 'boolean'],
         ]);

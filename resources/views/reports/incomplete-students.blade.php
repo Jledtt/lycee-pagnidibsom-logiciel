@@ -9,6 +9,7 @@
     $issueOptions = [
         'gender' => 'Sexe non renseigné',
         'birth_date' => 'Date de naissance',
+        'birth_date_suspicious' => 'Dates de naissance suspectes',
         'contact' => 'Contact parent/tuteur',
         'photo' => 'Photo',
         'documents' => 'Pièces obligatoires',
@@ -75,6 +76,10 @@
         <div class="stat">
             <span>Contact absent</span>
             <strong>{{ $summary['missing_contact'] }}</strong>
+        </div>
+        <div class="stat">
+            <span>Naissance suspecte</span>
+            <strong>{{ $summary['suspicious_birth_date'] }}</strong>
         </div>
         <div class="stat">
             <span>Photo absente</span>

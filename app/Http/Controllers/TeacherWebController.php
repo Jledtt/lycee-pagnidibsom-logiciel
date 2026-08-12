@@ -9,6 +9,7 @@ use App\Models\SchoolSetting;
 use App\Models\Subject;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Rules\ValidClassSubjectCoefficient;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -112,7 +113,7 @@ class TeacherWebController extends Controller
         $data = $request->validate([
             'school_class_id' => ['required', Rule::exists('school_classes', 'id')->where('academic_year_id', $academicYear->id)],
             'subject_id' => ['required', Rule::exists('subjects', 'id')->where('status', 'active')],
-            'coefficient' => ['required', 'numeric', 'min:0.01', 'max:20'],
+            'coefficient' => ['required', new ValidClassSubjectCoefficient],
             'weekly_hours' => ['nullable', 'numeric', 'min:0.25', 'max:60'],
         ]);
 

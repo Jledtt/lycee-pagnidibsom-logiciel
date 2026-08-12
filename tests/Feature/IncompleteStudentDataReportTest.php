@@ -71,6 +71,40 @@ class IncompleteStudentDataReportTest extends TestCase
             ->assertDontSee($completeStudent->full_name);
     }
 
+    public function test_filter_can_show_students_with_a_suspicious_birth_date(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        [$class] = $this->classWithIncompleteStudent();
+
+        $student = Student::query()->create([
+            'matricule' => 'LPP-SUSPICIOUS-BIRTH-001',
+            'first_name' => 'Moussa',
+            'last_name' => 'Sawadogo',
+            'gender' => 'male',
+            'birth_date' => now()->subYears(2)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        Enrollment::query()->create([
+            'academic_year_id' => $class->academic_year_id,
+            'student_id' => $student->id,
+            'school_class_id' => $class->id,
+            'enrollment_date' => '2026-07-19',
+            'type' => 'new',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('reports.incomplete-students', [
+                'school_class_id' => $class->id,
+                'issue' => 'birth_date_suspicious',
+            ]))
+            ->assertOk()
+            ->assertSee($student->full_name)
+            ->assertSee('Date de naissance suspecte');
+    }
+
     public function test_comptable_cannot_open_incomplete_student_data_report(): void
     {
         $this->seed(DatabaseSeeder::class);

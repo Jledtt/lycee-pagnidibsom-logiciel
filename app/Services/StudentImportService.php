@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Rules\PlausibleStudentBirthDate;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -248,6 +249,8 @@ class StudentImportService
 
         if (($data['birth_date'] ?? null) === false) {
             $errors[] = 'Date de naissance invalide. Format conseillé : jj/mm/aaaa.';
+        } elseif (filled($data['birth_date'] ?? null) && ! PlausibleStudentBirthDate::isPlausible($data['birth_date'])) {
+            $errors[] = PlausibleStudentBirthDate::MESSAGE;
         }
 
         return $errors;

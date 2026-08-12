@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Student;
+use App\Rules\PlausibleStudentBirthDate;
 use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
 use Illuminate\Http\JsonResponse;
@@ -34,7 +35,7 @@ class StudentController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'gender' => ['nullable', 'in:male,female'],
-            'birth_date' => ['nullable', 'date'],
+            'birth_date' => ['nullable', 'date', new PlausibleStudentBirthDate],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],
             'health_notes' => ['nullable', 'string'],
@@ -66,7 +67,7 @@ class StudentController extends Controller
             'first_name' => ['sometimes', 'required', 'string', 'max:255'],
             'last_name' => ['sometimes', 'required', 'string', 'max:255'],
             'gender' => ['nullable', 'in:male,female'],
-            'birth_date' => ['nullable', 'date'],
+            'birth_date' => ['nullable', 'date', new PlausibleStudentBirthDate],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],
             'health_notes' => ['nullable', 'string'],

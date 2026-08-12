@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Rules\PlausibleStudentBirthDate;
 use App\Services\ReportFinancialDataService;
 use App\Services\RequiredStudentDocumentService;
 use App\Services\XlsxExportService;
@@ -504,6 +505,8 @@ class ReportWebController extends Controller
 
         if (blank($student->birth_date)) {
             $issues[] = ['key' => 'birth_date', 'label' => 'Date de naissance manquante'];
+        } elseif (! PlausibleStudentBirthDate::isPlausible($student->birth_date)) {
+            $issues[] = ['key' => 'birth_date_suspicious', 'label' => 'Date de naissance suspecte'];
         }
 
         if (! $hasContact) {
@@ -608,6 +611,7 @@ class ReportWebController extends Controller
             'incomplete' => $rows->where('is_complete', false)->count(),
             'missing_gender' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'gender'))->count(),
             'missing_birth_date' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'birth_date'))->count(),
+            'suspicious_birth_date' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'birth_date_suspicious'))->count(),
             'missing_contact' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'contact'))->count(),
             'missing_photo' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'photo'))->count(),
             'missing_documents' => $rows->filter(fn (array $row) => collect($row['issues'])->contains('key', 'documents'))->count(),

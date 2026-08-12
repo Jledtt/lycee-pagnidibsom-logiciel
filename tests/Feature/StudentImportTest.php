@@ -132,6 +132,35 @@ class StudentImportTest extends TestCase
         $this->assertSame(1, Student::query()->where('first_name', 'Awa')->where('last_name', 'Ouedraogo')->count());
     }
 
+    public function test_student_import_rejects_an_implausible_birth_date(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $user = $this->userWithRole('secretariat');
+        $file = UploadedFile::fake()->createWithContent('eleves.csv', implode("\n", [
+            'Nom;Prénom;Sexe;Date naissance',
+            'Kinda;Ali;Garçon;01/01/2024',
+        ]));
+
+        $this->actingAs($user)
+            ->post(route('students.import.preview'), ['students_file' => $file])
+            ->assertRedirect(route('students.import'));
+
+        $this->followingRedirects()
+            ->actingAs($user)
+            ->get(route('students.import'))
+            ->assertOk()
+            ->assertSee('Date de naissance invraisemblable, vérifie la saisie.');
+
+        $this->actingAs($user)
+            ->post(route('students.import.store'))
+            ->assertRedirect(route('students.index'));
+
+        $this->assertDatabaseMissing('students', [
+            'first_name' => 'Ali',
+            'last_name' => 'Kinda',
+        ]);
+    }
+
     public function test_secretariat_can_preview_and_import_text_pdf_students(): void
     {
         $this->seed(DatabaseSeeder::class);

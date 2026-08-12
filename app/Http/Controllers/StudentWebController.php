@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Rules\PlausibleStudentBirthDate;
 use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
 use App\Services\PaymentFinancialProfileService;
@@ -257,7 +258,7 @@ class StudentWebController extends Controller
             'first_name' => [$updating ? 'sometimes' : 'required', 'string', 'max:255'],
             'last_name' => [$updating ? 'sometimes' : 'required', 'string', 'max:255'],
             'gender' => ['nullable', 'in:male,female'],
-            'birth_date' => ['nullable', 'date'],
+            'birth_date' => ['nullable', 'date', new PlausibleStudentBirthDate],
             'birth_place' => ['nullable', 'string', 'max:255'],
             'desired_class' => ['nullable', 'string', 'max:255'],
             'origin_school' => ['nullable', 'string', 'max:255'],
