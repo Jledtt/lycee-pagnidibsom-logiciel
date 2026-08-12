@@ -11,6 +11,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Term;
 use App\Models\TermPeriod;
+use App\Services\BulletinDataService;
 use App\Services\CompetitionRankingService;
 use App\Services\GradeCalculationService;
 use App\Services\ReportCardService;
@@ -30,6 +31,7 @@ class ReportCardWebController extends Controller
         private readonly ReportCardService $reportCardService,
         private readonly TermPeriodService $termPeriodService,
         private readonly CompetitionRankingService $competitionRankingService,
+        private readonly BulletinDataService $bulletinDataService,
     ) {}
 
     public function index(Request $request): View
@@ -100,18 +102,13 @@ class ReportCardWebController extends Controller
     {
         $reportCard->load(['academicYear', 'term', 'student', 'schoolClass.level']);
 
-        $subjectRows = $this->subjectRows($reportCard);
         $filename = 'bulletin-'.Str::slug($reportCard->student->matricule.'-'.$reportCard->term->name).'.pdf';
         $annualSummary = $this->reportCardService->termPosition($reportCard->term) >= 3
             ? $this->reportCardService->annualSummariesForClass($reportCard->schoolClass)->get($reportCard->student_id)
             : null;
 
-        return Pdf::loadView('report-cards.pdf', [
-            'annualSummary' => $annualSummary,
-            'classStats' => $this->classStats($reportCard),
-            'reportCard' => $reportCard,
+        return Pdf::loadView('report-cards.pdf', $this->bulletinDataService->for($reportCard, $annualSummary) + [
             'school' => SchoolSetting::query()->first(),
-            'subjectRows' => $subjectRows,
         ])
             ->setPaper('a4')
             ->stream($filename);
@@ -140,12 +137,10 @@ class ReportCardWebController extends Controller
             ->orderBy('students.first_name')
             ->select('report_cards.*')
             ->get()
-            ->map(fn (ReportCard $reportCard) => [
-                'annualSummary' => $annualSummaries->get($reportCard->student_id),
-                'classStats' => $this->classStats($reportCard),
-                'reportCard' => $reportCard,
-                'subjectRows' => $this->subjectRows($reportCard),
-            ]);
+            ->map(fn (ReportCard $reportCard) => $this->bulletinDataService->for(
+                $reportCard,
+                $annualSummaries->get($reportCard->student_id),
+            ));
 
         $filename = 'bulletins-'.Str::slug($schoolClass->name.'-'.$term->name).'.pdf';
 
@@ -295,28 +290,6 @@ class ReportCardWebController extends Controller
             ->with('success', 'Bulletin mis à jour.');
     }
 
-    private function subjectRows(ReportCard $reportCard): Collection
-    {
-        return $this->gradeCalculationService
-            ->termSummary($reportCard->student, $reportCard->schoolClass, $reportCard->term)['rows']
-            ->sortBy(fn (array $row): string => $row['class_subject']->subject->name)
-            ->map(function (array $row) {
-                $classSubject = $row['class_subject'];
-
-                return [
-                    'subject' => $classSubject->subject,
-                    'coefficient' => $row['coefficient'],
-                    'devoir_average' => $row['devoir'],
-                    'composition_average' => $row['composition'],
-                    'average' => $row['general'],
-                    'points' => $row['points'],
-                    'appreciation' => $this->appreciation($row['general']),
-                    'teacher' => $classSubject->teacher?->name ?? '-',
-                ];
-            })
-            ->values();
-    }
-
     private function subjectRowsForStudent($student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): Collection
     {
         return $this->gradeCalculationService
@@ -335,23 +308,6 @@ class ReportCardWebController extends Controller
                 ];
             })
             ->values();
-    }
-
-    private function classStats(ReportCard $reportCard): array
-    {
-        $cards = ReportCard::query()
-            ->where('academic_year_id', $reportCard->academic_year_id)
-            ->where('term_id', $reportCard->term_id)
-            ->where('school_class_id', $reportCard->school_class_id)
-            ->whereNotNull('general_average')
-            ->get();
-        $extremes = $this->reportCardService->classExtremes($reportCard->term, $reportCard->schoolClass);
-
-        return [
-            'average' => $cards->isEmpty() ? null : round($cards->avg(fn (ReportCard $card) => (float) $card->general_average), 2),
-            'best' => $extremes['highest'],
-            'weakest' => $extremes['lowest'],
-        ];
     }
 
     private function appreciation(?float $average): string

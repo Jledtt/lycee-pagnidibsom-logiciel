@@ -7,12 +7,6 @@
     @include('report-cards._bulletin-styles')
 </head>
 <body>
-    @include('report-cards._bulletin', [
-        'annualSummary' => $annualSummary,
-        'classStats' => $classStats,
-        'reportCard' => $reportCard,
-        'school' => $school,
-        'subjectRows' => $subjectRows,
-    ])
+    @include('report-cards._bulletin')
 </body>
 </html>

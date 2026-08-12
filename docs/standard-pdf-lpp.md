@@ -50,6 +50,8 @@ recopiées en dur dans chaque modèle.
   `85 000 FCFA`.
 - Dates : `jj/mm/aaaa`.
 - Heures : `HH:mm`.
+- Notes, moyennes, points et bilans : point décimal et deux décimales, par
+  exemple `13.50`. Les coefficients entiers sont affichés sans décimales.
 - Les libellés techniques ne doivent jamais apparaître : `cash` devient
   `Espèces`, `valid` devient `Validé`, etc.
 

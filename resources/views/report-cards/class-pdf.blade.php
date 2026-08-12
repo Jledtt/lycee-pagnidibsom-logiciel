@@ -8,13 +8,7 @@
 </head>
 <body>
     @forelse ($items as $item)
-        @include('report-cards._bulletin', [
-            'annualSummary' => $item['annualSummary'],
-            'classStats' => $item['classStats'],
-            'reportCard' => $item['reportCard'],
-            'school' => $school,
-            'subjectRows' => $item['subjectRows'],
-        ])
+        @include('report-cards._bulletin', $item + ['school' => $school])
 
         @if (! $loop->last)
             <div class="page-break"></div>
