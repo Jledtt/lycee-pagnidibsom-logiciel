@@ -29,6 +29,35 @@
 
         .page:last-child { page-break-after: auto; }
 
+        .provisional-banner {
+            position: absolute;
+            z-index: 3;
+            top: 86px;
+            left: 36%;
+            width: 28%;
+            padding: 4px 6px;
+            background: #d9d9d9;
+            border: 1px solid #555;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .omitted-note {
+            position: absolute;
+            right: 8px;
+            bottom: 2px;
+            font-size: 10px;
+            font-style: italic;
+        }
+
+        .empty-summary {
+            padding-top: 310px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
         .header {
             height: 151px;
             position: relative;
@@ -374,6 +403,9 @@
         @endphp
 
         <div class="page">
+            @if (($item['is_empty'] ?? false) && ($includeEmpty ?? false))
+                <div class="provisional-banner">DOCUMENT PROVISOIRE — AUCUNE NOTE SAISIE</div>
+            @endif
             <div class="header">
                 <div class="header-logo">
                     @include('pdf.partials.logo-with-motto', [
@@ -591,7 +623,17 @@
                     </td>
                 </tr>
             </table>
+
+            @if ($loop->last && ($omittedCount ?? 0) > 0)
+                <div class="omitted-note">{{ $omittedCount }} candidat(s) sans notes non inclus</div>
+            @endif
         </div>
     @endforeach
+
+    @if ($items->isEmpty())
+        <div class="page empty-summary">
+            {{ $omittedCount ?? 0 }} candidat(s) sans notes non inclus
+        </div>
+    @endif
 </body>
 </html>

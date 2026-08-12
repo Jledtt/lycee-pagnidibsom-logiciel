@@ -175,6 +175,9 @@
                 <div class="empty">Crée ou sélectionne une session.</div>
             @else
                 @php($canEditExam = auth()->user()->can('mock_exams.manage') && (! $selectedExam->is_locked || auth()->user()->hasRole('admin')))
+                @if ($sessionYearWarning)
+                    <p class="notice">{{ $sessionYearWarning }}</p>
+                @endif
                 <div class="summary-row">
                     <div class="stat">
                         <span>Candidats</span>

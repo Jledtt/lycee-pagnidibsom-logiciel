@@ -66,6 +66,7 @@ class MockExamWebController extends Controller
             'exams' => $exams,
             'juryDecisionLabels' => $this->juryDecisionLabels(),
             'selectedExam' => $selectedExam,
+            'sessionYearWarning' => $selectedExam ? $this->sessionYearWarning($selectedExam) : null,
             'suggestedClassIds' => $suggestedClassIds,
             'terms' => $terms,
         ]);
@@ -407,20 +408,26 @@ class MockExamWebController extends Controller
             ->stream('saisie-notes-'.Str::slug($mockExam->name.'-'.$mockExamSubject->subject?->name).'.pdf');
     }
 
-    public function transcriptsPdf(MockExam $mockExam)
+    public function transcriptsPdf(Request $request, MockExam $mockExam)
     {
         $this->loadExamResults($mockExam);
+        $includeEmpty = $request->boolean('include_empty');
+        $allItems = $this->resultRows($mockExam);
+        $omittedCount = $includeEmpty ? 0 : $allItems->where('is_empty', true)->count();
+        $items = $includeEmpty ? $allItems : $allItems->where('is_empty', false)->values();
 
         return Pdf::loadView('mock-exams.transcripts-pdf', [
             'exam' => $mockExam,
-            'items' => $this->resultRows($mockExam),
+            'includeEmpty' => $includeEmpty,
+            'items' => $items,
+            'omittedCount' => $omittedCount,
             'school' => SchoolSetting::query()->first(),
         ])
             ->setPaper('a4', 'landscape')
             ->stream('releves-notes-'.Str::slug($mockExam->name).'.pdf');
     }
 
-    public function candidateTranscriptPdf(MockExam $mockExam, MockExamCandidate $mockExamCandidate)
+    public function candidateTranscriptPdf(Request $request, MockExam $mockExam, MockExamCandidate $mockExamCandidate)
     {
         abort_unless($mockExamCandidate->mock_exam_id === $mockExam->id, 404);
 
@@ -430,9 +437,17 @@ class MockExamWebController extends Controller
 
         abort_unless($item, 404);
 
+        if ($item['is_empty'] && ! $request->boolean('include_empty')) {
+            return redirect()
+                ->route('mock-exams.index', ['mock_exam_id' => $mockExam->id, 'section' => 'candidates'])
+                ->withErrors(['transcript' => 'Aucune note saisie pour ce candidat — relevé non généré.']);
+        }
+
         return Pdf::loadView('mock-exams.transcripts-pdf', [
             'exam' => $mockExam,
+            'includeEmpty' => $request->boolean('include_empty'),
             'items' => collect([$item]),
+            'omittedCount' => 0,
             'school' => SchoolSetting::query()->first(),
         ])
             ->setPaper('a4', 'landscape')
@@ -589,6 +604,7 @@ class MockExamWebController extends Controller
                     'decision' => $decision['label'],
                     'decision_key' => $decision['key'],
                     'missing' => $missing,
+                    'is_empty' => ! $scores->contains(fn (MockExamScore $score): bool => $score->score !== null),
                     'pv_number' => $pvNumbers->get($candidate->id),
                     'scores' => $scores,
                     'used_coefficients' => $usedCoefficients,
@@ -602,6 +618,17 @@ class MockExamWebController extends Controller
 
                 return $row;
             });
+    }
+
+    private function sessionYearWarning(MockExam $mockExam): ?string
+    {
+        $sessionYear = $mockExam->ends_on?->year ?? $mockExam->starts_on?->year;
+
+        if ($sessionYear === null || $sessionYear === now()->year) {
+            return null;
+        }
+
+        return "La session {$sessionYear} ne correspond pas à l’année en cours ".now()->year.' — vérifie le paramétrage.';
     }
 
     private function loadExamResults(MockExam $mockExam): void
