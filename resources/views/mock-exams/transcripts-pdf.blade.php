@@ -168,8 +168,11 @@
         .summary-round .panel { border-right: 1.35px solid #111; }
 
         .panel-title {
+            position: relative;
+            z-index: 2;
             height: 28px;
-            border-bottom: 1.35px solid #111;
+            border-bottom: 2px solid #111;
+            background: #fff;
             text-align: center;
             font-size: 13.4px;
             font-weight: bold;
@@ -292,12 +295,12 @@
             width: 100%;
         }
 
-        .first-round .panel > .score-table { top: 28px; }
+        .first-round .panel > .score-table { top: 30px; }
         .totals-table { top: 330px; }
         .average-table { top: 358px; }
         .decision-block { top: 386px; }
 
-        .control-top { top: 28px; height: 80px; }
+        .control-top { top: 30px; height: 78px; }
 
         .control-message {
             top: 108px;
@@ -336,7 +339,7 @@
             font-size: 14px;
         }
 
-        .summary-round .panel > .score-table { top: 28px; }
+        .summary-round .panel > .score-table { top: 30px; }
     </style>
 </head>
 <body>

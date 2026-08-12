@@ -56,4 +56,13 @@ class PdfLayoutConventionTest extends TestCase
         $this->assertStringContainsString('principal_name', $template);
         $this->assertStringNotContainsString('position: absolute', $template);
     }
+
+    public function test_mock_exam_transcript_separates_panel_titles_from_score_tables(): void
+    {
+        $template = (string) file_get_contents(resource_path('views/mock-exams/transcripts-pdf.blade.php'));
+
+        $this->assertStringContainsString('border-bottom: 2px solid #111', $template);
+        $this->assertStringContainsString('.first-round .panel > .score-table { top: 30px; }', $template);
+        $this->assertStringContainsString('.summary-round .panel > .score-table { top: 30px; }', $template);
+    }
 }
