@@ -26,7 +26,7 @@
             height: 450px;
             margin: 0 auto;
             overflow: hidden;
-            border: 1.5px solid #c9ccd3;
+            border: 1.5px solid #8b1e2d;
             border-radius: 22px;
             background: #fff;
         }
@@ -51,7 +51,7 @@
             left: 0;
             width: 292px;
             height: 58px;
-            background: #2057a4;
+            background: #8b1e2d;
         }
 
         .year-value {
@@ -60,27 +60,38 @@
             right: 0;
             width: 184px;
             height: 58px;
-            background: #9f1d2e;
+            background: #e6a817;
+            color: #1d1718;
         }
 
         .school-mark {
             position: absolute;
-            top: 13px;
-            left: 18px;
-            width: 208px;
-            color: #263f73;
+            top: 7px;
+            left: 14px;
+            width: 216px;
+            color: #8b1e2d;
             font-size: 11px;
             font-weight: bold;
             line-height: 1.25;
             text-align: center;
-            text-transform: uppercase;
         }
 
-        .school-mark img {
-            width: 48px;
-            height: 48px;
-            margin-right: 7px;
+        .brand-logo,
+        .brand-short-name {
+            display: inline-block;
             vertical-align: middle;
+        }
+
+        .brand-logo {
+            width: 74px;
+        }
+
+        .brand-short-name {
+            max-width: 124px;
+            margin-left: 4px;
+            color: #8b1e2d;
+            font-size: 14px;
+            text-align: left;
         }
 
         .photo-box {
@@ -90,7 +101,7 @@
             width: 244px;
             height: 322px;
             overflow: hidden;
-            background: #f1f2f4;
+            background: #f8edf0;
             color: #767b85;
             font-size: 19px;
             font-weight: bold;
@@ -156,7 +167,8 @@
             height: 46px;
             overflow: hidden;
             padding: 0 18px;
-            background: #243b78;
+            border-top: 4px solid #e6a817;
+            background: #8b1e2d;
             color: #fff;
             font-size: 19px;
             font-weight: bold;
@@ -168,16 +180,17 @@
     </style>
 </head>
 <body>
-    @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
-    @php($logoFullPath = public_path($logoPath))
-
     <div class="sheet">
         <div class="card">
             <div class="school-mark">
-                @if (file_exists($logoFullPath))
-                    <img src="{{ $logoFullPath }}" alt="">
-                @endif
-                {{ $school?->short_name ?: 'LPP' }}
+                <div class="brand-logo">
+                    @include('pdf.partials.logo-with-motto', [
+                        'school' => $school,
+                        'logoWidth' => 46,
+                        'mottoSize' => 6,
+                    ])
+                </div>
+                <div class="brand-short-name">{{ $school?->short_name ?: 'LPP' }}</div>
             </div>
 
             <div class="year-banner">
