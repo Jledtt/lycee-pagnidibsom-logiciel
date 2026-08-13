@@ -228,6 +228,7 @@
         .summary-round .score-table .points { width: 18%; }
 
         .totals-table {
+            border-top: 2px solid #111;
             table-layout: fixed;
             font-size: 12px;
             font-weight: bold;
@@ -242,9 +243,9 @@
         }
 
         .totals-table td:last-child { border-right: 0; }
-        .totals-label { width: 74%; }
+        .totals-label { width: 73%; }
         .totals-coefficient { width: 10%; text-align: center; }
-        .totals-points { width: 16%; text-align: center; }
+        .totals-points { width: 17%; text-align: center; }
 
         .average-table {
             table-layout: fixed;
@@ -260,6 +261,9 @@
         }
 
         .average-table td:last-child { border-right: 0; }
+        .average-label { width: 73%; }
+        .average-value { width: 10%; text-align: center; }
+        .average-scale { width: 17%; text-align: center; }
 
         .decision-block {
             height: 129px;
@@ -509,9 +513,9 @@
 
                             <table class="average-table">
                                 <tr>
-                                    <td style="width:74%;">MOYENNE PREMIER TOUR</td>
-                                    <td style="width:16%; text-align:center;">{{ $formatNumber($item['average']) }}</td>
-                                    <td style="width:10%; text-align:center;">20</td>
+                                    <td class="average-label">MOYENNE PREMIER TOUR</td>
+                                    <td class="average-value">{{ $formatNumber($item['average']) }}</td>
+                                    <td class="average-scale">20</td>
                                 </tr>
                             </table>
 

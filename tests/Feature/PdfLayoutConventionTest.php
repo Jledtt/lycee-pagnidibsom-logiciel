@@ -64,5 +64,10 @@ class PdfLayoutConventionTest extends TestCase
         $this->assertStringContainsString('border-bottom: 2px solid #111', $template);
         $this->assertStringContainsString('.first-round .panel > .score-table { top: 30px; }', $template);
         $this->assertStringContainsString('.summary-round .panel > .score-table { top: 30px; }', $template);
+        $this->assertStringContainsString('border-top: 2px solid #111', $template);
+        $this->assertStringContainsString('.totals-label { width: 73%; }', $template);
+        $this->assertStringContainsString('.average-label { width: 73%; }', $template);
+        $this->assertStringContainsString('.average-value { width: 10%; text-align: center; }', $template);
+        $this->assertStringContainsString('.average-scale { width: 17%; text-align: center; }', $template);
     }
 }
