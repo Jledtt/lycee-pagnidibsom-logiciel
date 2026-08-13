@@ -18,14 +18,18 @@ class StudentCardWebController extends Controller
         $student->load(['guardians', 'documents']);
         $enrollment = $this->currentEnrollment($student, $academicYear);
         $school = SchoolSetting::query()->first();
+        $fatherGuardian = $student->guardians->firstWhere('pivot.relationship', 'father')
+            ?? $student->guardians->firstWhere('pivot.relationship', 'tutor');
+        $motherGuardian = $student->guardians->firstWhere('pivot.relationship', 'mother');
         $filename = 'carte-scolaire-'.Str::slug($student->matricule.'-'.$student->full_name).'.pdf';
 
         return Pdf::loadView('students.school-card-pdf', [
             'academicYear' => $academicYear,
             'className' => $enrollment?->schoolClass?->name ?? $student->desired_class,
             'emergencyContact' => $this->emergencyContact($student),
+            'fatherName' => $fatherGuardian?->full_name,
+            'motherName' => $motherGuardian?->full_name,
             'photoPath' => $this->photoPath($student),
-            'principalName' => $school?->principal_name ?: 'Yamdaogo TINTILA',
             'school' => $school,
             'student' => $student,
         ])

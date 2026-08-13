@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
+use App\Models\Guardian;
 use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
 class StudentSchoolCardTest extends TestCase
@@ -27,6 +29,19 @@ class StudentSchoolCardTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', $response->getContent());
+
+        $text = (new Parser)->parseContent($response->getContent())->getText();
+        $this->assertStringContainsString('Année scolaire', $text);
+        $this->assertStringContainsString('Classe', $text);
+        $this->assertStringContainsString('N° Mle', $text);
+        $this->assertStringContainsString('Père', $text);
+        $this->assertStringContainsString('Mère', $text);
+        $this->assertStringContainsString('Urgence', $text);
+        $this->assertStringContainsString('Nana', $text);
+        $this->assertStringContainsString('3e A', $text);
+        $this->assertStringContainsString('LPP-2026-9100', $text);
+        $this->assertStringContainsString('Adama Nana', $text);
+        $this->assertStringContainsString('Aïssata Kaboré', $text);
     }
 
     public function test_comptable_cannot_generate_student_school_card_pdf(): void
@@ -71,6 +86,31 @@ class StudentSchoolCardTest extends TestCase
             'enrollment_date' => '2026-07-18',
             'type' => 'new',
             'status' => 'active',
+        ]);
+
+        $father = Guardian::query()->create([
+            'first_name' => 'Adama',
+            'last_name' => 'Nana',
+            'phone_primary' => '70112233',
+            'status' => 'active',
+        ]);
+        $mother = Guardian::query()->create([
+            'first_name' => 'Aïssata',
+            'last_name' => 'Kaboré',
+            'phone_primary' => '70445566',
+            'status' => 'active',
+        ]);
+        $student->guardians()->attach($father->id, [
+            'relationship' => 'father',
+            'is_primary' => true,
+            'can_receive_sms' => true,
+            'can_pickup_child' => false,
+        ]);
+        $student->guardians()->attach($mother->id, [
+            'relationship' => 'mother',
+            'is_primary' => false,
+            'can_receive_sms' => true,
+            'can_pickup_child' => false,
         ]);
 
         return $student;

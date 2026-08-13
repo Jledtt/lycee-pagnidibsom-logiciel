@@ -5,204 +5,230 @@
     <title>Carte scolaire</title>
     <style>
         @page { margin: 18px; }
+
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
-            color: #111;
+            color: #101010;
             font-family: "DejaVu Sans", sans-serif;
             background: #fff;
         }
+
         .sheet {
             width: 100%;
-            height: 100%;
-            padding-top: 20px;
+            padding-top: 26px;
         }
+
         .card {
             position: relative;
             width: 720px;
-            height: 430px;
+            height: 450px;
             margin: 0 auto;
-            border: 2px solid #111;
             overflow: hidden;
+            border: 1.5px solid #c9ccd3;
+            border-radius: 22px;
             background: #fff;
         }
-        .top-title {
-            color: #f28c1d;
-            text-align: center;
-            font-size: 28px;
-            line-height: 1;
-            font-weight: 900;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            padding-top: 14px;
-        }
-        .school-row {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: -2px;
-        }
-        .school-row td { border: 0; vertical-align: middle; }
-        .logo-cell { width: 116px; text-align: center; }
-        .logo {
-            width: 82px;
-            height: 82px;
-            object-fit: contain;
-        }
-        .school-info {
-            text-align: center;
-            font-size: 14px;
-            line-height: 1.28;
-            font-weight: 900;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-        .separator {
-            height: 0;
-            border-top: 3px solid #111;
-            margin-top: 8px;
-        }
-        .content {
-            position: relative;
-            padding: 16px 28px 48px;
-            height: 214px;
-        }
-        .watermark {
+
+        .year-banner {
             position: absolute;
-            left: 255px;
-            top: 55px;
-            width: 185px;
-            height: 185px;
-            opacity: .08;
+            top: 0;
+            right: 0;
+            width: 476px;
+            height: 58px;
+            color: #fff;
+            font-size: 23px;
+            font-weight: bold;
+            line-height: 48px;
+            padding-top: 4px;
+            text-align: center;
         }
-        .info {
-            width: 500px;
-            font-size: 21px;
-            line-height: 1.45;
-            font-weight: 900;
+
+        .year-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 292px;
+            height: 58px;
+            background: #2057a4;
         }
-        .info .label { display: inline-block; min-width: 160px; }
+
+        .year-value {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 184px;
+            height: 58px;
+            background: #9f1d2e;
+        }
+
+        .school-mark {
+            position: absolute;
+            top: 13px;
+            left: 18px;
+            width: 208px;
+            color: #263f73;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1.25;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .school-mark img {
+            width: 48px;
+            height: 48px;
+            margin-right: 7px;
+            vertical-align: middle;
+        }
+
         .photo-box {
             position: absolute;
-            right: 24px;
-            top: 18px;
-            width: 142px;
-            height: 172px;
-            border: 2px solid #111;
-            text-align: center;
-            font-size: 18px;
+            left: 0;
+            bottom: 46px;
+            width: 244px;
+            height: 322px;
+            overflow: hidden;
+            background: #f1f2f4;
+            color: #767b85;
+            font-size: 19px;
             font-weight: bold;
-            line-height: 172px;
+            line-height: 1;
+            text-align: center;
         }
+
         .photo-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .signature {
+
+        .photo-placeholder {
             position: absolute;
-            right: 185px;
-            bottom: 48px;
-            width: 190px;
-            text-align: center;
-            font-size: 17px;
-            font-weight: 900;
+            top: 145px;
+            left: 0;
+            width: 100%;
+            line-height: 1.2;
         }
-        .stamp {
-            margin: 0 auto 6px;
-            width: 86px;
-            height: 62px;
-            border: 3px solid #1c4774;
-            border-radius: 50%;
-            color: #1c4774;
-            font-size: 11px;
-            line-height: 1.15;
-            padding-top: 24px;
-            transform: rotate(-10deg);
+
+        .identity {
+            position: absolute;
+            top: 70px;
+            left: 266px;
+            right: 20px;
+            height: 326px;
         }
-        .bottom {
+
+        .identity-row {
+            min-height: 39px;
+            font-size: 19px;
+            font-weight: bold;
+            line-height: 1.18;
+        }
+
+        .identity-row--lead {
+            min-height: 37px;
+            font-size: 21px;
+        }
+
+        .identity-label {
+            display: inline-block;
+            width: 118px;
+            font-family: Georgia, "DejaVu Serif", serif;
+            font-weight: bold;
+        }
+
+        .identity-value {
+            display: inline-block;
+            max-width: 305px;
+            vertical-align: top;
+        }
+
+        .identity-value--uppercase { text-transform: uppercase; }
+        .identity-value--compact { font-size: 15px; }
+
+        .emergency {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
-            height: 36px;
-            padding: 0 24px;
-            background: #f28c1d;
-            border-top: 2px solid #e07910;
-            font-size: 18px;
-            line-height: 36px;
-            font-weight: 900;
+            height: 46px;
+            overflow: hidden;
+            padding: 0 18px;
+            background: #243b78;
+            color: #fff;
+            font-size: 19px;
+            font-weight: bold;
+            line-height: 34px;
+            padding-top: 4px;
+            text-align: center;
             white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    @php($school = $school ?? $schoolSettings)
     @php($logoPath = $school?->logo_path ?: 'images/logo-pagnidibsom.png')
     @php($logoFullPath = public_path($logoPath))
 
     <div class="sheet">
         <div class="card">
-            <div class="top-title">{{ str($school?->school_name ?? 'Lycée Privé Pagnidibsom')->upper() }}</div>
-            <table class="school-row">
-                <tr>
-                    <td class="logo-cell">
-                        @if (file_exists($logoFullPath))
-                            @include('pdf.partials.logo-with-motto', [
-                                'logoPath' => $logoPath,
-                                'mottoSize' => 7,
-                            ])
-                        @endif
-                    </td>
-                    <td class="school-info">
-                        Enseignement technique et general<br>
-                        Autorisation : N° 2021-01552/MENAPLN/SG/DEP<br>
-                        {{ $school?->postal_box ?? '04 BP 8825' }} {{ str($school?->city ?? 'Ouagadougou')->upper() }} 04-BF<br>
-                        Email: {{ $school?->email ?? 'lyceepagnidibsom@gmail.com' }}<br>
-                        Tel: {{ $school?->phone ?? '+226 72 81 61 59 / 78 42 62 06' }}
-                    </td>
-                    <td class="logo-cell">
-                        @if (file_exists($logoFullPath))
-                            @include('pdf.partials.logo-with-motto', [
-                                'logoPath' => $logoPath,
-                                'mottoSize' => 7,
-                            ])
-                        @endif
-                    </td>
-                </tr>
-            </table>
-
-            <div class="separator"></div>
-
-            <div class="content">
+            <div class="school-mark">
                 @if (file_exists($logoFullPath))
-                    <img class="watermark" src="{{ $logoFullPath }}" alt="">
+                    <img src="{{ $logoFullPath }}" alt="">
                 @endif
+                {{ $school?->short_name ?: 'LPP' }}
+            </div>
 
-                <div class="info">
-                    <div><span class="label">Nom:</span> {{ str($student->last_name)->upper() }}</div>
-                    <div><span class="label">Prénom(s):</span> {{ $student->first_name }}</div>
-                    <div><span class="label">Ne(e) le:</span> {{ $student->birth_date?->format('d/m/Y') ?? '-' }}</div>
-                    <div><span class="label">A:</span> {{ $student->birth_place ?? '-' }}</div>
-                    <div><span class="label">Classe:</span> {{ $className ?? '-' }}</div>
-                    <div><span class="label">Année scolaire:</span> {{ $academicYear?->name ?? '-' }}</div>
+            <div class="year-banner">
+                <div class="year-label">Année scolaire</div>
+                <div class="year-value">{{ $academicYear?->name ?? '-' }}</div>
+            </div>
+
+            <div class="photo-box">
+                @if ($photoPath && file_exists($photoPath))
+                    <img src="{{ $photoPath }}" alt="Photo de l'élève">
+                @else
+                    <div class="photo-placeholder">PHOTO</div>
+                @endif
+            </div>
+
+            <div class="identity">
+                <div class="identity-row identity-row--lead">
+                    <span class="identity-label">Classe</span>:
+                    <span class="identity-value">{{ $className ?? '-' }}</span>
                 </div>
-
-                <div class="photo-box">
-                    @if ($photoPath && file_exists($photoPath))
-                        <img src="{{ $photoPath }}" alt="Photo">
-                    @else
-                        PHOTO
-                    @endif
+                <div class="identity-row identity-row--lead">
+                    <span class="identity-label">N° Mle</span>:
+                    <span class="identity-value">{{ $student->matricule }}</span>
                 </div>
-
-                <div class="signature">
-                    <div class="stamp">{{ $school?->principal_title ?? 'Le Proviseur' }}</div>
-                    {{ $principalName }}
+                <div class="identity-row">
+                    <span class="identity-label">Nom</span>:
+                    <span class="identity-value identity-value--uppercase {{ mb_strlen($student->last_name) > 24 ? 'identity-value--compact' : '' }}">{{ $student->last_name }}</span>
+                </div>
+                <div class="identity-row">
+                    <span class="identity-label">Prénom(s)</span>:
+                    <span class="identity-value {{ mb_strlen($student->first_name) > 24 ? 'identity-value--compact' : '' }}">{{ $student->first_name }}</span>
+                </div>
+                <div class="identity-row">
+                    <span class="identity-label">Né(e) le</span>:
+                    <span class="identity-value">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</span>
+                </div>
+                <div class="identity-row">
+                    <span class="identity-label">À</span>:
+                    <span class="identity-value">{{ $student->birth_place ?: '-' }}</span>
+                </div>
+                <div class="identity-row">
+                    <span class="identity-label">Père</span>:
+                    <span class="identity-value {{ mb_strlen($fatherName ?: '') > 24 ? 'identity-value--compact' : '' }}">{{ $fatherName ?: '-' }}</span>
+                </div>
+                <div class="identity-row">
+                    <span class="identity-label">Mère</span>:
+                    <span class="identity-value {{ mb_strlen($motherName ?: '') > 24 ? 'identity-value--compact' : '' }}">{{ $motherName ?: '-' }}</span>
                 </div>
             </div>
 
-            <div class="bottom">
-                Personne a prevenir en cas de besoin: {{ $emergencyContact }}
-            </div>
+            <div class="emergency">Urgence : {{ $emergencyContact }}</div>
         </div>
     </div>
 </body>
