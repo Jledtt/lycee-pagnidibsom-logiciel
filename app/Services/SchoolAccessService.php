@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\AttendanceSession;
 use App\Models\ClassSubject;
 use App\Models\Student;
+use App\Models\StudentExitAuthorization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -124,6 +125,29 @@ class SchoolAccessService
     public function canAccessAttendanceSession(User $user, AttendanceSession $session): bool
     {
         return $this->canAccessAttendanceClass($user, (int) $session->school_class_id);
+    }
+
+    public function canAccessStudentExitAuthorization(User $user, StudentExitAuthorization $authorization): bool
+    {
+        if ($user->hasAnyRole(['admin', 'direction', 'secretariat', 'surveillant'])) {
+            return true;
+        }
+
+        return $user->hasRole('enseignant')
+            && $this->canAccessAttendanceClass($user, (int) $authorization->school_class_id);
+    }
+
+    public function scopeStudentExitAuthorizations(Builder $query, User $user): Builder
+    {
+        if ($user->hasAnyRole(['admin', 'direction', 'secretariat', 'surveillant'])) {
+            return $query;
+        }
+
+        if (! $user->hasRole('enseignant')) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereIn('student_exit_authorizations.school_class_id', $this->teacherClassIdsQuery($user));
     }
 
     public function scopeClasses(Builder $query, User $user, string $area): Builder

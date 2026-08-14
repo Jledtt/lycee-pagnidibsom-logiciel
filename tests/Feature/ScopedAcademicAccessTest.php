@@ -13,6 +13,7 @@ use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentDocument;
+use App\Models\StudentExitAuthorization;
 use App\Models\Subject;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -173,6 +174,57 @@ class ScopedAcademicAccessTest extends TestCase
             ->assertSee($context['otherClass']->name);
     }
 
+    public function test_teacher_exit_authorizations_are_limited_to_assigned_classes(): void
+    {
+        $context = $this->academicContext();
+        $assignedAuthorization = $this->exitAuthorization(
+            $context['academicYear'],
+            $context['assignedClass'],
+            $context['assignedStudent'],
+            $context['teacher'],
+            'Sortie classe autorisée',
+        );
+        $otherAuthorization = $this->exitAuthorization(
+            $context['academicYear'],
+            $context['otherClass'],
+            $context['otherStudent'],
+            $context['otherTeacher'],
+            'Sortie classe interdite',
+        );
+
+        $this->actingAs($context['teacher'])
+            ->get(route('exit-authorizations.index'))
+            ->assertOk()
+            ->assertSee($assignedAuthorization->reason)
+            ->assertDontSee($otherAuthorization->reason);
+
+        $this->actingAs($context['teacher'])
+            ->get(route('exit-authorizations.show', $assignedAuthorization))
+            ->assertOk();
+
+        $this->actingAs($context['teacher'])
+            ->get(route('exit-authorizations.show', $otherAuthorization))
+            ->assertNotFound();
+
+        $this->actingAs($context['teacher'])
+            ->get(route('exit-authorizations.create', ['student_id' => $context['otherStudent']->id]))
+            ->assertNotFound();
+
+        $this->actingAs($context['teacher'])
+            ->post(route('exit-authorizations.store'), [
+                'student_id' => $context['otherStudent']->id,
+                'document_date' => now()->toDateString(),
+                'reason' => 'Tentative hors périmètre',
+            ])
+            ->assertNotFound();
+
+        $this->actingAs($this->userWithRole('surveillant'))
+            ->get(route('exit-authorizations.index'))
+            ->assertOk()
+            ->assertSee($assignedAuthorization->reason)
+            ->assertSee($otherAuthorization->reason);
+    }
+
     public function test_sanctum_student_endpoints_apply_scope_and_safe_fields(): void
     {
         $context = $this->academicContext();
@@ -283,6 +335,7 @@ class ScopedAcademicAccessTest extends TestCase
             'term',
             'assessmentType',
             'teacher',
+            'otherTeacher',
             'assignedClass',
             'otherClass',
             'assignedSubject',
@@ -375,6 +428,23 @@ class ScopedAcademicAccessTest extends TestCase
         ]);
 
         return $session;
+    }
+
+    private function exitAuthorization(
+        AcademicYear $year,
+        SchoolClass $class,
+        Student $student,
+        User $creator,
+        string $reason,
+    ): StudentExitAuthorization {
+        return StudentExitAuthorization::query()->create([
+            'academic_year_id' => $year->id,
+            'student_id' => $student->id,
+            'school_class_id' => $class->id,
+            'document_date' => now()->toDateString(),
+            'reason' => $reason,
+            'created_by' => $creator->id,
+        ]);
     }
 
     private function userWithRole(string $role): User

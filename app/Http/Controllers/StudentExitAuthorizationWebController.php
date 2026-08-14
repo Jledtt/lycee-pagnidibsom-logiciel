@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentExitAuthorization;
+use App\Services\SchoolAccessService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,11 +16,16 @@ use Illuminate\View\View;
 
 class StudentExitAuthorizationWebController extends Controller
 {
+    public function __construct(private readonly SchoolAccessService $access) {}
+
     public function index(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
 
-        $authorizations = StudentExitAuthorization::query()
+        $authorizations = $this->access->scopeStudentExitAuthorizations(
+            StudentExitAuthorization::query(),
+            $request->user(),
+        )
             ->with(['student', 'schoolClass', 'creator'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->when($request->string('search')->toString(), function ($query, string $search) {
@@ -43,10 +49,15 @@ class StudentExitAuthorizationWebController extends Controller
 
     public function create(Request $request): View
     {
+        $students = $this->enrolledStudents($request);
+        $selectedStudentId = $request->integer('student_id');
+
+        abort_if($selectedStudentId > 0 && ! $students->contains('id', $selectedStudentId), 404);
+
         return view('exit-authorizations.create', [
             'academicYear' => $this->activeAcademicYear(),
-            'students' => $this->enrolledStudents(),
-            'selectedStudentId' => $request->integer('student_id'),
+            'students' => $students,
+            'selectedStudentId' => $selectedStudentId,
         ]);
     }
 
@@ -74,6 +85,12 @@ class StudentExitAuthorizationWebController extends Controller
                 ->withInput();
         }
 
+        abort_unless(
+            $this->access->canAccessAttendanceClass($request->user(), (int) $enrollment->school_class_id)
+                || $request->user()->hasAnyRole(['admin', 'direction', 'secretariat']),
+            404,
+        );
+
         $authorization = StudentExitAuthorization::query()->create([
             ...$data,
             'academic_year_id' => $academicYear->id,
@@ -88,6 +105,8 @@ class StudentExitAuthorizationWebController extends Controller
 
     public function show(StudentExitAuthorization $exitAuthorization): View
     {
+        $this->authorize('view', $exitAuthorization);
+
         $exitAuthorization->load(['student', 'schoolClass', 'academicYear', 'creator']);
 
         return view('exit-authorizations.show', [
@@ -98,6 +117,8 @@ class StudentExitAuthorizationWebController extends Controller
 
     public function pdf(StudentExitAuthorization $exitAuthorization)
     {
+        $this->authorize('view', $exitAuthorization);
+
         $exitAuthorization->load(['student', 'schoolClass', 'academicYear', 'creator']);
         $filename = 'autorisation-sortie-'.Str::slug($exitAuthorization->student->matricule.'-'.$exitAuthorization->document_date?->format('Y-m-d')).'.pdf';
 
@@ -123,11 +144,11 @@ class StudentExitAuthorizationWebController extends Controller
         return $academicYear;
     }
 
-    private function enrolledStudents()
+    private function enrolledStudents(Request $request)
     {
         $academicYear = $this->activeAcademicYear();
 
-        return Student::query()
+        return $this->access->scopeStudents(Student::query(), $request->user())
             ->where('status', 'active')
             ->whereHas('enrollments', function ($query) use ($academicYear) {
                 $query->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id))
