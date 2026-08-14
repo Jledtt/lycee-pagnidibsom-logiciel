@@ -23,6 +23,7 @@ class PaymentLine extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    /** @return BelongsTo<FeeType, $this> */
     public function feeType(): BelongsTo
     {
         return $this->belongsTo(FeeType::class);

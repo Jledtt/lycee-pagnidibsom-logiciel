@@ -105,7 +105,7 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
     }
 
-    public function test_direction_can_consult_reports_without_operational_mutations(): void
+    public function test_direction_has_the_validated_global_access(): void
     {
         $this->seed(DatabaseSeeder::class);
         $user = $this->userWithRole('direction');
@@ -114,13 +114,12 @@ class PermissionMatrixTest extends TestCase
         $this->actingAs($user)->get(route('reports.payment-situation'))->assertOk();
         $this->actingAs($user)->get(route('report-cards.index'))->assertOk();
         $this->actingAs($user)->get(route('activity-logs.index'))->assertOk();
-
-        $this->actingAs($user)->get(route('payments.create'))->assertForbidden();
+        $this->actingAs($user)->get(route('payments.create'))->assertOk();
         $this->actingAs($user)->get(route('grades.index'))->assertOk();
-        $this->actingAs($user)->get(route('staff.index'))->assertForbidden();
-        $this->actingAs($user)->get(route('settings.edit'))->assertForbidden();
-        $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
-        $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('staff.index'))->assertOk();
+        $this->actingAs($user)->get(route('settings.edit'))->assertOk();
+        $this->actingAs($user)->get(route('settings.backups.index'))->assertOk();
+        $this->actingAs($user)->get(route('staff.roles.index'))->assertOk();
     }
 
     public function test_roles_screen_explains_what_roles_can_view_modify_and_print(): void

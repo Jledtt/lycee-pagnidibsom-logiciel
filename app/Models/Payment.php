@@ -35,6 +35,7 @@ class Payment extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
@@ -45,6 +46,7 @@ class Payment extends Model
         return $this->belongsTo(Enrollment::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
@@ -56,6 +58,7 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'cancelled_by');
     }
 
+    /** @return HasMany<PaymentLine, $this> */
     public function lines(): HasMany
     {
         return $this->hasMany(PaymentLine::class);

@@ -174,7 +174,7 @@ class StudentDocumentTest extends TestCase
         ]);
     }
 
-    public function test_direction_cannot_upload_student_document(): void
+    public function test_direction_can_upload_student_document(): void
     {
         Storage::fake('public');
         $this->seed(DatabaseSeeder::class);
@@ -188,7 +188,14 @@ class StudentDocumentTest extends TestCase
                 'status' => 'received',
                 'document_file' => UploadedFile::fake()->create('acte.pdf', 128, 'application/pdf'),
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('students.show', $student));
+
+        $this->assertDatabaseHas('student_documents', [
+            'student_id' => $student->id,
+            'name' => 'Acte de naissance',
+            'document_type' => 'birth_certificate',
+            'status' => 'received',
+        ]);
     }
 
     private function student(): Student
