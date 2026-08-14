@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -60,7 +61,11 @@ class StudentCardWebController extends Controller
         }
 
         $guardian = $student->guardians
-            ->sortByDesc(fn ($guardian) => (bool) $guardian->pivot?->is_primary)
+            ->sortByDesc(function ($guardian): bool {
+                $pivot = $guardian->getRelation('pivot');
+
+                return $pivot instanceof Pivot && (bool) $pivot->getAttribute('is_primary');
+            })
             ->first(fn ($guardian) => filled($guardian->phone_primary));
 
         return $guardian

@@ -37,26 +37,31 @@ class SchoolClass extends Model
         return $this->belongsTo(AcademicTrack::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function mainTeacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'main_teacher_id');
     }
 
+    /** @return HasMany<Enrollment, $this> */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }
 
+    /** @return HasMany<ClassSubject, $this> */
     public function classSubjects(): HasMany
     {
         return $this->hasMany(ClassSubject::class);
     }
 
+    /** @return HasMany<Assessment, $this> */
     public function assessments(): HasMany
     {
         return $this->hasMany(Assessment::class);
     }
 
+    /** @return HasMany<Timetable, $this> */
     public function timetables(): HasMany
     {
         return $this->hasMany(Timetable::class);

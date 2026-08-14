@@ -21,6 +21,7 @@ use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -214,7 +215,7 @@ class GradeWebController extends Controller
             ->stream($filename);
     }
 
-    public function paperSheetPdf(Assessment $assessment)
+    public function paperSheetPdf(Assessment $assessment): Response
     {
         $this->authorize('view', $assessment);
 
@@ -235,7 +236,7 @@ class GradeWebController extends Controller
             ->first();
         $teacher = $classSubject?->teacher;
 
-        if (! $teacher && $assessment->teacher?->hasRole('teacher')) {
+        if (! $teacher && $assessment->teacher?->hasRole('enseignant')) {
             $teacher = $assessment->teacher;
         }
 
@@ -334,9 +335,12 @@ class GradeWebController extends Controller
             ->where('subject_id', $assessment->subject_id)
             ->value('coefficient') ?? 0);
         $rows = $students->map(function (Student $student) use ($assessment, $assessments, $coefficient) {
-            $grades = $assessments->mapWithKeys(fn (Assessment $item) => [
-                $item->id => $item->grades->firstWhere('student_id', $student->id),
-            ]);
+            $grades = [];
+
+            foreach ($assessments as $item) {
+                $grades[$item->id] = $item->grades->firstWhere('student_id', $student->id);
+            }
+
             $average = $this->gradeCalculationService->subjectAverage(
                 $student,
                 $assessment->term,

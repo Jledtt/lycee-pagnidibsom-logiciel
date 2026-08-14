@@ -8,7 +8,6 @@ use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Term;
-use Illuminate\Support\Collection;
 
 class GradeCalculationService
 {
@@ -105,7 +104,7 @@ class GradeCalculationService
 
     /**
      * @return array{
-     *     rows: Collection<int, array{class_subject: ClassSubject, devoir: ?float, composition: ?float, general: ?float, coefficient: float, points: ?float}>,
+     *     rows: list<array{class_subject: ClassSubject, devoir: ?float, composition: ?float, general: ?float, coefficient: float, points: ?float}>,
      *     total_coefficients: float,
      *     total_points: float,
      *     general_average: ?float
@@ -119,44 +118,29 @@ class GradeCalculationService
             ->where('is_active', true)
             ->get();
 
-        $rows = $classSubjects->map(function (ClassSubject $classSubject) use ($student, $schoolClass, $term, $termPeriodId): array {
-            $details = $this->subjectAverageDetails(
+        $rows = $classSubjects->toBase()->map(
+            fn (ClassSubject $classSubject): array => $this->termRow(
+                $classSubject,
                 $student,
+                $schoolClass,
                 $term,
-                $classSubject->subject_id,
-                $schoolClass->id,
                 $termPeriodId,
-            );
-            $coefficient = (float) $classSubject->coefficient;
+            )
+        )->values()->all();
 
-            return [
-                'class_subject' => $classSubject,
-                'devoir' => $details['devoir'],
-                'composition' => $details['composition'],
-                'general' => $details['general'],
-                'coefficient' => $coefficient,
-                'points' => $details['general'] === null ? null : round($details['general'] * $coefficient, 2),
-            ];
-        });
-
-        $ratedRows = $rows->whereNotNull('general');
+        $ratedRows = collect($rows)->whereNotNull('general');
         $coefficients = (float) $ratedRows->sum('coefficient');
         $totalPoints = round((float) $ratedRows->sum('points'), 2);
 
-        if ($coefficients <= 0) {
-            return [
-                'rows' => $rows,
-                'total_coefficients' => 0.0,
-                'total_points' => 0.0,
-                'general_average' => null,
-            ];
-        }
+        $generalAverage = $coefficients <= 0
+            ? null
+            : round($totalPoints / $coefficients, 2);
 
         return [
             'rows' => $rows,
             'total_coefficients' => $coefficients,
             'total_points' => $totalPoints,
-            'general_average' => round($totalPoints / $coefficients, 2),
+            'general_average' => $generalAverage,
         ];
     }
 
@@ -173,6 +157,35 @@ class GradeCalculationService
         }
 
         return round((float) $ratedRows->sum('points') / $coefficients, 2);
+    }
+
+    /**
+     * @return array{class_subject: ClassSubject, devoir: ?float, composition: ?float, general: ?float, coefficient: float, points: ?float}
+     */
+    private function termRow(
+        ClassSubject $classSubject,
+        Student $student,
+        SchoolClass $schoolClass,
+        Term $term,
+        ?int $termPeriodId,
+    ): array {
+        $details = $this->subjectAverageDetails(
+            $student,
+            $term,
+            $classSubject->subject_id,
+            $schoolClass->id,
+            $termPeriodId,
+        );
+        $coefficient = (float) $classSubject->coefficient;
+
+        return [
+            'class_subject' => $classSubject,
+            'devoir' => $details['devoir'],
+            'composition' => $details['composition'],
+            'general' => $details['general'],
+            'coefficient' => $coefficient,
+            'points' => $details['general'] === null ? null : round($details['general'] * $coefficient, 2),
+        ];
     }
 
     /**

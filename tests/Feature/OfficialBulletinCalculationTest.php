@@ -96,7 +96,7 @@ class OfficialBulletinCalculationTest extends TestCase
 
         $calculator = app(GradeCalculationService::class);
         $summary = $calculator->termSummary($student, $schoolClass, $term);
-        $rowsByCode = $summary['rows']->keyBy(fn (array $row): string => $row['class_subject']->subject->code);
+        $rowsByCode = collect($summary['rows'])->keyBy(fn (array $row): string => $row['class_subject']->subject->code);
 
         $this->assertSame(67.50, $rowsByCode['FR']['points']);
         $this->assertSame(63.60, $rowsByCode['ANG']['points']);
@@ -155,7 +155,7 @@ class OfficialBulletinCalculationTest extends TestCase
 
         $summaries = app(ReportCardService::class)->annualSummariesForClass($schoolClass);
         $targetStudent = Student::query()->where('matricule', 'LPP-ANNUEL-A')->firstOrFail();
-        $summary = $summaries->get($targetStudent->id);
+        $summary = $summaries[$targetStudent->id] ?? null;
 
         $this->assertSame(12.76, $summary['annual_average']);
         $this->assertSame(2, $summary['annual_rank']);

@@ -54,16 +54,19 @@ class Grade extends Model
         return $this->resolvedStatus() === self::STATUS_GRADED;
     }
 
+    /** @return BelongsTo<Assessment, $this> */
     public function assessment(): BelongsTo
     {
         return $this->belongsTo(Assessment::class);
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function enteredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'entered_by');

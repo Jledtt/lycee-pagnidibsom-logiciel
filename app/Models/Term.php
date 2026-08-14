@@ -29,11 +29,13 @@ class Term extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return HasMany<Assessment, $this> */
     public function assessments(): HasMany
     {
         return $this->hasMany(Assessment::class);
     }
 
+    /** @return HasMany<TermPeriod, $this> */
     public function periods(): HasMany
     {
         return $this->hasMany(TermPeriod::class);

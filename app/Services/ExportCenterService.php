@@ -34,6 +34,7 @@ class ExportCenterService
             ?? AcademicYear::query()->orderByDesc('id')->first();
     }
 
+    /** @return Collection<int, SchoolClass> */
     public function classesFor(AcademicYear $academicYear): Collection
     {
         return SchoolClass::query()

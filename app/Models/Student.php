@@ -52,11 +52,13 @@ class Student extends Model implements HasMedia
         'is_scholarship' => 'boolean',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsToMany<Guardian, $this> */
     public function guardians(): BelongsToMany
     {
         return $this->belongsToMany(Guardian::class)
@@ -64,21 +66,25 @@ class Student extends Model implements HasMedia
             ->withTimestamps();
     }
 
+    /** @return HasMany<Enrollment, $this> */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }
 
+    /** @return HasMany<Payment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /** @return HasMany<Grade, $this> */
     public function grades(): HasMany
     {
         return $this->hasMany(Grade::class);
     }
 
+    /** @return HasMany<AttendanceRecord, $this> */
     public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
@@ -90,6 +96,7 @@ class Student extends Model implements HasMedia
         return $this->hasMany(DisciplinaryRecord::class);
     }
 
+    /** @return HasMany<StudentDocument, $this> */
     public function documents(): HasMany
     {
         return $this->hasMany(StudentDocument::class);

@@ -23,21 +23,25 @@ class Enrollment extends Model
         'enrollment_date' => 'date',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsTo<SchoolClass, $this> */
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

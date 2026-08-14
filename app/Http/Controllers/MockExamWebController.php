@@ -622,7 +622,8 @@ class MockExamWebController extends Controller
 
     private function sessionYearWarning(MockExam $mockExam): ?string
     {
-        $sessionYear = $mockExam->ends_on?->year ?? $mockExam->starts_on?->year;
+        $sessionDate = $mockExam->ends_on ?? $mockExam->starts_on;
+        $sessionYear = $sessionDate?->year;
 
         if ($sessionYear === null || $sessionYear === now()->year) {
             return null;

@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/** @property-read Pivot|null $pivot */
 class Guardian extends Model
 {
     protected $fillable = [
@@ -21,11 +23,13 @@ class Guardian extends Model
         'status',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsToMany<Student, $this> */
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class)

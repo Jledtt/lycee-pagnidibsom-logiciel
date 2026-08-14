@@ -104,7 +104,7 @@ class ReportCardWebController extends Controller
 
         $filename = 'bulletin-'.Str::slug($reportCard->student->matricule.'-'.$reportCard->term->name).'.pdf';
         $annualSummary = $this->reportCardService->termPosition($reportCard->term) >= 3
-            ? $this->reportCardService->annualSummariesForClass($reportCard->schoolClass)->get($reportCard->student_id)
+            ? ($this->reportCardService->annualSummariesForClass($reportCard->schoolClass)[$reportCard->student_id] ?? null)
             : null;
 
         return Pdf::loadView('report-cards.pdf', $this->bulletinDataService->for($reportCard, $annualSummary) + [
@@ -125,7 +125,7 @@ class ReportCardWebController extends Controller
         $this->reportCardService->generateForClass($schoolClass, $term);
         $annualSummaries = $this->reportCardService->termPosition($term) >= 3
             ? $this->reportCardService->annualSummariesForClass($schoolClass)
-            : collect();
+            : [];
 
         $reportCards = ReportCard::query()
             ->with(['academicYear', 'term', 'student', 'schoolClass.level'])
@@ -139,7 +139,7 @@ class ReportCardWebController extends Controller
             ->get()
             ->map(fn (ReportCard $reportCard) => $this->bulletinDataService->for(
                 $reportCard,
-                $annualSummaries->get($reportCard->student_id),
+                $annualSummaries[$reportCard->student_id] ?? null,
             ));
 
         $filename = 'bulletins-'.Str::slug($schoolClass->name.'-'.$term->name).'.pdf';
@@ -292,8 +292,8 @@ class ReportCardWebController extends Controller
 
     private function subjectRowsForStudent($student, SchoolClass $schoolClass, Term $term, ?int $termPeriodId = null): Collection
     {
-        return $this->gradeCalculationService
-            ->termSummary($student, $schoolClass, $term, $termPeriodId)['rows']
+        return collect($this->gradeCalculationService
+            ->termSummary($student, $schoolClass, $term, $termPeriodId)['rows'])
             ->sortBy(fn (array $row): string => $row['class_subject']->subject->name)
             ->map(function (array $row) {
                 $classSubject = $row['class_subject'];

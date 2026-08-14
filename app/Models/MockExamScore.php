@@ -20,11 +20,13 @@ class MockExamScore extends Model
         'is_absent' => 'boolean',
     ];
 
+    /** @return BelongsTo<MockExamSubject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(MockExamSubject::class, 'mock_exam_subject_id');
     }
 
+    /** @return BelongsTo<MockExamCandidate, $this> */
     public function candidate(): BelongsTo
     {
         return $this->belongsTo(MockExamCandidate::class, 'mock_exam_candidate_id');

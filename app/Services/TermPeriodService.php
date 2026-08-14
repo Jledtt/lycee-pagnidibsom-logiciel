@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class TermPeriodService
 {
+    /** @return Collection<int, TermPeriod> */
     public function ensureDefaults(Term $term): Collection
     {
         return DB::transaction(function () use ($term): Collection {
@@ -64,6 +65,7 @@ class TermPeriodService
         });
     }
 
+    /** @return list<array{position: int, name: string}> */
     public function definitionsFor(Term $term): array
     {
         return match ((int) $term->position) {

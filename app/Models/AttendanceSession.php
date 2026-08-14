@@ -25,31 +25,37 @@ class AttendanceSession extends Model
         'ends_at' => 'datetime:H:i',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<SchoolClass, $this> */
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<AttendanceRecord, $this> */
     public function records(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);

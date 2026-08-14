@@ -1,5 +1,7 @@
 parameters:
 	ignoreErrors:
+
+
 		-
 			message: '#^Method App\\Http\\Controllers\\AccountingWebController\:\:balanceExpenseQuery\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
@@ -163,28 +165,10 @@ parameters:
 			path: app/Http/Controllers/AccountingWebController.php
 
 		-
-			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\)$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Http/Controllers/AccountingWebController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/AccountingWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$matricule\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\AttendanceWebController\:\:attendancePdfResponse\(\) has no return type specified\.$#'
@@ -307,48 +291,6 @@ parameters:
 			path: app/Http/Controllers/AttendanceWebController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\AttendanceRecord\)\: bool given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sortBy\(\) expects array\<array\{string, ''asc''\|''desc''\|SortDirection\}\|\(callable\(Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Model\)\: mixed\)\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string\>\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|int\|string, Closure\(App\\Models\\AttendanceRecord\)\: lowercase\-string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Parameter \#1 \$schoolClass of method App\\Http\\Controllers\\AttendanceWebController\:\:studentsForClass\(\) expects App\\Models\\SchoolClass, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Parameter \#2 \$schoolClass of method App\\Http\\Controllers\\AttendanceWebController\:\:attendancePdfResponse\(\) expects App\\Models\\SchoolClass, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Parameter \#3 \$academicYear of method App\\Http\\Controllers\\AttendanceWebController\:\:attendancePdfResponse\(\) expects App\\Models\\AcademicYear\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/AttendanceWebController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>full_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -425,18 +367,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: app/Http/Controllers/CertificateWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$matricule\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ClassCouncilWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ClassCouncilWebController.php
 
 		-
 			message: '#^Anonymous function should return array\{annual_average\: float\|null, is_eligible\: bool, redeemed_average\: float\|null, student\: App\\Models\\Student, term_averages\: Illuminate\\Support\\Collection\<int, float\|null\>, terms_count\: int\<0, max\>\} but returns array\{annual_average\: float\|null, is_eligible\: bool, redeemed_average\: float\|null, student\: App\\Models\\Student, term_averages\: Illuminate\\Support\\Collection\<int, float\|null\>, terms_count\: int\<0, max\>\}\.$#'
@@ -547,18 +477,6 @@ parameters:
 			path: app/Http/Controllers/ClassCouncilWebController.php
 
 		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\GradeCalculationService\:\:subjectAverage\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ClassCouncilWebController.php
-
-		-
-			message: '#^Parameter \#2 \$term of method App\\Services\\GradeCalculationService\:\:subjectAverage\(\) expects App\\Models\\Term, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ClassCouncilWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\EnrollmentWebController\:\:activeClasses\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -573,30 +491,6 @@ parameters:
 		-
 			message: '#^Method App\\Http\\Controllers\\EnrollmentWebController\:\:validateEnrollment\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/EnrollmentWebController.php
-
-		-
-			message: '#^Parameter \#1 \$academicYear of method App\\Http\\Controllers\\EnrollmentWebController\:\:activeClasses\(\) expects App\\Models\\AcademicYear\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/EnrollmentWebController.php
-
-		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\PaymentFinancialProfileService\:\:studentPaymentSummary\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/EnrollmentWebController.php
-
-		-
-			message: '#^Parameter \#2 \$academicYear of method App\\Services\\PaymentFinancialProfileService\:\:studentPaymentSummary\(\) expects App\\Models\\AcademicYear\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/EnrollmentWebController.php
-
-		-
-			message: '#^Parameter \#2 \$selectedStudent of method App\\Services\\PaymentFinancialProfileService\:\:paymentFormData\(\) expects App\\Models\\Student\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/EnrollmentWebController.php
 
@@ -619,52 +513,10 @@ parameters:
 			path: app/Http/Controllers/ExportCenterWebController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/GradeImportWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\GradeImportWebController\:\:template\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: app/Http/Controllers/GradeImportWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$comment\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 11
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Anonymous function should return array\{student\: App\\Models\\Student, grades\: Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\|null\>, average\: float\|null, weighted\: float\|null\} but returns array\{student\: App\\Models\\Student, grades\: Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\|null\>, average\: float\|null, weighted\: float\|null\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isCounted\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:resolvedStatus\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\GradeWebController\:\:assessmentExport\(\) has no return type specified\.$#'
@@ -681,36 +533,6 @@ parameters:
 		-
 			message: '#^Method App\\Http\\Controllers\\GradeWebController\:\:registerPdf\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) expects callable\(mixed, int\|string\)\: array\{student\: App\\Models\\Student, grades\: Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\|null\>, average\: float\|null, weighted\: float\|null\}, Closure\(App\\Models\\Student\)\: array\{student\: App\\Models\\Student, grades\: Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\|null\>, average\: float\|null, weighted\: float\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:avg\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: float\)\|int\|string\|null, Closure\(App\\Models\\Grade\)\: float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Grade\)\: bool given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Http/Controllers/GradeWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Http/Controllers/GradeWebController.php
 
@@ -743,48 +565,6 @@ parameters:
 			identifier: argument.templateType
 			count: 4
 			path: app/Http/Controllers/HelpWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$coefficient\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_absent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$max_score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\MockExamWebController\:\:anonymityPdf\(\) has no return type specified\.$#'
@@ -871,92 +651,8 @@ parameters:
 			path: app/Http/Controllers/MockExamWebController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{average\: float\|null, candidate\: App\\Models\\MockExamCandidate, coefficient_total\: float, decision\: string, decision_key\: string, missing\: int\<0, max\>, pv_number\: int\|null, scores\: Illuminate\\Database\\Eloquent\\Collection\<int\|string, Illuminate\\Database\\Eloquent\\Model\>, used_coefficients\: float, weighted_total\: float\}, Closure\(App\\Models\\MockExamCandidate\)\: array\{average\: float\|null, candidate\: App\\Models\\MockExamCandidate, coefficient_total\: float, decision\: string, decision_key\: string, missing\: int\<0, max\>, pv_number\: int\|null, scores\: Illuminate\\Database\\Eloquent\\Collection\<int\|string, Illuminate\\Database\\Eloquent\\Model\>, used_coefficients\: float, weighted_total\: float\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{subject\: App\\Models\\MockExamSubject, quantity\: float, gross\: float, net\: float\}, Closure\(App\\Models\\MockExamSubject\)\: array\{subject\: App\\Models\\MockExamSubject, quantity\: float, gross\: float, net\: float\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<int, int\>, Closure\(App\\Models\\MockExamCandidate, int\)\: non\-empty\-array\<int, int\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Parameter \#2 \$mockExam of method App\\Http\\Controllers\\MockExamWebController\:\:ensureExamEditable\(\) expects App\\Models\\MockExam, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MockExamWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$feeSchedule\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$feeType\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fee_schedule_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fee_type_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$matricule\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schoolClass\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, int, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, int, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{string, non\-falsy\-string, mixed, mixed, mixed, mixed, mixed, int, \.\.\.\}\>\|Illuminate\\Support\\Collection\<int, array\{string, string, mixed, mixed, mixed, string, string, int, \.\.\.\}\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\PaymentWebController\:\:export\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: app/Http/Controllers/PaymentWebController.php
 
@@ -1003,33 +699,9 @@ parameters:
 			path: app/Http/Controllers/PaymentWebController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\PaymentFinancialProfileService\:\:studentPaymentSummary\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
 			message: '#^Parameter \#2 \$academicYear of method App\\Services\\PaymentFinancialProfileService\:\:studentPaymentSummary\(\) expects App\\Models\\AcademicYear\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Parameter \#3 \$selectedStudent of method App\\Http\\Controllers\\PaymentWebController\:\:paymentFormData\(\) expects App\\Models\\Student\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/PaymentWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
 			path: app/Http/Controllers/PaymentWebController.php
 
 		-
@@ -1063,66 +735,6 @@ parameters:
 			path: app/Http/Controllers/PaymentWebController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$matricule\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$position\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Anonymous function should return array\{student_id\: mixed, term_averages\: Illuminate\\Support\\Collection\<int, array\{name\: string, average\: float\|null\}\>, annual_average\: float\|null, terms_count\: int\<0, max\>, stored_decision\: mixed\} but returns array\{student_id\: mixed, term_averages\: Illuminate\\Support\\Collection\<int, array\{name\: string, average\: float\|null\}\>, annual_average\: float\|null, terms_count\: int\<0, max\>, stored_decision\: mixed\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isCounted\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:annualSummaries\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:assessmentAverage\(\) has parameter \$typeNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:classExport\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -1131,12 +743,6 @@ parameters:
 		-
 			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:classPdf\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:classStats\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Controllers/ReportCardWebController.php
 
@@ -1159,12 +765,6 @@ parameters:
 			path: app/Http/Controllers/ReportCardWebController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:subjectRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\ReportCardWebController\:\:subjectRowsForStudent\(\) has parameter \$student with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -1177,58 +777,10 @@ parameters:
 			path: app/Http/Controllers/ReportCardWebController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReportCard\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) expects callable\(mixed, int\|string\)\: array\{student_id\: mixed, term_averages\: Illuminate\\Support\\Collection\<int, array\{name\: string, average\: float\|null\}\>, annual_average\: float\|null, terms_count\: int\<0, max\>, stored_decision\: mixed\}, Closure\(mixed\)\: array\{student_id\: mixed, term_averages\: Illuminate\\Support\\Collection\<int, array\{name\: string, average\: float\|null\}\>, annual_average\: float\|null, terms_count\: int\<0, max\>, stored_decision\: mixed\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\GradeCalculationService\:\:subjectAverage\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Parameter \#2 \$term of method App\\Services\\GradeCalculationService\:\:subjectAverage\(\) expects App\\Models\\Term, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReportCard\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 1
 			path: app/Http/Controllers/ReportCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\ReportWebController\:\:classListExport\(\) has no return type specified\.$#'
@@ -1399,27 +951,15 @@ parameters:
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\RequiredStudentDocumentService\:\:missingForStudent\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
-			message: '#^Parameter \#2 \$schoolClass of method App\\Services\\RequiredStudentDocumentService\:\:missingForStudent\(\) expects App\\Models\\SchoolClass\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportWebController.php
-
-		-
 			message: '#^Unable to resolve the template type TKey in call to function collect$#'
 			identifier: argument.templateType
-			count: 9
+			count: 10
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
 			message: '#^Unable to resolve the template type TValue in call to function collect$#'
 			identifier: argument.templateType
-			count: 9
+			count: 10
 			path: app/Http/Controllers/ReportWebController.php
 
 		-
@@ -1567,36 +1107,6 @@ parameters:
 			path: app/Http/Controllers/StaffUserWebController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_path\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/StudentCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StudentCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StudentCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_primary\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/StudentCardWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StudentCardWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\StudentCardWebController\:\:pdf\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -1651,24 +1161,6 @@ parameters:
 			path: app/Http/Controllers/StudentImportWebController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StudentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_primary\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StudentWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schoolClass\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/StudentWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\StudentWebController\:\:attachGuardianIfPresent\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1717,12 +1209,6 @@ parameters:
 			path: app/Http/Controllers/StudentWebController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SubjectWebController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\SubjectWebController\:\:selectedClass\(\) has parameter \$classes with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -1750,12 +1236,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\SchoolClass\:\:\$tariff_total\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/TariffWebController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Controllers/TariffWebController.php
 
 		-
@@ -2275,56 +1755,8 @@ parameters:
 			path: app/Models/ActivityLog.php
 
 		-
-			message: '#^Method App\\Models\\Assessment\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:assessmentType\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
 			message: '#^Method App\\Models\\Assessment\:\:entryModeLabels\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:grades\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:subject\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:teacher\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
-			message: '#^Method App\\Models\\Assessment\:\:termPeriod\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
 			count: 1
 			path: app/Models/Assessment.php
 
@@ -2333,60 +1765,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AssessmentType.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceRecord\:\:justifiedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceRecord.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceRecord\:\:session\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceRecord.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceRecord\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceRecord.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:records\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:subject\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
-
-		-
-			message: '#^Method App\\Models\\AttendanceSession\:\:teacher\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AttendanceSession.php
 
 		-
 			message: '#^Method App\\Models\\CommunicationCampaign\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -2443,42 +1821,6 @@ parameters:
 			path: app/Models/CommunicationTemplate.php
 
 		-
-			message: '#^Method App\\Models\\DisciplinaryRecord\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/DisciplinaryRecord.php
-
-		-
-			message: '#^Method App\\Models\\DisciplinaryRecord\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/DisciplinaryRecord.php
-
-		-
-			message: '#^Method App\\Models\\Enrollment\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Enrollment.php
-
-		-
-			message: '#^Method App\\Models\\Enrollment\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Enrollment.php
-
-		-
-			message: '#^Method App\\Models\\Enrollment\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Enrollment.php
-
-		-
-			message: '#^Method App\\Models\\Enrollment\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Enrollment.php
-
-		-
 			message: '#^Method App\\Models\\Expense\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -2533,40 +1875,10 @@ parameters:
 			path: app/Models/FeeType.php
 
 		-
-			message: '#^Method App\\Models\\Grade\:\:assessment\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Grade.php
-
-		-
-			message: '#^Method App\\Models\\Grade\:\:enteredBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Grade.php
-
-		-
 			message: '#^Method App\\Models\\Grade\:\:statusLabels\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/Grade.php
-
-		-
-			message: '#^Method App\\Models\\Grade\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Grade.php
-
-		-
-			message: '#^Method App\\Models\\Guardian\:\:students\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Guardian.php
-
-		-
-			message: '#^Method App\\Models\\Guardian\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Guardian.php
 
 		-
 			message: '#^Method App\\Models\\Level\:\:classes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -2581,90 +1893,6 @@ parameters:
 			path: app/Models/LoginHistory.php
 
 		-
-			message: '#^Method App\\Models\\MockExam\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExam.php
-
-		-
-			message: '#^Method App\\Models\\MockExam\:\:candidates\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExam.php
-
-		-
-			message: '#^Method App\\Models\\MockExam\:\:classes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExam.php
-
-		-
-			message: '#^Method App\\Models\\MockExam\:\:subjects\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExam.php
-
-		-
-			message: '#^Method App\\Models\\MockExam\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExam.php
-
-		-
-			message: '#^Method App\\Models\\MockExamCandidate\:\:mockExam\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamCandidate.php
-
-		-
-			message: '#^Method App\\Models\\MockExamCandidate\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamCandidate.php
-
-		-
-			message: '#^Method App\\Models\\MockExamCandidate\:\:scores\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamCandidate.php
-
-		-
-			message: '#^Method App\\Models\\MockExamCandidate\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamCandidate.php
-
-		-
-			message: '#^Method App\\Models\\MockExamScore\:\:candidate\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamScore.php
-
-		-
-			message: '#^Method App\\Models\\MockExamScore\:\:subject\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamScore.php
-
-		-
-			message: '#^Method App\\Models\\MockExamSubject\:\:mockExam\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamSubject.php
-
-		-
-			message: '#^Method App\\Models\\MockExamSubject\:\:scores\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamSubject.php
-
-		-
-			message: '#^Method App\\Models\\MockExamSubject\:\:subject\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MockExamSubject.php
-
-		-
 			message: '#^Method App\\Models\\Payment\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -2677,82 +1905,10 @@ parameters:
 			path: app/Models/Payment.php
 
 		-
-			message: '#^Method App\\Models\\Payment\:\:lines\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:receiver\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\PaymentLine\:\:feeSchedule\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/PaymentLine.php
-
-		-
-			message: '#^Method App\\Models\\PaymentLine\:\:feeType\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/PaymentLine.php
-
-		-
-			message: '#^Method App\\Models\\PaymentLine\:\:payment\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/PaymentLine.php
-
-		-
-			message: '#^Method App\\Models\\ReportCard\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportCard.php
-
-		-
-			message: '#^Method App\\Models\\ReportCard\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportCard.php
-
-		-
-			message: '#^Method App\\Models\\ReportCard\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportCard.php
-
-		-
-			message: '#^Method App\\Models\\ReportCard\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportCard.php
-
-		-
-			message: '#^Method App\\Models\\ReportCard\:\:validator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportCard.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cycle\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/RequiredStudentDocument.php
 
 		-
 			message: '#^Method App\\Models\\RequiredStudentDocument\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -2765,90 +1921,6 @@ parameters:
 			identifier: identical.alwaysTrue
 			count: 1
 			path: app/Models/RequiredStudentDocument.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:assessments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:classSubjects\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:enrollments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:level\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:mainTeacher\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\SchoolClass\:\:timetables\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:attendanceRecords\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:documents\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:enrollments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:grades\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:guardians\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
 
 		-
 			message: '#^Method App\\Models\\StudentDocument\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -3068,18 +2140,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Models\\Term\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Term.php
-
-		-
-			message: '#^Method App\\Models\\Term\:\:assessments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Term.php
-
-		-
-			message: '#^Method App\\Models\\Term\:\:periods\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Term.php
@@ -3355,12 +2415,6 @@ parameters:
 			path: app/Services/CommunicationRecipientService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array, Closure\(App\\Models\\Guardian\)\: array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/CommunicationRecipientService.php
-
-		-
 			message: '#^Unable to resolve the template type TKey in call to function collect$#'
 			identifier: argument.templateType
 			count: 1
@@ -3373,12 +2427,6 @@ parameters:
 			path: app/Services/CommunicationRecipientService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/CommunicationService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schoolClass\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3387,7 +2435,7 @@ parameters:
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
+			count: 2
 			path: app/Services/CommunicationService.php
 
 		-
@@ -3415,15 +2463,9 @@ parameters:
 			path: app/Services/CommunicationService.php
 
 		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\CommunicationRecipientService\:\:guardiansForStudent\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Services/CommunicationService.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 1
+			count: 2
 			path: app/Services/CommunicationService.php
 
 		-
@@ -3559,139 +2601,13 @@ parameters:
 			path: app/Services/EnrollmentService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_place\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$first_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender_label\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$guardians\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$home_phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_absent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$matricule\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$max_score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Services/ExportCenterService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schoolClass\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$session_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subject\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$term\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$termPeriod\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/ExportCenterService.php
 
 		-
 			message: '#^Method App\\Services\\ExportCenterService\:\:attendanceRows\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Method App\\Services\\ExportCenterService\:\:classesFor\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Services/ExportCenterService.php
@@ -3757,84 +2673,6 @@ parameters:
 			path: app/Services/ExportCenterService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\AttendanceRecord\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Enrollment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Grade\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MockExamCandidate\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MockExamSubject\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\ExportCenterService\:\:studentName\(\) expects App\\Models\\Student\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 4
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\AttendanceRecord\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Enrollment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Grade\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MockExamCandidate\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MockExamSubject\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ExportCenterService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -3859,18 +2697,6 @@ parameters:
 			path: app/Services/ExportCenterService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/GradeCalculationService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isCounted\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/GradeCalculationService.php
-
-		-
 			message: '#^Method App\\Services\\GradeEntryService\:\:createAssessment\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3879,12 +2705,6 @@ parameters:
 		-
 			message: '#^Method App\\Services\\GradeEntryService\:\:statusFromLine\(\) has parameter \$line with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/GradeEntryService.php
-
-		-
-			message: '#^Method App\\Services\\GradeEntryService\:\:studentsForClass\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
 			count: 1
 			path: app/Services/GradeEntryService.php
 
@@ -4147,25 +2967,7 @@ parameters:
 			path: app/Services/PagnidibsomClassSubjectSetupService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fee_schedule_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$school_class_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/PaymentFinancialProfileService.php
@@ -4219,24 +3021,6 @@ parameters:
 			path: app/Services/PaymentFinancialProfileService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
-			message: '#^Parameter \#1 \$student of method App\\Services\\PaymentFinancialProfileService\:\:studentPaymentSummary\(\) expects App\\Models\\Student, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/PaymentFinancialProfileService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -4261,12 +3045,6 @@ parameters:
 			path: app/Services/PaymentService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ReportCardService.php
-
-		-
 			message: '#^Method App\\Services\\ReportCardService\:\:generateForClass\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -4282,30 +3060,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\PaymentLine\:\:\$total_paid\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_primary\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone_secondary\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$student_id\.$#'
-			identifier: property.notFound
-			count: 3
 			path: app/Services/ReportFinancialDataService.php
 
 		-
@@ -4401,48 +3155,6 @@ parameters:
 		-
 			message: '#^Method App\\Services\\ReportFinancialDataService\:\:studentInstallmentStatus\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\FeeSchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Services/ReportFinancialDataService.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Services/ReportFinancialDataService.php
 
@@ -4811,12 +3523,6 @@ parameters:
 			identifier: argument.templateType
 			count: 1
 			path: app/Services/StudentImportService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TariffDefaultService.php
 
 		-
 			message: '#^Method App\\Services\\TariffDefaultService\:\:applyToActiveAcademicYear\(\) return type has no value type specified in iterable type array\.$#'
@@ -5309,18 +4015,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/TeacherFeeService.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 1
-			path: app/Services/TermPeriodService.php
-
-		-
-			message: '#^Method App\\Services\\TermPeriodService\:\:ensureDefaults\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Services/TermPeriodService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$school_class_id\.$#'

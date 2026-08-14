@@ -21,16 +21,19 @@ class AttendanceRecord extends Model
         'justified_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<AttendanceSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(AttendanceSession::class, 'attendance_session_id');
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function justifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'justified_by');

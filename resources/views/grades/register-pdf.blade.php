@@ -83,7 +83,7 @@
                             <td>{{ $row['student']->matricule }}</td>
                             <td class="strong">{{ $row['student']->full_name }}</td>
                             @foreach ($assessmentChunk as $item)
-                                @php($grade = $row['grades']->get($item->id))
+                                @php($grade = $row['grades'][$item->id] ?? null)
                                 <td class="center">
                                     @if (! $grade)
                                         -

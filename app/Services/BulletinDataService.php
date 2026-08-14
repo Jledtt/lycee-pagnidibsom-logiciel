@@ -2,10 +2,29 @@
 
 namespace App\Services;
 
+use App\Models\ClassSubject;
 use App\Models\ReportCard;
+use App\Models\Subject;
 use App\Models\Term;
-use Illuminate\Support\Collection;
+use LogicException;
 
+/**
+ * @phpstan-type BulletinSubjectRow array{
+ *     subject: Subject,
+ *     coefficient: float,
+ *     devoir_average: float|null,
+ *     composition_average: float|null,
+ *     average: float|null,
+ *     points: float|null,
+ *     appreciation: string,
+ *     teacher: string
+ * }
+ * @phpstan-type BulletinSubjectGroup array{
+ *     name: string,
+ *     rows: list<BulletinSubjectRow>,
+ *     average: float|null
+ * }
+ */
 class BulletinDataService
 {
     private const SUBJECT_GROUPS = [
@@ -31,28 +50,15 @@ class BulletinDataService
             $reportCard->schoolClass,
             $reportCard->term,
         );
-        $rows = $summary['rows']
+        $rows = collect($summary['rows'])
             ->sortBy(fn (array $row): string => $row['class_subject']->subject->name)
-            ->map(function (array $row): array {
-                $classSubject = $row['class_subject'];
-
-                return [
-                    'subject' => $classSubject->subject,
-                    'coefficient' => $row['coefficient'],
-                    'devoir_average' => $row['devoir'],
-                    'composition_average' => $row['composition'],
-                    'average' => $row['general'],
-                    'points' => $row['points'],
-                    'appreciation' => $this->appreciation($row['general']),
-                    'teacher' => $classSubject->teacher?->name ?? '-',
-                ];
-            })
+            ->map(fn (array $row): array => $this->subjectRow($row))
             ->values();
         $termPosition = $this->reportCardService->termPosition($reportCard->term);
 
         return [
             'annualSummary' => $termPosition >= 3
-                ? ($annualSummary ?? $this->reportCardService->annualSummariesForClass($reportCard->schoolClass)->get($reportCard->student_id))
+                ? ($annualSummary ?? $this->reportCardService->annualSummariesForClass($reportCard->schoolClass)[$reportCard->student_id] ?? null)
                 : null,
             'classStats' => $this->classStats($reportCard),
             'generatedAt' => now(),
@@ -66,39 +72,54 @@ class BulletinDataService
         ];
     }
 
-    /** @return Collection<int, array{name: string, rows: Collection, average: ?float}> */
-    private function subjectGroups(Collection $rows): Collection
+    /**
+     * @param  iterable<BulletinSubjectRow>  $rows
+     * @return list<BulletinSubjectGroup>
+     */
+    private function subjectGroups(iterable $rows): array
     {
-        $groups = collect(self::SUBJECT_GROUPS)
-            ->map(function (array $codes, string $name) use ($rows): array {
-                $groupRows = $rows->filter(fn (array $row): bool => in_array($row['subject']->code, $codes, true))->values();
+        $rows = collect($rows);
+        $groups = [];
 
-                return [
-                    'name' => $name,
-                    'rows' => $groupRows,
-                    'average' => $this->familyAverage($groupRows),
-                ];
-            })
-            ->filter(fn (array $group): bool => $group['rows']->isNotEmpty())
-            ->values();
+        foreach (self::SUBJECT_GROUPS as $name => $codes) {
+            $groupRows = $rows
+                ->filter(fn (array $row): bool => in_array($row['subject']->code, $codes, true))
+                ->values()
+                ->all();
+
+            if ($groupRows === []) {
+                continue;
+            }
+
+            $groups[] = [
+                'name' => $name,
+                'rows' => $groupRows,
+                'average' => $this->familyAverage($groupRows),
+            ];
+        }
+
         $knownCodes = collect(self::SUBJECT_GROUPS)->flatten()->all();
-        $otherRows = $rows->reject(fn (array $row): bool => in_array($row['subject']->code, $knownCodes, true))->values();
+        $otherRows = $rows
+            ->reject(fn (array $row): bool => in_array($row['subject']->code, $knownCodes, true))
+            ->values()
+            ->all();
 
-        if ($otherRows->isNotEmpty()) {
-            $groups->push([
+        if ($otherRows !== []) {
+            $groups[] = [
                 'name' => 'Autres matières',
                 'rows' => $otherRows,
                 'average' => $this->familyAverage($otherRows),
-            ]);
+            ];
         }
 
         return $groups;
     }
 
-    private function familyAverage(Collection $rows): ?float
+    /** @param iterable<BulletinSubjectRow> $rows */
+    private function familyAverage(iterable $rows): ?float
     {
         return $this->gradeCalculationService->familyAverage(
-            $rows->map(fn (array $row): array => [
+            collect($rows)->map(fn (array $row): array => [
                 'general' => $row['average'],
                 'coefficient' => $row['coefficient'],
                 'points' => $row['points'],
@@ -106,11 +127,11 @@ class BulletinDataService
         );
     }
 
-    /** @return Collection<int, array{position: int, average: ?float}> */
-    private function recalls(ReportCard $reportCard, int $termPosition): Collection
+    /** @return list<array{position: int, average: ?float}> */
+    private function recalls(ReportCard $reportCard, int $termPosition): array
     {
         if ($termPosition <= 1) {
-            return collect();
+            return [];
         }
 
         $priorTerms = Term::query()
@@ -131,12 +152,40 @@ class BulletinDataService
             ->get()
             ->keyBy('term_id');
 
-        return $priorTerms->map(fn (Term $term, int $index): array => [
-            'position' => $index + 1,
-            'average' => $cards->get($term->id)?->general_average === null
-                ? null
-                : (float) $cards->get($term->id)->general_average,
-        ]);
+        return $priorTerms
+            ->map(fn (Term $term, int $index): array => [
+                'position' => $index + 1,
+                'average' => $cards->get($term->id)?->general_average === null
+                    ? null
+                    : (float) $cards->get($term->id)->general_average,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array{class_subject: ClassSubject, devoir: ?float, composition: ?float, general: ?float, coefficient: float, points: ?float}  $row
+     * @return BulletinSubjectRow
+     */
+    private function subjectRow(array $row): array
+    {
+        $classSubject = $row['class_subject'];
+        $subject = $classSubject->subject;
+
+        if (! $subject instanceof Subject) {
+            throw new LogicException('Une matière active doit exister pour chaque affectation de classe.');
+        }
+
+        return [
+            'subject' => $subject,
+            'coefficient' => $row['coefficient'],
+            'devoir_average' => $row['devoir'],
+            'composition_average' => $row['composition'],
+            'average' => $row['general'],
+            'points' => $row['points'],
+            'appreciation' => $this->appreciation($row['general']),
+            'teacher' => $classSubject->teacher_id ? $classSubject->teacher->name : '-',
+        ];
     }
 
     /** @return array{average: ?float, highest: ?float, lowest: ?float} */

@@ -30,12 +30,19 @@ class UpdateAttendanceSessionRequest extends FormRequest
         ];
     }
 
+    /** @return array<int, callable(Validator): void> */
     public function after(): array
     {
         return [
             function (Validator $validator): void {
                 $session = $this->route('attendanceSession');
-                $studentIds = collect($this->input('records', []))
+                $records = $this->input('records', []);
+
+                if (! is_array($records)) {
+                    return;
+                }
+
+                $studentIds = collect($records)
                     ->pluck('student_id')
                     ->filter()
                     ->map(fn ($id) => (int) $id)

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AcademicTrackWebController;
+use App\Http\Controllers\AcademicYearWebController;
 use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\ActivityLogWebController;
 use App\Http\Controllers\AttendanceWebController;

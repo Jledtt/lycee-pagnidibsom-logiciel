@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AcademicYear;
+use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Payment;
 use App\Models\PaymentLine;
@@ -121,8 +122,8 @@ class ReportFinancialDataService
             ->mapWithKeys(fn ($row) => [$row->student_id.':'.$row->fee_schedule_id => (float) $row->total_paid]);
 
         return $schoolClass->enrollments
-            ->flatMap(function ($enrollment) use ($paidByStudentAndSchedule, $schedules) {
-                return $schedules->map(function (FeeSchedule $schedule) use ($enrollment, $paidByStudentAndSchedule) {
+            ->flatMap(function (Enrollment $enrollment) use ($paidByStudentAndSchedule, $schedules): array {
+                return $schedules->map(function (FeeSchedule $schedule) use ($enrollment, $paidByStudentAndSchedule): array {
                     $expected = (float) $schedule->amount;
                     $paid = (float) ($paidByStudentAndSchedule[$enrollment->student_id.':'.$schedule->id] ?? 0);
                     $balance = max($expected - $paid, 0);
@@ -135,7 +136,7 @@ class ReportFinancialDataService
                         'balance' => $balance,
                         'status' => $this->paymentStatus($expected, $paid),
                     ];
-                });
+                })->all();
             })
             ->values();
     }

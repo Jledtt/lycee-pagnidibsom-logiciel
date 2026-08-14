@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\StudentExitAuthorization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class SchoolAccessService
 {
@@ -46,6 +47,12 @@ class SchoolAccessService
             ->exists();
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function scopeStudents(Builder $query, User $user): Builder
     {
         if ($user->hasAnyRole(self::GLOBAL_STUDENT_IDENTITY_ROLES)) {
@@ -87,6 +94,12 @@ class SchoolAccessService
             && $this->teacherHasClassSubject($user, $schoolClassId, $subjectId);
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function scopeAssessments(Builder $query, User $user): Builder
     {
         if ($user->hasAnyRole(self::GLOBAL_GRADE_ROLES)) {
@@ -137,6 +150,12 @@ class SchoolAccessService
             && $this->canAccessAttendanceClass($user, (int) $authorization->school_class_id);
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function scopeStudentExitAuthorizations(Builder $query, User $user): Builder
     {
         if ($user->hasAnyRole(['admin', 'direction', 'secretariat', 'surveillant'])) {
@@ -150,6 +169,12 @@ class SchoolAccessService
         return $query->whereIn('student_exit_authorizations.school_class_id', $this->teacherClassIdsQuery($user));
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function scopeClasses(Builder $query, User $user, string $area): Builder
     {
         $globalRoles = $area === 'grades'
@@ -167,6 +192,12 @@ class SchoolAccessService
         return $query->whereIn('school_classes.id', $this->teacherClassIdsQuery($user));
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function scopeAttendanceSessions(Builder $query, User $user): Builder
     {
         if ($user->hasAnyRole(self::GLOBAL_ATTENDANCE_ROLES)) {
@@ -190,7 +221,8 @@ class SchoolAccessService
             ->exists();
     }
 
-    private function teacherClassIdsQuery(User $user)
+    /** @return Builder<ClassSubject> */
+    private function teacherClassIdsQuery(User $user): Builder
     {
         return ClassSubject::query()
             ->select('school_class_id')

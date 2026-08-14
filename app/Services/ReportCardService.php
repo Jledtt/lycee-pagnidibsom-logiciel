@@ -5,9 +5,34 @@ namespace App\Services;
 use App\Models\AttendanceRecord;
 use App\Models\ReportCard;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Term;
 use Illuminate\Support\Collection;
+use LogicException;
 
+/**
+ * @phpstan-type AnnualTermAverage array{name: string, position: int, average: ?float}
+ * @phpstan-type AnnualInputRow array{
+ *     student_id: int,
+ *     term_averages: array<int, AnnualTermAverage>,
+ *     annual_average: ?float,
+ *     terms_count: int,
+ *     decision: ?string
+ * }
+ * @phpstan-type AnnualSummary array{
+ *     student_id: int,
+ *     term_averages: array<int, AnnualTermAverage>,
+ *     annual_average: ?float,
+ *     terms_count: int,
+ *     decision: ?string,
+ *     annual_rank: ?int,
+ *     annual_rank_is_tied: bool,
+ *     annual_rank_label: ?string,
+ *     annual_class_average: ?float,
+ *     highest_annual_average: ?float,
+ *     class_size: int
+ * }
+ */
 class ReportCardService
 {
     public function __construct(
@@ -155,9 +180,9 @@ class ReportCardService
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return array<int, AnnualSummary>
      */
-    public function annualSummariesForClass(SchoolClass $schoolClass): Collection
+    public function annualSummariesForClass(SchoolClass $schoolClass): array
     {
         $terms = $this->orderedTerms($schoolClass->academic_year_id);
         $cardsByStudent = ReportCard::query()
@@ -166,34 +191,23 @@ class ReportCardService
             ->whereIn('term_id', $terms->pluck('id'))
             ->get()
             ->groupBy('student_id');
-        $students = $schoolClass->enrollments()
-            ->with('student')
+        $students = Student::query()
             ->where('status', 'active')
-            ->whereHas('student', fn ($query) => $query->where('students.status', 'active'))
-            ->get()
-            ->pluck('student')
-            ->filter()
-            ->values();
+            ->whereHas('enrollments', fn ($query) => $query
+                ->where('academic_year_id', $schoolClass->academic_year_id)
+                ->where('school_class_id', $schoolClass->id)
+                ->where('enrollments.status', 'active'))
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
         $lastTermId = $terms->last()?->id;
 
-        $rows = $students->map(function ($student) use ($cardsByStudent, $lastTermId, $terms): array {
-            $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
-            $termAverages = $terms->map(fn (Term $term): array => [
-                'name' => $term->name,
-                'position' => $this->termPosition($term),
-                'average' => $cards->get($term->id)?->general_average === null
-                    ? null
-                    : (float) $cards->get($term->id)->general_average,
-            ]);
+        $rows = [];
 
-            return [
-                'student_id' => $student->id,
-                'term_averages' => $termAverages,
-                'annual_average' => $this->annualAverage($termAverages->pluck('average')),
-                'terms_count' => $termAverages->whereNotNull('average')->count(),
-                'decision' => $lastTermId ? $cards->get($lastTermId)?->decision : null,
-            ];
-        })->values()->all();
+        foreach ($students as $student) {
+            $cards = $cardsByStudent->get($student->id, collect())->keyBy('term_id');
+            $rows[] = $this->annualInputRow($student, $cards, $terms, $lastTermId);
+        }
 
         $rankedRows = collect($this->competitionRankingService->rank(
             $rows,
@@ -207,15 +221,85 @@ class ReportCardService
         $classAverage = $this->annualAverage($annualAverages);
         $highestAverage = $annualAverages->isEmpty() ? null : round((float) $annualAverages->max(), 2);
 
-        return $rankedRows
-            ->map(function (array $row) use ($classAverage, $highestAverage, $rankedCount): array {
-                $row['annual_class_average'] = $classAverage;
-                $row['highest_annual_average'] = $highestAverage;
-                $row['class_size'] = $rankedCount;
+        $summaries = [];
 
-                return $row;
-            })
-            ->keyBy('student_id');
+        foreach ($rankedRows as $row) {
+            $summary = $this->annualSummary(
+                $row,
+                $classAverage,
+                $highestAverage,
+                $rankedCount,
+            );
+            $summaries[$summary['student_id']] = $summary;
+        }
+
+        return $summaries;
+    }
+
+    /**
+     * @param  Collection<int|string, ReportCard>  $cards
+     * @param  Collection<int, Term>  $terms
+     * @return AnnualInputRow
+     */
+    private function annualInputRow(Student $student, Collection $cards, Collection $terms, ?int $lastTermId): array
+    {
+        $termAverages = $terms
+            ->mapWithKeys(fn (Term $term): array => [
+                $term->id => $this->annualTermRow($term, $cards),
+            ])
+            ->all();
+        $decision = $lastTermId ? $cards->get($lastTermId)?->decision : null;
+
+        return [
+            'student_id' => $student->id,
+            'term_averages' => $termAverages,
+            'annual_average' => $this->annualAverage(array_column($termAverages, 'average')),
+            'terms_count' => collect($termAverages)->whereNotNull('average')->count(),
+            'decision' => is_string($decision) ? $decision : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return AnnualSummary
+     */
+    private function annualSummary(array $row, ?float $classAverage, ?float $highestAverage, int $classSize): array
+    {
+        $studentId = $row['student_id'] ?? null;
+        $termAverages = $row['term_averages'] ?? null;
+
+        if (! is_int($studentId) || ! is_array($termAverages)) {
+            throw new LogicException('La synthèse annuelle calculée est incomplète.');
+        }
+
+        return [
+            'student_id' => $studentId,
+            'term_averages' => $termAverages,
+            'annual_average' => is_numeric($row['annual_average'] ?? null) ? (float) $row['annual_average'] : null,
+            'terms_count' => is_int($row['terms_count'] ?? null) ? $row['terms_count'] : 0,
+            'decision' => is_string($row['decision'] ?? null) ? $row['decision'] : null,
+            'annual_rank' => is_int($row['annual_rank'] ?? null) ? $row['annual_rank'] : null,
+            'annual_rank_is_tied' => ($row['annual_rank_is_tied'] ?? false) === true,
+            'annual_rank_label' => is_string($row['annual_rank_label'] ?? null) ? $row['annual_rank_label'] : null,
+            'annual_class_average' => $classAverage,
+            'highest_annual_average' => $highestAverage,
+            'class_size' => $classSize,
+        ];
+    }
+
+    /**
+     * @param  Collection<int|string, ReportCard>  $cards
+     * @return array{name: string, position: int, average: ?float}
+     */
+    private function annualTermRow(Term $term, Collection $cards): array
+    {
+        $average = $cards->get($term->id)?->general_average;
+
+        return [
+            'name' => $term->name,
+            'position' => $this->termPosition($term),
+            'average' => $average === null ? null : (float) $average,
+        ];
     }
 
     public function appreciationForAverage(?float $average): string

@@ -51,6 +51,7 @@ class ReportCard extends Model
         'validated_at' => 'datetime',
     ];
 
+    /** @return list<string> */
     public static function distinctions(): array
     {
         return [
@@ -73,26 +74,31 @@ class ReportCard extends Model
         return $this->rank.'e'.($this->rank_is_tied ? ' ex æquo' : '');
     }
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Term, $this> */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsTo<SchoolClass, $this> */
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function validator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'validated_by');

@@ -55,16 +55,19 @@ class MockExamSubject extends Model
         'fee_paid_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<MockExam, $this> */
     public function mockExam(): BelongsTo
     {
         return $this->belongsTo(MockExam::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return HasMany<MockExamScore, $this> */
     public function scores(): HasMany
     {
         return $this->hasMany(MockExamScore::class);

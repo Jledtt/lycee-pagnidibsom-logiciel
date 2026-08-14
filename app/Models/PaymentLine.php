@@ -18,6 +18,7 @@ class PaymentLine extends Model
         'amount' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Payment, $this> */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
@@ -29,6 +30,7 @@ class PaymentLine extends Model
         return $this->belongsTo(FeeType::class);
     }
 
+    /** @return BelongsTo<FeeSchedule, $this> */
     public function feeSchedule(): BelongsTo
     {
         return $this->belongsTo(FeeSchedule::class);

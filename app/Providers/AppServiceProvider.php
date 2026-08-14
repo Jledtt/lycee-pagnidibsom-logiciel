@@ -80,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(
                 'guidedTours',
-                $user ? app(GuidedTourService::class)->visibleFor($user) : collect(),
+                $user ? collect(app(GuidedTourService::class)->visibleFor($user)) : collect(),
             );
         });
     }

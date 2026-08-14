@@ -18,7 +18,7 @@ class AuditClassSubjectCoefficients extends Command
             ->with(['schoolClass', 'subject'])
             ->get()
             ->filter(fn (ClassSubject $assignment): bool => ! ValidClassSubjectCoefficient::isValid($assignment->coefficient))
-            ->sortBy(fn (ClassSubject $assignment): string => ($assignment->schoolClass?->name ?? '').'|'.($assignment->subject?->name ?? ''));
+            ->sortBy(fn (ClassSubject $assignment): string => $assignment->schoolClass->name.'|'.$assignment->subject->name);
 
         if ($invalidAssignments->isEmpty()) {
             $this->info('Aucun coefficient hors de la grille officielle.');
@@ -30,8 +30,8 @@ class AuditClassSubjectCoefficients extends Command
             ['ID', 'Classe', 'Matière', 'Coefficient'],
             $invalidAssignments->map(fn (ClassSubject $assignment): array => [
                 $assignment->id,
-                $assignment->schoolClass?->name ?? '-',
-                $assignment->subject?->name ?? '-',
+                $assignment->schoolClass->name,
+                $assignment->subject->name,
                 number_format((float) $assignment->coefficient, 2, '.', ''),
             ]),
         );

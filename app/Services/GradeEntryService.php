@@ -8,6 +8,7 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Term;
 use App\Models\TermPeriod;
 use App\Models\User;
@@ -83,6 +84,7 @@ class GradeEntryService
         }
     }
 
+    /** @return Collection<int, Student> */
     public function studentsForClass(int $academicYearId, int $schoolClassId): Collection
     {
         return Enrollment::query()

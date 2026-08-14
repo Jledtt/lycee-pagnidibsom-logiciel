@@ -121,6 +121,18 @@ class StudentController extends Controller
         return response()->json(null, 204);
     }
 
+    /**
+     * @return array{
+     *     id: int,
+     *     matricule: string,
+     *     first_name: string,
+     *     last_name: string,
+     *     full_name: string,
+     *     gender: string|null,
+     *     status: string,
+     *     current_class: array{id: int, name: string}|null
+     * }
+     */
     private function identityPayload(Student $student): array
     {
         $enrollment = $student->enrollments

@@ -7,6 +7,7 @@ use App\Http\Requests\Payment\StorePaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\FeeSchedule;
 use App\Models\Payment;
+use App\Models\PaymentLine;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Services\FrenchAmountInWordsService;
@@ -16,6 +17,7 @@ use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -75,7 +77,7 @@ class PaymentWebController extends Controller
         ]);
     }
 
-    public function export(Request $request, XlsxExportService $xlsxExport)
+    public function export(Request $request, XlsxExportService $xlsxExport): Response
     {
         $academicYear = $this->activeAcademicYear();
         $payments = $this->paymentQuery($request, $academicYear)
@@ -99,28 +101,43 @@ class PaymentWebController extends Controller
             'Annulé par',
             'Motif annulation',
             'Notes',
-        ], $payments->flatMap(function (Payment $payment) {
-            $lines = $payment->lines->isNotEmpty() ? $payment->lines : collect([null]);
+        ], $payments->flatMap(fn (Payment $payment): array => $this->paymentExportRows($payment)));
+    }
 
-            return $lines->map(fn ($line) => [
-                $payment->receipt_number,
-                $payment->paid_at?->format('d/m/Y H:i'),
-                $payment->student?->full_name,
-                $payment->student?->matricule,
-                $payment->enrollment?->schoolClass?->name,
-                $line?->feeType?->name ?? '',
-                $line?->feeSchedule?->period ?? '',
-                $line ? (int) $line->amount : (int) $payment->amount,
-                (int) $payment->amount,
-                $payment->payment_method,
-                $payment->status,
-                $payment->receiver?->name,
-                $payment->cancelled_at?->format('d/m/Y H:i'),
-                $payment->cancellationActorName(),
-                $payment->cancellationReasonForDisplay(),
-                $payment->notes,
-            ]);
-        }));
+    /** @return list<list<mixed>> */
+    private function paymentExportRows(Payment $payment): array
+    {
+        if ($payment->lines->isEmpty()) {
+            return [$this->paymentExportRow($payment)];
+        }
+
+        return $payment->lines
+            ->map(fn (PaymentLine $line): array => $this->paymentExportRow($payment, $line))
+            ->values()
+            ->all();
+    }
+
+    /** @return list<mixed> */
+    private function paymentExportRow(Payment $payment, ?PaymentLine $line = null): array
+    {
+        return [
+            $payment->receipt_number,
+            $payment->paid_at?->format('d/m/Y H:i'),
+            $payment->student?->full_name,
+            $payment->student?->matricule,
+            $payment->enrollment?->schoolClass?->name,
+            $line?->feeType?->name ?? '',
+            $line?->feeSchedule?->period ?? '',
+            $line ? (int) $line->amount : (int) $payment->amount,
+            (int) $payment->amount,
+            $payment->payment_method,
+            $payment->status,
+            $payment->receiver?->name,
+            $payment->cancelled_at?->format('d/m/Y H:i'),
+            $payment->cancellationActorName(),
+            $payment->cancellationReasonForDisplay(),
+            $payment->notes,
+        ];
     }
 
     public function store(StorePaymentRequest $request, PaymentService $paymentService): RedirectResponse

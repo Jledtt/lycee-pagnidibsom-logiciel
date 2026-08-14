@@ -16,7 +16,7 @@ class GuidedTourTest extends TestCase
     public function test_admin_can_access_every_guided_tour(): void
     {
         $admin = $this->userWithRole('admin');
-        $tours = app(GuidedTourService::class)->visibleFor($admin);
+        $tours = collect(app(GuidedTourService::class)->visibleFor($admin));
 
         $this->assertSame(
             ['dashboard', 'timetable-planning', 'payments', 'students'],
@@ -27,11 +27,11 @@ class GuidedTourTest extends TestCase
 
     public function test_guided_tours_follow_role_permissions(): void
     {
-        $secretariatTours = app(GuidedTourService::class)
-            ->visibleFor($this->userWithRole('secretariat'))
+        $secretariatTours = collect(app(GuidedTourService::class)
+            ->visibleFor($this->userWithRole('secretariat')))
             ->pluck('key');
-        $accountingTours = app(GuidedTourService::class)
-            ->visibleFor($this->userWithRole('comptable'))
+        $accountingTours = collect(app(GuidedTourService::class)
+            ->visibleFor($this->userWithRole('comptable')))
             ->pluck('key');
 
         $this->assertTrue($secretariatTours->contains('timetable-planning'));
@@ -46,8 +46,8 @@ class GuidedTourTest extends TestCase
     public function test_step_permissions_hide_unauthorized_actions(): void
     {
         $teacher = $this->userWithRole('enseignant');
-        $studentTour = app(GuidedTourService::class)
-            ->visibleFor($teacher)
+        $studentTour = collect(app(GuidedTourService::class)
+            ->visibleFor($teacher))
             ->firstWhere('key', 'students');
 
         $this->assertNotNull($studentTour);

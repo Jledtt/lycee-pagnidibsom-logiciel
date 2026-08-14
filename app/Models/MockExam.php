@@ -35,27 +35,32 @@ class MockExam extends Model
         'locked_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Term, $this> */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
+    /** @return BelongsToMany<SchoolClass, $this> */
     public function classes(): BelongsToMany
     {
         return $this->belongsToMany(SchoolClass::class, 'mock_exam_classes')
             ->withTimestamps();
     }
 
+    /** @return HasMany<MockExamSubject, $this> */
     public function subjects(): HasMany
     {
         return $this->hasMany(MockExamSubject::class);
     }
 
+    /** @return HasMany<MockExamCandidate, $this> */
     public function candidates(): HasMany
     {
         return $this->hasMany(MockExamCandidate::class);

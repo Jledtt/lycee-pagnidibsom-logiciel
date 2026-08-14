@@ -40,7 +40,7 @@ class HelpWebController extends Controller
             'filteredTopics' => $filteredTopics,
             'search' => $search,
             'selectedCategory' => $category,
-            'guidedTours' => $this->guidedTourService->visibleFor($request->user()),
+            'guidedTours' => collect($this->guidedTourService->visibleFor($request->user())),
         ]);
     }
 

@@ -9,6 +9,7 @@ use App\Services\SchoolAccessService;
 use App\Services\XlsxExportService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 
 class ExportCenterWebController extends Controller
 {
@@ -249,7 +250,8 @@ class ExportCenterWebController extends Controller
         ]);
     }
 
-    private function selectedClass(Request $request, ?AcademicYear $academicYear, $allowedClasses = null): ?SchoolClass
+    /** @param Collection<int, SchoolClass>|null $allowedClasses */
+    private function selectedClass(Request $request, ?AcademicYear $academicYear, ?Collection $allowedClasses = null): ?SchoolClass
     {
         if (! $academicYear || ! $request->filled('school_class_id')) {
             return null;
@@ -266,7 +268,8 @@ class ExportCenterWebController extends Controller
         return $class;
     }
 
-    private function classesForUser(Request $request, AcademicYear $academicYear, ?string $area = null)
+    /** @return Collection<int, SchoolClass> */
+    private function classesForUser(Request $request, AcademicYear $academicYear, ?string $area = null): Collection
     {
         if (! $request->user()->hasRole('enseignant')) {
             return $this->exports->classesFor($academicYear);

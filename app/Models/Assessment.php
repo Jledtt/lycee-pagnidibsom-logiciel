@@ -44,41 +44,49 @@ class Assessment extends Model
         ];
     }
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Term, $this> */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
+    /** @return BelongsTo<TermPeriod, $this> */
     public function termPeriod(): BelongsTo
     {
         return $this->belongsTo(TermPeriod::class);
     }
 
+    /** @return BelongsTo<SchoolClass, $this> */
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return BelongsTo<AssessmentType, $this> */
     public function assessmentType(): BelongsTo
     {
         return $this->belongsTo(AssessmentType::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
+    /** @return HasMany<Grade, $this> */
     public function grades(): HasMany
     {
         return $this->hasMany(Grade::class);

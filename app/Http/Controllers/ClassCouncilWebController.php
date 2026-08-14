@@ -322,8 +322,8 @@ class ClassCouncilWebController extends Controller
 
     private function subjectRows(ReportCard $reportCard): Collection
     {
-        return $this->gradeCalculationService
-            ->termSummary($reportCard->student, $reportCard->schoolClass, $reportCard->term)['rows']
+        return collect($this->gradeCalculationService
+            ->termSummary($reportCard->student, $reportCard->schoolClass, $reportCard->term)['rows'])
             ->sortBy(fn (array $row): string => $row['class_subject']->subject->name)
             ->map(function (array $row): array {
                 return [
