@@ -22,7 +22,7 @@ class SubjectWebController extends Controller
         $academicYear = $this->activeAcademicYear();
 
         $classes = SchoolClass::query()
-            ->with('level')
+            ->with(['level', 'academicTrack'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->where('status', 'active')
             ->orderBy('name')
@@ -154,7 +154,7 @@ class SubjectWebController extends Controller
         ]);
 
         $schoolClass = SchoolClass::query()
-            ->with('level')
+            ->with(['level', 'academicTrack'])
             ->findOrFail($data['school_class_id']);
 
         $created = 0;

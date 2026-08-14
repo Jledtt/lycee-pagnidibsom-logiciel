@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicTrack;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class SchoolClassWebController extends Controller
@@ -19,15 +23,20 @@ class SchoolClassWebController extends Controller
         $academicYear = $this->activeAcademicYear();
 
         $classes = SchoolClass::query()
-            ->with('level')
+            ->with(['level', 'academicTrack'])
             ->withCount(['enrollments' => fn ($query) => $query->where('status', 'active')])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->when($request->string('search')->toString(), function ($query, string $search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhereHas('academicTrack', function ($trackQuery) use ($search): void {
+                            $trackQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('code', 'like', "%{$search}%");
+                        });
                 });
             })
+            ->when($request->integer('academic_track_id'), fn ($query, int $trackId) => $query->where('academic_track_id', $trackId))
             ->when($request->string('status')->toString(), fn ($query, string $status) => $query->where('status', $status))
             ->orderBy('name')
             ->paginate(12)
@@ -35,8 +44,9 @@ class SchoolClassWebController extends Controller
 
         return view('classes.index', [
             'academicYear' => $academicYear,
+            'academicTracks' => AcademicTrack::query()->orderBy('kind')->orderBy('name')->get(),
             'classes' => $classes,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search', 'academic_track_id', 'status']),
         ]);
     }
 
@@ -46,6 +56,7 @@ class SchoolClassWebController extends Controller
             'academicYear' => $this->activeAcademicYear(),
             'schoolClass' => new SchoolClass(['status' => 'active']),
             'levels' => Level::query()->orderBy('position')->get(),
+            'academicTracks' => $this->availableAcademicTracks(),
         ]);
     }
 
@@ -69,6 +80,7 @@ class SchoolClassWebController extends Controller
 
         $schoolClass->load([
             'level',
+            'academicTrack',
             'enrollments' => fn ($query) => $query
                 ->with(['student.guardians'])
                 ->where('status', 'active')
@@ -98,6 +110,7 @@ class SchoolClassWebController extends Controller
             'academicYear' => $this->activeAcademicYear(),
             'schoolClass' => $schoolClass,
             'levels' => Level::query()->orderBy('position')->get(),
+            'academicTracks' => $this->availableAcademicTracks($schoolClass),
         ]);
     }
 
@@ -178,7 +191,7 @@ class SchoolClassWebController extends Controller
 
     private function validateClass(Request $request, AcademicYear $academicYear, ?SchoolClass $schoolClass = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => [
                 'required',
                 'string',
@@ -189,8 +202,38 @@ class SchoolClassWebController extends Controller
             ],
             'code' => ['nullable', 'string', 'max:40'],
             'level_id' => ['required', 'exists:levels,id'],
+            'academic_track_id' => ['nullable', 'integer', 'exists:academic_tracks,id'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:500'],
             'status' => ['required', 'in:active,inactive,archived'],
         ]);
+
+        if (filled($data['academic_track_id'] ?? null)) {
+            $academicTrack = AcademicTrack::query()->findOrFail($data['academic_track_id']);
+            $keepsCurrentInactiveTrack = $schoolClass?->academic_track_id === $academicTrack->id;
+
+            if ($academicTrack->status !== 'active' && ! $keepsCurrentInactiveTrack) {
+                throw ValidationException::withMessages([
+                    'academic_track_id' => 'Cette série ou filière est désactivée et ne peut pas être affectée à une nouvelle classe.',
+                ]);
+            }
+        }
+
+        return $data;
+    }
+
+    /** @return Collection<int, AcademicTrack> */
+    private function availableAcademicTracks(?SchoolClass $schoolClass = null): Collection
+    {
+        return AcademicTrack::query()
+            ->where(function (Builder $query) use ($schoolClass): void {
+                $query->where('status', 'active');
+
+                if ($schoolClass?->academic_track_id !== null) {
+                    $query->orWhere('id', $schoolClass->academic_track_id);
+                }
+            })
+            ->orderBy('kind')
+            ->orderBy('name')
+            ->get();
     }
 }

@@ -11,6 +11,7 @@ class SchoolClass extends Model
     protected $fillable = [
         'academic_year_id',
         'level_id',
+        'academic_track_id',
         'name',
         'code',
         'main_teacher_id',
@@ -18,14 +19,22 @@ class SchoolClass extends Model
         'status',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Level, $this> */
     public function level(): BelongsTo
     {
         return $this->belongsTo(Level::class);
+    }
+
+    /** @return BelongsTo<AcademicTrack, $this> */
+    public function academicTrack(): BelongsTo
+    {
+        return $this->belongsTo(AcademicTrack::class);
     }
 
     public function mainTeacher(): BelongsTo

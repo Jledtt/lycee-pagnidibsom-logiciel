@@ -26,12 +26,26 @@
         </div>
 
         <div class="field">
+            <label for="academic_track_id">Série ou filière</label>
+            <select id="academic_track_id" name="academic_track_id">
+                <option value="">Aucune</option>
+                @foreach ($academicTracks as $academicTrack)
+                    <option value="{{ $academicTrack->id }}" @selected((string) old('academic_track_id', $schoolClass->academic_track_id) === (string) $academicTrack->id)>
+                        {{ $academicTrack->name }} ({{ $academicTrack->code }}){{ $academicTrack->status === 'inactive' ? ' - désactivée' : '' }}
+                    </option>
+                @endforeach
+            </select>
+            <small>Facultatif pour les classes qui ne dépendent d’aucune série ou filière.</small>
+            @error('academic_track_id') <small class="error">{{ $message }}</small> @enderror
+        </div>
+
+        <div class="field">
             <label for="capacity">Capacité</label>
             <input id="capacity" name="capacity" type="number" min="1" max="500" value="{{ old('capacity', $schoolClass->capacity) }}" placeholder="Ex: 60">
             @error('capacity') <small class="error">{{ $message }}</small> @enderror
         </div>
 
-        <div class="field wide">
+        <div class="field">
             <label for="status">Statut</label>
             <select id="status" name="status" required>
                 <option value="active" @selected(old('status', $schoolClass->status) === 'active')>Active</option>

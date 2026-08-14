@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\AcademicTrack;
 use App\Models\Assessment;
 use App\Models\AttendanceRecord;
 use App\Models\ClassSubject;
@@ -87,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
     private function auditedModels(): array
     {
         return [
+            AcademicTrack::class,
             Assessment::class,
             AttendanceRecord::class,
             ClassSubject::class,

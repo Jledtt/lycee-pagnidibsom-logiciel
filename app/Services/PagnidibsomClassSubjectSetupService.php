@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AcademicTrack;
 use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\Level;
@@ -27,17 +28,23 @@ class PagnidibsomClassSubjectSetupService
                     ],
                 );
 
+                $classAttributes = [
+                    'level_id' => $level->id,
+                    'code' => $plan['code'],
+                    'capacity' => $plan['capacity'],
+                    'status' => 'active',
+                ];
+
+                if (isset($plan['track'])) {
+                    $classAttributes['academic_track_id'] = $this->academicTrack($plan['track'])->id;
+                }
+
                 $schoolClass = SchoolClass::query()->updateOrCreate(
                     [
                         'academic_year_id' => $academicYear->id,
                         'name' => $className,
                     ],
-                    [
-                        'level_id' => $level->id,
-                        'code' => $plan['code'],
-                        'capacity' => $plan['capacity'],
-                        'status' => 'active',
-                    ],
+                    $classAttributes,
                 );
 
                 foreach ($plan['subjects'] as $subjectCode => $coefficient) {
@@ -148,6 +155,7 @@ class PagnidibsomClassSubjectSetupService
                 'cycle' => 'Second cycle',
                 'position' => 5,
                 'code' => '2NDA',
+                'track' => 'A',
                 'capacity' => 60,
                 'subjects' => [
                     'ALL' => 3,
@@ -168,6 +176,7 @@ class PagnidibsomClassSubjectSetupService
                 'cycle' => 'Second cycle',
                 'position' => 5,
                 'code' => '2NDC',
+                'track' => 'C',
                 'capacity' => 60,
                 'subjects' => [
                     'ANG' => 2,
@@ -187,7 +196,14 @@ class PagnidibsomClassSubjectSetupService
 
     public function suggestedSubjectsForClass(SchoolClass $schoolClass): array
     {
-        $plan = $this->classPlan()[$schoolClass->name] ?? null;
+        $schoolClass->loadMissing(['level', 'academicTrack']);
+        $classKey = $schoolClass->name;
+
+        if (! isset($this->classPlan()[$classKey]) && $schoolClass->level && $schoolClass->academicTrack) {
+            $classKey = trim($schoolClass->level->name.' '.$schoolClass->academicTrack->code);
+        }
+
+        $plan = $this->classPlan()[$classKey] ?? null;
 
         if (! $plan) {
             return [];
@@ -233,6 +249,18 @@ class PagnidibsomClassSubjectSetupService
         }
 
         return $subject;
+    }
+
+    private function academicTrack(string $code): AcademicTrack
+    {
+        return AcademicTrack::query()->updateOrCreate(
+            ['code' => $code],
+            [
+                'name' => 'Série '.$code,
+                'kind' => 'serie',
+                'status' => 'active',
+            ],
+        );
     }
 
     private function subjects(): array

@@ -133,6 +133,10 @@
                 <strong>{{ $schoolClass->code ?? '-' }}</strong>
             </div>
             <div class="detail-item">
+                <span>Série ou filière</span>
+                <strong>{{ $schoolClass->academicTrack?->name ?? 'Aucune' }}</strong>
+            </div>
+            <div class="detail-item">
                 <span>Capacité</span>
                 <strong>{{ $schoolClass->capacity ?? '-' }}</strong>
             </div>

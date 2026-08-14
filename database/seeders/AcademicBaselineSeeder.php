@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicTrack;
 use App\Models\AcademicYear;
 use App\Models\AssessmentType;
 use App\Models\FeeType;
 use App\Models\Level;
 use App\Models\SchoolSetting;
 use App\Models\Subject;
+use App\Models\Term;
 use App\Services\TermPeriodService;
 use Illuminate\Database\Seeder;
 
@@ -50,8 +52,11 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'Trimestre 2', 'position' => 2],
             ['name' => 'Trimestre 3', 'position' => 3],
         ] as $term) {
-            $createdTerm = $academicYear->terms()->firstOrCreate(
-                ['position' => $term['position']],
+            $createdTerm = Term::query()->firstOrCreate(
+                [
+                    'academic_year_id' => $academicYear->id,
+                    'position' => $term['position'],
+                ],
                 [
                     'name' => $term['name'],
                     'type' => 'trimestre',
@@ -71,6 +76,16 @@ class AcademicBaselineSeeder extends Seeder
             ['name' => 'Terminale', 'cycle' => 'Second cycle', 'position' => 7],
         ] as $level) {
             Level::firstOrCreate(['name' => $level['name']], $level);
+        }
+
+        foreach ([
+            ['name' => 'Série A', 'code' => 'A', 'kind' => 'serie'],
+            ['name' => 'Série C', 'code' => 'C', 'kind' => 'serie'],
+        ] as $track) {
+            AcademicTrack::query()->updateOrCreate(
+                ['code' => $track['code']],
+                $track + ['status' => 'active'],
+            );
         }
 
         foreach ([

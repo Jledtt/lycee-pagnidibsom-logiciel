@@ -18,7 +18,15 @@
         </div>
 
         <form class="searchbar" method="GET" action="{{ route('classes.index') }}">
-            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom ou code de classe">
+            <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom, code, série ou filière">
+            <select name="academic_track_id">
+                <option value="">Toutes les séries et filières</option>
+                @foreach ($academicTracks as $academicTrack)
+                    <option value="{{ $academicTrack->id }}" @selected((string) ($filters['academic_track_id'] ?? '') === (string) $academicTrack->id)>
+                        {{ $academicTrack->name }} ({{ $academicTrack->code }})
+                    </option>
+                @endforeach
+            </select>
             <select name="status">
                 <option value="">Tous les statuts</option>
                 <option value="active" @selected(($filters['status'] ?? '') === 'active')>Actives</option>
@@ -39,11 +47,13 @@
         @if ($classes->isEmpty())
             <div class="empty">Aucune classe configurée. Crée la première classe avec le bouton "Nouvelle classe".</div>
         @else
+            <div class="table-scroll">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Classe</th>
                         <th>Niveau</th>
+                        <th>Série / filière</th>
                         <th>Effectif</th>
                         <th>Capacité</th>
                         <th>Statut</th>
@@ -62,6 +72,14 @@
                             </td>
                             <td>{{ $class->level?->name ?? '-' }}</td>
                             <td>
+                                @if ($class->academicTrack)
+                                    {{ $class->academicTrack->name }}
+                                    <span class="badge">{{ $class->academicTrack->code }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
                                 <strong>{{ $class->enrollments_count }}</strong>
                                 @if ($class->capacity)
                                     <div class="meter" aria-hidden="true"><span style="--value: {{ $percent }}%"></span></div>
@@ -76,6 +94,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
 
             <div class="pagination">
                 {{ $classes->links() }}

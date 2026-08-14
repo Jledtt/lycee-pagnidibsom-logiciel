@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicTrack;
 use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
@@ -26,6 +27,12 @@ class PagnidibsomClassSubjectSetupTest extends TestCase
         $this->assertDatabaseHas('school_classes', ['name' => '3e', 'code' => '3E']);
         $this->assertDatabaseHas('school_classes', ['name' => '2nde A', 'code' => '2NDA']);
         $this->assertDatabaseHas('school_classes', ['name' => '2nde C', 'code' => '2NDC']);
+
+        $trackA = AcademicTrack::query()->where('code', 'A')->firstOrFail();
+        $trackC = AcademicTrack::query()->where('code', 'C')->firstOrFail();
+        $this->assertSame($trackA->id, SchoolClass::query()->where('name', '2nde A')->value('academic_track_id'));
+        $this->assertSame($trackC->id, SchoolClass::query()->where('name', '2nde C')->value('academic_track_id'));
+        $this->assertNull(SchoolClass::query()->where('name', '6e')->value('academic_track_id'));
 
         $this->assertSame(6, SchoolClass::query()->count());
         $this->assertSame(11, Subject::query()->whereIn('code', [

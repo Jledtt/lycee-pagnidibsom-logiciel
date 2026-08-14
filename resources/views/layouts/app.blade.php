@@ -55,10 +55,13 @@
                     </x-navigation.section>
                 @endcanany
 
-                @canany(['classes.manage', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'discipline.view', 'students.export'])
-                    <x-navigation.section title="Scolarité" :active="$activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'discipline', 'exit-authorizations'])">
+                @canany(['classes.manage', 'academic_tracks.view', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'discipline.view', 'students.export'])
+                    <x-navigation.section title="Scolarité" :active="$activeIn(['classes', 'academic-tracks', 'enrollments', 'timetables', 'attendance', 'discipline', 'exit-authorizations'])">
                         @can('classes.manage')
                             <x-navigation.link :href="route('classes.index')" :active="$activeKey === 'classes'">Classes</x-navigation.link>
+                        @endcan
+                        @can('academic_tracks.view')
+                            <x-navigation.link :href="route('academic-tracks.index')" :active="$activeKey === 'academic-tracks'">Séries et filières</x-navigation.link>
                         @endcan
                         @can('enrollments.view')
                             <x-navigation.link :href="route('enrollments.index')" :active="$activeKey === 'enrollments'">Inscriptions</x-navigation.link>

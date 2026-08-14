@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicYearWebController;
+use App\Http\Controllers\AcademicTrackWebController;
 use App\Http\Controllers\AccountingWebController;
 use App\Http\Controllers\ActivityLogWebController;
 use App\Http\Controllers\AttendanceWebController;
@@ -849,6 +850,22 @@ Route::get('/student-documents/{studentDocument}', [StudentDocumentWebController
 Route::get('/student-documents/{studentDocument}/download', [StudentDocumentWebController::class, 'download'])
     ->middleware(['auth', 'permission:students.view'])
     ->name('student-documents.download');
+
+Route::get('/academic-tracks', [AcademicTrackWebController::class, 'index'])
+    ->middleware(['auth', 'permission:academic_tracks.view'])
+    ->name('academic-tracks.index');
+Route::get('/academic-tracks/create', [AcademicTrackWebController::class, 'create'])
+    ->middleware(['auth', 'permission:academic_tracks.manage'])
+    ->name('academic-tracks.create');
+Route::post('/academic-tracks', [AcademicTrackWebController::class, 'store'])
+    ->middleware(['auth', 'permission:academic_tracks.manage'])
+    ->name('academic-tracks.store');
+Route::get('/academic-tracks/{academicTrack}/edit', [AcademicTrackWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:academic_tracks.manage'])
+    ->name('academic-tracks.edit');
+Route::put('/academic-tracks/{academicTrack}', [AcademicTrackWebController::class, 'update'])
+    ->middleware(['auth', 'permission:academic_tracks.manage'])
+    ->name('academic-tracks.update');
 
 Route::post('/classes/{schoolClass}/students', [SchoolClassWebController::class, 'attachStudent'])
     ->middleware(['auth', 'permission:classes.manage'])
