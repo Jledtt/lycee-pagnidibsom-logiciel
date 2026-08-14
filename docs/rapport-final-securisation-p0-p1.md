@@ -188,20 +188,19 @@ Correction ciblée appliquée :
 
 Le bit setgid du dossier transmet le groupe restreint aux futures archives. Le compte n'a pas été ajouté au groupe `www-data` et ne gagne donc aucun accès au `.env` ou aux autres fichiers privés.
 
-## 8. Points restant bloquants
+## 8. État des derniers points d'exploitation
 
-### Secret GitHub absent
+### Copie externe GitHub validée
 
-Le workflow manuel `31850304450` échoue parce que le secret Actions `LPP_BACKUP_HOST` est absent. Les secrets `LPP_BACKUP_KNOWN_HOSTS` et `LPP_BACKUP_SSH_KEY` existent.
+Le secret Actions `LPP_BACKUP_HOST` a été créé après autorisation explicite. Les secrets `LPP_BACKUP_KNOWN_HOSTS` et `LPP_BACKUP_SSH_KEY` sont également présents.
 
-Action requise après autorisation :
+Le workflow manuel `31851901085` est terminé avec succès :
 
-```powershell
-'164.132.198.19' | gh secret set LPP_BACKUP_HOST
-gh workflow run offsite-backup.yml --ref main
-```
-
-Le jalon est terminé seulement lorsque l'étape « Conserver la copie externe pendant 30 jours » réussit et que l'artefact ZIP accompagné de son SHA-256 est présent.
+- téléchargement et vérification de l'archive chiffrée : succès ;
+- création du SHA-256 : succès ;
+- artefact `lpp-backup-31851901085` : 779 857 octets ;
+- conservation jusqu'au 13 septembre 2026 ;
+- artefact non expiré au moment du contrôle.
 
 ### Sessions non chiffrées en base
 
@@ -264,9 +263,9 @@ Ce retour arrière réintroduit l'échec de la copie externe et n'est donc pas r
 
 ## 11. Critères de clôture
 
-Le code local satisfait les critères de qualité, d'autorisation, d'intégrité, de modules et de responsive. Deux validations externes restent nécessaires avant de déclarer l'ensemble prêt pour la production :
+Le code local satisfait les critères de qualité, d'autorisation, d'intégrité, de modules et de responsive. La copie externe chiffrée est également validée. La dernière validation externe consiste à :
 
-1. autoriser la création du secret GitHub `LPP_BACKUP_HOST`, puis obtenir un workflow vert avec artefact ;
-2. autoriser le push et le déploiement des commits locaux, avec audit de données avant migration.
+1. pousser et déployer les commits locaux, avec audit de données avant migration ;
+2. contrôler le site, les services, les permissions et les migrations après déploiement.
 
 Le chiffrement des sessions est une amélioration de défense en profondeur à programmer pendant une maintenance, car son activation déconnectera les utilisateurs actuels.
