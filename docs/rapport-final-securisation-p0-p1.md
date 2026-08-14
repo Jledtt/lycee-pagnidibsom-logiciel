@@ -166,6 +166,8 @@ Les tests destructifs sont volontairement ignorés sur tablette et mobile. Cette
 - déchiffrement PHP : succès ;
 - export par le compte SSH restreint : succès ;
 - restauration MySQL temporaire : succès, 67 tables, base temporaire supprimée.
+- audit P1 exécuté en lecture seule sur la base MySQL de production avec le nouveau service : 0 anomalie bloquante, 0 avertissement, contraintes applicables ;
+- fichier de service temporaire supprimé du serveur après l'audit.
 
 ## 7. Réparation d'exploitation appliquée au serveur
 
@@ -217,7 +219,7 @@ Ils sont protégés en `600` et hors de la racine Web, mais ils dupliquent des s
 
 ## 9. Risques et contrôles avant déploiement
 
-- exécuter `php artisan lpp:audit-data-integrity` sur la base de production avant les migrations ;
+- relancer `php artisan lpp:audit-data-integrity` immédiatement avant les migrations, même si l'audit préparatoire du 14 août 2026 est vert ;
 - arrêter le déploiement si l'audit retourne une anomalie bloquante ;
 - prendre une nouvelle sauvegarde chiffrée et vérifier son SHA-256 ;
 - activer le mode maintenance pendant les migrations ;
