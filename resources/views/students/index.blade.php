@@ -59,7 +59,9 @@
                         <th>Élève</th>
                         <th>Sexe</th>
                         <th>Classe</th>
-                        <th>Tuteur</th>
+                        @if ($fullStudentAccess)
+                            <th>Tuteur</th>
+                        @endif
                         <th>Statut</th>
                         <th></th>
                     </tr>
@@ -67,13 +69,15 @@
                 <tbody>
                     @foreach ($students as $student)
                         @php($enrollment = $student->enrollments->sortByDesc('id')->first())
-                        @php($guardian = $student->guardians->first())
+                        @php($guardian = $fullStudentAccess ? $student->guardians->first() : null)
                         <tr>
                             <td>{{ $student->matricule }}</td>
                             <td><strong>{{ $student->full_name }}</strong></td>
                             <td>{{ $student->gender_label }}</td>
                             <td>{{ $student->desired_class ?: ($enrollment?->schoolClass?->name ?? '-') }}</td>
-                            <td>{{ $guardian?->full_name ?? '-' }}</td>
+                            @if ($fullStudentAccess)
+                                <td>{{ $guardian?->full_name ?? '-' }}</td>
+                            @endif
                             <td><span class="badge">{{ $student->status }}</span></td>
                             <td><a class="btn btn-subtle" href="{{ route('students.show', $student) }}">Voir</a></td>
                         </tr>

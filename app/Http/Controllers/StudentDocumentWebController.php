@@ -16,6 +16,9 @@ class StudentDocumentWebController extends Controller
 {
     public function store(StoreStudentDocumentRequest $request, Student $student): RedirectResponse
     {
+        $this->authorize('create', StudentDocument::class);
+        $this->authorize('update', $student);
+
         $data = $request->validated();
 
         $document = StudentDocument::query()->create([
@@ -59,6 +62,8 @@ class StudentDocumentWebController extends Controller
 
     public function show(StudentDocument $studentDocument): BinaryFileResponse
     {
+        $this->authorize('view', $studentDocument);
+
         abort_if(blank($studentDocument->file_path), 404, 'Fichier introuvable.');
 
         if ($media = $this->mediaFromDocument($studentDocument)) {
@@ -75,6 +80,8 @@ class StudentDocumentWebController extends Controller
 
     public function download(StudentDocument $studentDocument): BinaryFileResponse
     {
+        $this->authorize('view', $studentDocument);
+
         abort_if(blank($studentDocument->file_path), 404, 'Fichier introuvable.');
 
         if ($media = $this->mediaFromDocument($studentDocument)) {
@@ -99,6 +106,8 @@ class StudentDocumentWebController extends Controller
     public function destroy(Student $student, StudentDocument $studentDocument): RedirectResponse
     {
         abort_unless($studentDocument->student_id === $student->id, 404);
+        $this->authorize('delete', $studentDocument);
+        $this->authorize('update', $student);
 
         if ($media = $this->mediaFromDocument($studentDocument)) {
             $media->delete();

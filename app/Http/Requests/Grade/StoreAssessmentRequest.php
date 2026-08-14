@@ -5,6 +5,7 @@ namespace App\Http\Requests\Grade;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\TermPeriod;
+use App\Services\SchoolAccessService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -13,7 +14,20 @@ class StoreAssessmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('grades.create') ?? false;
+        if (! $this->user()?->can('grades.create')) {
+            return false;
+        }
+
+        abort_unless(
+            app(SchoolAccessService::class)->canManageClassSubject(
+                $this->user(),
+                $this->integer('school_class_id'),
+                $this->integer('subject_id'),
+            ),
+            404,
+        );
+
+        return true;
     }
 
     protected function prepareForValidation(): void

@@ -10,6 +10,7 @@ use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
 use App\Services\PaymentFinancialProfileService;
 use App\Services\RequiredStudentDocumentService;
+use App\Services\SchoolAccessService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -20,13 +21,20 @@ use Illuminate\View\View;
 
 class StudentWebController extends Controller
 {
+    public function __construct(private readonly SchoolAccessService $access) {}
+
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Student::class);
+
         $perPage = $request->integer('per_page', 12);
         $perPage = in_array($perPage, [12, 25, 50, 100], true) ? $perPage : 12;
 
-        $students = Student::query()
-            ->with(['guardians', 'enrollments.schoolClass'])
+        $fullStudentAccess = $this->access->canViewFullStudentRecord($request->user());
+        $students = $this->access->scopeStudents(Student::query(), $request->user())
+            ->with($fullStudentAccess
+                ? ['guardians', 'enrollments.schoolClass']
+                : ['enrollments.schoolClass'])
             ->when($request->string('search')->toString(), function ($query, string $search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('first_name', 'like', "%{$search}%")
@@ -43,11 +51,14 @@ class StudentWebController extends Controller
             'academicYear' => $this->activeAcademicYear(),
             'students' => $students,
             'filters' => $request->only(['search', 'status', 'per_page']),
+            'fullStudentAccess' => $fullStudentAccess,
         ]);
     }
 
     public function create(): View
     {
+        $this->authorize('create', Student::class);
+
         return view('students.create', [
             'academicYear' => $this->activeAcademicYear(),
             'student' => new Student(['status' => 'active']),
@@ -58,6 +69,8 @@ class StudentWebController extends Controller
 
     public function export(Request $request, XlsxExportService $xlsxExport)
     {
+        abort_unless($this->access->canViewFullStudentRecord($request->user()), 404);
+
         $students = $this->studentQuery($request)
             ->with(['guardians', 'enrollments.schoolClass'])
             ->orderBy('last_name')
@@ -98,6 +111,8 @@ class StudentWebController extends Controller
 
     public function store(Request $request, MatriculeGeneratorService $matriculeGenerator): RedirectResponse
     {
+        $this->authorize('create', Student::class);
+
         $data = $this->validateStudent($request);
         $guardianData = $this->validateGuardians($request);
         $academicYear = $this->activeAcademicYear();
@@ -126,7 +141,27 @@ class StudentWebController extends Controller
         RequiredStudentDocumentService $requiredDocuments,
         PaymentFinancialProfileService $financialProfiles,
     ): View {
+        $this->authorize('view', $student);
+
         $academicYear = $this->activeAcademicYear();
+
+        if (! $this->access->canViewFullStudentRecord($request->user())) {
+            $student->load('enrollments.schoolClass.level');
+            $currentEnrollment = $student->enrollments
+                ->when($academicYear, fn ($enrollments) => $enrollments->where('academic_year_id', $academicYear->id))
+                ->where('status', 'active')
+                ->sortByDesc('id')
+                ->first();
+
+            return view('students.identity', [
+                'academicYear' => $academicYear,
+                'student' => $student,
+                'currentEnrollment' => $currentEnrollment,
+                'financialSummary' => $request->user()->can('payments.view')
+                    ? $financialProfiles->studentPaymentSummary($student, $academicYear)
+                    : null,
+            ]);
+        }
 
         $student->load([
             'guardians',
@@ -158,11 +193,15 @@ class StudentWebController extends Controller
 
     public function registrationSheet(Student $student): View
     {
+        $this->authorize('viewFullRecord', $student);
+
         return view('students.registration-sheet', $this->registrationSheetData($student));
     }
 
     public function registrationSheetPdf(Student $student)
     {
+        $this->authorize('viewFullRecord', $student);
+
         $data = $this->registrationSheetData($student);
         $filename = 'fiche-inscription-'.Str::slug($student->matricule.'-'.$student->full_name).'.pdf';
 
@@ -173,6 +212,8 @@ class StudentWebController extends Controller
 
     public function edit(Student $student): View
     {
+        $this->authorize('update', $student);
+
         $student->load('guardians');
 
         return view('students.edit', [
@@ -189,6 +230,8 @@ class StudentWebController extends Controller
         Student $student,
         CommunicationService $communicationService,
     ): RedirectResponse {
+        $this->authorize('update', $student);
+
         $data = $this->validateStudent($request, true);
         $guardianData = $this->validateGuardians($request);
         $oldStatus = (string) $student->status;
@@ -214,6 +257,8 @@ class StudentWebController extends Controller
 
     public function destroy(Student $student): RedirectResponse
     {
+        $this->authorize('delete', $student);
+
         $student->delete();
 
         return redirect()

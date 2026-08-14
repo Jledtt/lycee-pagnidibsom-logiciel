@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Services\ExportCenterService;
+use App\Services\SchoolAccessService;
 use App\Services\XlsxExportService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,6 +14,7 @@ class ExportCenterWebController extends Controller
 {
     public function __construct(
         private ExportCenterService $exports,
+        private SchoolAccessService $access,
         private XlsxExportService $xlsx,
     ) {}
 
@@ -23,8 +25,8 @@ class ExportCenterWebController extends Controller
             ->orderByDesc('id')
             ->get();
         $selectedYear = $this->selectedAcademicYear($request) ?? $academicYears->first();
-        $classes = $selectedYear ? $this->exports->classesFor($selectedYear) : collect();
-        $selectedClass = $this->selectedClass($request, $selectedYear);
+        $classes = $selectedYear ? $this->classesForUser($request, $selectedYear) : collect();
+        $selectedClass = $this->selectedClass($request, $selectedYear, $classes);
 
         return view('exports.index', [
             'academicYears' => $academicYears,
@@ -114,7 +116,12 @@ class ExportCenterWebController extends Controller
         ]);
 
         $year = $this->selectedAcademicYear($request);
-        $class = $this->selectedClass($request, $year);
+        $classes = $this->classesForUser($request, $year, 'grades');
+        $class = $this->selectedClass($request, $year, $classes);
+
+        if ($request->user()->hasRole('enseignant') && ! $class) {
+            abort(404);
+        }
 
         return $this->xlsx->download(
             $this->exports->filename('notes', $year, $class),
@@ -125,6 +132,7 @@ class ExportCenterWebController extends Controller
                 $request->integer('term_id') ?: null,
                 $request->integer('term_period_id') ?: null,
                 $request->integer('subject_id') ?: null,
+                $request->user(),
             ),
             'Notes'
         );
@@ -141,7 +149,12 @@ class ExportCenterWebController extends Controller
         ]);
 
         $year = $this->selectedAcademicYear($request);
-        $class = $this->selectedClass($request, $year);
+        $classes = $this->classesForUser($request, $year, 'attendance');
+        $class = $this->selectedClass($request, $year, $classes);
+
+        if ($request->user()->hasRole('enseignant') && ! $class) {
+            abort(404);
+        }
 
         return $this->xlsx->download(
             $this->exports->filename('absences', $year, $class),
@@ -152,6 +165,7 @@ class ExportCenterWebController extends Controller
                 $request->string('status')->toString() ?: null,
                 $request->string('date_from')->toString() ?: null,
                 $request->string('date_to')->toString() ?: null,
+                $request->user(),
             ),
             'Absences'
         );
@@ -235,14 +249,36 @@ class ExportCenterWebController extends Controller
         ]);
     }
 
-    private function selectedClass(Request $request, ?AcademicYear $academicYear): ?SchoolClass
+    private function selectedClass(Request $request, ?AcademicYear $academicYear, $allowedClasses = null): ?SchoolClass
     {
         if (! $academicYear || ! $request->filled('school_class_id')) {
             return null;
         }
 
-        return SchoolClass::query()
+        $class = SchoolClass::query()
             ->where('academic_year_id', $academicYear->id)
             ->find($request->integer('school_class_id'));
+
+        if ($class && $allowedClasses && ! $allowedClasses->contains('id', $class->id)) {
+            abort(404);
+        }
+
+        return $class;
+    }
+
+    private function classesForUser(Request $request, AcademicYear $academicYear, ?string $area = null)
+    {
+        if (! $request->user()->hasRole('enseignant')) {
+            return $this->exports->classesFor($academicYear);
+        }
+
+        $area ??= $request->user()->can('grades.view') ? 'grades' : 'attendance';
+
+        return $this->access
+            ->scopeClasses(SchoolClass::query(), $request->user(), $area)
+            ->with('level')
+            ->where('academic_year_id', $academicYear->id)
+            ->orderBy('name')
+            ->get();
     }
 }

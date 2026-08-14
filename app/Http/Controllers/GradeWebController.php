@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Models\Term;
 use App\Services\GradeCalculationService;
 use App\Services\GradeEntryService;
+use App\Services\SchoolAccessService;
 use App\Services\TermPeriodService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -28,6 +29,7 @@ class GradeWebController extends Controller
     public function __construct(
         private readonly GradeCalculationService $gradeCalculationService,
         private readonly GradeEntryService $gradeEntryService,
+        private readonly SchoolAccessService $access,
         private readonly TermPeriodService $termPeriodService,
     ) {}
 
@@ -35,7 +37,7 @@ class GradeWebController extends Controller
     {
         $academicYear = $this->requireActiveAcademicYear();
 
-        $classes = SchoolClass::query()
+        $classes = $this->access->scopeClasses(SchoolClass::query(), $request->user(), 'grades')
             ->with('level')
             ->where('academic_year_id', $academicYear->id)
             ->where('status', 'active')
@@ -47,7 +49,10 @@ class GradeWebController extends Controller
             ->orderBy('position')
             ->get();
 
-        $selectedClass = $classes->firstWhere('id', $request->integer('school_class_id')) ?? $classes->first();
+        $requestedClassId = $request->integer('school_class_id');
+        abort_if($requestedClassId > 0 && ! $classes->contains('id', $requestedClassId), 404);
+
+        $selectedClass = $classes->firstWhere('id', $requestedClassId) ?? $classes->first();
         $selectedTerm = $terms->firstWhere('id', $request->integer('term_id')) ?? $terms->first();
         $termPeriods = $selectedTerm ? $this->termPeriodService->ensureDefaults($selectedTerm) : collect();
         $selectedTermPeriod = $termPeriods->firstWhere('id', $request->integer('term_period_id')) ?? $termPeriods->first();
@@ -63,12 +68,13 @@ class GradeWebController extends Controller
                 ->with('subject')
                 ->where('school_class_id', $selectedClass->id)
                 ->where('is_active', true)
+                ->when($request->user()->hasRole('enseignant'), fn ($query) => $query->where('teacher_id', $request->user()->id))
                 ->join('subjects', 'subjects.id', '=', 'class_subjects.subject_id')
                 ->orderBy('subjects.name')
                 ->select('class_subjects.*')
                 ->get();
 
-            $assessments = Assessment::query()
+            $assessments = $this->access->scopeAssessments(Assessment::query(), $request->user())
                 ->with(['subject', 'assessmentType'])
                 ->withCount('grades')
                 ->where('academic_year_id', $academicYear->id)
@@ -79,7 +85,10 @@ class GradeWebController extends Controller
                 ->latest('id')
                 ->get();
 
-            $selectedAssessment = $assessments->firstWhere('id', $request->integer('assessment_id')) ?? $assessments->first();
+            $requestedAssessmentId = $request->integer('assessment_id');
+            abort_if($requestedAssessmentId > 0 && ! $assessments->contains('id', $requestedAssessmentId), 404);
+
+            $selectedAssessment = $assessments->firstWhere('id', $requestedAssessmentId) ?? $assessments->first();
 
             $students = $this->gradeEntryService->studentsForClass($academicYear->id, $selectedClass->id);
 
@@ -115,6 +124,15 @@ class GradeWebController extends Controller
         $academicYear = $this->requireActiveAcademicYear();
         $data = $request->validated();
 
+        abort_unless(
+            $this->access->canManageClassSubject(
+                $request->user(),
+                (int) $data['school_class_id'],
+                (int) $data['subject_id'],
+            ),
+            404,
+        );
+
         abort_unless($this->gradeEntryService->subjectBelongsToClass((int) $data['school_class_id'], (int) $data['subject_id']), 422, 'Matière non affectée à cette classe.');
         abort_if(
             $this->gradeEntryService->classTermIsLocked((int) $data['school_class_id'], (int) $data['term_id']) && ! $request->user()?->can('grades.unlock'),
@@ -136,6 +154,8 @@ class GradeWebController extends Controller
 
     public function updateGrades(UpdateGradesRequest $request, Assessment $assessment): RedirectResponse
     {
+        $this->authorize('update', $assessment);
+
         abort_if($assessment->is_locked && ! $request->user()?->can('grades.unlock'), 403, 'Cette évaluation est verrouillée.');
 
         $this->gradeEntryService->updateGrades($assessment, $request->validated('grades') ?? [], $request->user());
@@ -152,6 +172,8 @@ class GradeWebController extends Controller
 
     public function assessmentPdf(Assessment $assessment)
     {
+        $this->authorize('view', $assessment);
+
         $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'teacher', 'grades.student']);
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
@@ -194,6 +216,8 @@ class GradeWebController extends Controller
 
     public function paperSheetPdf(Assessment $assessment)
     {
+        $this->authorize('view', $assessment);
+
         $assessment->load([
             'academicYear',
             'term',
@@ -242,6 +266,8 @@ class GradeWebController extends Controller
 
     public function assessmentExport(Assessment $assessment, XlsxExportService $xlsxExport)
     {
+        $this->authorize('view', $assessment);
+
         $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject', 'assessmentType', 'grades.student']);
 
         $students = $this->gradeEntryService->studentsForClass($assessment->academic_year_id, $assessment->school_class_id);
@@ -284,6 +310,8 @@ class GradeWebController extends Controller
 
     public function registerPdf(Assessment $assessment)
     {
+        $this->authorize('view', $assessment);
+
         $assessment->load(['academicYear', 'term', 'termPeriod', 'schoolClass.level', 'subject']);
 
         $assessments = Assessment::query()
@@ -341,6 +369,8 @@ class GradeWebController extends Controller
 
     public function destroyAssessment(Assessment $assessment): RedirectResponse
     {
+        $this->authorize('delete', $assessment);
+
         abort_if($assessment->is_locked && ! request()->user()?->can('grades.unlock'), 403, 'Cette évaluation est verrouillée.');
 
         $schoolClassId = $assessment->school_class_id;
@@ -359,6 +389,8 @@ class GradeWebController extends Controller
 
     public function lockAssessment(Assessment $assessment): RedirectResponse
     {
+        $this->authorize('lock', $assessment);
+
         $assessment->update(['is_locked' => true]);
 
         return $this->backToAssessment($assessment)
@@ -367,6 +399,8 @@ class GradeWebController extends Controller
 
     public function unlockAssessment(Assessment $assessment): RedirectResponse
     {
+        $this->authorize('unlock', $assessment);
+
         $assessment->update(['is_locked' => false]);
 
         return $this->backToAssessment($assessment)

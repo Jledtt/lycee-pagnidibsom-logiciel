@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Services\AttendanceSessionService;
+use App\Services\SchoolAccessService;
 use App\Services\XlsxExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class AttendanceWebController extends Controller
 {
     public function __construct(
         private readonly AttendanceSessionService $attendanceSessionService,
+        private readonly SchoolAccessService $access,
     ) {}
 
     public function index(Request $request): View
@@ -33,7 +35,7 @@ class AttendanceWebController extends Controller
         $classes = $this->classes($academicYear);
         $date = $request->date('date') ?? today();
         $schoolClass = $this->selectedClass($request, $classes);
-        $sessions = $this->sessionsForDate($academicYear, $date);
+        $sessions = $this->sessionsForDate($academicYear, $date, $request);
         $selectedSession = $schoolClass
             ? $sessions->where('school_class_id', $schoolClass->id)->sortByDesc('updated_at')->first()
             : null;
@@ -43,7 +45,7 @@ class AttendanceWebController extends Controller
             'classes' => $classes,
             'date' => $date,
             'filters' => $request->only(['school_class_id', 'date']),
-            'recentRecords' => $this->recentRecords($academicYear),
+            'recentRecords' => $this->recentRecords($academicYear, $request),
             'schoolClass' => $schoolClass,
             'selectedSession' => $selectedSession,
             'sessions' => $sessions,
@@ -135,6 +137,8 @@ class AttendanceWebController extends Controller
 
     public function sessionPdf(AttendanceSession $attendanceSession)
     {
+        $this->authorize('view', $attendanceSession);
+
         $attendanceSession->load(['schoolClass.level', 'records.student', 'academicYear']);
 
         return $this->attendancePdfResponse(
@@ -147,9 +151,11 @@ class AttendanceWebController extends Controller
 
     public function studentHistory(Request $request, Student $student): View
     {
+        $this->authorize('view', $student);
+
         $academicYear = $this->activeAcademicYear();
         [$month, $start, $end] = $this->monthPeriod($request);
-        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end);
+        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end, $request);
 
         return view('attendance.student-history', [
             'academicYear' => $academicYear,
@@ -162,9 +168,11 @@ class AttendanceWebController extends Controller
 
     public function studentHistoryPdf(Request $request, Student $student)
     {
+        $this->authorize('view', $student);
+
         $academicYear = $this->activeAcademicYear();
         [$month, $start, $end] = $this->monthPeriod($request);
-        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end);
+        $records = $this->studentAttendanceRecords($student, $academicYear, $start, $end, $request);
         $filename = 'assiduite-'.Str::slug($student->matricule.'-'.$month).'.pdf';
 
         return Pdf::loadView('attendance.student-history-pdf', [
@@ -181,6 +189,8 @@ class AttendanceWebController extends Controller
 
     public function clearRecord(AttendanceRecord $attendanceRecord): RedirectResponse
     {
+        $this->authorize('update', $attendanceRecord->session);
+
         $this->attendanceSessionService->clearRecord($attendanceRecord);
 
         return redirect()
@@ -192,6 +202,8 @@ class AttendanceWebController extends Controller
         JustifyAttendanceRecordRequest $request,
         AttendanceRecord $attendanceRecord,
     ): RedirectResponse {
+        $this->authorize('update', $attendanceRecord->session);
+
         $this->attendanceSessionService->justifyRecord(
             $attendanceRecord,
             $request->user(),
@@ -229,6 +241,8 @@ class AttendanceWebController extends Controller
 
     public function editSession(AttendanceSession $attendanceSession): View
     {
+        $this->authorize('view', $attendanceSession);
+
         $attendanceSession->load([
             'academicYear',
             'schoolClass.level',
@@ -252,6 +266,8 @@ class AttendanceWebController extends Controller
 
     public function updateSession(UpdateAttendanceSessionRequest $request, AttendanceSession $attendanceSession): RedirectResponse
     {
+        $this->authorize('update', $attendanceSession);
+
         $this->attendanceSessionService->updateRecords($attendanceSession, $request->validated('records'), $request->user());
 
         return redirect()
@@ -275,7 +291,7 @@ class AttendanceWebController extends Controller
 
     private function classes(?AcademicYear $academicYear): Collection
     {
-        return SchoolClass::query()
+        return $this->access->scopeClasses(SchoolClass::query(), request()->user(), 'attendance')
             ->with('level')
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->where('status', 'active')
@@ -288,15 +304,18 @@ class AttendanceWebController extends Controller
         $selectedId = $request->integer('school_class_id');
 
         if ($selectedId > 0) {
-            return $classes->firstWhere('id', $selectedId);
+            $schoolClass = $classes->firstWhere('id', $selectedId);
+            abort_if(! $schoolClass, 404);
+
+            return $schoolClass;
         }
 
         return $classes->first();
     }
 
-    private function sessionsForDate(?AcademicYear $academicYear, $date): Collection
+    private function sessionsForDate(?AcademicYear $academicYear, $date, Request $request): Collection
     {
-        return AttendanceSession::query()
+        return $this->access->scopeAttendanceSessions(AttendanceSession::query(), $request->user())
             ->with(['schoolClass.level', 'records'])
             ->when($academicYear, fn ($query) => $query->where('academic_year_id', $academicYear->id))
             ->whereDate('session_date', $date)
@@ -355,14 +374,20 @@ class AttendanceWebController extends Controller
         return [$month, $start, $end];
     }
 
-    private function studentAttendanceRecords(Student $student, ?AcademicYear $academicYear, Carbon $start, Carbon $end): Collection
-    {
+    private function studentAttendanceRecords(
+        Student $student,
+        ?AcademicYear $academicYear,
+        Carbon $start,
+        Carbon $end,
+        Request $request,
+    ): Collection {
         return AttendanceRecord::query()
             ->with(['session.schoolClass.level', 'justifiedBy'])
             ->where('student_id', $student->id)
             ->whereIn('attendance_records.status', ['absent', 'late', 'excused'])
-            ->whereHas('session', function ($query) use ($academicYear, $start, $end) {
-                $query
+            ->whereHas('session', function ($query) use ($academicYear, $start, $end, $request) {
+                $this->access
+                    ->scopeAttendanceSessions($query, $request->user())
                     ->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id))
                     ->whereBetween('session_date', [$start->toDateString(), $end->toDateString()]);
             })
@@ -373,7 +398,7 @@ class AttendanceWebController extends Controller
             ->get();
     }
 
-    private function recentRecords(?AcademicYear $academicYear): Collection
+    private function recentRecords(?AcademicYear $academicYear, Request $request): Collection
     {
         return AttendanceRecord::query()
             ->with(['student', 'session.schoolClass'])
@@ -381,6 +406,7 @@ class AttendanceWebController extends Controller
             ->whereHas('session', function ($query) use ($academicYear) {
                 $query->when($academicYear, fn ($subQuery) => $subQuery->where('academic_year_id', $academicYear->id));
             })
+            ->whereHas('session', fn ($query) => $this->access->scopeAttendanceSessions($query, $request->user()))
             ->latest()
             ->limit(10)
             ->get();

@@ -259,6 +259,20 @@ class GradeImportTest extends TestCase
 
         $user->assignRole($role);
 
+        if ($role === 'enseignant') {
+            Assessment::query()
+                ->whereNull('teacher_id')
+                ->get()
+                ->each(function (Assessment $assessment) use ($user): void {
+                    ClassSubject::query()
+                        ->where('school_class_id', $assessment->school_class_id)
+                        ->where('subject_id', $assessment->subject_id)
+                        ->update(['teacher_id' => $user->id]);
+
+                    $assessment->update(['teacher_id' => $user->id]);
+                });
+        }
+
         return $user;
     }
 

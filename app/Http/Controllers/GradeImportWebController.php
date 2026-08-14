@@ -15,6 +15,8 @@ class GradeImportWebController extends Controller
 
     public function create(Assessment $assessment): View
     {
+        $this->authorize('update', $assessment);
+
         $assessment->load(['academicYear', 'term', 'schoolClass.level', 'subject', 'assessmentType']);
 
         return view('grades.import', [
@@ -26,6 +28,8 @@ class GradeImportWebController extends Controller
 
     public function template(Assessment $assessment, XlsxExportService $xlsxExport, GradeImportService $gradeImport)
     {
+        $this->authorize('update', $assessment);
+
         $assessment->load(['schoolClass', 'subject']);
 
         return $xlsxExport->download(
@@ -38,6 +42,8 @@ class GradeImportWebController extends Controller
 
     public function preview(Request $request, Assessment $assessment, GradeImportService $gradeImport): RedirectResponse
     {
+        $this->authorize('update', $assessment);
+
         abort_if($assessment->is_locked, 403, 'Cette évaluation est verrouillée.');
 
         $data = $request->validate([
@@ -54,6 +60,8 @@ class GradeImportWebController extends Controller
 
     public function store(Request $request, Assessment $assessment, GradeImportService $gradeImport): RedirectResponse
     {
+        $this->authorize('update', $assessment);
+
         abort_if($assessment->is_locked, 403, 'Cette évaluation est verrouillée.');
 
         $preview = session()->get($this->sessionKey($assessment));
@@ -78,6 +86,8 @@ class GradeImportWebController extends Controller
 
     public function destroy(Assessment $assessment): RedirectResponse
     {
+        $this->authorize('update', $assessment);
+
         session()->forget($this->sessionKey($assessment));
 
         return redirect()

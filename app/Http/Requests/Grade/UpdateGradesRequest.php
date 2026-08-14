@@ -4,13 +4,20 @@ namespace App\Http\Requests\Grade;
 
 use App\Models\Grade;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class UpdateGradesRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('grades.update') ?? false;
+        if (! $this->user()?->can('grades.update')) {
+            return false;
+        }
+
+        Gate::authorize('update', $this->route('assessment'));
+
+        return true;
     }
 
     public function rules(): array

@@ -187,6 +187,12 @@ class ClassCouncilTest extends TestCase
         $teacher = $this->userWithRole('enseignant');
         [$class, $term, $assessment, $firstStudent] = $this->classWithGrades();
 
+        ClassSubject::query()
+            ->where('school_class_id', $class->id)
+            ->where('subject_id', $assessment->subject_id)
+            ->update(['teacher_id' => $teacher->id]);
+        $assessment->update(['teacher_id' => $teacher->id]);
+
         $this->actingAs($admin)
             ->post(route('class-council.lock'), [
                 'school_class_id' => $class->id,

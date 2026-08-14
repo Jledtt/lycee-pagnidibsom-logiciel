@@ -2,13 +2,26 @@
 
 namespace App\Http\Requests\Attendance;
 
+use App\Services\SchoolAccessService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAttendanceSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('attendance.create') ?? false;
+        if (! $this->user()?->can('attendance.create')) {
+            return false;
+        }
+
+        abort_unless(
+            app(SchoolAccessService::class)->canAccessAttendanceClass(
+                $this->user(),
+                $this->integer('school_class_id'),
+            ),
+            404,
+        );
+
+        return true;
     }
 
     public function rules(): array

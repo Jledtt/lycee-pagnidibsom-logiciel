@@ -15,12 +15,16 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Models\TermPeriod;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class ExportCenterService
 {
-    public function __construct(private PaymentFinancialProfileService $financialProfiles) {}
+    public function __construct(
+        private PaymentFinancialProfileService $financialProfiles,
+        private SchoolAccessService $access,
+    ) {}
 
     public function activeAcademicYear(): ?AcademicYear
     {
@@ -181,11 +185,16 @@ class ExportCenterService
         ?int $classId = null,
         ?int $termId = null,
         ?int $periodId = null,
-        ?int $subjectId = null
+        ?int $subjectId = null,
+        ?User $user = null,
     ): Collection {
         return Grade::query()
             ->with(['student', 'assessment.term', 'assessment.termPeriod', 'assessment.subject', 'assessment.schoolClass'])
-            ->whereHas('assessment', function ($query) use ($academicYear, $classId, $termId, $periodId, $subjectId) {
+            ->whereHas('assessment', function ($query) use ($academicYear, $classId, $termId, $periodId, $subjectId, $user) {
+                if ($user) {
+                    $this->access->scopeAssessments($query, $user);
+                }
+
                 $query->where('academic_year_id', $academicYear->id)
                     ->when($classId, fn ($subQuery) => $subQuery->where('school_class_id', $classId))
                     ->when($termId, fn ($subQuery) => $subQuery->where('term_id', $termId))
@@ -220,11 +229,16 @@ class ExportCenterService
         ?int $classId = null,
         ?string $status = null,
         ?string $dateFrom = null,
-        ?string $dateTo = null
+        ?string $dateTo = null,
+        ?User $user = null,
     ): Collection {
         return AttendanceRecord::query()
             ->with(['student', 'session.schoolClass'])
-            ->whereHas('session', function ($query) use ($academicYear, $classId, $dateFrom, $dateTo) {
+            ->whereHas('session', function ($query) use ($academicYear, $classId, $dateFrom, $dateTo, $user) {
+                if ($user) {
+                    $this->access->scopeAttendanceSessions($query, $user);
+                }
+
                 $query->where('academic_year_id', $academicYear->id)
                     ->when($classId, fn ($subQuery) => $subQuery->where('school_class_id', $classId))
                     ->when($dateFrom, fn ($subQuery) => $subQuery->whereDate('session_date', '>=', $dateFrom))

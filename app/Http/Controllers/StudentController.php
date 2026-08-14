@@ -7,15 +7,20 @@ use App\Models\Student;
 use App\Rules\PlausibleStudentBirthDate;
 use App\Services\CommunicationService;
 use App\Services\MatriculeGeneratorService;
+use App\Services\SchoolAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    public function __construct(private readonly SchoolAccessService $access) {}
+
     public function index(Request $request): JsonResponse
     {
-        $students = Student::query()
-            ->with(['guardians', 'enrollments.schoolClass'])
+        $this->authorize('viewAny', Student::class);
+
+        $students = $this->access->scopeStudents(Student::query(), $request->user())
+            ->with('enrollments.schoolClass')
             ->when($request->string('search')->toString(), function ($query, string $search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('first_name', 'like', "%{$search}%")
@@ -26,11 +31,15 @@ class StudentController extends Controller
             ->latest()
             ->paginate($request->integer('per_page', 20));
 
+        $students->through(fn (Student $student) => $this->identityPayload($student));
+
         return response()->json($students);
     }
 
     public function store(Request $request, MatriculeGeneratorService $matriculeGenerator): JsonResponse
     {
+        $this->authorize('create', Student::class);
+
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -51,11 +60,25 @@ class StudentController extends Controller
         return response()->json($student, 201);
     }
 
-    public function show(Student $student): JsonResponse
+    public function show(Request $request, Student $student): JsonResponse
     {
-        return response()->json(
-            $student->load(['guardians', 'enrollments.schoolClass.level', 'payments.lines.feeType'])
-        );
+        $this->authorize('view', $student);
+
+        if (! $this->access->canViewFullStudentRecord($request->user())) {
+            $student->load('enrollments.schoolClass.level');
+
+            return response()->json($this->identityPayload($student));
+        }
+
+        $relations = ['guardians', 'enrollments.schoolClass.level'];
+
+        if ($request->user()->can('payments.view')) {
+            $relations[] = 'payments.lines.feeType';
+        }
+
+        $student->load($relations);
+
+        return response()->json($student);
     }
 
     public function update(
@@ -63,6 +86,8 @@ class StudentController extends Controller
         Student $student,
         CommunicationService $communicationService,
     ): JsonResponse {
+        $this->authorize('update', $student);
+
         $data = $request->validate([
             'first_name' => ['sometimes', 'required', 'string', 'max:255'],
             'last_name' => ['sometimes', 'required', 'string', 'max:255'],
@@ -89,8 +114,32 @@ class StudentController extends Controller
 
     public function destroy(Student $student): JsonResponse
     {
+        $this->authorize('delete', $student);
+
         $student->delete();
 
         return response()->json(null, 204);
+    }
+
+    private function identityPayload(Student $student): array
+    {
+        $enrollment = $student->enrollments
+            ->where('status', 'active')
+            ->sortByDesc('id')
+            ->first();
+
+        return [
+            'id' => $student->id,
+            'matricule' => $student->matricule,
+            'first_name' => $student->first_name,
+            'last_name' => $student->last_name,
+            'full_name' => $student->full_name,
+            'gender' => $student->gender,
+            'status' => $student->status,
+            'current_class' => $enrollment?->schoolClass ? [
+                'id' => $enrollment->schoolClass->id,
+                'name' => $enrollment->schoolClass->name,
+            ] : null,
+        ];
     }
 }
