@@ -357,29 +357,42 @@
         <div class="panel">
             <div class="panel-head">
                 <h2>Parents et tuteurs</h2>
+                @can('guardians.manage')
+                    <a class="btn btn-subtle" href="{{ route('guardians.create', ['student_id' => $student->id]) }}">Ajouter un responsable</a>
+                @endcan
             </div>
 
             @if ($student->guardians->isEmpty())
-                <div class="empty">Aucun tuteur rattache a ce dossier.</div>
+                <div class="empty">Aucun responsable légal rattaché à ce dossier.</div>
             @else
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Nom</th>
-                            <th>Téléphone</th>
-                            <th>Lien</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($student->guardians as $guardian)
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td>{{ $guardian->full_name }}</td>
-                                <td>{{ $guardian->phone_primary }}</td>
-                                <td>{{ $guardian->pivot->relationship }}</td>
+                                <th>Nom</th>
+                                <th>Téléphone</th>
+                                <th>Lien</th>
+                                <th>Contact</th>
+                                <th></th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($student->guardians as $guardian)
+                                <tr>
+                                    <td><strong>{{ $guardian->full_name }}</strong></td>
+                                    <td>{{ $guardian->phone_primary }}</td>
+                                    <td>{{ ['father' => 'Père', 'mother' => 'Mère', 'tutor' => 'Tuteur ou tutrice', 'other' => 'Autre responsable'][$guardian->pivot->relationship] ?? 'Autre responsable' }}</td>
+                                    <td>{{ $guardian->pivot->is_primary ? 'Principal' : 'Secondaire' }}</td>
+                                    <td>
+                                        @can('guardians.view')
+                                            <a class="btn btn-subtle" href="{{ route('guardians.show', $guardian) }}">Ouvrir</a>
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         </div>
 

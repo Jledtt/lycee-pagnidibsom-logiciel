@@ -8,6 +8,7 @@ use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Grade;
+use App\Models\Guardian;
 use App\Models\MockExam;
 use App\Models\MockExamCandidate;
 use App\Models\MockExamScore;
@@ -91,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
             Enrollment::class,
             FeeSchedule::class,
             Grade::class,
+            Guardian::class,
             MockExam::class,
             MockExamCandidate::class,
             MockExamScore::class,

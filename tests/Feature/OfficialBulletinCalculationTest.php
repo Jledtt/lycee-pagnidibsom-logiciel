@@ -172,7 +172,7 @@ class OfficialBulletinCalculationTest extends TestCase
             'starts_at' => '2030-09-01',
             'ends_at' => '2031-07-31',
             'is_active' => false,
-            'status' => 'active',
+            'status' => 'planned',
         ]);
         $third = $academicYear->terms()->create(['name' => 'Dernier', 'position' => 1, 'starts_at' => '2031-04-01']);
         $first = $academicYear->terms()->create(['name' => 'Premier', 'position' => 3, 'starts_at' => '2030-10-01']);

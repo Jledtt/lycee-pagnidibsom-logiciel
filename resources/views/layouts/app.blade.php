@@ -27,11 +27,16 @@
                     <x-navigation.link :href="route('help.index')" :active="$activeKey === 'help'" data-tour-target="documentation-link">Documentation</x-navigation.link>
                 </x-navigation.section>
 
-                @can('students.view')
-                    <x-navigation.section title="Élèves" :active="$activeIn(['students'])">
-                        <x-navigation.link :href="route('students.index')" :active="$activeKey === 'students'">Dossiers élèves</x-navigation.link>
+                @canany(['students.view', 'guardians.view'])
+                    <x-navigation.section title="Élèves" :active="$activeIn(['students', 'guardians'])">
+                        @can('students.view')
+                            <x-navigation.link :href="route('students.index')" :active="$activeKey === 'students'">Dossiers élèves</x-navigation.link>
+                        @endcan
+                        @can('guardians.view')
+                            <x-navigation.link :href="route('guardians.index')" :active="$activeKey === 'guardians'">Responsables légaux</x-navigation.link>
+                        @endcan
                     </x-navigation.section>
-                @endcan
+                @endcanany
 
                 @canany(['teachers.view', 'teacher_attendance.view', 'teacher_fees.view'])
                     <x-navigation.section title="Professeurs" :active="$activeIn(['teachers', 'teacher-work-sessions', 'teacher-attendance-sheets', 'teacher-fees'])">

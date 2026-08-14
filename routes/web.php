@@ -13,6 +13,7 @@ use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\ExportCenterWebController;
 use App\Http\Controllers\GradeImportWebController;
 use App\Http\Controllers\GradeWebController;
+use App\Http\Controllers\GuardianWebController;
 use App\Http\Controllers\HelpWebController;
 use App\Http\Controllers\LoginHistoryWebController;
 use App\Http\Controllers\MockExamWebController;
@@ -952,6 +953,34 @@ Route::post('/certificates', [CertificateWebController::class, 'store'])
 Route::get('/certificates/{certificate}', [CertificateWebController::class, 'show'])
     ->middleware(['auth', 'permission:students.export'])
     ->name('certificates.show');
+
+Route::get('/guardians', [GuardianWebController::class, 'index'])
+    ->middleware(['auth', 'permission:guardians.view'])
+    ->name('guardians.index');
+Route::get('/guardians/create', [GuardianWebController::class, 'create'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.create');
+Route::post('/guardians', [GuardianWebController::class, 'store'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.store');
+Route::get('/guardians/{guardian}', [GuardianWebController::class, 'show'])
+    ->middleware(['auth', 'permission:guardians.view'])
+    ->name('guardians.show');
+Route::get('/guardians/{guardian}/edit', [GuardianWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.edit');
+Route::put('/guardians/{guardian}', [GuardianWebController::class, 'update'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.update');
+Route::post('/guardians/{guardian}/students', [GuardianWebController::class, 'attachStudent'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.students.store');
+Route::put('/guardians/{guardian}/students/{student}', [GuardianWebController::class, 'updateStudent'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.students.update');
+Route::delete('/guardians/{guardian}/students/{student}', [GuardianWebController::class, 'detachStudent'])
+    ->middleware(['auth', 'permission:guardians.manage'])
+    ->name('guardians.students.destroy');
 
 Route::get('/students', [StudentWebController::class, 'index'])
     ->middleware(['auth', 'permission:students.view'])

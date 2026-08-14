@@ -37,7 +37,7 @@ class BusinessNotificationTest extends TestCase
         $admin = $this->userWithRole('admin', 'notification-admin@lyceepagnidibsom.com');
         [$student] = $this->schoolScenario();
         $this->attachGuardian($student, 'parent.reel@gmail.com');
-        $this->attachGuardian($student, 'parent.demo@example.com', 'Demo');
+        $this->attachGuardian($student, 'parent.demo@example.com', 'Demo', 'other', false);
 
         $this->actingAs($admin)
             ->post(route('communications.announcements.store'), [
@@ -257,8 +257,13 @@ class BusinessNotificationTest extends TestCase
         return [$student, $schoolClass, $academicYear, $enrollment];
     }
 
-    private function attachGuardian(Student $student, string $email, string $lastName = 'Parent'): Guardian
-    {
+    private function attachGuardian(
+        Student $student,
+        string $email,
+        string $lastName = 'Parent',
+        string $relationship = 'tutor',
+        bool $isPrimary = true,
+    ): Guardian {
         $guardian = Guardian::query()->create([
             'first_name' => 'Mariam',
             'last_name' => $lastName,
@@ -267,8 +272,8 @@ class BusinessNotificationTest extends TestCase
             'status' => 'active',
         ]);
         $student->guardians()->attach($guardian->id, [
-            'relationship' => 'tutor',
-            'is_primary' => true,
+            'relationship' => $relationship,
+            'is_primary' => $isPrimary,
             'can_receive_sms' => true,
             'can_pickup_child' => true,
         ]);
