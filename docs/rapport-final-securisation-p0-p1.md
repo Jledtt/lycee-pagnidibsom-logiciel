@@ -168,6 +168,9 @@ Les tests destructifs sont volontairement ignorés sur tablette et mobile. Cette
 - restauration MySQL temporaire : succès, 67 tables, base temporaire supprimée.
 - audit P1 exécuté en lecture seule sur la base MySQL de production avec le nouveau service : 0 anomalie bloquante, 0 avertissement, contraintes applicables ;
 - fichier de service temporaire supprimé du serveur après l'audit.
+- migrations P1 testées sur une restauration MySQL isolée : 3 migrations appliquées, 8 déclencheurs et 3 colonnes de garde vérifiés ;
+- rollback MySQL testé : 3 migrations retirées, aucun déclencheur ni table `academic_tracks` résiduel ;
+- nettoyage vérifié après l'exercice : 0 base et 0 dossier temporaire restant.
 
 ## 7. Réparation d'exploitation appliquée au serveur
 
