@@ -84,6 +84,12 @@ class Student extends Model implements HasMedia
         return $this->hasMany(AttendanceRecord::class);
     }
 
+    /** @return HasMany<DisciplinaryRecord, $this> */
+    public function disciplinaryRecords(): HasMany
+    {
+        return $this->hasMany(DisciplinaryRecord::class);
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(StudentDocument::class);

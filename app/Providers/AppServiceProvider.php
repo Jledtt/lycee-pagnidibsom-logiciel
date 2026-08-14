@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Assessment;
 use App\Models\AttendanceRecord;
 use App\Models\ClassSubject;
+use App\Models\DisciplinaryRecord;
 use App\Models\Enrollment;
 use App\Models\FeeSchedule;
 use App\Models\Grade;
@@ -89,6 +90,7 @@ class AppServiceProvider extends ServiceProvider
             Assessment::class,
             AttendanceRecord::class,
             ClassSubject::class,
+            DisciplinaryRecord::class,
             Enrollment::class,
             FeeSchedule::class,
             Grade::class,

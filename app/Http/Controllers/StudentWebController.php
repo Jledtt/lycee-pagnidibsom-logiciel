@@ -174,6 +174,14 @@ class StudentWebController extends Controller
             'documents.academicYear',
         ]);
 
+        if ($request->user()->can('discipline.view')) {
+            $student->load(['disciplinaryRecords' => fn ($query) => $query
+                ->with(['schoolClass', 'creator'])
+                ->when($academicYear, fn ($records) => $records->where('academic_year_id', $academicYear->id))
+                ->latest('record_date')
+                ->latest('id')]);
+        }
+
         $currentEnrollment = $student->enrollments
             ->when($academicYear, fn ($enrollments) => $enrollments->where('academic_year_id', $academicYear->id))
             ->where('status', 'active')

@@ -30,6 +30,9 @@
     @can('attendance.view')
         <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Assiduité</a>
     @endcan
+    @can('discipline.view')
+        <a class="btn btn-subtle" href="{{ route('discipline.index', ['student_id' => $student->id]) }}">Discipline</a>
+    @endcan
     @can('students.update')
         <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
     @endcan
@@ -433,6 +436,57 @@
             </div>
         </div>
     </section>
+
+    @can('discipline.view')
+        <section class="panel" style="margin-top:16px">
+            <div class="panel-head">
+                <div>
+                    <h2>Suivi disciplinaire</h2>
+                    <p style="margin:4px 0 0;color:var(--muted)">Incidents de l’année scolaire active uniquement.</p>
+                </div>
+                <div class="page-actions">
+                    <span class="badge">{{ $student->disciplinaryRecords->count() }} incident(s)</span>
+                    @can('discipline.manage')
+                        @if ($currentEnrollment)
+                            <a class="btn btn-primary" href="{{ route('discipline.create', ['student_id' => $student->id]) }}">Nouvel incident</a>
+                        @endif
+                    @endcan
+                </div>
+            </div>
+
+            @if ($student->disciplinaryRecords->isEmpty())
+                <div class="empty">Aucun incident disciplinaire enregistré pour l’année active.</div>
+            @else
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Incident</th>
+                                <th>Classe</th>
+                                <th>Statut</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($student->disciplinaryRecords as $record)
+                                <tr>
+                                    <td>{{ $record->record_date?->format('d/m/Y') }}</td>
+                                    <td>
+                                        <strong>{{ $record->title }}</strong><br>
+                                        <span style="color:var(--muted)">{{ ['observation' => 'Observation', 'warning' => 'Avertissement', 'sanction' => 'Sanction'][$record->type] ?? $record->type }}</span>
+                                    </td>
+                                    <td>{{ $record->schoolClass?->name ?? '-' }}</td>
+                                    <td>{{ ['active' => 'En cours', 'resolved' => 'Résolu', 'cancelled' => 'Annulé'][$record->status] ?? $record->status }}</td>
+                                    <td><a class="btn btn-subtle" href="{{ route('discipline.show', $record) }}">Ouvrir</a></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </section>
+    @endcan
 
     <section class="panel" style="margin-top:16px">
         <div class="panel-head">

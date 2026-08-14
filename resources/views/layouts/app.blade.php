@@ -55,8 +55,8 @@
                     </x-navigation.section>
                 @endcanany
 
-                @canany(['classes.manage', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'students.export'])
-                    <x-navigation.section title="Scolarité" :active="$activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'exit-authorizations'])">
+                @canany(['classes.manage', 'enrollments.view', 'timetables.view', 'timetables.print', 'attendance.view', 'discipline.view', 'students.export'])
+                    <x-navigation.section title="Scolarité" :active="$activeIn(['classes', 'enrollments', 'timetables', 'attendance', 'discipline', 'exit-authorizations'])">
                         @can('classes.manage')
                             <x-navigation.link :href="route('classes.index')" :active="$activeKey === 'classes'">Classes</x-navigation.link>
                         @endcan
@@ -68,6 +68,9 @@
                         @endcan
                         @can('attendance.view')
                             <x-navigation.link :href="route('attendance.index')" :active="$activeKey === 'attendance'">Absences</x-navigation.link>
+                        @endcan
+                        @can('discipline.view')
+                            <x-navigation.link :href="route('discipline.index')" :active="$activeKey === 'discipline'">Discipline</x-navigation.link>
                         @endcan
                         @canany(['attendance.view', 'students.export'])
                             <x-navigation.link :href="route('exit-authorizations.index')" :active="$activeKey === 'exit-authorizations'">Autorisations</x-navigation.link>

@@ -9,6 +9,7 @@ use App\Http\Controllers\CertificateWebController;
 use App\Http\Controllers\ClassCouncilWebController;
 use App\Http\Controllers\CommunicationWebController;
 use App\Http\Controllers\DatabaseBackupWebController;
+use App\Http\Controllers\DisciplinaryRecordWebController;
 use App\Http\Controllers\EnrollmentWebController;
 use App\Http\Controllers\ExportCenterWebController;
 use App\Http\Controllers\GradeImportWebController;
@@ -170,6 +171,31 @@ Route::get('/attendance/students/{student}', [AttendanceWebController::class, 's
 Route::get('/attendance/students/{student}/pdf', [AttendanceWebController::class, 'studentHistoryPdf'])
     ->middleware(['auth', 'permission:attendance.reports'])
     ->name('attendance.students.history.pdf');
+
+Route::get('/discipline', [DisciplinaryRecordWebController::class, 'index'])
+    ->middleware(['auth', 'permission:discipline.view'])
+    ->name('discipline.index');
+Route::get('/discipline/create', [DisciplinaryRecordWebController::class, 'create'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.create');
+Route::post('/discipline', [DisciplinaryRecordWebController::class, 'store'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.store');
+Route::get('/discipline/{discipline}', [DisciplinaryRecordWebController::class, 'show'])
+    ->middleware(['auth', 'permission:discipline.view'])
+    ->name('discipline.show');
+Route::get('/discipline/{discipline}/edit', [DisciplinaryRecordWebController::class, 'edit'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.edit');
+Route::put('/discipline/{discipline}', [DisciplinaryRecordWebController::class, 'update'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.update');
+Route::post('/discipline/{discipline}/resolve', [DisciplinaryRecordWebController::class, 'resolve'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.resolve');
+Route::post('/discipline/{discipline}/cancel', [DisciplinaryRecordWebController::class, 'cancel'])
+    ->middleware(['auth', 'permission:discipline.manage'])
+    ->name('discipline.cancel');
 
 Route::post('/attendance/sessions', [AttendanceWebController::class, 'storeSession'])
     ->middleware(['auth', 'permission:attendance.create'])

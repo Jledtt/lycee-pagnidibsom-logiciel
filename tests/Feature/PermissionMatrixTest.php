@@ -68,12 +68,24 @@ class PermissionMatrixTest extends TestCase
 
         $this->actingAs($user)->get(route('students.index'))->assertOk();
         $this->actingAs($user)->get(route('attendance.index'))->assertOk();
+        $this->actingAs($user)->get(route('discipline.index'))->assertOk();
 
         $this->actingAs($user)->get(route('payments.index'))->assertForbidden();
         $this->actingAs($user)->get(route('grades.index'))->assertForbidden();
         $this->actingAs($user)->get(route('report-cards.index'))->assertForbidden();
         $this->actingAs($user)->get(route('staff.roles.index'))->assertForbidden();
         $this->actingAs($user)->get(route('settings.backups.index'))->assertForbidden();
+    }
+
+    public function test_secretariat_comptable_and_enseignant_cannot_access_discipline(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        foreach (['secretariat', 'comptable', 'enseignant'] as $role) {
+            $this->actingAs($this->userWithRole($role))
+                ->get(route('discipline.index'))
+                ->assertForbidden();
+        }
     }
 
     public function test_enseignant_access_is_limited_to_pedagogical_work(): void
