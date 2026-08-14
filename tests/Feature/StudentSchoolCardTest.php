@@ -37,7 +37,7 @@ class StudentSchoolCardTest extends TestCase
         $this->assertStringContainsString('Père', $text);
         $this->assertStringContainsString('Mère', $text);
         $this->assertStringContainsString('Urgence', $text);
-        $this->assertStringContainsString('Bâtir l\'excellence', $text);
+        $this->assertStringNotContainsString('Bâtir l\'excellence', $text);
         $this->assertStringContainsString('Nana', $text);
         $this->assertStringContainsString('3e A', $text);
         $this->assertStringContainsString('LPP-2026-9100', $text);

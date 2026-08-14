@@ -34,8 +34,8 @@
         .year-banner {
             position: absolute;
             top: 0;
+            left: 0;
             right: 0;
-            width: 476px;
             height: 58px;
             color: #fff;
             font-size: 23px;
@@ -49,7 +49,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 292px;
+            width: 470px;
             height: 58px;
             background: #8b1e2d;
         }
@@ -58,40 +58,10 @@
             position: absolute;
             top: 0;
             right: 0;
-            width: 184px;
+            width: 250px;
             height: 58px;
             background: #e6a817;
             color: #1d1718;
-        }
-
-        .school-mark {
-            position: absolute;
-            top: 7px;
-            left: 14px;
-            width: 216px;
-            color: #8b1e2d;
-            font-size: 11px;
-            font-weight: bold;
-            line-height: 1.25;
-            text-align: center;
-        }
-
-        .brand-logo,
-        .brand-short-name {
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .brand-logo {
-            width: 74px;
-        }
-
-        .brand-short-name {
-            max-width: 124px;
-            margin-left: 4px;
-            color: #8b1e2d;
-            font-size: 14px;
-            text-align: left;
         }
 
         .photo-box {
@@ -182,17 +152,6 @@
 <body>
     <div class="sheet">
         <div class="card">
-            <div class="school-mark">
-                <div class="brand-logo">
-                    @include('pdf.partials.logo-with-motto', [
-                        'school' => $school,
-                        'logoWidth' => 46,
-                        'mottoSize' => 6,
-                    ])
-                </div>
-                <div class="brand-short-name">{{ $school?->short_name ?: 'LPP' }}</div>
-            </div>
-
             <div class="year-banner">
                 <div class="year-label">Année scolaire</div>
                 <div class="year-value">{{ $academicYear?->name ?? '-' }}</div>
