@@ -219,11 +219,23 @@ test('la fenêtre de paiement reste utilisable sur toutes les tailles d’écran
     await expect(dialog).toBeHidden();
 });
 
-test('les fenêtres du dossier élève restent utilisables sur toutes les tailles d’écran', async ({ page }) => {
+test('les fenêtres du dossier élève restent utilisables sur toutes les tailles d’écran', async ({ page }, testInfo) => {
     await login(page);
     await page.goto('/students?search=LPP-E2E-001');
     const studentRow = page.locator('table tbody tr').filter({ hasText: 'LPP-E2E-001' });
     await studentRow.getByRole('link', { name: 'Voir' }).click();
+
+    const actionMenu = page.locator('.topbar__page-actions .ui-action-menu');
+    await actionMenu.locator('summary').click();
+    await expect(actionMenu.locator('.ui-action-menu__panel')).toBeVisible();
+    expect(await elementOverflowsViewport(actionMenu.locator('.ui-action-menu__panel'))).toBe(false);
+
+    const menuScreenshotPath = testInfo.outputPath(`student-action-menu-${testInfo.project.name}.png`);
+    await page.screenshot({ path: menuScreenshotPath, fullPage: false });
+    await testInfo.attach(`student-action-menu-${testInfo.project.name}`, {
+        path: menuScreenshotPath,
+        contentType: 'image/png',
+    });
 
     await page.getByRole('link', { name: 'Ajouter une pièce' }).click();
     const documentDialog = page.locator('#student-document-dialog');
@@ -232,12 +244,14 @@ test('les fenêtres du dossier élève restent utilisables sur toutes les taille
     expect(await elementOverflowsViewport(documentDialog)).toBe(false);
     await documentDialog.locator('.ui-dialog__close').click();
 
-    await page.getByRole('link', { name: 'Résumé inscription' }).click();
+    await actionMenu.locator('summary').click();
+    await page.getByRole('link', { name: 'Résumé de l’inscription' }).click();
     const enrollmentDrawer = page.locator('#student-enrollment-drawer');
     await expect(enrollmentDrawer).toBeVisible();
     expect(await elementOverflowsViewport(enrollmentDrawer)).toBe(false);
     await enrollmentDrawer.locator('.ui-drawer__close').click();
 
+    await actionMenu.locator('summary').click();
     await page.getByRole('link', { name: 'Situation financière' }).click();
     const financialDrawer = page.locator('#student-financial-drawer');
     await expect(financialDrawer).toBeVisible();

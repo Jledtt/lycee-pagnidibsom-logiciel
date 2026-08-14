@@ -7,16 +7,18 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('teachers.index') }}">Retour</a>
-    <a class="btn btn-subtle" href="{{ route('teachers.pdf', $teacher) }}">Dossier PDF</a>
-    @can('timetables.view')
-        <a class="btn btn-subtle" href="{{ route('timetables.availabilities', ['teacher_id' => $teacher->id]) }}">Disponibilités</a>
-    @endcan
-    @can('teacher_attendance.view')
-        <a class="btn btn-subtle" href="{{ route('teacher-work-sessions.index', ['teacher_id' => $teacher->id]) }}">Émargements</a>
-    @endcan
     @can('teacher_fees.view')
         <a class="btn btn-primary" href="{{ route('teacher-fees.index', ['teacher_id' => $teacher->id]) }}">Honoraires</a>
     @endcan
+    <x-ui.action-menu label="Documents et suivi">
+        <a class="btn btn-subtle" href="{{ route('teachers.pdf', $teacher) }}">Télécharger le dossier PDF</a>
+        @can('timetables.view')
+            <a class="btn btn-subtle" href="{{ route('timetables.availabilities', ['teacher_id' => $teacher->id]) }}">Gérer les disponibilités</a>
+        @endcan
+        @can('teacher_attendance.view')
+            <a class="btn btn-subtle" href="{{ route('teacher-work-sessions.index', ['teacher_id' => $teacher->id]) }}">Consulter les émargements</a>
+        @endcan
+    </x-ui.action-menu>
 @endsection
 
 @section('content')

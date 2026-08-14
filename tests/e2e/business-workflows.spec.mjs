@@ -229,6 +229,7 @@ test('téléversement et récupération sécurisée d’un document élève', as
     const studentIndexRow = page.locator('table tbody tr').filter({ hasText: SEEDED_MATRICULE });
     await expect(studentIndexRow).toContainText(SEEDED_STUDENT);
     await studentIndexRow.getByRole('link', { name: 'Voir' }).click();
+    await page.locator('.topbar__page-actions .ui-action-menu summary').click();
     await page.getByRole('link', { name: 'Ajouter une pièce' }).click();
     const documentDialog = page.locator('#student-document-dialog');
     await expect(documentDialog).toBeVisible();

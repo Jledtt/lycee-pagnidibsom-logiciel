@@ -6,16 +6,20 @@
 ])
 
 @section('page_actions')
-    <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Données incomplètes</a>
-    <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
-    @can('payments.reports')
-        <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation paiements</a>
-        <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Tranches</a>
-    @endcan
     @if ($schoolClass)
-        <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Téléchargement Excel de la liste de classe lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
         <a class="btn btn-primary" href="{{ route('reports.class-list.pdf', ['school_class_id' => $schoolClass->id]) }}">PDF</a>
     @endif
+    <x-ui.action-menu label="Rapports et exports">
+        <a class="btn btn-subtle" href="{{ route('reports.incomplete-students', ['school_class_id' => $schoolClass?->id]) }}">Données incomplètes</a>
+        <a class="btn btn-subtle" href="{{ route('reports.missing-documents', ['school_class_id' => $schoolClass?->id]) }}">Pièces manquantes</a>
+        @can('payments.reports')
+            <a class="btn btn-subtle" href="{{ route('reports.payment-situation', ['school_class_id' => $schoolClass?->id]) }}">Situation des paiements</a>
+            <a class="btn btn-subtle" href="{{ route('reports.installments', ['school_class_id' => $schoolClass?->id]) }}">Suivi des tranches</a>
+        @endcan
+        @if ($schoolClass)
+            <a class="btn btn-subtle" href="{{ route('reports.class-list.export', ['school_class_id' => $schoolClass->id]) }}" data-download-feedback="Téléchargement Excel de la liste de classe lancé. Regarde l’icône de téléchargement du navigateur.">Exporter en Excel</a>
+        @endif
+    </x-ui.action-menu>
 @endsection
 
 @section('content')

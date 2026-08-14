@@ -7,35 +7,39 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('students.index') }}">Retour</a>
-    @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('certificates.create', ['student_id' => $student->id]) }}">Certificat</a>
-        <a class="btn btn-subtle" href="{{ route('students.school-card.pdf', $student) }}">Carte scolaire</a>
-        <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $student) }}">Fiche d’inscription</a>
-        <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $student) }}">PDF</a>
-    @endcan
-    @can('payments.view')
-        <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}" data-dialog-open="student-financial-drawer">Situation financière</a>
-    @endcan
-    @if ($currentEnrollment)
-        @can('enrollments.view')
-            <a class="btn btn-subtle" href="{{ route('enrollments.show', $currentEnrollment) }}" data-dialog-open="student-enrollment-drawer">Résumé inscription</a>
-        @endcan
-    @endif
-    @can('students.update')
-        <a class="btn btn-subtle" href="#student-documents" data-dialog-open="student-document-dialog">Ajouter une pièce</a>
-    @endcan
     @can('payments.create')
-        <a class="btn btn-subtle" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Encaisser</a>
-    @endcan
-    @can('attendance.view')
-        <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Assiduité</a>
-    @endcan
-    @can('discipline.view')
-        <a class="btn btn-subtle" href="{{ route('discipline.index', ['student_id' => $student->id]) }}">Discipline</a>
+        <a class="btn btn-primary" href="{{ route('payments.create', ['student_id' => $student->id]) }}">Encaisser</a>
     @endcan
     @can('students.update')
-        <a class="btn btn-primary" href="{{ route('students.edit', $student) }}">Modifier</a>
+        <a class="btn btn-subtle" href="{{ route('students.edit', $student) }}">Modifier</a>
     @endcan
+    @canany(['students.export', 'payments.view', 'enrollments.view', 'students.update', 'attendance.view', 'discipline.view'])
+        <x-ui.action-menu label="Documents et suivi">
+            @can('students.export')
+                <a class="btn btn-subtle" href="{{ route('certificates.create', ['student_id' => $student->id]) }}">Créer un certificat</a>
+                <a class="btn btn-subtle" href="{{ route('students.school-card.pdf', $student) }}">Télécharger la carte scolaire</a>
+                <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $student) }}">Voir la fiche d’inscription</a>
+                <a class="btn btn-subtle" href="{{ route('students.registration-sheet.pdf', $student) }}">Télécharger la fiche en PDF</a>
+            @endcan
+            @can('payments.view')
+                <a class="btn btn-subtle" href="{{ route('payments.students.statement', $student) }}" data-dialog-open="student-financial-drawer">Situation financière</a>
+            @endcan
+            @if ($currentEnrollment)
+                @can('enrollments.view')
+                    <a class="btn btn-subtle" href="{{ route('enrollments.show', $currentEnrollment) }}" data-dialog-open="student-enrollment-drawer">Résumé de l’inscription</a>
+                @endcan
+            @endif
+            @can('students.update')
+                <a class="btn btn-subtle" href="#student-documents" data-dialog-open="student-document-dialog">Ajouter une pièce</a>
+            @endcan
+            @can('attendance.view')
+                <a class="btn btn-subtle" href="{{ route('attendance.students.history', $student) }}">Consulter l’assiduité</a>
+            @endcan
+            @can('discipline.view')
+                <a class="btn btn-subtle" href="{{ route('discipline.index', ['student_id' => $student->id]) }}">Consulter la discipline</a>
+            @endcan
+        </x-ui.action-menu>
+    @endcanany
 @endsection
 
 @push('dialogs')

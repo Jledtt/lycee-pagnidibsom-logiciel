@@ -7,16 +7,6 @@
 
 @section('page_actions')
     <a class="btn btn-subtle" href="{{ route('enrollments.index') }}">Retour</a>
-    <a class="btn btn-subtle" href="{{ route('enrollments.show', $enrollment) }}" data-dialog-open="enrollment-summary-drawer">Résumé inscription</a>
-    @can('payments.view')
-        @if ($financialSummary)
-            <a class="btn btn-subtle" href="{{ route('payments.students.statement', $enrollment->student) }}" data-dialog-open="enrollment-financial-drawer">Situation financière</a>
-        @endif
-    @endcan
-    @can('students.export')
-        <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $enrollment->student) }}">Fiche d’inscription</a>
-        <a class="btn btn-subtle" href="{{ route('students.school-card.pdf', $enrollment->student) }}" data-download-feedback="Téléchargement de la carte scolaire lancé.">Carte scolaire</a>
-    @endcan
     @if ($canStartPayment)
         <a
             class="btn btn-primary"
@@ -28,6 +18,18 @@
     @can('enrollments.update')
         <a class="btn btn-subtle" href="{{ route('enrollments.edit', $enrollment) }}">Modifier</a>
     @endcan
+    <x-ui.action-menu label="Documents et suivi">
+        <a class="btn btn-subtle" href="{{ route('enrollments.show', $enrollment) }}" data-dialog-open="enrollment-summary-drawer">Résumé de l’inscription</a>
+        @can('payments.view')
+            @if ($financialSummary)
+                <a class="btn btn-subtle" href="{{ route('payments.students.statement', $enrollment->student) }}" data-dialog-open="enrollment-financial-drawer">Situation financière</a>
+            @endif
+        @endcan
+        @can('students.export')
+            <a class="btn btn-subtle" href="{{ route('students.registration-sheet', $enrollment->student) }}">Voir la fiche d’inscription</a>
+            <a class="btn btn-subtle" href="{{ route('students.school-card.pdf', $enrollment->student) }}" data-download-feedback="Téléchargement de la carte scolaire lancé.">Télécharger la carte scolaire</a>
+        @endcan
+    </x-ui.action-menu>
 @endsection
 
 @push('dialogs')

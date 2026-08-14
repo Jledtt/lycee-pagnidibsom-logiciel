@@ -55,6 +55,18 @@ document.addEventListener('click', (event) => {
         return;
     }
 
+    const currentActionMenu = event.target.closest('.ui-action-menu');
+
+    document.querySelectorAll('.ui-action-menu[open]').forEach((menu) => {
+        if (menu !== currentActionMenu) {
+            menu.removeAttribute('open');
+        }
+    });
+
+    if (currentActionMenu && event.target.closest('.ui-action-menu__panel a, .ui-action-menu__panel button')) {
+        currentActionMenu.removeAttribute('open');
+    }
+
     const openTrigger = event.target.closest('[data-dialog-open]');
 
     if (openTrigger) {
@@ -76,6 +88,21 @@ document.addEventListener('click', (event) => {
             closeDialog(dialog);
         }
     }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') {
+        return;
+    }
+
+    const openMenu = document.querySelector('.ui-action-menu[open]');
+
+    if (! (openMenu instanceof HTMLDetailsElement)) {
+        return;
+    }
+
+    openMenu.removeAttribute('open');
+    openMenu.querySelector('summary')?.focus({ preventScroll: true });
 });
 
 document.addEventListener('submit', (event) => {

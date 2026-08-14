@@ -7,11 +7,13 @@
 
 @section('page_actions')
     @can('payments.reports')
-        <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
-        <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Dépenses</a>
-        <a class="btn btn-subtle" href="{{ route('reports.installments') }}">Tranches</a>
-        <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Impayés</a>
-        <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Excel</a>
+        <x-ui.action-menu label="Rapports et exports">
+            <a class="btn btn-subtle" href="{{ route('accounting.cash-journal') }}">Journal de caisse</a>
+            <a class="btn btn-subtle" href="{{ route('accounting.expenses.index') }}">Dépenses</a>
+            <a class="btn btn-subtle" href="{{ route('reports.installments') }}">Suivi des tranches</a>
+            <a class="btn btn-subtle" href="{{ route('payments.unpaid') }}">Liste des impayés</a>
+            <a class="btn btn-subtle" href="{{ route('payments.export', request()->query()) }}" data-download-feedback="Téléchargement Excel des paiements lancé. Regarde l’icône de téléchargement du navigateur.">Exporter en Excel</a>
+        </x-ui.action-menu>
     @endcan
     @can('payments.create')
         <a class="btn btn-primary" href="{{ route('payments.create') }}" data-dialog-open="payment-create-dialog" data-tour-target="payments-create">Nouveau paiement</a>

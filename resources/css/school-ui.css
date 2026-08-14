@@ -2320,6 +2320,64 @@
     color: var(--forest);
 }
 
+.ui-action-menu {
+    position: relative;
+    min-width: 0;
+}
+
+.ui-action-menu > summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ui-action-menu > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ui-action-menu__chevron {
+    font-size: 12px;
+    transition: transform .15s ease;
+}
+
+.ui-action-menu[open] .ui-action-menu__chevron {
+    transform: rotate(180deg);
+}
+
+.ui-action-menu__panel {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 8px);
+    right: 0;
+    display: grid;
+    width: max-content;
+    min-width: 230px;
+    max-width: min(320px, calc(100vw - 36px));
+    max-height: min(70vh, 560px);
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+    box-shadow: 0 18px 42px rgba(49, 34, 36, .16);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.ui-action-menu__panel .btn,
+.ui-action-menu__panel > a {
+    width: 100%;
+    min-height: 42px;
+    justify-content: flex-start;
+    border-color: transparent;
+    white-space: normal;
+}
+
+.ui-action-menu__panel .btn:hover,
+.ui-action-menu__panel > a:hover {
+    border-color: var(--line);
+}
+
 @media (max-width: 720px) {
     .guided-tour-invitation {
         right: 16px;
@@ -2344,6 +2402,18 @@
     .guided-tour-library__head .btn,
     .guided-tour-invitation__actions .btn {
         width: 100%;
+    }
+
+    .ui-action-menu,
+    .ui-action-menu > summary {
+        width: 100%;
+    }
+
+    .ui-action-menu__panel {
+        right: auto;
+        left: 0;
+        width: 100%;
+        max-width: none;
     }
 }
 
