@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Term;
+use App\Services\AcademicYearActivationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,10 @@ use Illuminate\View\View;
 
 class AcademicYearWebController extends Controller
 {
+    public function __construct(
+        private readonly AcademicYearActivationService $activationService,
+    ) {}
+
     public function index(): View
     {
         $years = AcademicYear::query()
@@ -34,23 +39,31 @@ class AcademicYearWebController extends Controller
             'create_default_terms' => ['nullable', 'boolean'],
         ]);
 
-        $year = AcademicYear::create([
-            'name' => $data['name'],
-            'starts_at' => $data['starts_at'],
-            'ends_at' => $data['ends_at'],
-            'is_active' => false,
-            'status' => 'planned',
-        ]);
-
-        if (! empty($data['create_default_terms'])) {
-            foreach (['Trimestre 1', 'Trimestre 2', 'Trimestre 3'] as $index => $name) {
-                $year->terms()->create([
-                    'name' => $name,
-                    'type' => 'trimestre',
-                    'position' => $index + 1,
-                ]);
-            }
+        if ($this->datesOverlap($data['starts_at'], $data['ends_at'])) {
+            return back()
+                ->withErrors(['starts_at' => 'Cette période chevauche une année scolaire existante.'])
+                ->withInput();
         }
+
+        DB::transaction(function () use ($data): void {
+            $year = AcademicYear::query()->create([
+                'name' => $data['name'],
+                'starts_at' => $data['starts_at'],
+                'ends_at' => $data['ends_at'],
+                'is_active' => false,
+                'status' => 'planned',
+            ]);
+
+            if (! empty($data['create_default_terms'])) {
+                foreach (['Trimestre 1', 'Trimestre 2', 'Trimestre 3'] as $index => $name) {
+                    $year->terms()->create([
+                        'name' => $name,
+                        'type' => 'trimestre',
+                        'position' => $index + 1,
+                    ]);
+                }
+            }
+        });
 
         return redirect()
             ->route('academic-years.index')
@@ -72,7 +85,25 @@ class AcademicYearWebController extends Controller
                 ->withErrors(['status' => 'L’année active doit garder le statut actif. Active une autre année avant de la fermer.']);
         }
 
-        $academicYear->update($data);
+        if (! $academicYear->is_active && $data['status'] === 'active') {
+            return redirect()
+                ->route('academic-years.index')
+                ->withErrors(['status' => 'Utilise le bouton « Activer » pour rendre cette année active.']);
+        }
+
+        if ($this->datesOverlap($data['starts_at'], $data['ends_at'], $academicYear)) {
+            return back()
+                ->withErrors(['starts_at' => 'Cette période chevauche une autre année scolaire.'])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($academicYear, $data): void {
+            $lockedYear = AcademicYear::query()
+                ->lockForUpdate()
+                ->findOrFail($academicYear->id);
+
+            $lockedYear->update($data);
+        });
 
         return redirect()
             ->route('academic-years.index')
@@ -81,24 +112,20 @@ class AcademicYearWebController extends Controller
 
     public function activate(AcademicYear $academicYear): RedirectResponse
     {
-        DB::transaction(function () use ($academicYear) {
-            AcademicYear::query()
-                ->whereKeyNot($academicYear->id)
-                ->where('is_active', true)
-                ->update([
-                    'is_active' => false,
-                    'status' => 'planned',
-                ]);
-
-            $academicYear->update([
-                'is_active' => true,
-                'status' => 'active',
-            ]);
-        });
+        $this->activationService->activate($academicYear->id);
 
         return redirect()
             ->route('academic-years.index')
             ->with('success', $academicYear->name.' est maintenant l’année active.');
+    }
+
+    private function datesOverlap(string $startsAt, string $endsAt, ?AcademicYear $except = null): bool
+    {
+        return AcademicYear::query()
+            ->when($except, fn ($query) => $query->whereKeyNot($except->id))
+            ->whereDate('starts_at', '<=', $endsAt)
+            ->whereDate('ends_at', '>=', $startsAt)
+            ->exists();
     }
 
     public function storeTerm(Request $request): RedirectResponse

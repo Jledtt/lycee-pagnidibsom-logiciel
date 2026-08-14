@@ -19,6 +19,8 @@ use App\Models\User;
 use App\Services\DataIntegrityAuditService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class DataIntegrityAuditCommandTest extends TestCase
@@ -33,6 +35,8 @@ class DataIntegrityAuditCommandTest extends TestCase
 
         $this->assertTrue($report['safe_for_constraints']);
         $this->assertSame(0, $report['blocker_count']);
+        $this->assertSame([], collect($report['checks'])
+            ->firstWhere('key', 'academic_years.multiple_active')['samples']);
 
         $this->artisan('lpp:audit-data-integrity')
             ->expectsOutputToContain('Aucune anomalie bloquante')
@@ -42,6 +46,16 @@ class DataIntegrityAuditCommandTest extends TestCase
     public function test_blocking_ambiguities_are_reported_without_modifying_data(): void
     {
         $this->seed(DatabaseSeeder::class);
+        $this->dropLegacyAuditGuards(
+            ['academic_years_integrity_insert', 'academic_years_integrity_update'],
+            [
+                'academic_years' => ['academic_years_single_active_unique'],
+                'guardian_student' => [
+                    'guardian_student_single_primary_unique',
+                    'guardian_student_relationship_unique',
+                ],
+            ],
+        );
         $activeYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         AcademicYear::query()->create([
             'name' => 'Année active incohérente',
@@ -121,6 +135,15 @@ class DataIntegrityAuditCommandTest extends TestCase
     public function test_timetable_conflicts_are_reported(): void
     {
         $this->seed(DatabaseSeeder::class);
+        $this->dropLegacyAuditGuards(
+            ['timetable_entries_times_insert', 'timetable_entries_times_update'],
+            [
+                'timetable_entries' => [
+                    'timetable_entries_cell_unique',
+                    'timetable_entries_teacher_slot_unique',
+                ],
+            ],
+        );
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $level = Level::query()->firstOrFail();
         $teacher = User::query()->where('username', 'enseignant')->firstOrFail();
@@ -187,6 +210,12 @@ class DataIntegrityAuditCommandTest extends TestCase
     public function test_payment_inconsistencies_are_reported(): void
     {
         $this->seed(DatabaseSeeder::class);
+        $this->dropLegacyAuditGuards([
+            'payments_amount_insert',
+            'payments_amount_update',
+            'payment_lines_amount_insert',
+            'payment_lines_amount_update',
+        ]);
         $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
         $level = Level::query()->firstOrFail();
         $receiver = User::query()->where('username', 'admin')->firstOrFail();
@@ -270,5 +299,27 @@ class DataIntegrityAuditCommandTest extends TestCase
         $this->assertSame(1, $checks['payments.without_enrollment']['count']);
         $this->assertSame(1, $checks['payment_lines.schedule_mismatch']['count']);
         $this->assertSame(1, $checks['payments.cancel_state_mismatch']['count']);
+    }
+
+    /**
+     * Simule une base antérieure à la migration P1 afin de tester le rapport
+     * sur des anomalies que le schéma courant refuse désormais d'enregistrer.
+     *
+     * @param  array<int, string>  $triggers
+     * @param  array<string, array<int, string>>  $indexes
+     */
+    private function dropLegacyAuditGuards(array $triggers, array $indexes = []): void
+    {
+        foreach ($triggers as $trigger) {
+            DB::unprepared("DROP TRIGGER IF EXISTS {$trigger}");
+        }
+
+        foreach ($indexes as $table => $tableIndexes) {
+            foreach ($tableIndexes as $index) {
+                if (Schema::hasIndex($table, $index)) {
+                    Schema::table($table, fn ($blueprint) => $blueprint->dropUnique($index));
+                }
+            }
+        }
     }
 }

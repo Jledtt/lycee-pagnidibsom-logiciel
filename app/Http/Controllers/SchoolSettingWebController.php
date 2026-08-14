@@ -4,14 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\SchoolSetting;
+use App\Services\AcademicYearActivationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SchoolSettingWebController extends Controller
 {
+    public function __construct(
+        private readonly AcademicYearActivationService $activationService,
+    ) {}
+
     public function edit(): View
     {
         return view('settings.edit', [
@@ -52,14 +56,14 @@ class SchoolSettingWebController extends Controller
             $data['logo_path'] = 'images/'.$filename;
         }
 
-        DB::transaction(function () use ($settings, $data) {
-            AcademicYear::query()->update(['is_active' => false]);
-            AcademicYear::query()->whereKey($data['active_academic_year_id'])->update(['is_active' => true]);
+        $this->activationService->activate(
+            (int) $data['active_academic_year_id'],
+            function () use ($settings, $data): void {
+                unset($data['active_academic_year_id'], $data['logo']);
 
-            unset($data['active_academic_year_id'], $data['logo']);
-
-            $settings->update($data);
-        });
+                $settings->update($data);
+            },
+        );
 
         return redirect()
             ->route('settings.edit')

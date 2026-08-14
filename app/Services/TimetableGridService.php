@@ -17,35 +17,41 @@ class TimetableGridService
 
     public function update(Timetable $timetable, array $attributes, array $rows): void
     {
-        if ($timetable->status === 'active') {
-            throw ValidationException::withMessages([
-                'timetable' => 'Cet emploi du temps est publié. Repasse-le en brouillon avant de le modifier.',
-            ]);
-        }
+        DB::transaction(function () use ($timetable, $attributes, $rows): void {
+            $lockedTimetable = Timetable::query()
+                ->lockForUpdate()
+                ->findOrFail($timetable->id);
 
-        $assignments = ClassSubject::query()
-            ->with(['subject', 'teacher'])
-            ->where('school_class_id', $timetable->school_class_id)
-            ->where('is_active', true)
-            ->get()
-            ->keyBy('id');
-        $existingEntries = $timetable->entries()->get()->keyBy('id');
+            if ($lockedTimetable->status === 'active') {
+                throw ValidationException::withMessages([
+                    'timetable' => 'Cet emploi du temps est publié. Repasse-le en brouillon avant de le modifier.',
+                ]);
+            }
 
-        $entries = collect($rows)
-            ->map(fn (array $row): array => $this->entryPayload(
-                $row,
-                $assignments,
-                filled($row['entry_id'] ?? null) ? $existingEntries->get((int) $row['entry_id']) : null,
-            ))
-            ->values();
+            $assignments = ClassSubject::query()
+                ->with(['subject', 'teacher'])
+                ->where('school_class_id', $lockedTimetable->school_class_id)
+                ->where('is_active', true)
+                ->get()
+                ->keyBy('id');
+            $existingEntries = $lockedTimetable->entries()
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+            $entries = collect($rows)
+                ->map(fn (array $row): array => $this->entryPayload(
+                    $row,
+                    $assignments,
+                    filled($row['entry_id'] ?? null) ? $existingEntries->get((int) $row['entry_id']) : null,
+                ))
+                ->values();
 
-        $this->ensureTeachersAreAvailable($timetable, $entries);
-        $this->availabilities->ensureTimetableEntriesAllowed($timetable, $entries);
+            $this->ensureTeachersAreAvailable($lockedTimetable, $entries);
+            $this->availabilities->ensureTimetableEntriesAllowed($lockedTimetable, $entries);
 
-        DB::transaction(function () use ($timetable, $attributes, $entries): void {
-            $timetable->update($attributes);
-            $timetable->entries()->delete();
-            $timetable->entries()->createMany($entries->all());
+            $lockedTimetable->update($attributes);
+            $lockedTimetable->entries()->delete();
+            $lockedTimetable->entries()->createMany($entries->all());
         });
     }
 
@@ -144,6 +150,8 @@ class TimetableGridService
             ->whereIn('teacher_id', $linked->pluck('teacher_id')->unique())
             ->whereIn('timetable_period_id', $linked->pluck('timetable_period_id')->unique())
             ->whereIn('day_of_week', $linked->pluck('day_of_week')->unique())
+            ->orderBy('id')
+            ->lockForUpdate()
             ->get()
             ->keyBy(fn (TimetableEntry $entry): string => $this->slotKey($entry->toArray()));
 

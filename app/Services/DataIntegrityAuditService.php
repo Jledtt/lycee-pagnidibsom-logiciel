@@ -340,11 +340,13 @@ class DataIntegrityAuditService
             'label' => $label,
             'severity' => $severity,
             'count' => $count,
-            'samples' => collect($samples)
-                ->take(10)
-                ->map(fn ($sample): string => (string) $sample)
-                ->values()
-                ->all(),
+            'samples' => $count === 0
+                ? []
+                : collect($samples)
+                    ->take(10)
+                    ->map(fn ($sample): string => (string) $sample)
+                    ->values()
+                    ->all(),
         ];
     }
 

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
-use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Rules\PlausibleStudentBirthDate;
@@ -17,7 +16,10 @@ use ZipArchive;
 
 class StudentImportService
 {
-    public function __construct(private readonly MatriculeGeneratorService $matriculeGenerator) {}
+    public function __construct(
+        private readonly MatriculeGeneratorService $matriculeGenerator,
+        private readonly GuardianAssignmentService $guardianAssignments,
+    ) {}
 
     public function templateHeaders(): array
     {
@@ -285,39 +287,7 @@ class StudentImportService
 
     private function attachGuardian(Student $student, array $data, string $prefix, string $relationship): void
     {
-        $phone = $data[$prefix.'_phone_primary'] ?? null;
-        $lastName = $data[$prefix.'_last_name'] ?? null;
-
-        if (blank($phone) || blank($lastName)) {
-            return;
-        }
-
-        $guardian = Guardian::query()->firstOrCreate(
-            ['phone_primary' => $phone],
-            [
-                'first_name' => $data[$prefix.'_first_name'] ?? '',
-                'last_name' => $lastName,
-                'profession' => $data[$prefix.'_profession'] ?? null,
-                'service' => $data[$prefix.'_service'] ?? null,
-                'status' => 'active',
-            ],
-        );
-
-        $guardian->update([
-            'first_name' => $data[$prefix.'_first_name'] ?? $guardian->first_name,
-            'last_name' => $lastName,
-            'profession' => $data[$prefix.'_profession'] ?? $guardian->profession,
-            'service' => $data[$prefix.'_service'] ?? $guardian->service,
-        ]);
-
-        $student->guardians()->syncWithoutDetaching([
-            $guardian->id => [
-                'relationship' => $relationship,
-                'is_primary' => $relationship === 'father',
-                'can_receive_sms' => true,
-                'can_pickup_child' => false,
-            ],
-        ]);
+        $this->guardianAssignments->syncRelationship($student, $data, $prefix, $relationship);
     }
 
     private function createEnrollmentIfPossible(Student $student, array $data, ?AcademicYear $academicYear, ?int $createdBy): void

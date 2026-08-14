@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\FeeSchedule;
+use App\Models\FeeType;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
@@ -32,12 +33,41 @@ class PaymentService
             ]);
         }
 
+        foreach ($lines as $index => $line) {
+            $rawAmount = $line['amount'] ?? null;
+            $isInteger = is_int($rawAmount)
+                || (is_string($rawAmount) && ctype_digit($rawAmount));
+
+            if (! $isInteger || (int) $rawAmount <= 0) {
+                throw ValidationException::withMessages([
+                    "lines.{$index}.amount" => 'Le montant doit être un nombre entier strictement positif.',
+                ]);
+            }
+
+            if ((int) ($line['fee_type_id'] ?? 0) <= 0) {
+                throw ValidationException::withMessages([
+                    "lines.{$index}.fee_type_id" => 'Le type de frais est obligatoire.',
+                ]);
+            }
+        }
+
         $payment = DB::transaction(function () use ($student, $academicYear, $receiver, $lines, $data) {
             $amount = collect($lines)->sum(fn (array $line): int => (int) $line['amount']);
+            $lockedAcademicYear = AcademicYear::query()
+                ->lockForUpdate()
+                ->findOrFail($academicYear->id);
+
+            if (! $lockedAcademicYear->is_active) {
+                throw ValidationException::withMessages([
+                    'academic_year_id' => 'Cette année scolaire n’est plus active.',
+                ]);
+            }
+
             $enrollment = Enrollment::query()
-                ->where('academic_year_id', $academicYear->id)
+                ->where('academic_year_id', $lockedAcademicYear->id)
                 ->where('student_id', $student->id)
                 ->where('status', 'active')
+                ->lockForUpdate()
                 ->first();
 
             if (! $enrollment) {
@@ -54,11 +84,29 @@ class PaymentService
                 ->values();
             $schedules = FeeSchedule::query()
                 ->whereIn('id', $scheduleIds)
+                ->orderBy('id')
+                ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
+            $feeTypeIds = collect($lines)
+                ->pluck('fee_type_id')
+                ->map(fn ($id): int => (int) $id)
+                ->unique()
+                ->values();
+            $knownFeeTypeIds = FeeType::query()
+                ->whereIn('id', $feeTypeIds)
+                ->lockForUpdate()
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id);
 
             foreach ($lines as $index => $line) {
                 $scheduleId = (int) ($line['fee_schedule_id'] ?? 0);
+
+                if (! $knownFeeTypeIds->contains((int) $line['fee_type_id'])) {
+                    throw ValidationException::withMessages([
+                        "lines.{$index}.fee_type_id" => 'Le type de frais sélectionné n’existe plus.',
+                    ]);
+                }
 
                 if (! $scheduleId) {
                     continue;
@@ -67,7 +115,7 @@ class PaymentService
                 $schedule = $schedules->get($scheduleId);
 
                 if (! $schedule
-                    || (int) $schedule->academic_year_id !== (int) $academicYear->id
+                    || (int) $schedule->academic_year_id !== (int) $lockedAcademicYear->id
                     || (int) $schedule->school_class_id !== (int) $enrollment->school_class_id) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.fee_schedule_id" => 'Cet échéancier ne correspond pas à l’année et à la classe de l’élève.',
@@ -83,7 +131,7 @@ class PaymentService
 
             $payment = Payment::create([
                 'receipt_number' => $this->receiptNumberService->generate(),
-                'academic_year_id' => $academicYear->id,
+                'academic_year_id' => $lockedAcademicYear->id,
                 'student_id' => $student->id,
                 'enrollment_id' => $enrollment?->id,
                 'paid_at' => $data['paid_at'] ?? now(),

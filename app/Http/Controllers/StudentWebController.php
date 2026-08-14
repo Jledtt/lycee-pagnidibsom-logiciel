@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Models\Guardian;
 use App\Models\Student;
 use App\Rules\PlausibleStudentBirthDate;
 use App\Services\CommunicationService;
+use App\Services\GuardianAssignmentService;
 use App\Services\MatriculeGeneratorService;
 use App\Services\PaymentFinancialProfileService;
 use App\Services\RequiredStudentDocumentService;
@@ -21,7 +21,10 @@ use Illuminate\View\View;
 
 class StudentWebController extends Controller
 {
-    public function __construct(private readonly SchoolAccessService $access) {}
+    public function __construct(
+        private readonly SchoolAccessService $access,
+        private readonly GuardianAssignmentService $guardianAssignments,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -352,38 +355,6 @@ class StudentWebController extends Controller
             return;
         }
 
-        $guardian = Guardian::firstOrCreate(
-            ['phone_primary' => $data[$prefix.'_phone_primary']],
-            [
-                'first_name' => $data[$prefix.'_first_name'] ?? '',
-                'last_name' => $data[$prefix.'_last_name'],
-                'email' => $data[$prefix.'_email'] ?? null,
-                'profession' => $data[$prefix.'_profession'] ?? null,
-                'service' => $data[$prefix.'_service'] ?? null,
-                'status' => 'active',
-            ]
-        );
-
-        $guardian->update([
-            'first_name' => $data[$prefix.'_first_name'] ?? $guardian->first_name,
-            'last_name' => $data[$prefix.'_last_name'],
-            'email' => $data[$prefix.'_email'] ?? $guardian->email,
-            'profession' => $data[$prefix.'_profession'] ?? $guardian->profession,
-            'service' => $data[$prefix.'_service'] ?? $guardian->service,
-        ]);
-
-        if (! $student->guardians()->whereKey($guardian->id)->exists()) {
-            $student->guardians()->attach($guardian->id, [
-                'relationship' => $relationship,
-                'is_primary' => $relationship === 'father',
-                'can_receive_sms' => true,
-                'can_pickup_child' => false,
-            ]);
-        } else {
-            $student->guardians()->updateExistingPivot($guardian->id, [
-                'relationship' => $relationship,
-                'is_primary' => $relationship === 'father',
-            ]);
-        }
+        $this->guardianAssignments->syncRelationship($student, $data, $prefix, $relationship);
     }
 }

@@ -33,7 +33,7 @@ class StorePaymentRequest extends FormRequest
                 Rule::exists('fee_schedules', 'id')
                     ->where('academic_year_id', $academicYearId ?? 0),
             ],
-            'lines.*.amount' => ['nullable', 'integer', 'min:0'],
+            'lines.*.amount' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

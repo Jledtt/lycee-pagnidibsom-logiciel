@@ -152,11 +152,26 @@ class TimetableGenerationService
         $targetClassIds = $run->input_snapshot['target_class_ids'] ?? [];
 
         DB::transaction(function () use ($run, $actor, $assignments, $solutionBySlot, $lockedBySlot, $periods, $days, $targetClassIds): void {
+            $currentTimetables = Timetable::query()
+                ->where('academic_year_id', $run->academic_year_id)
+                ->whereIn('school_class_id', $targetClassIds)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('school_class_id');
+            $teacherIds = $assignments->pluck('teacher_id')->filter()->unique();
+
+            if ($teacherIds->isNotEmpty()) {
+                TimetableEntry::query()
+                    ->whereIn('teacher_id', $teacherIds)
+                    ->whereHas('timetable', fn ($query) => $query->where('academic_year_id', $run->academic_year_id))
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+            }
+
             foreach ($targetClassIds as $classId) {
-                $existing = Timetable::query()
-                    ->where('academic_year_id', $run->academic_year_id)
-                    ->where('school_class_id', $classId)
-                    ->first();
+                $existing = $currentTimetables->get($classId);
 
                 if ($existing?->status === 'active') {
                     throw ValidationException::withMessages([
