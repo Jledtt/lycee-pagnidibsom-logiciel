@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TeacherAttendanceSheetWebController extends Controller
@@ -88,7 +89,9 @@ class TeacherAttendanceSheetWebController extends Controller
         $end = Carbon::parse($data['end_date']);
 
         if ($start->diffInDays($end) > 31) {
-            abort(422, 'La période ne doit pas dépasser 31 jours.');
+            throw ValidationException::withMessages([
+                'end_date' => 'La période ne doit pas dépasser 31 jours.',
+            ]);
         }
 
         return $data;

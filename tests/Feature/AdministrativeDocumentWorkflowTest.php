@@ -93,6 +93,21 @@ class AdministrativeDocumentWorkflowTest extends TestCase
             ]))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($user)
+            ->from(route('teacher-attendance-sheets.index'))
+            ->get(route('teacher-attendance-sheets.pdf', [
+                'teacher_name' => 'KEREGUE Sompeguea',
+                'start_date' => '2026-08-25',
+                'end_date' => '2026-10-15',
+            ]))
+            ->assertRedirect(route('teacher-attendance-sheets.index'))
+            ->assertSessionHasErrors([
+                'end_date' => 'La période ne doit pas dépasser 31 jours.',
+            ])
+            ->assertSessionHasInput('teacher_name', 'KEREGUE Sompeguea')
+            ->assertSessionHasInput('start_date', '2026-08-25')
+            ->assertSessionHasInput('end_date', '2026-10-15');
     }
 
     public function test_exit_authorization_pdf_uses_clean_client_wording(): void

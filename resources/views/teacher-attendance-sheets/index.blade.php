@@ -18,7 +18,7 @@
                 <select id="teacher_name" name="teacher_name">
                     <option value="">Fiche vierge / tous professeurs</option>
                     @foreach ($teachers as $teacher)
-                        <option value="{{ $teacher }}" @selected(($filters['teacher_name'] ?? '') === $teacher)>{{ $teacher }}</option>
+                        <option value="{{ $teacher }}" @selected(old('teacher_name', $filters['teacher_name'] ?? '') === $teacher)>{{ $teacher }}</option>
                     @endforeach
                 </select>
             </div>
@@ -26,11 +26,15 @@
             <div class="grid two-col">
                 <div class="field">
                     <label for="start_date">Début</label>
-                    <input id="start_date" name="start_date" type="date" value="{{ $filters['start_date'] }}" required>
+                    <input id="start_date" name="start_date" type="date" value="{{ old('start_date', $filters['start_date']) }}" required>
                 </div>
                 <div class="field">
                     <label for="end_date">Fin</label>
-                    <input id="end_date" name="end_date" type="date" value="{{ $filters['end_date'] }}" required>
+                    <input id="end_date" name="end_date" type="date" value="{{ old('end_date', $filters['end_date']) }}" aria-describedby="attendance-period-help @error('end_date') attendance-period-error @enderror" required>
+                    <small id="attendance-period-help">La fiche peut couvrir au maximum 31 jours.</small>
+                    @error('end_date')
+                        <p class="error" id="attendance-period-error">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
