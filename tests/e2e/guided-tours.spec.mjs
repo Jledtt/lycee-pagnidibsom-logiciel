@@ -9,12 +9,12 @@ async function login(page) {
 }
 
 test('la visite du tableau de bord peut être ouverte, parcourue et fermée au clavier', async ({ page }, testInfo) => {
-    await login(page);
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
         window.localStorage.clear();
         window.sessionStorage.clear();
     });
-    await page.reload();
+
+    await login(page);
 
     const invitation = page.locator('.guided-tour-invitation');
     await expect(invitation).toBeVisible();

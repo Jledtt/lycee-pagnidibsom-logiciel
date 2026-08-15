@@ -1,6 +1,6 @@
 # Rapport final de sécurisation P0-P1
 
-Date du contrôle : 14 août 2026  
+Date du contrôle : 14 et 15 août 2026
 Branche locale : `main`  
 Référence distante auditée : `origin/main`  
 Serveur audité : production LPP
@@ -87,11 +87,11 @@ La migration crée les séries/filières configurables, rattache facultativement
 
 ## 4. Inventaire des fichiers modifiés
 
-Le diff complet entre `origin/main` et le commit documentaire final contient 135 fichiers :
+Le diff complet entre l'ancien état de production `3e7c813` et le dernier commit applicatif déployé contient 137 fichiers :
 
-- `app/` : 76 fichiers ;
+- `app/` : 77 fichiers ;
 - `resources/` : 30 fichiers ;
-- `tests/` : 20 fichiers ;
+- `tests/` : 21 fichiers ;
 - `database/` : 5 fichiers ;
 - `docs/rapport-final-securisation-p0-p1.md` : 1 fichier ;
 - `routes/web.php` : 1 fichier ;
@@ -109,15 +109,15 @@ Les zones concernées sont :
 - vues : élèves, classes, responsables, discipline, paiements, enseignants, rapports, composants et mise en page ;
 - tests : matrice d'accès, intégrité, modules, calculs, documents, dialogues, parcours métier et visites guidées.
 
-L'inventaire exhaustif et reproductible est obtenu avec :
+L'inventaire exhaustif et reproductible avant le présent ajustement documentaire est obtenu avec :
 
 ```bash
-git diff --name-status origin/main..HEAD
+git diff --name-status 3e7c813..f538ef2
 ```
 
-## 5. Commits locaux
+## 5. Commits livrés
 
-Les 13 commits d'implémentation sont, dans l'ordre :
+Les 19 commits livrés après l'ancien état de production sont, dans l'ordre :
 
 1. `279060e` - `fix: restreindre les données selon les rôles`
 2. `5b90d90` - `fix: cloisonner les autorisations de sortie`
@@ -132,20 +132,26 @@ Les 13 commits d'implémentation sont, dans l'ordre :
 11. `9f82f28` - `fix: aligner les accès Web et API par rôle`
 12. `20d0e85` - `style: simplifier les actions des grands écrans`
 13. `f047e78` - `refactor: fiabiliser les types et les calculs scolaires`
+14. `ec0be39` - `docs: ajouter le rapport final de sécurisation`
+15. `d6d9e54` - `docs: consigner l'audit de production`
+16. `dbfa04a` - `docs: documenter le test des migrations MySQL`
+17. `6fab8c9` - `docs: valider la copie externe chiffrée`
+18. `511cdfb` - `fix: fiabiliser la migration des contraintes MySQL`
+19. `f538ef2` - `fix: protéger les archives après sauvegarde`
 
-Ces commits, auxquels s'ajoute le commit du présent rapport, ne sont ni poussés ni déployés à la date du contrôle, conformément à la contrainte de ne pas pousser ou déployer sans instruction explicite.
+Ces commits ont été poussés sur `origin/main` puis déployés en production après autorisation explicite.
 
 ## 6. Vérifications exécutées
 
 ### Application locale
 
 - tests Laravel ciblés : 47 tests, 322 assertions, succès ;
-- suite Laravel complète : 323 tests, 2 229 assertions, succès ;
+- suite Laravel complète : 324 tests, 2 232 assertions, succès ;
 - Laravel Pint complet : succès ;
 - PHPStan niveau 6 : 0 erreur ;
 - build Vite : succès, avec un avertissement facultatif `fontaine` sans incidence ;
 - `npm audit` : 0 vulnérabilité ;
-- Playwright : 73 succès, 17 tests ignorés volontairement, 90 au total ;
+- Playwright : 70 succès et 17 tests ignorés volontairement lors de la suite complète, puis 9 tests de visites guidées sur 9 réussis après correction de la réinitialisation du stockage de test ;
 - contrôles Playwright sur ordinateur, tablette et mobile ;
 - parcours métier et génération PDF exécutés sur le profil ordinateur.
 
@@ -162,15 +168,19 @@ Les tests destructifs sont volontairement ignorés sur tablette et mobile. Cette
 - cookie de session : Secure, HttpOnly et SameSite Lax ;
 - clé d'application, clé Resend, secret du webhook et destinataire des alertes présents dans la configuration mise en cache ;
 - `.env` et ses deux anciennes copies : mode `600` ;
-- archive complète créée le 14 août 2026 à 23 h 24 UTC : 503 entrées, 839 898 octets, mode `640` ;
+- production déployée sur `f538ef2`, sans migration en attente ;
+- archive complète créée le 15 août 2026 à 00 h 45 UTC : `lpp-2026-08-15-00-45-28.zip`, 543 entrées, 892 106 octets, mode `640` et groupe restreint `lpp-backup-export` ;
 - déchiffrement PHP : succès ;
 - export par le compte SSH restreint : succès ;
-- restauration MySQL temporaire : succès, 67 tables, base temporaire supprimée.
+- restauration MySQL temporaire : succès, 68 tables, 56 migrations et 8 déclencheurs, base temporaire supprimée ;
 - audit P1 exécuté en lecture seule sur la base MySQL de production avec le nouveau service : 0 anomalie bloquante, 0 avertissement, contraintes applicables ;
-- fichier de service temporaire supprimé du serveur après l'audit.
+- fichier de service temporaire supprimé du serveur après l'audit ;
 - migrations P1 testées sur une restauration MySQL isolée : 3 migrations appliquées, 8 déclencheurs et 3 colonnes de garde vérifiés ;
 - rollback MySQL testé : 3 migrations retirées, aucun déclencheur ni table `academic_tracks` résiduel ;
-- nettoyage vérifié après l'exercice : 0 base et 0 dossier temporaire restant.
+- nettoyage vérifié après l'exercice : 0 base et 0 dossier temporaire restant ;
+- `log_bin_trust_function_creators` remis à `0` immédiatement après la migration ;
+- HTTPS répond en `200`, HTTP redirige vers HTTPS et les en-têtes HSTS, CSP, anti-cadrage, `nosniff`, référent et permissions sont présents ;
+- version nginx masquée, nginx actif, application sortie du mode maintenance.
 
 ### Régression MySQL détectée avant mise en production
 
@@ -212,12 +222,13 @@ Le bit setgid du dossier transmet le groupe restreint aux futures archives. Le c
 
 Le secret Actions `LPP_BACKUP_HOST` a été créé après autorisation explicite. Les secrets `LPP_BACKUP_KNOWN_HOSTS` et `LPP_BACKUP_SSH_KEY` sont également présents.
 
-Le workflow manuel `31851901085` est terminé avec succès :
+Le workflow final `31854698136`, lancé après déploiement et restauration, est terminé avec succès :
 
 - téléchargement et vérification de l'archive chiffrée : succès ;
 - création du SHA-256 : succès ;
-- artefact `lpp-backup-31851901085` : 779 857 octets ;
-- conservation jusqu'au 13 septembre 2026 ;
+- artefact `lpp-backup-31854698136` : 826 670 octets ;
+- commit associé : `f538ef2abe9e9ce9c6a0653d0fb04940fd352bb8` ;
+- conservation jusqu'au 14 septembre 2026 ;
 - artefact non expiré au moment du contrôle.
 
 ### Sessions non chiffrées en base
@@ -226,9 +237,13 @@ La production utilise `SESSION_ENCRYPT=false`. Le cookie est correctement proté
 
 Action recommandée pendant une courte maintenance : définir `SESSION_ENCRYPT=true`, vider les anciennes sessions et reconstruire le cache de configuration. Cette opération déconnectera les utilisateurs actifs et nécessite donc une validation explicite.
 
-### Production non synchronisée avec les commits locaux
+### Production synchronisée
 
-Le serveur est sur le commit `3e7c813`, alors que le dépôt local contient 13 commits d'implémentation supplémentaires ainsi que le présent rapport. Les nouvelles Policies, migrations, modules et tests ne sont donc pas encore en production.
+Le serveur, le dépôt local et `origin/main` ont été synchronisés sur `f538ef2` après le déploiement applicatif. Les trois migrations P1 sont enregistrées, les huit déclencheurs sont présents et l'audit de données reste vert.
+
+Le déploiement a aussi permis d'identifier une règle d'exploitation importante : Composer doit être exécuté par le compte de déploiement avec `--no-scripts`, puis `package:discover` et les commandes de cache doivent être exécutés comme `www-data`. Cette procédure évite de modifier les propriétaires de `storage` et de `bootstrap/cache`.
+
+Le service `BackupArchivePermissionService` remet désormais chaque nouvelle archive locale en mode `640`. Le dossier d'archives reste en `2750` avec le groupe `lpp-backup-export`, même après un déploiement.
 
 Deux fichiers non suivis existent sur le serveur :
 
@@ -237,18 +252,13 @@ Deux fichiers non suivis existent sur le serveur :
 
 Ils sont protégés en `600` et hors de la racine Web, mais ils dupliquent des secrets anciens. Leur suppression ou archivage chiffré doit être validé avant toute action.
 
-## 9. Risques et contrôles avant déploiement
+## 9. Risques résiduels et contrôles futurs
 
-- relancer `php artisan lpp:audit-data-integrity` immédiatement avant les migrations, même si l'audit préparatoire du 14 août 2026 est vert ;
-- arrêter le déploiement si l'audit retourne une anomalie bloquante ;
-- prendre une nouvelle sauvegarde chiffrée et vérifier son SHA-256 ;
-- activer le mode maintenance pendant les migrations ;
-- ne pas lancer de correction automatique sur les responsables ou paiements ambigus ;
-- vérifier les rôles réels après le seeder de permissions ;
-- contrôler un compte par rôle sur le Web et l'API ;
-- tester les téléchargements confidentiels avec une URL directe interdite ;
-- vérifier les PDF, exports et écrans principaux après reconstruction Vite ;
-- relancer la suite de restauration et la copie externe après déploiement.
+- `SESSION_ENCRYPT=false` reste volontairement inchangé tant qu'une maintenance avec déconnexion des utilisateurs n'est pas autorisée ;
+- les deux anciennes copies `.env.bak.*`, protégées en `600`, contiennent potentiellement d'anciens secrets et nécessitent une autorisation de suppression ou d'archivage chiffré ;
+- la restauration complète et la copie externe doivent continuer à être contrôlées périodiquement, même si l'exercice final est réussi ;
+- toute future migration créant des déclencheurs MySQL doit conserver l'activation temporaire et le retour à `0` de `log_bin_trust_function_creators` ;
+- les tests de documents réels en production restent volontairement en lecture seule et ne doivent pas créer ou annuler de données client.
 
 ## 10. Retour arrière
 
@@ -281,9 +291,13 @@ Ce retour arrière réintroduit l'échec de la copie externe et n'est donc pas r
 
 ## 11. Critères de clôture
 
-Le code local satisfait les critères de qualité, d'autorisation, d'intégrité, de modules et de responsive. La copie externe chiffrée est également validée. La dernière validation externe consiste à :
+Les critères P0-P1 sont satisfaits :
 
-1. pousser et déployer les commits locaux, avec audit de données avant migration ;
-2. contrôler le site, les services, les permissions et les migrations après déploiement.
+1. code poussé et déployé avec audit préalable vert ;
+2. migrations, déclencheurs et rôles vérifiés en production ;
+3. sauvegarde chiffrée créée, exportée, restaurée et copiée hors serveur ;
+4. site HTTPS, nginx, queue, scheduler et caches contrôlés ;
+5. tests Laravel, analyse statique, formatage, dépendances, build et parcours navigateur exécutés ;
+6. permissions Web, API, PDF, exports et documents confidentiels couvertes par les tests automatisés.
 
-Le chiffrement des sessions est une amélioration de défense en profondeur à programmer pendant une maintenance, car son activation déconnectera les utilisateurs actuels.
+Le chiffrement des sessions reste une amélioration de défense en profondeur explicitement différée, car son activation déconnectera les utilisateurs actuels. Les anciennes copies de `.env` restent également en attente d'une décision de conservation ou de suppression.
