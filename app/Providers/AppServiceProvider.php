@@ -33,11 +33,14 @@ use App\Models\Timetable;
 use App\Models\TimetableEntry;
 use App\Models\User;
 use App\Observers\ActivityLogObserver;
+use App\Services\BackupArchivePermissionService;
 use App\Services\GuidedTourService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Backup\Events\BackupWasSuccessful;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +63,10 @@ class AppServiceProvider extends ServiceProvider
         foreach ($this->auditedModels() as $model) {
             $model::observe(ActivityLogObserver::class);
         }
+
+        Event::listen(BackupWasSuccessful::class, function (BackupWasSuccessful $event): void {
+            app(BackupArchivePermissionService::class)->secure($event->diskName, $event->backupName);
+        });
 
         View::composer('*', function ($view) {
             $settings = null;

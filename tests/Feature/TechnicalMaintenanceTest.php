@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\BackupArchivePermissionService;
 use App\Services\DatabaseBackupService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TechnicalMaintenanceTest extends TestCase
@@ -97,6 +99,24 @@ class TechnicalMaintenanceTest extends TestCase
         config()->set('lpp.backup.export_path', $path);
 
         $this->assertSame($path, app(DatabaseBackupService::class)->directory());
+    }
+
+    public function test_successful_full_backup_is_restricted_to_owner_and_group(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('lpp-test/archive.zip', 'archive');
+        chmod(Storage::disk('local')->path('lpp-test/archive.zip'), 0644);
+
+        app(BackupArchivePermissionService::class)->secure('local', 'lpp-test');
+
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $this->assertSame(
+                '0640',
+                substr(sprintf('%o', fileperms(Storage::disk('local')->path('lpp-test/archive.zip'))), -4),
+            );
+        } else {
+            $this->assertTrue(Storage::disk('local')->exists('lpp-test/archive.zip'));
+        }
     }
 
     private function assertSecureBackupPermissions(string $directory): void
