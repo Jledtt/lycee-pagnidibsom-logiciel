@@ -36,17 +36,9 @@ return new class extends Migration
             );
         }
 
-        try {
-            $this->addGeneratedGuards();
-            $this->addUniqueIndexes();
-            $this->createValidationTriggers();
-        } catch (Throwable $error) {
-            $this->removeValidationTriggers();
-            $this->removeUniqueIndexes();
-            $this->removeGeneratedGuards();
-
-            throw $error;
-        }
+        $this->addGeneratedGuards();
+        $this->addUniqueIndexes();
+        $this->createValidationTriggers();
     }
 
     public function down(): void
@@ -58,45 +50,86 @@ return new class extends Migration
 
     private function addGeneratedGuards(): void
     {
-        Schema::table('academic_years', function (Blueprint $table): void {
-            $table->unsignedTinyInteger('integrity_active_guard')
-                ->nullable()
-                ->virtualAs('CASE WHEN is_active = 1 THEN 1 ELSE NULL END');
-        });
+        if (! Schema::hasColumn('academic_years', 'integrity_active_guard')) {
+            Schema::table('academic_years', function (Blueprint $table): void {
+                $table->unsignedTinyInteger('integrity_active_guard')
+                    ->nullable()
+                    ->virtualAs('CASE WHEN is_active = 1 THEN 1 ELSE NULL END');
+            });
+        }
 
-        Schema::table('guardian_student', function (Blueprint $table): void {
-            $table->unsignedBigInteger('integrity_primary_student_id')
-                ->nullable()
-                ->virtualAs('CASE WHEN is_primary = 1 THEN student_id ELSE NULL END');
-            $table->string('integrity_exclusive_relationship', 20)
-                ->nullable()
-                ->virtualAs("CASE WHEN relationship IN ('father', 'mother', 'tutor') THEN relationship ELSE NULL END");
-        });
+        if (! Schema::hasColumn('guardian_student', 'integrity_primary_student_id')) {
+            Schema::table('guardian_student', function (Blueprint $table): void {
+                $table->unsignedBigInteger('integrity_primary_student_id')
+                    ->nullable()
+                    ->virtualAs('CASE WHEN is_primary = 1 THEN student_id ELSE NULL END');
+            });
+        }
+
+        if (! Schema::hasColumn('guardian_student', 'integrity_exclusive_relationship')) {
+            Schema::table('guardian_student', function (Blueprint $table): void {
+                $table->string('integrity_exclusive_relationship', 20)
+                    ->nullable()
+                    ->virtualAs("CASE WHEN relationship IN ('father', 'mother', 'tutor') THEN relationship ELSE NULL END");
+            });
+        }
     }
 
     private function addUniqueIndexes(): void
     {
-        Schema::table('academic_years', function (Blueprint $table): void {
-            $table->unique('integrity_active_guard', 'academic_years_single_active_unique');
+        $this->addUniqueIndexIfMissing(
+            'academic_years',
+            ['integrity_active_guard'],
+            'academic_years_single_active_unique',
+        );
+
+        $this->addUniqueIndexIfMissing(
+            'guardian_student',
+            ['integrity_primary_student_id'],
+            'guardian_student_single_primary_unique',
+        );
+        $this->ensureGuardianStudentForeignKeyIndex();
+        $this->addUniqueIndexIfMissing(
+            'guardian_student',
+            ['student_id', 'integrity_exclusive_relationship'],
+            'guardian_student_relationship_unique',
+        );
+
+        $this->addUniqueIndexIfMissing(
+            'timetable_entries',
+            ['timetable_id', 'day_of_week', 'sort_order'],
+            'timetable_entries_cell_unique',
+        );
+        $this->addUniqueIndexIfMissing(
+            'timetable_entries',
+            ['teacher_id', 'day_of_week', 'timetable_period_id'],
+            'timetable_entries_teacher_slot_unique',
+        );
+    }
+
+    /**
+     * @param  array<int, string>  $columns
+     */
+    private function addUniqueIndexIfMissing(string $tableName, array $columns, string $indexName): void
+    {
+        if (Schema::hasIndex($tableName, $indexName)) {
+            return;
+        }
+
+        Schema::table($tableName, function (Blueprint $table) use ($columns, $indexName): void {
+            $table->unique($columns, $indexName);
         });
+    }
+
+    private function ensureGuardianStudentForeignKeyIndex(): void
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)
+            || Schema::hasIndex('guardian_student', 'guardian_student_student_id_index')) {
+            return;
+        }
 
         Schema::table('guardian_student', function (Blueprint $table): void {
-            $table->unique('integrity_primary_student_id', 'guardian_student_single_primary_unique');
-            $table->unique(
-                ['student_id', 'integrity_exclusive_relationship'],
-                'guardian_student_relationship_unique',
-            );
-        });
-
-        Schema::table('timetable_entries', function (Blueprint $table): void {
-            $table->unique(
-                ['timetable_id', 'day_of_week', 'sort_order'],
-                'timetable_entries_cell_unique',
-            );
-            $table->unique(
-                ['teacher_id', 'day_of_week', 'timetable_period_id'],
-                'timetable_entries_teacher_slot_unique',
-            );
+            $table->index('student_id', 'guardian_student_student_id_index');
         });
     }
 
@@ -153,6 +186,8 @@ return new class extends Migration
         string $message,
     ): void {
         $escapedMessage = str_replace("'", "''", $message);
+
+        DB::unprepared("DROP TRIGGER IF EXISTS {$name}");
 
         DB::unprepared(
             "CREATE TRIGGER {$name} BEFORE {$event} ON {$table} ".
@@ -227,6 +262,8 @@ return new class extends Migration
         string $condition,
         string $message,
     ): void {
+        DB::unprepared("DROP TRIGGER IF EXISTS {$name}");
+
         DB::unprepared(
             "CREATE TRIGGER {$name} BEFORE {$event} ON {$table} FOR EACH ROW ".
             "BEGIN IF {$condition} THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '{$message}'; END IF; END",
@@ -242,6 +279,8 @@ return new class extends Migration
 
     private function removeUniqueIndexes(): void
     {
+        $this->ensureGuardianStudentForeignKeyIndex();
+
         $indexes = [
             'academic_years' => ['academic_years_single_active_unique'],
             'guardian_student' => [

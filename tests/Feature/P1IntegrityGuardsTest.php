@@ -272,6 +272,11 @@ class P1IntegrityGuardsTest extends TestCase
 
         $this->assertTrue(Schema::hasColumn('academic_years', 'integrity_active_guard'));
         $this->assertTrue(Schema::hasIndex('timetable_entries', 'timetable_entries_cell_unique'));
+
+        $migration->up();
+
+        $this->assertTrue(Schema::hasIndex('guardian_student', 'guardian_student_relationship_unique'));
+        $this->assertTrue(Schema::hasIndex('timetable_entries', 'timetable_entries_teacher_slot_unique'));
     }
 
     private function assertDatabaseRejects(Closure $operation): void

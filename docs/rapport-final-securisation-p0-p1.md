@@ -172,6 +172,24 @@ Les tests destructifs sont volontairement ignorés sur tablette et mobile. Cette
 - rollback MySQL testé : 3 migrations retirées, aucun déclencheur ni table `academic_tracks` résiduel ;
 - nettoyage vérifié après l'exercice : 0 base et 0 dossier temporaire restant.
 
+### Régression MySQL détectée avant mise en production
+
+La première tentative de déploiement s'est arrêtée sans enregistrer la migration P1. Deux particularités MySQL ont été identifiées :
+
+- certains index et colonnes générées peuvent rester présents après un échec, car les opérations DDL sont validées immédiatement ;
+- avec les journaux binaires actifs, l'utilisateur Laravel ne peut pas créer les déclencheurs tant que `log_bin_trust_function_creators` vaut `0`.
+
+La migration P1 a été rendue réexécutable : elle réutilise les colonnes et index déjà présents, recrée proprement les déclencheurs et conserve un index explicite sur `guardian_student.student_id` pour la clé étrangère. Le nettoyage automatique qui masquait l'erreur initiale a été retiré.
+
+Le scénario réel a ensuite été rejoué sur une nouvelle copie MySQL de la production contenant les éléments partiels :
+
+- application des 3 migrations : succès ;
+- 8 déclencheurs et les index attendus : présents ;
+- rollback des 3 migrations : succès, aucun déclencheur ou champ de garde résiduel ;
+- nouvelle application après rollback : succès.
+
+Pendant le déploiement, `log_bin_trust_function_creators` doit être activé uniquement autour de `php artisan migrate`, puis remis immédiatement à sa valeur initiale. Aucun privilège permanent supplémentaire ne doit être accordé au compte Laravel.
+
 ## 7. Réparation d'exploitation appliquée au serveur
 
 La copie externe échouait avant l'ouverture de la connexion SSH :
