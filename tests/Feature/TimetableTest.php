@@ -116,6 +116,7 @@ class TimetableTest extends TestCase
         $this->assertStringContainsString('Bâtir l’excellence', $pdfText);
         $this->assertStringContainsString('PUBLIÉ - DOCUMENT OFFICIEL', $pdfText);
         $this->assertStringContainsString('Mathématiques', $pdfText);
+        $this->assertStringNotContainsString('BADO Constant', $pdfText);
     }
 
     public function test_timetable_groups_same_period_on_one_row(): void
@@ -212,6 +213,7 @@ class TimetableTest extends TestCase
         $this->assertStringContainsString('Publié - document officiel', $html);
         $this->assertStringContainsString('Dernière mise à jour', $html);
         $this->assertStringContainsString('Mathématiques', $html);
+        $this->assertStringNotContainsString('BADO Constant', $html);
     }
 
     public function test_timetable_keeps_afternoon_periods_visible_when_empty(): void

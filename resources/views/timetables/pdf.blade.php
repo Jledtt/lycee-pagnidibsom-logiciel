@@ -16,7 +16,7 @@
         .schedule tbody tr:not(.break) td { height: 34px; }
         .break td { background: #faedcd; font-weight: 800; color: #7a5300; letter-spacing: 1px; }
         .subject { font-size: 9px; font-weight: 800; }
-        .teacher, .room { margin-top: 2px; font-size: 7px; color: #444; }
+        .room { margin-top: 2px; font-size: 7px; color: #444; }
         .notes { margin-top: 10px; font-size: 9px; }
         .footer { position: fixed; right: 0; bottom: -20px; left: 0; border-top: 1px solid #aaa; padding-top: 4px; color: #666; font-size: 7px; text-align: center; }
         .page-number::after { content: counter(page); }
@@ -77,9 +77,6 @@
                             @php($entry = $row['days'][$dayKey] ?? null)
                             <td>
                                 <div class="subject">{{ $entry?->subject_name ?: '-' }}</div>
-                                @if ($entry?->teacher_name)
-                                    <div class="teacher">{{ $entry->teacher_name }}</div>
-                                @endif
                                 @if ($entry?->room)
                                     <div class="room">Salle : {{ $entry->room }}</div>
                                 @endif
