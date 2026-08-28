@@ -1,24 +1,10 @@
 <?php
 
-use App\Models\Assessment;
-use App\Models\AttendanceRecord;
-use App\Models\AttendanceSession;
-use App\Models\ClassSubject;
-use App\Models\Enrollment;
-use App\Models\FeeSchedule;
-use App\Models\Grade;
-use App\Models\Guardian;
-use App\Models\Payment;
-use App\Models\PaymentLine;
-use App\Models\ReportCard;
-use App\Models\SchoolClass;
-use App\Models\Student;
 use App\Services\DatabaseBackupService;
 use App\Services\PagnidibsomClassSubjectSetupService;
 use App\Services\TariffDefaultService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 use Spatie\Backup\Events\BackupHasFailed;
 
@@ -59,71 +45,6 @@ Artisan::command('lpp:notify-backup-restore-failure', function () {
 
     $this->error('Alerte de restauration transmise.');
 })->purpose('Signaler un échec de vérification de restauration');
-
-Artisan::command('lpp:clean-demo-data', function () {
-    $matricules = ['TEST-2026-0001', 'TEST-2026-0002'];
-    $students = Student::withTrashed()
-        ->whereIn('matricule', $matricules)
-        ->get();
-
-    if ($students->isEmpty()) {
-        $this->info('Aucune donnee de test a nettoyer.');
-
-        return;
-    }
-
-    $studentIds = $students->pluck('id');
-    $guardianIds = DB::table('guardian_student')
-        ->whereIn('student_id', $studentIds)
-        ->pluck('guardian_id');
-    $classIds = Enrollment::query()
-        ->whereIn('student_id', $studentIds)
-        ->pluck('school_class_id')
-        ->filter()
-        ->unique();
-    $paymentIds = Payment::query()->whereIn('student_id', $studentIds)->pluck('id');
-    $attendanceSessionIds = AttendanceRecord::query()
-        ->whereIn('student_id', $studentIds)
-        ->pluck('attendance_session_id');
-    $assessmentIds = Assessment::query()
-        ->whereIn('school_class_id', $classIds)
-        ->where('title', 'like', '%Test MySQL%')
-        ->pluck('id');
-
-    DB::transaction(function () use ($studentIds, $guardianIds, $classIds, $paymentIds, $students, $attendanceSessionIds, $assessmentIds) {
-        PaymentLine::query()->whereIn('payment_id', $paymentIds)->delete();
-        Payment::query()->whereIn('id', $paymentIds)->delete();
-        Grade::query()->whereIn('assessment_id', $assessmentIds)->delete();
-        Assessment::query()->whereIn('id', $assessmentIds)->delete();
-        Grade::query()->whereIn('student_id', $studentIds)->delete();
-        ReportCard::query()->whereIn('student_id', $studentIds)->delete();
-        AttendanceRecord::query()->whereIn('student_id', $studentIds)->delete();
-        AttendanceSession::query()
-            ->whereIn('id', $attendanceSessionIds)
-            ->whereDoesntHave('records')
-            ->delete();
-        Enrollment::query()->whereIn('student_id', $studentIds)->delete();
-
-        foreach ($students as $student) {
-            $student->guardians()->detach();
-            $student->forceDelete();
-        }
-
-        Guardian::query()
-            ->whereIn('id', $guardianIds)
-            ->whereDoesntHave('students')
-            ->delete();
-
-        FeeSchedule::query()->whereIn('school_class_id', $classIds)->delete();
-        ClassSubject::query()->whereIn('school_class_id', $classIds)->delete();
-        SchoolClass::query()
-            ->whereIn('id', $classIds)
-            ->whereDoesntHave('enrollments')
-            ->delete();
-    });
-
-    $this->info('Données de test Awa/Issa supprimées.');
-})->purpose('Supprimer les élèves de démonstration TEST-2026');
 
 Artisan::command('lpp:setup-classes-subjects', function () {
     $result = app(PagnidibsomClassSubjectSetupService::class)->apply();
