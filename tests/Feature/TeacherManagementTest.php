@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Models\TeacherDocument;
 use App\Models\TeacherFeeStatement;
 use App\Models\TeacherProfile;
 use App\Models\TeacherWorkSession;
@@ -404,6 +405,77 @@ class TeacherManagementTest extends TestCase
         $document = $teacher->teacherDocuments()->firstOrFail();
         Storage::disk('documents')->assertExists($document->file_path);
         $this->actingAs($teacher)->get(route('teacher-documents.download', $document))->assertOk();
+    }
+
+    public function test_administration_can_delete_an_unused_teacher_and_their_documents(): void
+    {
+        Storage::fake('documents');
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-delete-admin');
+        $teacher = $this->userWithRole('enseignant', 'teacher-delete-unused');
+
+        TeacherProfile::query()->create([
+            'user_id' => $teacher->id,
+            'specialty' => 'Français',
+            'default_hourly_rate' => 0,
+            'withholding_tax_rate' => 2,
+        ]);
+        Storage::disk('documents')->put('teachers/'.$teacher->id.'/contrat.pdf', 'document');
+        TeacherDocument::query()->create([
+            'teacher_id' => $teacher->id,
+            'name' => 'Contrat',
+            'document_type' => 'Contrat',
+            'file_path' => 'teachers/'.$teacher->id.'/contrat.pdf',
+            'uploaded_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('teachers.destroy', $teacher))
+            ->assertRedirect(route('teachers.index'))
+            ->assertSessionHas('success', 'Dossier professeur supprimé définitivement.');
+
+        $this->assertDatabaseMissing('users', ['id' => $teacher->id]);
+        $this->assertDatabaseMissing('teacher_profiles', ['user_id' => $teacher->id]);
+        $this->assertDatabaseMissing('teacher_documents', ['teacher_id' => $teacher->id]);
+        Storage::disk('documents')->assertMissing('teachers/'.$teacher->id.'/contrat.pdf');
+    }
+
+    public function test_administration_cannot_delete_a_teacher_with_school_history(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->userWithRole('admin', 'teacher-delete-blocked-admin');
+        $teacher = $this->userWithRole('enseignant', 'teacher-delete-blocked');
+        [, $schoolClass, $subject] = $this->academicContext();
+
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('teachers.show', $teacher))
+            ->delete(route('teachers.destroy', $teacher))
+            ->assertRedirect(route('teachers.show', $teacher))
+            ->assertSessionHasErrors('teacher');
+
+        $this->assertDatabaseHas('users', ['id' => $teacher->id]);
+        $this->assertDatabaseHas('class_subjects', ['teacher_id' => $teacher->id]);
+    }
+
+    public function test_teacher_cannot_delete_a_professor_file(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $teacher = $this->userWithRole('enseignant', 'teacher-delete-forbidden');
+        $otherTeacher = $this->userWithRole('enseignant', 'teacher-delete-target');
+
+        $this->actingAs($teacher)
+            ->delete(route('teachers.destroy', $otherTeacher))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $otherTeacher->id]);
     }
 
     private function userWithRole(string $role, string $username): User

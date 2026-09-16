@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use App\Rules\ValidClassSubjectCoefficient;
+use App\Services\TeacherDeletionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -139,6 +140,15 @@ class TeacherWebController extends Controller
         $classSubject->update(['teacher_id' => null]);
 
         return back()->with('success', 'Professeur retiré de cette affectation.');
+    }
+
+    public function destroy(Request $request, User $teacher, TeacherDeletionService $teacherDeletionService): RedirectResponse
+    {
+        $teacherDeletionService->delete($teacher, $request->user());
+
+        return redirect()
+            ->route('teachers.index')
+            ->with('success', 'Dossier professeur supprimé définitivement.');
     }
 
     public function pdf(Request $request, User $teacher)

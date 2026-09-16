@@ -157,4 +157,28 @@
             @endforelse
         </div>
     </section>
+
+    @can('teachers.manage')
+        <section class="panel" style="margin-top:16px">
+            <div class="panel-head">
+                <div>
+                    <h2>Suppression du dossier</h2>
+                    <p style="margin:6px 0 0;color:var(--muted)">Disponible uniquement si aucun cours, aucune note, aucune présence, aucun émargement et aucun honoraire ne sont liés au professeur.</p>
+                </div>
+                <form
+                    method="POST"
+                    action="{{ route('teachers.destroy', $teacher) }}"
+                    data-confirm
+                    data-confirm-title="Supprimer le professeur"
+                    data-confirm-object="{{ $teacher->name }}{{ $teacher->phone ? ' — '.$teacher->phone : '' }}"
+                    data-confirm-message="Le compte, le profil, les disponibilités et les documents seront supprimés définitivement. Le logiciel refusera l’opération si un historique scolaire ou financier existe."
+                    data-confirm-action="Supprimer définitivement"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger" type="submit">Supprimer le professeur</button>
+                </form>
+            </div>
+        </section>
+    @endcan
 @endsection

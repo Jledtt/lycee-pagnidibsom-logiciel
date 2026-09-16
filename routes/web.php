@@ -461,6 +461,9 @@ Route::post('/teachers/{teacher}/assignments', [TeacherWebController::class, 'st
 Route::delete('/teachers/{teacher}/assignments/{classSubject}', [TeacherWebController::class, 'destroyAssignment'])
     ->middleware(['auth', 'permission:teachers.manage'])
     ->name('teachers.assignments.destroy');
+Route::delete('/teachers/{teacher}', [TeacherWebController::class, 'destroy'])
+    ->middleware(['auth', 'permission:teachers.manage'])
+    ->name('teachers.destroy');
 
 Route::get('/teacher-work-sessions', [TeacherWorkSessionWebController::class, 'index'])
     ->middleware(['auth', 'permission:teacher_attendance.view'])
