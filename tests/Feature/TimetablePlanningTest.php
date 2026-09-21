@@ -346,6 +346,65 @@ class TimetablePlanningTest extends TestCase
         $this->assertSame([$readyClass->id], $run->input_snapshot['target_class_ids']);
     }
 
+    public function test_sequential_class_generation_reserves_teacher_slots_from_existing_drafts(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $firstClass = $this->schoolClass('1ère A test génération');
+        $secondClass = $this->schoolClass('1ère D test génération');
+
+        foreach ([$firstClass, $secondClass] as $index => $schoolClass) {
+            $subject = Subject::query()->create([
+                'name' => 'Matière génération séquentielle '.($index + 1),
+                'code' => 'SEQ'.($index + 1),
+                'status' => 'active',
+            ]);
+            ClassSubject::query()->create([
+                'school_class_id' => $schoolClass->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'coefficient' => 2,
+                'weekly_hours' => 1,
+                'is_active' => true,
+            ]);
+        }
+
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'), ['school_class_id' => $firstClass->id]);
+        $firstRun = TimetableGenerationRun::query()->latest('id')->firstOrFail();
+        $this->actingAs($user)
+            ->post(route('timetables.planning.apply', $firstRun))
+            ->assertSessionHasNoErrors();
+
+        $firstSlot = $firstRun->result['assignments'][0]['slot_key'];
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'), ['school_class_id' => $secondClass->id]);
+        $secondRun = TimetableGenerationRun::query()->latest('id')->firstOrFail();
+
+        $this->assertTrue($secondRun->canBeApplied());
+        $this->assertNotSame($firstSlot, $secondRun->result['assignments'][0]['slot_key']);
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.apply', $secondRun))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('timetables', [
+            'school_class_id' => $firstClass->id,
+            'status' => 'draft',
+        ]);
+        $this->assertDatabaseHas('timetables', [
+            'school_class_id' => $secondClass->id,
+            'status' => 'draft',
+        ]);
+    }
+
     public function test_generator_refuses_to_apply_a_stale_proposal(): void
     {
         $this->seed(DatabaseSeeder::class);

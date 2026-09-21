@@ -12,6 +12,7 @@ use App\Models\TimetableEntry;
 use App\Models\TimetableGenerationRun;
 use App\Models\TimetablePeriod;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -151,83 +152,121 @@ class TimetableGenerationService
         $days = $this->templates->days();
         $targetClassIds = $run->input_snapshot['target_class_ids'] ?? [];
 
-        DB::transaction(function () use ($run, $actor, $assignments, $solutionBySlot, $lockedBySlot, $periods, $days, $targetClassIds): void {
-            $currentTimetables = Timetable::query()
-                ->where('academic_year_id', $run->academic_year_id)
-                ->whereIn('school_class_id', $targetClassIds)
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('school_class_id');
-            $teacherIds = $assignments->pluck('teacher_id')->filter()->unique();
-
-            if ($teacherIds->isNotEmpty()) {
-                TimetableEntry::query()
-                    ->whereIn('teacher_id', $teacherIds)
-                    ->whereHas('timetable', fn ($query) => $query->where('academic_year_id', $run->academic_year_id))
+        try {
+            DB::transaction(function () use ($run, $actor, $assignments, $solutionBySlot, $lockedBySlot, $periods, $days, $targetClassIds): void {
+                $currentTimetables = Timetable::query()
+                    ->where('academic_year_id', $run->academic_year_id)
+                    ->whereIn('school_class_id', $targetClassIds)
                     ->orderBy('id')
                     ->lockForUpdate()
-                    ->get();
-            }
+                    ->get()
+                    ->keyBy('school_class_id');
+                $teacherIds = $assignments->pluck('teacher_id')->filter()->unique();
+                $occupiedTeacherSlots = collect();
 
-            foreach ($targetClassIds as $classId) {
-                $existing = $currentTimetables->get($classId);
-
-                if ($existing?->status === 'active') {
-                    throw ValidationException::withMessages([
-                        'generation' => 'Un emploi du temps est devenu actif depuis la génération. Aucune grille n’a été remplacée.',
-                    ]);
+                if ($teacherIds->isNotEmpty()) {
+                    $occupiedTeacherSlots = TimetableEntry::query()
+                        ->with('timetable:id,school_class_id,academic_year_id')
+                        ->whereIn('teacher_id', $teacherIds)
+                        ->whereNotNull('timetable_period_id')
+                        ->whereHas('timetable', fn ($query) => $query->where('academic_year_id', $run->academic_year_id))
+                        ->orderBy('id')
+                        ->lockForUpdate()
+                        ->get()
+                        ->reject(fn (TimetableEntry $entry): bool => in_array(
+                            $entry->timetable?->school_class_id,
+                            $targetClassIds,
+                            true,
+                        ))
+                        ->keyBy(fn (TimetableEntry $entry): string => $entry->teacher_id.'|'.$entry->day_of_week.'|'.$entry->timetable_period_id);
                 }
 
-                $classAssignments = $assignments->where('school_class_id', $classId);
-                $timetable = Timetable::query()->updateOrCreate(
-                    ['academic_year_id' => $run->academic_year_id, 'school_class_id' => $classId],
-                    [
-                        'title' => 'Emploi du temps généré automatiquement',
-                        'principal_teacher' => $classAssignments->pluck('teacher.name')->filter()->unique()->implode('; '),
-                        'notes' => 'Proposition automatique appliquée le '.now()->format('d/m/Y H:i').'. À vérifier avant activation.',
-                        'status' => 'draft',
-                        'created_by' => $existing?->created_by ?? $actor->id,
-                    ],
-                );
+                foreach ($run->result['assignments'] ?? [] as $plannedEntry) {
+                    $teacherId = (int) ($plannedEntry['teacher_id'] ?? 0);
 
-                $entries = [];
-                foreach ($periods as $period) {
-                    foreach ($days as $day => $dayLabel) {
-                        $solution = $solutionBySlot->get($classId.'|'.$day.'|'.$period->id);
-                        $assignment = $solution ? $assignments->get($solution['class_subject_id']) : null;
-                        $lockedEntry = $lockedBySlot->get($classId.'|'.$day.'|'.$period->id);
-                        $entries[] = [
-                            'generation_run_id' => $run->id,
-                            'timetable_period_id' => $period->id,
-                            'sort_order' => $period->sort_order,
-                            'period_label' => $period->label,
-                            'starts_at' => $period->starts_at,
-                            'ends_at' => $period->ends_at,
-                            'day_of_week' => $day,
-                            'class_subject_id' => $assignment?->id,
-                            'subject_id' => $assignment?->subject_id,
-                            'teacher_id' => $assignment?->teacher_id,
-                            'subject_name' => $period->is_break ? $period->label : $assignment?->subject?->name,
-                            'teacher_name' => $assignment?->teacher?->name,
-                            'room' => $lockedEntry?->room,
-                            'is_break' => $period->is_break,
-                            'is_locked' => (bool) ($solution['is_fixed'] ?? false),
-                            'source' => $assignment ? 'automatic' : 'manual',
-                        ];
+                    if (! $teacherId) {
+                        continue;
+                    }
+
+                    $key = $teacherId.'|'.($plannedEntry['day'] ?? '').'|'.($plannedEntry['period_id'] ?? '');
+
+                    if ($occupiedTeacherSlots->has($key)) {
+                        $teacherName = $assignments
+                            ->firstWhere('teacher_id', $teacherId)?->teacher?->name ?? 'Un professeur';
+
+                        throw ValidationException::withMessages([
+                            'generation' => $teacherName.' est déjà occupé sur un créneau proposé. Génère une nouvelle proposition.',
+                        ]);
                     }
                 }
 
-                $timetable->entries()->delete();
-                $timetable->entries()->createMany($entries);
+                foreach ($targetClassIds as $classId) {
+                    $existing = $currentTimetables->get($classId);
+
+                    if ($existing?->status === 'active') {
+                        throw ValidationException::withMessages([
+                            'generation' => 'Un emploi du temps est devenu actif depuis la génération. Aucune grille n’a été remplacée.',
+                        ]);
+                    }
+
+                    $classAssignments = $assignments->where('school_class_id', $classId);
+                    $timetable = Timetable::query()->updateOrCreate(
+                        ['academic_year_id' => $run->academic_year_id, 'school_class_id' => $classId],
+                        [
+                            'title' => 'Emploi du temps généré automatiquement',
+                            'principal_teacher' => $classAssignments->pluck('teacher.name')->filter()->unique()->implode('; '),
+                            'notes' => 'Proposition automatique appliquée le '.now()->format('d/m/Y H:i').'. À vérifier avant activation.',
+                            'status' => 'draft',
+                            'created_by' => $existing?->created_by ?? $actor->id,
+                        ],
+                    );
+
+                    $entries = [];
+                    foreach ($periods as $period) {
+                        foreach ($days as $day => $dayLabel) {
+                            $solution = $solutionBySlot->get($classId.'|'.$day.'|'.$period->id);
+                            $assignment = $solution ? $assignments->get($solution['class_subject_id']) : null;
+                            $lockedEntry = $lockedBySlot->get($classId.'|'.$day.'|'.$period->id);
+                            $entries[] = [
+                                'generation_run_id' => $run->id,
+                                'timetable_period_id' => $period->id,
+                                'sort_order' => $period->sort_order,
+                                'period_label' => $period->label,
+                                'starts_at' => $period->starts_at,
+                                'ends_at' => $period->ends_at,
+                                'day_of_week' => $day,
+                                'class_subject_id' => $assignment?->id,
+                                'subject_id' => $assignment?->subject_id,
+                                'teacher_id' => $assignment?->teacher_id,
+                                'subject_name' => $period->is_break ? $period->label : $assignment?->subject?->name,
+                                'teacher_name' => $assignment?->teacher?->name,
+                                'room' => $lockedEntry?->room,
+                                'is_break' => $period->is_break,
+                                'is_locked' => (bool) ($solution['is_fixed'] ?? false),
+                                'source' => $assignment ? 'automatic' : 'manual',
+                            ];
+                        }
+                    }
+
+                    $timetable->entries()->delete();
+                    $timetable->entries()->createMany($entries);
+                }
+
+                $run->update([
+                    'status' => TimetableGenerationRun::STATUS_APPLIED,
+                    'applied_by' => $actor->id,
+                    'applied_at' => now(),
+                ]);
+            });
+        } catch (QueryException $exception) {
+            if (str_contains($exception->getMessage(), 'timetable_entries_teacher_slot_unique')) {
+                throw ValidationException::withMessages([
+                    'generation' => 'Un professeur vient d’être affecté à l’un des créneaux proposés. Génère une nouvelle proposition.',
+                ]);
             }
 
-            $run->update([
-                'status' => TimetableGenerationRun::STATUS_APPLIED,
-                'applied_by' => $actor->id,
-                'applied_at' => now(),
-            ]);
-        });
+            throw $exception;
+        }
     }
 
     public function previewGrid(TimetableGenerationRun $run): array
@@ -317,7 +356,7 @@ class TimetableGenerationService
             ->whereNotNull('timetable_period_id')
             ->whereHas('timetable', fn ($query) => $query
                 ->where('academic_year_id', $academicYear->id)
-                ->where('status', 'active'))
+                ->whereNotIn('school_class_id', $targetClasses->pluck('id')))
             ->get()
             ->groupBy('teacher_id')
             ->map(fn (Collection $entries): array => $entries
