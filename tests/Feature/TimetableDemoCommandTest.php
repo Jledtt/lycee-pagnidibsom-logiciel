@@ -39,11 +39,11 @@ class TimetableDemoCommandTest extends TestCase
         $assignments = $schoolClass->classSubjects()->where('is_active', true)->get();
         $teacherIds = $assignments->pluck('teacher_id')->filter()->unique();
 
-        $this->assertCount(10, $assignments);
-        $this->assertCount(10, $teacherIds);
-        $this->assertSame(29.0, (float) $assignments->sum('weekly_hours'));
-        $this->assertSame(10, User::query()->where('username', 'like', 'demo.edt.'.$schoolClass->id.'.%')->count());
-        $this->assertSame(10, TeacherAvailabilitySchedule::query()
+        $this->assertCount(8, $assignments);
+        $this->assertCount(8, $teacherIds);
+        $this->assertSame(24.0, (float) $assignments->sum('weekly_hours'));
+        $this->assertSame(8, User::query()->where('username', 'like', 'demo.edt.'.$schoolClass->id.'.%')->count());
+        $this->assertSame(8, TeacherAvailabilitySchedule::query()
             ->where('academic_year_id', $academicYear->id)
             ->whereIn('teacher_id', $teacherIds)
             ->where('status', TeacherAvailabilitySchedule::STATUS_VALIDATED)
@@ -55,6 +55,6 @@ class TimetableDemoCommandTest extends TestCase
             ->firstOrFail();
         $this->assertSame('draft', $timetable->status);
         $this->assertSame('Exemple automatique - 3e', $timetable->title);
-        $this->assertSame(29, $timetable->entries()->where('source', 'automatic')->count());
+        $this->assertSame(24, $timetable->entries()->where('source', 'automatic')->count());
     }
 }

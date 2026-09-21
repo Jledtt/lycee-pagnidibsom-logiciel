@@ -52,7 +52,15 @@ Artisan::command('lpp:setup-classes-subjects', function () {
     $this->info('Configuration appliquée pour '.$result['academic_year'].'.');
 
     foreach ($result['classes'] as $line) {
-        $this->line('- '.$line['class'].' : '.$line['subjects'].' matière(s)');
+        $this->line(
+            '- '.$line['class'].' : '.$line['subjects'].' matière(s), '
+            .$line['teachers'].' professeur(s), '
+            .$line['deactivated'].' ancienne(s) matière(s) désactivée(s)',
+        );
+    }
+
+    foreach ($result['unresolved_teachers'] as $item) {
+        $this->warn('- Professeur introuvable : '.$item['teacher'].' ('.$item['class'].' / '.$item['subject'].')');
     }
 })->purpose('Créer les classes et rattacher les matières LPP');
 

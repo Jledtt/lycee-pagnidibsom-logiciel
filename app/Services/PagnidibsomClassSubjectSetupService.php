@@ -8,6 +8,7 @@ use App\Models\ClassSubject;
 use App\Models\Level;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class PagnidibsomClassSubjectSetupService
@@ -18,6 +19,8 @@ class PagnidibsomClassSubjectSetupService
 
         return DB::transaction(function () use ($academicYear) {
             $createdOrUpdated = [];
+            $teachers = $this->teachersByName();
+            $unresolvedTeachers = [];
 
             foreach ($this->classPlan() as $className => $plan) {
                 $level = Level::query()->firstOrCreate(
@@ -28,49 +31,87 @@ class PagnidibsomClassSubjectSetupService
                     ],
                 );
 
-                $classAttributes = [
-                    'level_id' => $level->id,
-                    'code' => $plan['code'],
-                    'capacity' => $plan['capacity'],
-                    'status' => 'active',
-                ];
+                $schoolClass = SchoolClass::query()->firstOrNew([
+                    'academic_year_id' => $academicYear->id,
+                    'name' => $className,
+                ]);
+                $schoolClass->level_id = $level->id;
+                $schoolClass->academic_track_id = isset($plan['track'])
+                    ? $this->academicTrack($plan['track'])->id
+                    : null;
+                $schoolClass->status = 'active';
+                $schoolClass->code = filled($schoolClass->code) ? $schoolClass->code : $plan['code'];
+                $schoolClass->capacity ??= $plan['capacity'];
+                $schoolClass->save();
 
-                if (isset($plan['track'])) {
-                    $classAttributes['academic_track_id'] = $this->academicTrack($plan['track'])->id;
-                }
-
-                $schoolClass = SchoolClass::query()->updateOrCreate(
-                    [
-                        'academic_year_id' => $academicYear->id,
-                        'name' => $className,
-                    ],
-                    $classAttributes,
-                );
+                $officialSubjectIds = [];
 
                 foreach ($plan['subjects'] as $subjectCode => $coefficient) {
                     $subject = $this->subject($subjectCode);
+                    $officialSubjectIds[] = $subject->id;
 
-                    ClassSubject::query()->updateOrCreate(
-                        [
-                            'school_class_id' => $schoolClass->id,
-                            'subject_id' => $subject->id,
-                        ],
-                        [
-                            'coefficient' => $coefficient,
-                            'is_active' => true,
-                        ],
-                    );
+                    $assignment = ClassSubject::query()->firstOrNew([
+                        'school_class_id' => $schoolClass->id,
+                        'subject_id' => $subject->id,
+                    ]);
+
+                    if (! $assignment->exists) {
+                        $assignment->coefficient = $coefficient;
+                    }
+
+                    if ($subjectCode === 'PC') {
+                        $this->copyLegacyPhysicalScienceAssignment($schoolClass, $assignment);
+                    }
+
+                    $teacherName = $this->teacherPlan()[$className][$subjectCode] ?? null;
+
+                    if (! $assignment->teacher_id && $teacherName) {
+                        $teacher = $teachers->get($teacherName);
+
+                        if ($teacher) {
+                            $assignment->teacher_id = $teacher->id;
+                        } else {
+                            $unresolvedTeachers[] = [
+                                'class' => $className,
+                                'subject' => $subject->name,
+                                'teacher' => $teacherName,
+                            ];
+                        }
+                    }
+
+                    $assignment->is_active = true;
+                    $assignment->save();
                 }
+
+                $deactivated = ClassSubject::query()
+                    ->where('school_class_id', $schoolClass->id)
+                    ->whereNotIn('subject_id', $officialSubjectIds)
+                    ->where(fn ($query) => $query
+                        ->where('is_active', true)
+                        ->orWhereNotNull('teacher_id'))
+                    ->update([
+                        'teacher_id' => null,
+                        'is_active' => false,
+                        'updated_at' => now(),
+                    ]);
 
                 $createdOrUpdated[] = [
                     'class' => $schoolClass->name,
                     'subjects' => count($plan['subjects']),
+                    'teachers' => ClassSubject::query()
+                        ->where('school_class_id', $schoolClass->id)
+                        ->whereIn('subject_id', $officialSubjectIds)
+                        ->where('is_active', true)
+                        ->whereNotNull('teacher_id')
+                        ->count(),
+                    'deactivated' => $deactivated,
                 ];
             }
 
             return [
                 'academic_year' => $academicYear->name,
                 'classes' => $createdOrUpdated,
+                'unresolved_teachers' => collect($unresolvedTeachers)->unique()->values()->all(),
             ];
         });
     }
@@ -92,7 +133,6 @@ class PagnidibsomClassSubjectSetupService
                     'HG' => 2,
                     'MATH' => 3,
                     'SVT' => 2,
-                    'TIC' => 2,
                 ],
             ],
             '5e' => [
@@ -109,7 +149,6 @@ class PagnidibsomClassSubjectSetupService
                     'HG' => 2,
                     'MATH' => 3,
                     'SVT' => 2,
-                    'TIC' => 2,
                 ],
             ],
             '4e' => [
@@ -119,7 +158,6 @@ class PagnidibsomClassSubjectSetupService
                 'code' => '4E',
                 'capacity' => 60,
                 'subjects' => [
-                    'ALL' => 2,
                     'ANG' => 2,
                     'ECM' => 2,
                     'EPS' => 2,
@@ -128,7 +166,6 @@ class PagnidibsomClassSubjectSetupService
                     'MATH' => 3,
                     'PC' => 2,
                     'SVT' => 2,
-                    'TIC' => 2,
                 ],
             ],
             '3e' => [
@@ -138,7 +175,6 @@ class PagnidibsomClassSubjectSetupService
                 'code' => '3E',
                 'capacity' => 60,
                 'subjects' => [
-                    'ALL' => 2,
                     'ANG' => 2,
                     'ECM' => 2,
                     'EPS' => 2,
@@ -147,7 +183,6 @@ class PagnidibsomClassSubjectSetupService
                     'MATH' => 3,
                     'PC' => 2,
                     'SVT' => 2,
-                    'TIC' => 2,
                 ],
             ],
             '2nde A' => [
@@ -165,10 +200,7 @@ class PagnidibsomClassSubjectSetupService
                     'FR' => 5,
                     'HG' => 3,
                     'MATH' => 3,
-                    'PC' => 2,
                     'PHILO' => 2,
-                    'SVT' => 2,
-                    'TIC' => 2,
                 ],
             ],
             '2nde C' => [
@@ -188,7 +220,42 @@ class PagnidibsomClassSubjectSetupService
                     'PC' => 6,
                     'PHILO' => 2,
                     'SVT' => 3,
-                    'TIC' => 2,
+                ],
+            ],
+            '1ère A' => [
+                'level' => '1re',
+                'cycle' => 'Second cycle',
+                'position' => 6,
+                'code' => '1REA',
+                'track' => 'A',
+                'capacity' => 60,
+                'subjects' => [
+                    'ALL' => 3,
+                    'ANG' => 4,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 5,
+                    'HG' => 3,
+                    'MATH' => 3,
+                    'PHILO' => 3,
+                ],
+            ],
+            '1ère D' => [
+                'level' => '1re',
+                'cycle' => 'Second cycle',
+                'position' => 6,
+                'code' => '1RED',
+                'track' => 'D',
+                'capacity' => 60,
+                'subjects' => [
+                    'ANG' => 2,
+                    'ECM' => 2,
+                    'EPS' => 2,
+                    'FR' => 3,
+                    'HG' => 2,
+                    'MATH' => 5,
+                    'PC' => 5,
+                    'SVT' => 4,
                 ],
             ],
         ];
@@ -261,6 +328,127 @@ class PagnidibsomClassSubjectSetupService
                 'status' => 'active',
             ],
         );
+    }
+
+    private function copyLegacyPhysicalScienceAssignment(
+        SchoolClass $schoolClass,
+        ClassSubject $assignment,
+    ): void {
+        $legacy = ClassSubject::query()
+            ->where('school_class_id', $schoolClass->id)
+            ->whereHas('subject', fn ($query) => $query->where('code', 'SP'))
+            ->first();
+
+        if (! $legacy) {
+            return;
+        }
+
+        if (! $assignment->exists) {
+            $assignment->coefficient = $legacy->coefficient;
+        }
+
+        $assignment->weekly_hours ??= $legacy->weekly_hours;
+        $assignment->teacher_id ??= $legacy->teacher_id;
+    }
+
+    private function teachersByName()
+    {
+        $names = collect($this->teacherPlan())
+            ->flatMap(fn (array $subjects) => array_values($subjects))
+            ->unique()
+            ->values();
+
+        return User::query()
+            ->role('enseignant')
+            ->where('status', 'active')
+            ->whereIn('name', $names)
+            ->get()
+            ->keyBy('name');
+    }
+
+    private function teacherPlan(): array
+    {
+        return [
+            '6e' => [
+                'ANG' => 'ZONGO Mariam',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'OUEDRAOGO G. P. Hilaire',
+                'FR' => 'ZONGO Florence',
+                'HG' => 'KEREGUE Sompéguea',
+                'MATH' => 'BADO Constant',
+                'SVT' => 'OUEDRAOGO Vincent',
+            ],
+            '5e' => [
+                'ANG' => 'KIEMA Philomène',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'MEDA D. Mathurin',
+                'FR' => 'ZONGO Florence',
+                'HG' => 'KEREGUE Sompéguea',
+                'MATH' => 'BADO Constant',
+                'SVT' => 'KABORE/KABRE Aïchatou',
+            ],
+            '4e' => [
+                'ANG' => 'DEMBELE/SAWADOGO Bibata',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'NIKIEMA Zakaria',
+                'FR' => 'BADIEL N. Philippe',
+                'HG' => 'KOMBASSERE Salifou',
+                'MATH' => 'DIANDA Halidou',
+                'PC' => "M'BAMA N. L. Degrâce",
+                'SVT' => 'KABORE/KABRE Aïchatou',
+            ],
+            '3e' => [
+                'ANG' => 'KIEMA Philomène',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'OUEDRAOGO G. P. Hilaire',
+                'FR' => 'SONG-NABA Belko Léon',
+                'HG' => 'KOMBASSERE Salifou',
+                'MATH' => 'KAMANA Payaki',
+                'PC' => 'NANA Drissa',
+                'SVT' => 'OUEDRAOGO Vincent',
+            ],
+            '2nde A' => [
+                'ALL' => 'SAWADOGO Iliasse',
+                'ANG' => 'TINTILA Yamdaogo',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'MEDA D. Mathurin',
+                'FR' => 'SONG-NABA Belko Léon',
+                'HG' => 'KEREGUE Sompéguea',
+                'MATH' => 'KAMANA Payaki',
+                'PHILO' => 'MORE Tolfanrson',
+            ],
+            '2nde C' => [
+                'ANG' => 'DEMBELE/SAWADOGO Bibata',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'MEDA D. Mathurin',
+                'FR' => 'SONG-NABA Belko Léon',
+                'HG' => 'KEREGUE Sompéguea',
+                'MATH' => 'DIANDA Halidou',
+                'PC' => "M'BAMA N. L. Degrâce",
+                'PHILO' => 'MORE Tolfanrson',
+                'SVT' => 'BAZIE Pierre',
+            ],
+            '1ère A' => [
+                'ALL' => 'SAWADOGO Iliasse',
+                'ANG' => 'TINTILA Yamdaogo',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'NIKIEMA Zakaria',
+                'FR' => 'SONG-NABA Belko Léon',
+                'HG' => 'KOMBASSERE Salifou',
+                'MATH' => 'KAMANA Payaki',
+                'PHILO' => 'MORE Tolfanrson',
+            ],
+            '1ère D' => [
+                'ANG' => 'DEMBELE/SAWADOGO Bibata',
+                'ECM' => 'GNEBGA Bissore Jérôme',
+                'EPS' => 'NIKIEMA Zakaria',
+                'FR' => 'BADIEL N. Philippe',
+                'HG' => 'KOMBASSERE Salifou',
+                'MATH' => 'DIANDA Halidou',
+                'PC' => 'NANA Drissa',
+                'SVT' => 'BAZIE Pierre',
+            ],
+        ];
     }
 
     private function subjects(): array
