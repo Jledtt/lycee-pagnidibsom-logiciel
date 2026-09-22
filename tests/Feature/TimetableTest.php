@@ -114,7 +114,10 @@ class TimetableTest extends TestCase
         $this->assertCount(1, $pdf->getPages());
         $pdfText = preg_replace('/\s+/u', ' ', str_replace("'", '’', $pdf->getText()));
         $this->assertStringContainsString('Bâtir l’excellence', $pdfText);
-        $this->assertStringContainsString('PUBLIÉ - DOCUMENT OFFICIEL', $pdfText);
+        $this->assertStringNotContainsString('PUBLIÉ - DOCUMENT OFFICIEL', $pdfText);
+        $this->assertStringNotContainsString('BROUILLON - À VALIDER', $pdfText);
+        $this->assertStringNotContainsString('Notes :', $pdfText);
+        $this->assertStringNotContainsString('Version validee', $pdfText);
         $this->assertStringContainsString('CORPS PROFESSORAL', $pdfText);
         $this->assertStringContainsString('DISCIPLINE', $pdfText);
         $this->assertStringContainsString('NOM ET PRÉNOMS', $pdfText);
@@ -184,8 +187,9 @@ class TimetableTest extends TestCase
             'academic_year_id' => $academicYear->id,
             'school_class_id' => $schoolClass->id,
             'title' => 'Emploi du temps final',
-            'status' => 'active',
+            'status' => 'draft',
             'principal_teacher' => 'Équipe de direction',
+            'notes' => 'Proposition automatique appliquée le 21/09/2026 22:43. À vérifier avant activation.',
             'created_by' => $user->id,
         ]);
 
@@ -216,7 +220,6 @@ class TimetableTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
-        $this->assertStringContainsString('Publié - document officiel', $html);
         $this->assertStringContainsString('Corps professoral', $html);
         $this->assertStringContainsString('Discipline', $html);
         $this->assertStringContainsString('Nom et prénoms', $html);
@@ -224,6 +227,9 @@ class TimetableTest extends TestCase
         $this->assertStringContainsString('BADO Constant', $html);
         $this->assertStringNotContainsString('Professeur principal / équipe pédagogique', $html);
         $this->assertStringNotContainsString('Dernière mise à jour', $html);
+        $this->assertStringNotContainsString('Brouillon - à valider', $html);
+        $this->assertStringNotContainsString('Notes :', $html);
+        $this->assertStringNotContainsString('Proposition automatique appliquée', $html);
     }
 
     public function test_timetable_pdf_groups_teachers_by_subject_without_duplicates(): void

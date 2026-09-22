@@ -6,7 +6,6 @@
         @page { margin: 20px 24px 30px; }
         body { font-family: DejaVu Sans, sans-serif; color: #111; font-size: 8.5px; }
         h1 { margin: 6px 0 8px; text-align: center; font-size: 17px; text-transform: uppercase; }
-        .document-state { margin: -2px 0 9px; text-align: center; color: #555; font-size: 8px; font-weight: 700; text-transform: uppercase; }
         .schedule { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .schedule th, .schedule td { border: 1px solid #222; padding: 5px 2px; text-align: center; vertical-align: middle; overflow-wrap: anywhere; word-wrap: break-word; }
         .schedule th { background: #174534; color: #fff; font-weight: 800; }
@@ -23,19 +22,12 @@
         .staff td:last-child { width: 65%; }
         .staff tr { page-break-inside: avoid; }
         .staff-empty { color: #666; font-style: italic; text-align: center; }
-        .notes { margin-top: 10px; font-size: 9px; }
         .footer { position: fixed; right: 0; bottom: -20px; left: 0; border-top: 1px solid #aaa; padding-top: 4px; color: #666; font-size: 7px; text-align: center; }
         .page-number::after { content: counter(page); }
     </style>
 </head>
 <body>
     @php($school = $school ?? $schoolSettings ?? null)
-    @php($statusLabel = match ($timetable->status) {
-        'active' => 'Publié - document officiel',
-        'archived' => 'Archivé',
-        default => 'Brouillon - à valider',
-    })
-
     @include('pdf.partials.school-header', [
         'school' => $school,
         'logoSize' => 58,
@@ -51,7 +43,6 @@
     ])
 
     <h1>{{ $timetable->title }}</h1>
-    <div class="document-state">{{ $statusLabel }}</div>
 
     <table class="schedule">
         <thead>
@@ -110,10 +101,6 @@
             @endforelse
         </tbody>
     </table>
-
-    @if ($timetable->notes)
-        <div class="notes"><strong>Notes :</strong> {{ $timetable->notes }}</div>
-    @endif
 
     <div class="footer">
         {{ $timetable->schoolClass?->name ?? 'Classe' }} · {{ $timetable->academicYear?->name ?? 'Année scolaire' }} · Page <span class="page-number"></span>
