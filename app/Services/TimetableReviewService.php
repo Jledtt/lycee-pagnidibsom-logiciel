@@ -191,10 +191,12 @@ class TimetableReviewService
                 ->where('academic_year_id', $timetable->academic_year_id)
                 ->where('status', 'active'))
             ->get()
-            ->keyBy(fn (TimetableEntry $entry): string => $this->slotKey($entry, true));
+            ->groupBy(fn (TimetableEntry $entry): string => $this->slotKey($entry, true));
 
         foreach ($linked as $entry) {
-            $conflict = $conflicts->get($this->slotKey($entry, true));
+            $conflict = $conflicts
+                ->get($this->slotKey($entry, true), collect())
+                ->first(fn (TimetableEntry $other): bool => ! $this->sharesSynchronizationGroup($entry, $other));
             if ($conflict) {
                 $blockers[] = sprintf(
                     '%s est déjà programmé en %s dans la classe %s.',
@@ -264,5 +266,11 @@ class TimetableReviewService
     private function normalizeRoom(?string $room): string
     {
         return mb_strtolower(trim((string) $room));
+    }
+
+    private function sharesSynchronizationGroup(TimetableEntry $entry, TimetableEntry $other): bool
+    {
+        return filled($entry->synchronization_group)
+            && $entry->synchronization_group === $other->synchronization_group;
     }
 }

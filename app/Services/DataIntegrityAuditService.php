@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Guardian;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DataIntegrityAuditService
 {
@@ -177,13 +178,18 @@ class DataIntegrityAuditService
             ->groupBy('timetable_id', 'day_of_week', 'sort_order')
             ->havingRaw('COUNT(*) > 1')
             ->get();
-        $teacherConflicts = DB::table('timetable_entries')
+        $teacherConflictsQuery = DB::table('timetable_entries')
             ->whereNotNull('teacher_id')
             ->whereNotNull('timetable_period_id')
             ->select('teacher_id', 'day_of_week', 'timetable_period_id')
             ->groupBy('teacher_id', 'day_of_week', 'timetable_period_id')
-            ->havingRaw('COUNT(*) > 1')
-            ->get();
+            ->havingRaw('COUNT(*) > 1');
+        if (Schema::hasColumn('timetable_entries', 'synchronization_group')) {
+            $teacherConflictsQuery->havingRaw(
+                '(COUNT(synchronization_group) <> COUNT(*) OR COUNT(DISTINCT synchronization_group) <> 1)',
+            );
+        }
+        $teacherConflicts = $teacherConflictsQuery->get();
         $invalidTimes = DB::table('timetable_entries')
             ->where('is_break', false)
             ->whereNotNull('starts_at')

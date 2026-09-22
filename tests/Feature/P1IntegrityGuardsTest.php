@@ -257,6 +257,42 @@ class P1IntegrityGuardsTest extends TestCase
         ]));
     }
 
+    public function test_timetable_guards_allow_only_matching_shared_course_groups(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $teacher = User::query()->where('username', 'enseignant')->firstOrFail();
+        $period = TimetablePeriod::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'sort_order' => 51,
+            'label' => 'Cours commun 9h-10h',
+            'starts_at' => '09:00',
+            'ends_at' => '10:00',
+            'is_break' => false,
+            'is_active' => true,
+        ]);
+        $firstTimetable = $this->timetable($academicYear, 'Cours commun A');
+        $secondTimetable = $this->timetable($academicYear, 'Cours commun B');
+        $thirdTimetable = $this->timetable($academicYear, 'Cours commun C');
+
+        $this->entry($firstTimetable, $period, $teacher, 51, 'monday', '2nde:EPS');
+        $this->entry($secondTimetable, $period, $teacher, 51, 'monday', '2nde:EPS');
+
+        $this->assertDatabaseRejects(fn () => $this->entry(
+            $thirdTimetable,
+            $period,
+            $teacher,
+            51,
+            'monday',
+            '1re:EPS',
+        ));
+        $this->assertSame(2, TimetableEntry::query()
+            ->where('teacher_id', $teacher->id)
+            ->where('day_of_week', 'monday')
+            ->where('timetable_period_id', $period->id)
+            ->count());
+    }
+
     public function test_integrity_migration_is_reversible(): void
     {
         $this->assertTrue(Schema::hasColumn('academic_years', 'integrity_active_guard'));
@@ -336,6 +372,7 @@ class P1IntegrityGuardsTest extends TestCase
         ?User $teacher,
         int $sortOrder,
         string $day,
+        ?string $synchronizationGroup = null,
     ): TimetableEntry {
         return TimetableEntry::query()->create([
             'timetable_id' => $timetable->id,
@@ -351,6 +388,7 @@ class P1IntegrityGuardsTest extends TestCase
             'is_break' => false,
             'is_locked' => false,
             'source' => 'manual',
+            'synchronization_group' => $synchronizationGroup,
         ]);
     }
 }

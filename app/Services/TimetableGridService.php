@@ -84,10 +84,12 @@ class TimetableGridService
             'is_break' => (bool) ($entry['is_break'] ?? false),
             'is_locked' => (bool) ($existing?->is_locked ?? false),
             'source' => $existing?->source === 'automatic' ? 'automatic' : 'manual',
+            'synchronization_group' => $existing?->synchronization_group,
         ];
 
         if ($existing?->source === 'automatic' && $this->contentChanged($existing, $payload)) {
             $payload['source'] = 'manual';
+            $payload['synchronization_group'] = null;
         }
 
         return $payload;
@@ -112,6 +114,7 @@ class TimetableGridService
             'is_break',
             'is_locked',
             'source',
+            'synchronization_group',
         ]))->all();
     }
 
@@ -153,10 +156,12 @@ class TimetableGridService
             ->orderBy('id')
             ->lockForUpdate()
             ->get()
-            ->keyBy(fn (TimetableEntry $entry): string => $this->slotKey($entry->toArray()));
+            ->groupBy(fn (TimetableEntry $entry): string => $this->slotKey($entry->toArray()));
 
         foreach ($linked as $entry) {
-            $conflict = $conflicts->get($this->slotKey($entry));
+            $conflict = $conflicts
+                ->get($this->slotKey($entry), collect())
+                ->first(fn (TimetableEntry $other): bool => ! $this->sharesSynchronizationGroup($entry, $other));
 
             if ($conflict) {
                 throw ValidationException::withMessages([
@@ -178,5 +183,11 @@ class TimetableGridService
             $entry['day_of_week'],
             $entry['timetable_period_id'],
         ]);
+    }
+
+    private function sharesSynchronizationGroup(array $entry, TimetableEntry $other): bool
+    {
+        return filled($entry['synchronization_group'] ?? null)
+            && $entry['synchronization_group'] === $other->synchronization_group;
     }
 }

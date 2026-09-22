@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\TeacherAvailability;
 use App\Models\TeacherAvailabilitySchedule;
 use App\Models\Timetable;
+use App\Models\TimetableEntry;
 use App\Models\TimetableGenerationRun;
 use App\Models\TimetablePeriod;
 use App\Models\User;
@@ -314,6 +315,109 @@ class TimetablePlanningTest extends TestCase
             ->assertOk()
             ->assertSee('Modifier la grille')
             ->assertSee(route('timetables.edit', $timetable), false);
+    }
+
+    public function test_generator_synchronizes_shared_eps_for_both_seconde_classes(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $level = Level::query()->firstOrCreate(
+            ['name' => '2nde'],
+            ['cycle' => 'Second cycle', 'position' => 5],
+        );
+        $classes = collect([
+            ['name' => '2nde A', 'code' => '2NDA'],
+            ['name' => '2nde C', 'code' => '2NDC'],
+        ])->map(fn (array $class): SchoolClass => SchoolClass::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'level_id' => $level->id,
+            'name' => $class['name'],
+            'code' => $class['code'],
+            'capacity' => 60,
+            'status' => 'active',
+        ]));
+        $subject = Subject::query()->firstOrCreate(
+            ['code' => 'EPS'],
+            ['name' => 'EPS', 'status' => 'active'],
+        );
+        $assignmentIds = $classes->map(fn (SchoolClass $schoolClass): int => ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ])->id);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'))
+            ->assertRedirect();
+
+        $run = TimetableGenerationRun::query()->firstOrFail();
+        $this->assertTrue(
+            $run->canBeApplied(),
+            json_encode($run->only(['status', 'solver_status', 'diagnostics', 'result'])) ?: 'Résultat illisible',
+        );
+        $sharedAssignments = collect($run->input_snapshot['assignments'])
+            ->where('synchronization_group', '2nde:EPS');
+        $this->assertCount(2, $sharedAssignments);
+
+        $slotsByAssignment = collect($run->result['assignments'])
+            ->whereIn('class_subject_id', $assignmentIds)
+            ->groupBy('class_subject_id')
+            ->map(fn ($entries): array => $entries->pluck('slot_key')->sort()->values()->all())
+            ->values();
+        $this->assertCount(2, $slotsByAssignment);
+        $this->assertSame($slotsByAssignment[0], $slotsByAssignment[1]);
+
+        $applyResponse = $this->actingAs($user)
+            ->post(route('timetables.planning.apply', $run));
+        $applyResponse
+            ->assertSessionHasNoErrors();
+        $this->assertSame(
+            TimetableGenerationRun::STATUS_APPLIED,
+            $run->fresh()->status,
+            json_encode([
+                'response' => $applyResponse->getStatusCode(),
+                'errors' => session('errors')?->all(),
+                'run' => $run->fresh()->only(['status', 'solver_status', 'diagnostics']),
+            ]) ?: 'Application illisible',
+        );
+        $this->assertDatabaseCount('timetables', 2);
+
+        $generatedEntries = TimetableEntry::query()
+            ->whereIn('class_subject_id', $assignmentIds)
+            ->where('source', 'automatic')
+            ->get();
+        $this->assertCount(
+            4,
+            $generatedEntries,
+            json_encode(TimetableEntry::query()->get([
+                'class_subject_id',
+                'teacher_id',
+                'day_of_week',
+                'timetable_period_id',
+                'source',
+                'synchronization_group',
+            ])->toArray()) ?: 'Entrées illisibles',
+        );
+        $this->assertSame(
+            ['2nde:EPS'],
+            $generatedEntries->pluck('synchronization_group')->unique()->values()->all(),
+        );
+
+        $timetables = Timetable::query()->orderBy('school_class_id')->get();
+        foreach ($timetables as $timetable) {
+            $this->actingAs($user)
+                ->post(route('timetables.publish', $timetable))
+                ->assertSessionHasNoErrors();
+        }
+        $this->assertSame(2, Timetable::query()->where('status', 'active')->count());
     }
 
     public function test_generator_can_target_one_ready_class_when_another_class_is_incomplete(): void

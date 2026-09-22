@@ -25,6 +25,7 @@ class TimetableEntry extends Model
         'is_break',
         'is_locked',
         'source',
+        'synchronization_group',
     ];
 
     protected $casts = [

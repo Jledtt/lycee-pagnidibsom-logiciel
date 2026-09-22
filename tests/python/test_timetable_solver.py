@@ -3,13 +3,22 @@ import unittest
 from scripts.timetable_solver import solve
 
 
-def slot(key: str, day: str, period_id: int, order: int) -> dict:
-    return {
+def slot(
+    key: str,
+    day: str,
+    period_id: int,
+    order: int,
+    is_morning: bool | None = None,
+) -> dict:
+    data = {
         "key": key,
         "day": day,
         "period_id": period_id,
         "period_order": order,
     }
+    if is_morning is not None:
+        data["is_morning"] = is_morning
+    return data
 
 
 def assignment(
@@ -21,6 +30,7 @@ def assignment(
     preferred: list[str] | None = None,
     fixed: list[str] | None = None,
     max_per_day: int = 2,
+    synchronization_group: str | None = None,
 ) -> dict:
     return {
         "id": identifier,
@@ -31,6 +41,7 @@ def assignment(
         "allowed_slot_keys": allowed,
         "preferred_slot_keys": preferred or [],
         "fixed_slot_keys": fixed or [],
+        "synchronization_group": synchronization_group,
     }
 
 
@@ -74,17 +85,16 @@ class TimetableSolverTest(unittest.TestCase):
                 10,
                 50,
                 2,
-                ["monday|1", "monday|2", "tuesday|1"],
-                preferred=["monday|2"],
-                fixed=["tuesday|1"],
-                max_per_day=1,
+                ["monday|1", "monday|2", "monday|3"],
+                preferred=["monday|2", "monday|3"],
+                fixed=["monday|2"],
             ),
         ]))
 
         self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
         selected = {item["slot_key"] for item in result["assignments"]}
-        self.assertEqual({"monday|2", "tuesday|1"}, selected)
-        fixed = next(item for item in result["assignments"] if item["slot_key"] == "tuesday|1")
+        self.assertEqual({"monday|2", "monday|3"}, selected)
+        fixed = next(item for item in result["assignments"] if item["slot_key"] == "monday|2")
         self.assertTrue(fixed["is_fixed"])
 
     def test_an_available_period_fills_an_avoidable_gap_before_a_later_preference(self) -> None:
@@ -150,6 +160,65 @@ class TimetableSolverTest(unittest.TestCase):
         result = solve(payload)
 
         self.assertEqual("INFEASIBLE", result["status"])
+
+    def test_three_hours_form_one_continuous_block(self) -> None:
+        result = solve(self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                3,
+                ["monday|1", "monday|2", "monday|3", "tuesday|1"],
+                max_per_day=3,
+            ),
+        ]))
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        selected = {item["slot_key"] for item in result["assignments"]}
+        self.assertEqual({"monday|1", "monday|2", "monday|3"}, selected)
+
+    def test_shared_course_uses_the_same_slots_for_both_classes(self) -> None:
+        result = solve(self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                2,
+                ["monday|1", "monday|2", "monday|3"],
+                synchronization_group="2nde:EPS",
+            ),
+            assignment(
+                2,
+                20,
+                50,
+                2,
+                ["monday|1", "monday|2", "monday|3"],
+                synchronization_group="2nde:EPS",
+            ),
+        ]))
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        selected_by_assignment = {
+            assignment_id: {
+                item["slot_key"]
+                for item in result["assignments"]
+                if item["class_subject_id"] == assignment_id
+            }
+            for assignment_id in [1, 2]
+        }
+        self.assertEqual(selected_by_assignment[1], selected_by_assignment[2])
+
+    def test_morning_slot_is_preferred_over_an_equivalent_afternoon_slot(self) -> None:
+        payload = self.payload([
+            assignment(1, 10, 50, 1, ["monday|1", "tuesday|1"]),
+        ])
+        for item in payload["slots"]:
+            item["is_morning"] = item["key"] == "tuesday|1"
+
+        result = solve(payload)
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        self.assertEqual("tuesday|1", result["assignments"][0]["slot_key"])
 
 
 if __name__ == "__main__":

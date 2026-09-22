@@ -132,7 +132,10 @@ class TimetableReviewTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         [$timetable, $assignment] = $this->timetableWithAssignment('4e Tracabilite', 1);
         $entry = $this->fillFirstCourse($timetable, $assignment, source: 'automatic');
-        $entry->update(['is_locked' => true]);
+        $entry->update([
+            'is_locked' => true,
+            'synchronization_group' => '2nde:EPS',
+        ]);
 
         app(TimetableGridService::class)->update($timetable, [
             'title' => $timetable->title,
@@ -142,6 +145,7 @@ class TimetableReviewTest extends TestCase
         $preserved = $timetable->entries()->firstOrFail();
         $this->assertSame($assignment->subject->name, $preserved->subject_name);
         $this->assertSame('automatic', $preserved->source);
+        $this->assertSame('2nde:EPS', $preserved->synchronization_group);
         $this->assertTrue($preserved->is_locked);
 
         $preserved->update(['is_locked' => false]);
@@ -155,6 +159,7 @@ class TimetableReviewTest extends TestCase
         $corrected = $timetable->entries()->firstOrFail();
         $this->assertSame('Activite corrigee', $corrected->subject_name);
         $this->assertSame('manual', $corrected->source);
+        $this->assertNull($corrected->synchronization_group);
         $this->assertFalse($corrected->is_locked);
     }
 

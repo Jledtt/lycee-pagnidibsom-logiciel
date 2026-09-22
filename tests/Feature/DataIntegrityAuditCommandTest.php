@@ -136,7 +136,12 @@ class DataIntegrityAuditCommandTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $this->dropLegacyAuditGuards(
-            ['timetable_entries_times_insert', 'timetable_entries_times_update'],
+            [
+                'timetable_entries_times_insert',
+                'timetable_entries_times_update',
+                'timetable_entries_teacher_conflict_insert',
+                'timetable_entries_teacher_conflict_update',
+            ],
             [
                 'timetable_entries' => [
                     'timetable_entries_cell_unique',

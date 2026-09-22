@@ -36,6 +36,7 @@ def solve(payload: dict) -> dict:
         )
 
         used_days = []
+        minimum_daily_slots = 1 if int(assignment["required_slots"]) == 1 else 2
         max_slots_per_day = max(1, int(assignment.get("max_slots_per_day", 2)))
         for day in payload["days"]:
             day_slots = sorted(
@@ -46,7 +47,7 @@ def solve(payload: dict) -> dict:
             model.add(sum(daily) <= max_slots_per_day)
 
             day_used = model.new_bool_var(f"a{assignment_id}_{day}_used")
-            model.add(sum(daily) >= day_used)
+            model.add(sum(daily) >= minimum_daily_slots * day_used)
             model.add(sum(daily) <= max_slots_per_day * day_used)
             used_days.append(day_used)
 
@@ -76,6 +77,24 @@ def solve(payload: dict) -> dict:
         )
         model.add(sum(used_days) <= minimum_teaching_days)
 
+    synchronization_groups = {}
+    for assignment in assignments:
+        group = assignment.get("synchronization_group")
+        if group:
+            synchronization_groups.setdefault(group, []).append(assignment)
+
+    for group_assignments in synchronization_groups.values():
+        if len(group_assignments) < 2:
+            continue
+        reference_id = group_assignments[0]["id"]
+        for assignment in group_assignments[1:]:
+            for slot in slots:
+                key = slot["key"]
+                model.add(
+                    variables[(reference_id, key)]
+                    == variables[(assignment["id"], key)]
+                )
+
     for slot in slots:
         key = slot["key"]
         for class_id in payload["class_ids"]:
@@ -91,11 +110,17 @@ def solve(payload: dict) -> dict:
                 class_occupancies[(class_id, key)] = occupied
 
         for teacher_id in payload["teacher_ids"]:
-            teacher_variables = [
-                variables[(assignment["id"], key)]
-                for assignment in assignments
-                if assignment["teacher_id"] == teacher_id
-            ]
+            teacher_variables = []
+            seen_occupancies = set()
+            for assignment in assignments:
+                if assignment["teacher_id"] != teacher_id:
+                    continue
+                group = assignment.get("synchronization_group")
+                occupancy = ("shared", group) if group else ("assignment", assignment["id"])
+                if occupancy in seen_occupancies:
+                    continue
+                seen_occupancies.add(occupancy)
+                teacher_variables.append(variables[(assignment["id"], key)])
             if teacher_variables:
                 model.add(sum(teacher_variables) <= 1)
 
@@ -106,7 +131,10 @@ def solve(payload: dict) -> dict:
             variable = variables[(assignment["id"], slot["key"])]
             preference_score = 30 if slot["key"] in preferred else 10
             early_score = max(0, 8 - int(slot["period_order"]))
-            objective_terms.append((preference_score + early_score) * variable)
+            morning_score = 40 if slot.get("is_morning", False) else 0
+            objective_terms.append(
+                (preference_score + early_score + morning_score) * variable
+            )
 
     # A free teaching period between two courses is much more disruptive than
     # using a merely available (rather than preferred) period. Official breaks

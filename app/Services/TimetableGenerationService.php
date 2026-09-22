@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;
 
@@ -136,6 +137,8 @@ class TimetableGenerationService
             ->keyBy('id');
         $solutionBySlot = collect($run->result['assignments'])
             ->keyBy(fn (array $entry): string => $entry['class_id'].'|'.$entry['day'].'|'.$entry['period_id']);
+        $synchronizationGroups = collect($run->input_snapshot['assignments'] ?? [])
+            ->pluck('synchronization_group', 'id');
         $lockedBySlot = TimetableEntry::query()
             ->where('is_locked', true)
             ->whereHas('timetable', fn ($query) => $query
@@ -153,7 +156,7 @@ class TimetableGenerationService
         $targetClassIds = $run->input_snapshot['target_class_ids'] ?? [];
 
         try {
-            DB::transaction(function () use ($run, $actor, $assignments, $solutionBySlot, $lockedBySlot, $periods, $days, $targetClassIds): void {
+            DB::transaction(function () use ($run, $actor, $assignments, $solutionBySlot, $synchronizationGroups, $lockedBySlot, $periods, $days, $targetClassIds): void {
                 $currentTimetables = Timetable::query()
                     ->where('academic_year_id', $run->academic_year_id)
                     ->whereIn('school_class_id', $targetClassIds)
@@ -244,6 +247,9 @@ class TimetableGenerationService
                                 'is_break' => $period->is_break,
                                 'is_locked' => (bool) ($solution['is_fixed'] ?? false),
                                 'source' => $assignment ? 'automatic' : 'manual',
+                                'synchronization_group' => $assignment
+                                    ? $synchronizationGroups->get($assignment->id)
+                                    : null,
                             ];
                         }
                     }
@@ -259,7 +265,7 @@ class TimetableGenerationService
                 ]);
             });
         } catch (QueryException $exception) {
-            if (str_contains($exception->getMessage(), 'timetable_entries_teacher_slot_unique')) {
+            if (str_contains($exception->getMessage(), 'timetable_entries_teacher_slot_conflict')) {
                 throw ValidationException::withMessages([
                     'generation' => 'Un professeur vient d’être affecté à l’un des créneaux proposés. Génère une nouvelle proposition.',
                 ]);
@@ -336,7 +342,7 @@ class TimetableGenerationService
             ->pluck('school_class_id');
         $targetClasses = $classes->whereNotIn('id', $activeTimetables)->values();
         $allAssignments = ClassSubject::query()
-            ->with(['schoolClass', 'subject', 'teacher'])
+            ->with(['schoolClass.level', 'subject', 'teacher'])
             ->whereIn('school_class_id', $targetClasses->pluck('id'))
             ->where('is_active', true)
             ->orderBy('school_class_id')
@@ -396,6 +402,39 @@ class TimetableGenerationService
             $blockers[] = 'Des cours verrouillés ne correspondent plus à une affectation active. Corrige-les avant la génération.';
         }
 
+        $synchronizationGroups = collect();
+        $sharedCourseAssignments = $allAssignments
+            ->filter(fn (ClassSubject $assignment): bool => $this->sharedCourseGroup($assignment) !== null)
+            ->groupBy(fn (ClassSubject $assignment): string => (string) $this->sharedCourseGroup($assignment));
+        foreach ($sharedCourseAssignments as $group => $groupAssignments) {
+            $label = $this->sharedCourseLabel($group);
+            if ($groupAssignments->count() < 2) {
+                $warnings[] = $label.' : cours commun non appliqué, car les deux classes ne sont pas planifiées ensemble.';
+
+                continue;
+            }
+
+            $teacherIdsForGroup = $groupAssignments->pluck('teacher_id')->filter()->unique();
+            if ($teacherIdsForGroup->count() !== 1 || $groupAssignments->contains(fn (ClassSubject $assignment): bool => ! $assignment->teacher_id)) {
+                $blockers[] = $label.' : les classes doivent être affectées au même professeur pour fusionner ce cours.';
+
+                continue;
+            }
+
+            $weeklyHours = $groupAssignments
+                ->map(fn (ClassSubject $assignment): float => (float) $assignment->weekly_hours)
+                ->unique();
+            if ($weeklyHours->count() !== 1) {
+                $blockers[] = $label.' : les classes doivent avoir le même volume horaire pour fusionner ce cours.';
+
+                continue;
+            }
+
+            foreach ($groupAssignments as $assignment) {
+                $synchronizationGroups->put($assignment->id, $group);
+            }
+        }
+
         $assignments = [];
         foreach ($allAssignments as $assignment) {
             $label = ($assignment->schoolClass?->name ?? 'Classe').' - '.($assignment->subject?->name ?? 'Matière');
@@ -440,10 +479,6 @@ class TimetableGenerationService
                 ->map(fn (TimetableEntry $entry): string => $this->slotKey($entry->day_of_week, $entry->timetable_period_id))
                 ->values();
             $required = (int) round($hours);
-            $availableDayCount = $allowed
-                ->map(fn (string $slotKey): string => explode('|', $slotKey, 2)[0])
-                ->unique()
-                ->count();
 
             if ($fixed->count() > $required) {
                 $blockers[] = $label.' : plus de cours verrouillés que le volume horaire demandé.';
@@ -460,11 +495,9 @@ class TimetableGenerationService
                 'id' => $assignment->id,
                 'class_id' => $assignment->school_class_id,
                 'teacher_id' => $assignment->teacher_id,
+                'synchronization_group' => $synchronizationGroups->get($assignment->id),
                 'required_slots' => $required,
-                'max_slots_per_day' => min(
-                    $required,
-                    max(2, (int) ceil($required / max(1, $availableDayCount))),
-                ),
+                'max_slots_per_day' => $required <= 1 ? 1 : min($required, $required % 2 === 0 ? 2 : 3),
                 'allowed_slot_keys' => $allowed->all(),
                 'preferred_slot_keys' => $preferred->all(),
                 'fixed_slot_keys' => $fixed->all(),
@@ -487,7 +520,12 @@ class TimetableGenerationService
                 ->flatMap(fn (array $assignment): array => $assignment['allowed_slot_keys'])
                 ->unique()
                 ->count();
-            if ($teacherAssignments->sum('required_slots') > $allowedCapacity) {
+            $requestedCapacity = $teacherAssignments
+                ->groupBy(fn (array $assignment): string => filled($assignment['synchronization_group'] ?? null)
+                    ? 'shared:'.$assignment['synchronization_group']
+                    : 'assignment:'.$assignment['id'])
+                ->sum(fn (Collection $group): int => (int) $group->first()['required_slots']);
+            if ($requestedCapacity > $allowedCapacity) {
                 $teacherName = User::query()->whereKey($teacherId)->value('name') ?? 'Un professeur';
                 $blockers[] = $teacherName.' : les disponibilités ne couvrent pas son volume horaire total.';
             }
@@ -501,6 +539,7 @@ class TimetableGenerationService
                     'day' => $day,
                     'period_id' => $period->id,
                     'period_order' => $period->sort_order,
+                    'is_morning' => substr((string) $period->starts_at, 0, 5) < '12:00',
                 ];
             }
         }
@@ -606,13 +645,15 @@ class TimetableGenerationService
             if (isset($classSlots[$classSlotKey])) {
                 $errors[] = 'Le moteur a créé un conflit de classe sur un même créneau.';
             }
-            if (isset($teacherSlots[$teacherSlotKey])) {
+            $synchronizationGroup = $assignment['synchronization_group'] ?? null;
+            $teacherOccupancy = $synchronizationGroup ?: 'assignment:'.$assignmentId;
+            if (isset($teacherSlots[$teacherSlotKey]) && $teacherSlots[$teacherSlotKey] !== $teacherOccupancy) {
                 $errors[] = 'Le moteur a créé un conflit de professeur sur un même créneau.';
             }
 
             $assignmentSlots[$assignmentSlotKey] = true;
             $classSlots[$classSlotKey] = true;
-            $teacherSlots[$teacherSlotKey] = true;
+            $teacherSlots[$teacherSlotKey] = $teacherOccupancy;
             $placed[$assignmentId][] = $slotKey;
             $daily[$assignmentId][$day] = ($daily[$assignmentId][$day] ?? 0) + 1;
             $periodOrders[$assignmentId][$day][] = (int) $slot['period_order'];
@@ -637,6 +678,9 @@ class TimetableGenerationService
                 if ($count > (int) ($assignment['max_slots_per_day'] ?? 2)) {
                     $errors[] = 'Le moteur a dépassé la limite quotidienne d’une matière.';
                 }
+                if ($requiredSlots > 1 && $count < 2) {
+                    $errors[] = 'Le moteur a isolé une heure de cours au lieu de former un bloc d’au moins deux heures.';
+                }
             }
             if (count($periodOrders[$assignmentId] ?? []) > (int) ceil($requiredSlots / $maxSlotsPerDay)) {
                 $errors[] = 'Le moteur a dispersé les heures d’une même matière sur trop de jours.';
@@ -653,7 +697,55 @@ class TimetableGenerationService
             }
         }
 
+        $assignments
+            ->filter(fn (array $assignment): bool => filled($assignment['synchronization_group'] ?? null))
+            ->groupBy('synchronization_group')
+            ->each(function (Collection $group) use (&$errors, $placed): void {
+                $expectedSlots = null;
+                foreach ($group as $assignment) {
+                    $slots = $placed[(int) $assignment['id']] ?? [];
+                    sort($slots);
+                    if ($expectedSlots === null) {
+                        $expectedSlots = $slots;
+
+                        continue;
+                    }
+                    if ($slots !== $expectedSlots) {
+                        $errors[] = 'Le moteur n’a pas placé un cours commun au même horaire dans toutes les classes.';
+
+                        break;
+                    }
+                }
+            });
+
         return array_values(array_unique($errors));
+    }
+
+    private function sharedCourseGroup(ClassSubject $assignment): ?string
+    {
+        $level = Str::lower(Str::ascii((string) $assignment->schoolClass?->level?->name));
+        $subjectCode = Str::upper(trim((string) $assignment->subject?->code));
+        $levelKey = match (true) {
+            str_contains($level, '2nde'), str_contains($level, 'seconde') => '2nde',
+            str_contains($level, '1re'), str_contains($level, '1ere'), str_contains($level, 'premiere') => '1re',
+            default => null,
+        };
+
+        if ($levelKey === '2nde' && in_array($subjectCode, ['EPS', 'ECM', 'PHILO'], true)) {
+            return $levelKey.':'.$subjectCode;
+        }
+        if ($levelKey === '1re' && in_array($subjectCode, ['EPS', 'ECM'], true)) {
+            return $levelKey.':'.$subjectCode;
+        }
+
+        return null;
+    }
+
+    private function sharedCourseLabel(string $group): string
+    {
+        [$level, $subject] = explode(':', $group, 2);
+
+        return $level.' - '.$subject;
     }
 
     private function fingerprint(array $input): string
