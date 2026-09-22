@@ -1109,6 +1109,38 @@
     display: none !important;
 }
 
+.timetable-cell-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 24px;
+    gap: 8px;
+}
+
+.timetable-clear-button {
+    margin-left: auto;
+    padding: 2px 0;
+    border: 0;
+    color: var(--danger, #8f1d2c);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.timetable-clear-button:hover:not(:disabled),
+.timetable-clear-button:focus-visible {
+    text-decoration: underline;
+}
+
+.timetable-clear-button:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.48;
+    visibility: hidden;
+}
+
 .availability-teacher-picker .searchbar {
     align-items: end;
 }

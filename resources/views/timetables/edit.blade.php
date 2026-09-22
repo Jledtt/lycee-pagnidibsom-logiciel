@@ -126,11 +126,22 @@
                                             <input type="hidden" name="entries[{{ $entryIndex }}][is_break]" value="0">
 
                                             <div class="timetable-cell-fields {{ $entry?->is_locked ? 'timetable-cell-fields--locked' : '' }}" style="display:grid;gap:6px">
-                                                @if ($entry?->is_locked)
-                                                    <span class="badge">Verrouillé</span>
-                                                @elseif ($entry?->source === 'automatic')
-                                                    <span class="badge badge-warning">Automatique</span>
-                                                @endif
+                                                <div class="timetable-cell-toolbar">
+                                                    @if ($entry?->is_locked)
+                                                        <span class="badge">Verrouillé</span>
+                                                    @else
+                                                        @if ($entry?->source === 'automatic')
+                                                            <span class="badge badge-warning" data-timetable-automatic-badge>Automatique</span>
+                                                        @endif
+                                                        <button
+                                                            class="timetable-clear-button"
+                                                            type="button"
+                                                            data-timetable-clear
+                                                            aria-label="Vider le créneau {{ $row['period_label'] }} du {{ $days[$dayKey] }}"
+                                                            title="Effacer la matière, le professeur et la salle"
+                                                        >Vider</button>
+                                                    @endif
+                                                </div>
                                                 <select name="entries[{{ $entryIndex }}][class_subject_id]" data-timetable-assignment aria-label="Affectation pédagogique">
                                                     <option value="">Activité ou ancien libellé</option>
                                                     @foreach ($classSubjects as $classSubject)
@@ -148,7 +159,7 @@
                                                     <input data-timetable-subject name="entries[{{ $entryIndex }}][subject_name]" list="subject-options" value="{{ old('entries.' . $entryIndex . '.subject_name', $entry?->subject_name) }}" placeholder="Devoir ou activité libre">
                                                     <input data-timetable-teacher name="entries[{{ $entryIndex }}][teacher_name]" value="{{ old('entries.' . $entryIndex . '.teacher_name', $entry?->teacher_name) }}" placeholder="Professeur (ancien planning)">
                                                 </div>
-                                                <input name="entries[{{ $entryIndex }}][room]" value="{{ old('entries.' . $entryIndex . '.room', $entry?->room) }}" placeholder="Salle">
+                                                <input data-timetable-room name="entries[{{ $entryIndex }}][room]" value="{{ old('entries.' . $entryIndex . '.room', $entry?->room) }}" placeholder="Salle">
                                             </div>
                                         </td>
                                         @php($entryIndex++)

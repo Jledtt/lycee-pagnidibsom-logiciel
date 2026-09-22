@@ -396,6 +396,109 @@ class TimetableTest extends TestCase
         ]);
     }
 
+    public function test_secretariat_can_clear_an_unlocked_timetable_slot(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $schoolClass = $this->schoolClass('Classe créneau à vider');
+        $subject = Subject::query()->firstOrCreate(
+            ['name' => 'Informatique'],
+            ['code' => 'INFO', 'status' => 'active'],
+        );
+        $assignment = ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->post(route('timetables.store'), [
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Grille à corriger',
+        ])->assertRedirect();
+
+        $timetable = Timetable::query()
+            ->where('school_class_id', $schoolClass->id)
+            ->with('entries')
+            ->firstOrFail();
+        $target = $timetable->entries->first(fn ($entry) => ! $entry->is_break && $entry->day_of_week === 'monday');
+        $neighbor = $timetable->entries->first(fn ($entry) => ! $entry->is_break
+            && $entry->day_of_week === 'tuesday'
+            && $entry->timetable_period_id === $target->timetable_period_id
+        );
+
+        foreach ([$target, $neighbor] as $entry) {
+            $entry->update([
+                'generation_run_id' => null,
+                'class_subject_id' => $assignment->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'subject_name' => $subject->name,
+                'teacher_name' => $teacher->name,
+                'room' => 'Salle 4',
+                'source' => 'automatic',
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->get(route('timetables.edit', $timetable))
+            ->assertOk()
+            ->assertSee('data-timetable-clear', false)
+            ->assertSee('Vider');
+
+        $timetable->refresh()->load('entries');
+        $payload = $timetable->entries
+            ->sortBy([['sort_order', 'asc'], ['day_of_week', 'asc']])
+            ->values()
+            ->map(function ($entry) use ($target): array {
+                $row = $this->entryPayload($entry, $entry->class_subject_id);
+
+                if ($entry->day_of_week === $target->day_of_week
+                    && $entry->timetable_period_id === $target->timetable_period_id) {
+                    $row['class_subject_id'] = null;
+                    $row['subject_name'] = null;
+                    $row['teacher_name'] = null;
+                    $row['room'] = null;
+                }
+
+                return $row;
+            })
+            ->all();
+
+        $this->actingAs($user)
+            ->put(route('timetables.update', $timetable), [
+                'title' => $timetable->title,
+                'status' => 'draft',
+                'entries' => $payload,
+            ])
+            ->assertRedirect(route('timetables.review', $timetable));
+
+        $this->assertDatabaseHas('timetable_entries', [
+            'timetable_id' => $timetable->id,
+            'timetable_period_id' => $target->timetable_period_id,
+            'day_of_week' => 'monday',
+            'class_subject_id' => null,
+            'subject_id' => null,
+            'teacher_id' => null,
+            'subject_name' => null,
+            'teacher_name' => null,
+            'room' => null,
+            'source' => 'manual',
+        ]);
+        $this->assertDatabaseHas('timetable_entries', [
+            'timetable_id' => $timetable->id,
+            'timetable_period_id' => $neighbor->timetable_period_id,
+            'day_of_week' => 'tuesday',
+            'class_subject_id' => $assignment->id,
+            'teacher_id' => $teacher->id,
+            'room' => 'Salle 4',
+        ]);
+    }
+
     public function test_timetable_rejects_an_assignment_from_another_class(): void
     {
         $this->seed(DatabaseSeeder::class);
