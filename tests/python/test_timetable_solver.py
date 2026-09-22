@@ -177,6 +177,39 @@ class TimetableSolverTest(unittest.TestCase):
         selected = {item["slot_key"] for item in result["assignments"]}
         self.assertEqual({"monday|1", "monday|2", "monday|3"}, selected)
 
+    def test_all_subjects_use_consecutive_blocks_without_alternating(self) -> None:
+        allowed = [
+            "monday|1",
+            "monday|2",
+            "monday|3",
+            "tuesday|1",
+            "tuesday|2",
+            "tuesday|3",
+        ]
+        payload = self.payload([
+            assignment(1, 10, 50, 2, allowed),
+            assignment(2, 10, 60, 2, allowed),
+        ])
+        payload["slots"].extend([
+            slot("tuesday|2", "tuesday", 2, 2),
+            slot("tuesday|3", "tuesday", 3, 3),
+        ])
+
+        result = solve(payload)
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        for assignment_id in [1, 2]:
+            selected = sorted(
+                (
+                    item["day"],
+                    item["period_id"],
+                )
+                for item in result["assignments"]
+                if item["class_subject_id"] == assignment_id
+            )
+            self.assertEqual(selected[0][0], selected[1][0])
+            self.assertEqual(1, selected[1][1] - selected[0][1])
+
     def test_shared_course_uses_the_same_slots_for_both_classes(self) -> None:
         result = solve(self.payload([
             assignment(
