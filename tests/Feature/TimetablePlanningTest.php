@@ -317,6 +317,55 @@ class TimetablePlanningTest extends TestCase
             ->assertSee(route('timetables.edit', $timetable), false);
     }
 
+    public function test_repeated_generation_for_the_same_class_returns_a_new_proposal(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe variante');
+        $subject = Subject::query()->firstOrCreate(
+            ['code' => 'VARIANTE'],
+            ['name' => 'Matière variante', 'status' => 'active'],
+        );
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'), ['school_class_id' => $schoolClass->id])
+            ->assertRedirect();
+        $firstRun = TimetableGenerationRun::query()->latest('id')->firstOrFail();
+        $firstSlots = collect($firstRun->result['assignments'])
+            ->pluck('slot_key')
+            ->sort()
+            ->values()
+            ->all();
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'), ['school_class_id' => $schoolClass->id])
+            ->assertRedirect();
+        $secondRun = TimetableGenerationRun::query()->latest('id')->firstOrFail();
+        $secondSlots = collect($secondRun->result['assignments'])
+            ->pluck('slot_key')
+            ->sort()
+            ->values()
+            ->all();
+
+        $this->assertTrue($firstRun->canBeApplied());
+        $this->assertTrue($secondRun->canBeApplied());
+        $this->assertCount(1, $secondRun->input_snapshot['excluded_solutions']);
+        $this->assertNotSame($firstSlots, $secondSlots);
+    }
+
     public function test_generator_synchronizes_shared_eps_for_both_seconde_classes(): void
     {
         $this->seed(DatabaseSeeder::class);

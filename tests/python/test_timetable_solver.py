@@ -210,6 +210,46 @@ class TimetableSolverTest(unittest.TestCase):
             self.assertEqual(selected[0][0], selected[1][0])
             self.assertEqual(1, selected[1][1] - selected[0][1])
 
+    def test_previous_solution_is_excluded_from_the_next_generation(self) -> None:
+        payload = self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                2,
+                ["monday|1", "monday|2", "monday|3"],
+            ),
+        ])
+        first = solve(payload)
+        first_slots = {item["slot_key"] for item in first["assignments"]}
+        payload["excluded_solutions"] = [[
+            {
+                "class_subject_id": item["class_subject_id"],
+                "slot_key": item["slot_key"],
+            }
+            for item in first["assignments"]
+        ]]
+        payload["variation_seed"] = 42
+
+        second = solve(payload)
+        second_slots = {item["slot_key"] for item in second["assignments"]}
+
+        self.assertIn(second["status"], ["OPTIMAL", "FEASIBLE"])
+        self.assertNotEqual(first_slots, second_slots)
+
+    def test_generation_is_infeasible_when_the_only_solution_was_already_shown(self) -> None:
+        payload = self.payload([
+            assignment(1, 10, 50, 2, ["monday|1", "monday|2"]),
+        ])
+        payload["excluded_solutions"] = [[
+            {"class_subject_id": 1, "slot_key": "monday|1"},
+            {"class_subject_id": 1, "slot_key": "monday|2"},
+        ]]
+
+        result = solve(payload)
+
+        self.assertEqual("INFEASIBLE", result["status"])
+
     def test_shared_course_uses_the_same_slots_for_both_classes(self) -> None:
         result = solve(self.payload([
             assignment(

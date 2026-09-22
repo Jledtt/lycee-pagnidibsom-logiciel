@@ -3,6 +3,7 @@
 
 import json
 import math
+import random
 import sys
 
 from ortools.sat.python import cp_model
@@ -95,6 +96,18 @@ def solve(payload: dict) -> dict:
                     == variables[(assignment["id"], key)]
                 )
 
+    expected_solution_size = sum(int(item["required_slots"]) for item in assignments)
+    for excluded_solution in payload.get("excluded_solutions", []):
+        excluded_variables = []
+        seen_pairs = set()
+        for item in excluded_solution:
+            pair = (int(item.get("class_subject_id", 0)), str(item.get("slot_key", "")))
+            if pair in variables and pair not in seen_pairs:
+                excluded_variables.append(variables[pair])
+                seen_pairs.add(pair)
+        if len(excluded_variables) == expected_solution_size:
+            model.add(sum(excluded_variables) <= expected_solution_size - 1)
+
     for slot in slots:
         key = slot["key"]
         for class_id in payload["class_ids"]:
@@ -125,6 +138,7 @@ def solve(payload: dict) -> dict:
                 model.add(sum(teacher_variables) <= 1)
 
     objective_terms = []
+    randomizer = random.Random(int(payload.get("variation_seed", 0)))
     for assignment in assignments:
         preferred = set(assignment.get("preferred_slot_keys", []))
         for slot in slots:
@@ -132,8 +146,10 @@ def solve(payload: dict) -> dict:
             preference_score = 30 if slot["key"] in preferred else 10
             early_score = max(0, 8 - int(slot["period_order"]))
             morning_score = 40 if slot.get("is_morning", False) else 0
+            variation_score = randomizer.randint(0, 4)
             objective_terms.append(
-                (preference_score + early_score + morning_score) * variable
+                (preference_score + early_score + morning_score + variation_score)
+                * variable
             )
 
     # A free teaching period between two courses is much more disruptive than
@@ -175,6 +191,7 @@ def solve(payload: dict) -> dict:
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = float(payload.get("time_limit_seconds", 12))
     solver.parameters.num_search_workers = int(payload.get("workers", 4))
+    solver.parameters.random_seed = int(payload.get("variation_seed", 0))
     status = solver.solve(model)
     status_name = solver.status_name(status)
 

@@ -5,6 +5,14 @@ $result = [];
 $usedClasses = [];
 $usedTeachers = [];
 $sharedSelections = [];
+$excludedCount = count($input['excluded_solutions'] ?? []);
+if ($input['days'] !== [] && $excludedCount > 0) {
+    $offset = $excludedCount % count($input['days']);
+    $input['days'] = [
+        ...array_slice($input['days'], $offset),
+        ...array_slice($input['days'], 0, $offset),
+    ];
+}
 $assignments = $input['assignments'];
 usort($assignments, function (array $left, array $right): int {
     $leftGroup = (string) ($left['synchronization_group'] ?? '');

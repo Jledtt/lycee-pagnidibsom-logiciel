@@ -47,7 +47,12 @@ class TimetableGenerationService
         $prepared = $this->prepare($academicYear, $schoolClassIds);
         $input = $prepared['input'];
         $diagnostics = $prepared['diagnostics'];
-        $input['fingerprint'] = $this->fingerprint($input);
+        $fingerprint = $this->fingerprint($input);
+        $input['fingerprint'] = $fingerprint;
+        $input['variation_seed'] = random_int(1, 2_000_000_000);
+        $input['excluded_solutions'] = $diagnostics['blockers'] === []
+            ? $this->previousSolutions($academicYear, $fingerprint)
+            : [];
 
         $run = TimetableGenerationRun::query()->create([
             'academic_year_id' => $academicYear->id,
@@ -69,6 +74,16 @@ class TimetableGenerationService
         try {
             $result = $this->solve($input);
             $solverStatus = (string) ($result['status'] ?? 'ERROR');
+            if ($solverStatus === 'INFEASIBLE' && $input['excluded_solutions'] !== []) {
+                $baselineInput = $input;
+                $baselineInput['excluded_solutions'] = [];
+                $baselineResult = $this->solve($baselineInput);
+
+                if (in_array((string) ($baselineResult['status'] ?? ''), ['OPTIMAL', 'FEASIBLE'], true)) {
+                    $solverStatus = 'NO_ALTERNATIVE';
+                    $diagnostics['blockers'][] = 'Aucune nouvelle proposition différente n’est possible avec les contraintes actuelles. Modifie une disponibilité, un cours verrouillé ou un volume horaire.';
+                }
+            }
             $solutionErrors = in_array($solverStatus, ['OPTIMAL', 'FEASIBLE'], true)
                 ? $this->solutionErrors($input, $result)
                 : [];
@@ -718,7 +733,63 @@ class TimetableGenerationService
                 }
             });
 
+        $currentSolution = $this->normalizedSolution($entries);
+        foreach ($input['excluded_solutions'] ?? [] as $excludedSolution) {
+            if ($currentSolution !== [] && $currentSolution === $this->normalizedSolution($excludedSolution)) {
+                $errors[] = 'Le moteur a reproduit une proposition déjà présentée.';
+
+                break;
+            }
+        }
+
         return array_values(array_unique($errors));
+    }
+
+    /** @return array<int, array<int, array{class_subject_id: int, slot_key: string}>> */
+    private function previousSolutions(AcademicYear $academicYear, string $fingerprint): array
+    {
+        $expectedSlots = 0;
+        $solutions = TimetableGenerationRun::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->whereIn('status', [TimetableGenerationRun::STATUS_DRAFT, TimetableGenerationRun::STATUS_APPLIED])
+            ->whereIn('solver_status', ['OPTIMAL', 'FEASIBLE'])
+            ->latest('id')
+            ->limit(50)
+            ->get()
+            ->filter(function (TimetableGenerationRun $run) use ($fingerprint, &$expectedSlots): bool {
+                if (($run->input_snapshot['fingerprint'] ?? null) !== $fingerprint) {
+                    return false;
+                }
+
+                $expectedSlots = collect($run->input_snapshot['assignments'] ?? [])
+                    ->sum(fn (array $assignment): int => (int) ($assignment['required_slots'] ?? 0));
+
+                return $expectedSlots > 0;
+            })
+            ->map(fn (TimetableGenerationRun $run): array => $this->normalizedSolution($run->result['assignments'] ?? []))
+            ->filter(fn (array $solution): bool => count($solution) === $expectedSlots)
+            ->unique(fn (array $solution): string => json_encode($solution, JSON_THROW_ON_ERROR))
+            ->take(20)
+            ->values()
+            ->all();
+
+        return $solutions;
+    }
+
+    /** @return array<int, array{class_subject_id: int, slot_key: string}> */
+    private function normalizedSolution(iterable $entries): array
+    {
+        return collect($entries)
+            ->filter(fn ($entry): bool => is_array($entry)
+                && filled($entry['class_subject_id'] ?? null)
+                && filled($entry['slot_key'] ?? null))
+            ->map(fn (array $entry): array => [
+                'class_subject_id' => (int) $entry['class_subject_id'],
+                'slot_key' => (string) $entry['slot_key'],
+            ])
+            ->sortBy(fn (array $entry): string => str_pad((string) $entry['class_subject_id'], 20, '0', STR_PAD_LEFT).'|'.$entry['slot_key'])
+            ->values()
+            ->all();
     }
 
     private function sharedCourseGroup(ClassSubject $assignment): ?string
@@ -750,7 +821,13 @@ class TimetableGenerationService
 
     private function fingerprint(array $input): string
     {
-        unset($input['fingerprint'], $input['time_limit_seconds'], $input['workers']);
+        unset(
+            $input['fingerprint'],
+            $input['time_limit_seconds'],
+            $input['workers'],
+            $input['variation_seed'],
+            $input['excluded_solutions'],
+        );
 
         return hash('sha256', json_encode($input, JSON_THROW_ON_ERROR));
     }

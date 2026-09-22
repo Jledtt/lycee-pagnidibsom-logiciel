@@ -127,6 +127,7 @@
                 'OPTIMAL' => 'Solution optimale',
                 'FEASIBLE' => 'Solution réalisable',
                 'INFEASIBLE' => 'Aucune solution possible',
+                'NO_ALTERNATIVE' => 'Aucune nouvelle variante',
                 'INVALID_SOLUTION' => 'Essai rejeté',
                 'NOT_READY' => 'Configuration incomplète',
                 'ERROR' => 'Moteur indisponible',
