@@ -44,6 +44,7 @@ class Timetable extends Model
         return $this->belongsTo(User::class, 'published_by');
     }
 
+    /** @return HasMany<TimetableEntry, $this> */
     public function entries(): HasMany
     {
         return $this->hasMany(TimetableEntry::class)

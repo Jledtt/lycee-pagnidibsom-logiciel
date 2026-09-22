@@ -115,8 +115,11 @@ class TimetableTest extends TestCase
         $pdfText = preg_replace('/\s+/u', ' ', str_replace("'", '’', $pdf->getText()));
         $this->assertStringContainsString('Bâtir l’excellence', $pdfText);
         $this->assertStringContainsString('PUBLIÉ - DOCUMENT OFFICIEL', $pdfText);
+        $this->assertStringContainsString('CORPS PROFESSORAL', $pdfText);
+        $this->assertStringContainsString('DISCIPLINE', $pdfText);
+        $this->assertStringContainsString('NOM ET PRÉNOMS', $pdfText);
         $this->assertStringContainsString('Mathématiques', $pdfText);
-        $this->assertStringNotContainsString('BADO Constant', $pdfText);
+        $this->assertStringContainsString('BADO Constant', $pdfText);
     }
 
     public function test_timetable_groups_same_period_on_one_row(): void
@@ -201,6 +204,10 @@ class TimetableTest extends TestCase
             'timetable' => $timetable->load(['academicYear', 'schoolClass.level']),
             'school' => SchoolSetting::query()->first(),
             'days' => ['monday' => 'Lundi'],
+            'teachingStaff' => [[
+                'subject' => 'Mathématiques',
+                'teachers' => 'BADO Constant',
+            ]],
             'grid' => [[
                 'period_label' => '7h00-7h55',
                 'is_break' => false,
@@ -208,12 +215,76 @@ class TimetableTest extends TestCase
             ]],
         ])->render();
 
-        $this->assertStringContainsString('Professeur principal / équipe pédagogique', $html);
         $this->assertStringContainsString('Bâtir l&#039;excellence', $html);
         $this->assertStringContainsString('Publié - document officiel', $html);
-        $this->assertStringContainsString('Dernière mise à jour', $html);
+        $this->assertStringContainsString('Corps professoral', $html);
+        $this->assertStringContainsString('Discipline', $html);
+        $this->assertStringContainsString('Nom et prénoms', $html);
         $this->assertStringContainsString('Mathématiques', $html);
-        $this->assertStringNotContainsString('BADO Constant', $html);
+        $this->assertStringContainsString('BADO Constant', $html);
+        $this->assertStringNotContainsString('Professeur principal / équipe pédagogique', $html);
+        $this->assertStringNotContainsString('Dernière mise à jour', $html);
+    }
+
+    public function test_timetable_pdf_groups_teachers_by_subject_without_duplicates(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = $this->userWithRole('secretariat');
+        $schoolClass = $this->schoolClass('4e C');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $timetable = Timetable::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Emploi du temps',
+            'status' => 'active',
+            'created_by' => $user->id,
+        ]);
+
+        $timetable->entries()->createMany([
+            [
+                'sort_order' => 1,
+                'period_label' => '7h00-7h55',
+                'starts_at' => '07:00',
+                'ends_at' => '07:55',
+                'day_of_week' => 'monday',
+                'subject_name' => 'Mathématiques',
+                'teacher_name' => 'BADO Constant',
+                'is_break' => false,
+            ],
+            [
+                'sort_order' => 2,
+                'period_label' => '7h55-8h50',
+                'starts_at' => '07:55',
+                'ends_at' => '08:50',
+                'day_of_week' => 'tuesday',
+                'subject_name' => 'Mathématiques',
+                'teacher_name' => 'BADO Constant',
+                'is_break' => false,
+            ],
+            [
+                'sort_order' => 3,
+                'period_label' => '8h50-9h45',
+                'starts_at' => '08:50',
+                'ends_at' => '09:45',
+                'day_of_week' => 'wednesday',
+                'subject_name' => 'Français',
+                'teacher_name' => null,
+                'is_break' => false,
+            ],
+        ]);
+
+        $pdfResponse = $this->actingAs($user)
+            ->get(route('timetables.pdf', $timetable))
+            ->assertOk();
+        $pdfText = preg_replace(
+            '/\s+/u',
+            ' ',
+            str_replace("'", '’', (new Parser)->parseContent($pdfResponse->getContent())->getText()),
+        );
+
+        $this->assertSame(1, substr_count($pdfText, 'BADO Constant'));
+        $this->assertStringContainsString('Français Non renseigné', $pdfText);
     }
 
     public function test_timetable_keeps_afternoon_periods_visible_when_empty(): void

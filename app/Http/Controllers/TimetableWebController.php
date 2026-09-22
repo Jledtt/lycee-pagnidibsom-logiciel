@@ -14,6 +14,7 @@ use App\Services\TimetableTemplateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -239,10 +240,38 @@ class TimetableWebController extends Controller
             'timetable' => $timetable,
             'days' => $this->templates->days(),
             'grid' => $this->grid($timetable),
+            'teachingStaff' => $this->teachingStaff($timetable),
             'school' => SchoolSetting::query()->first(),
         ])
             ->setPaper('a4', 'portrait')
             ->stream($filename);
+    }
+
+    /** @return array<int, array{subject: string, teachers: string}> */
+    private function teachingStaff(Timetable $timetable): array
+    {
+        return $timetable->entries
+            ->reject(fn ($entry): bool => $entry->is_break)
+            ->filter(fn ($entry): bool => filled($entry->subject_name) && trim($entry->subject_name) !== '-')
+            ->groupBy(fn ($entry): string => Str::lower(trim($entry->subject_name)))
+            ->map(function ($entries): array {
+                $teachers = $entries
+                    ->pluck('teacher_name')
+                    ->map(fn ($teacher): string => trim((string) $teacher))
+                    ->filter()
+                    ->unique(fn (string $teacher): string => Str::lower($teacher))
+                    ->values();
+
+                return [
+                    'subject' => trim((string) $entries->first()->subject_name),
+                    'teachers' => $teachers->isNotEmpty()
+                        ? $teachers->implode(', ')
+                        : 'Non renseigné',
+                ];
+            })
+            ->sortBy(fn (array $row): string => Str::lower($row['subject']))
+            ->values()
+            ->all();
     }
 
     private function activeAcademicYear(): ?AcademicYear
