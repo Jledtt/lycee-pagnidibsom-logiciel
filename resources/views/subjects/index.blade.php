@@ -18,6 +18,94 @@
 
     <section class="panel">
         <div class="panel-head">
+            <div>
+                <h2>Importer les matières depuis un PDF</h2>
+                <p class="muted" style="margin:6px 0 0">Le fichier est d’abord analysé. Aucune donnée n’est modifiée avant ta confirmation.</p>
+            </div>
+            @if ($pdfImportPreview)
+                <span class="badge">{{ $pdfImportPreview['source_name'] }}</span>
+            @endif
+        </div>
+
+        @if (! $pdfImportPreview)
+            <form class="form-grid" method="POST" action="{{ route('subjects.import-pdf.preview') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="field wide">
+                    <label for="subjects-pdf">Document PDF des matières par classe</label>
+                    <input id="subjects-pdf" type="file" name="subjects_pdf" accept="application/pdf,.pdf" required>
+                    <small>PDF texte uniquement, 5 Mo maximum. Les classes doivent déjà exister dans l’année scolaire active.</small>
+                </div>
+                <div class="form-actions wide">
+                    <button class="btn btn-primary" type="submit">Analyser le PDF</button>
+                </div>
+            </form>
+        @else
+            <div class="page-actions" style="justify-content:flex-start;margin-bottom:14px">
+                <span class="badge">{{ $pdfImportPreview['summary']['classes'] }} classe(s) reconnue(s)</span>
+                <span class="badge">{{ $pdfImportPreview['summary']['valid'] }} matière(s) valide(s)</span>
+                @if ($pdfImportPreview['summary']['invalid'] > 0)
+                    <span class="badge badge-warning">{{ $pdfImportPreview['summary']['invalid'] }} ligne(s) ignorée(s)</span>
+                @endif
+                <span class="badge">{{ $pdfImportPreview['academic_year_name'] }}</span>
+            </div>
+
+            @foreach ($pdfImportPreview['warnings'] as $warning)
+                <div class="error" style="margin-bottom:12px">{{ $warning }}</div>
+            @endforeach
+
+            <div style="overflow-x:auto">
+                <table class="table" style="min-width:760px">
+                    <thead>
+                        <tr>
+                            <th>Classe</th>
+                            <th>Matières détectées</th>
+                            <th>Résultat prévu</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($pdfImportPreview['groups'] as $group)
+                            <tr>
+                                <td><strong>{{ $group['class_name'] }}</strong></td>
+                                <td>{{ implode(', ', $group['subjects']) }}</td>
+                                <td>
+                                    {{ $group['changes'] === []
+                                        ? 'Toutes les matières sont déjà enregistrées.'
+                                        : implode(' · ', $group['changes']) }}
+                                </td>
+                                <td>
+                                    <span class="badge {{ $group['valid'] ? '' : 'badge-warning' }}">
+                                        {{ $group['valid'] ? 'Prête' : 'Classe introuvable' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="page-actions" style="justify-content:flex-start;margin-top:16px">
+                <form method="POST" action="{{ route('subjects.import-pdf.store') }}"
+                    data-confirm
+                    data-confirm-title="Importer les matières"
+                    data-confirm-object="{{ $pdfImportPreview['summary']['valid'] }} matière(s) — {{ $pdfImportPreview['academic_year_name'] }}"
+                    data-confirm-message="Les matières reconnues seront ajoutées ou réactivées. Les coefficients, horaires et professeurs déjà enregistrés seront conservés."
+                    data-confirm-action="Confirmer l’import"
+                    data-confirm-tone="primary">
+                    @csrf
+                    <button class="btn btn-primary" type="submit" @disabled($pdfImportPreview['summary']['valid'] < 1)>Confirmer l’import</button>
+                </form>
+                <form method="POST" action="{{ route('subjects.import-pdf.cancel') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-subtle" type="submit">Annuler l’aperçu</button>
+                </form>
+            </div>
+        @endif
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+        <div class="panel-head">
             <h2>Classe de travail</h2>
             @if ($selectedClass)
                 <span class="badge">{{ $selectedClass->name }}</span>

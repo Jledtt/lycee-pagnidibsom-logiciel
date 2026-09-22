@@ -315,6 +315,18 @@ Route::post('/subjects', [SubjectWebController::class, 'storeSubject'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('subjects.store');
 
+Route::post('/subjects/import-pdf/preview', [SubjectWebController::class, 'previewPdfImport'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.import-pdf.preview');
+
+Route::post('/subjects/import-pdf', [SubjectWebController::class, 'storePdfImport'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.import-pdf.store');
+
+Route::delete('/subjects/import-pdf', [SubjectWebController::class, 'cancelPdfImport'])
+    ->middleware(['auth', 'permission:settings.manage'])
+    ->name('subjects.import-pdf.cancel');
+
 Route::put('/subjects/{subject}', [SubjectWebController::class, 'updateSubject'])
     ->middleware(['auth', 'permission:settings.manage'])
     ->name('subjects.update');

@@ -7,6 +7,7 @@ use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Rules\ValidClassSubjectCoefficient;
+use App\Services\ClassSubjectPdfImportService;
 use App\Services\PagnidibsomClassSubjectSetupService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -14,9 +15,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class SubjectWebController extends Controller
 {
+    private const PDF_IMPORT_SESSION_KEY = 'subjects.pdf_import_preview';
+
     public function index(Request $request): View
     {
         $academicYear = $this->activeAcademicYear();
@@ -56,7 +60,66 @@ class SubjectWebController extends Controller
                 ->where('status', 'active')
                 ->reject(fn (Subject $subject) => $classSubjects->contains('subject_id', $subject->id)),
             'suggestedSubjects' => $selectedClass ? $this->suggestedSubjectsForClass($selectedClass) : [],
+            'pdfImportPreview' => session()->get(self::PDF_IMPORT_SESSION_KEY),
         ]);
+    }
+
+    public function previewPdfImport(
+        Request $request,
+        ClassSubjectPdfImportService $pdfImport,
+    ): RedirectResponse {
+        $data = $request->validate([
+            'subjects_pdf' => ['required', 'file', 'max:5120', 'mimes:pdf'],
+        ]);
+
+        try {
+            $preview = $pdfImport->preview($data['subjects_pdf'], $this->activeAcademicYear());
+        } catch (InvalidArgumentException $exception) {
+            return redirect()
+                ->route('subjects.index')
+                ->withErrors(['subjects_pdf' => $exception->getMessage()]);
+        }
+
+        session()->put(self::PDF_IMPORT_SESSION_KEY, $preview);
+
+        return redirect()
+            ->route('subjects.index')
+            ->with('success', 'PDF analysé. Vérifie l’aperçu avant de confirmer l’import.');
+    }
+
+    public function storePdfImport(ClassSubjectPdfImportService $pdfImport): RedirectResponse
+    {
+        $preview = session()->get(self::PDF_IMPORT_SESSION_KEY);
+
+        if (! is_array($preview)) {
+            return redirect()
+                ->route('subjects.index')
+                ->withErrors(['subjects_pdf' => 'Analyse d’abord un PDF avant de confirmer l’import.']);
+        }
+
+        try {
+            $result = $pdfImport->import($preview, $this->activeAcademicYear());
+        } catch (InvalidArgumentException $exception) {
+            return redirect()
+                ->route('subjects.index')
+                ->withErrors(['subjects_pdf' => $exception->getMessage()]);
+        }
+
+        session()->forget(self::PDF_IMPORT_SESSION_KEY);
+        $firstValidRow = collect($preview['rows'] ?? [])->firstWhere('valid', true);
+        $firstClassId = $firstValidRow['school_class_id'] ?? null;
+
+        return $this->backToIndex($firstClassId)
+            ->with('success', $result['assignments_created'].' affectation(s) ajoutée(s), '.$result['assignments_reactivated'].' réactivée(s). Les données existantes ont été conservées.');
+    }
+
+    public function cancelPdfImport(): RedirectResponse
+    {
+        session()->forget(self::PDF_IMPORT_SESSION_KEY);
+
+        return redirect()
+            ->route('subjects.index')
+            ->with('success', 'Aperçu de l’import PDF annulé.');
     }
 
     public function storeSubject(Request $request): RedirectResponse
