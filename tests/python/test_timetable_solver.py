@@ -104,6 +104,53 @@ class TimetableSolverTest(unittest.TestCase):
         selected = {item["slot_key"] for item in result["assignments"]}
         self.assertEqual({"monday|1", "monday|2"}, selected)
 
+    def test_two_hours_of_the_same_subject_are_consecutive(self) -> None:
+        result = solve(self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                2,
+                ["monday|1", "monday|2", "monday|3"],
+                preferred=["monday|1", "monday|3"],
+            ),
+        ]))
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        selected = sorted(
+            item["period_id"] for item in result["assignments"]
+        )
+        self.assertEqual(1, selected[1] - selected[0])
+
+    def test_two_hours_cannot_be_split_across_two_days(self) -> None:
+        result = solve(self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                2,
+                ["monday|1", "tuesday|1"],
+            ),
+        ]))
+
+        self.assertEqual("INFEASIBLE", result["status"])
+
+    def test_two_hours_cannot_cross_an_official_break(self) -> None:
+        payload = self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                2,
+                ["monday|3", "monday|5"],
+            ),
+        ])
+        payload["slots"].append(slot("monday|5", "monday", 5, 5))
+
+        result = solve(payload)
+
+        self.assertEqual("INFEASIBLE", result["status"])
+
 
 if __name__ == "__main__":
     unittest.main()

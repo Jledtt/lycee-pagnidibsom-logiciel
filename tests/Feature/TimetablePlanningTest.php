@@ -292,7 +292,10 @@ class TimetablePlanningTest extends TestCase
             ->assertRedirect();
 
         $run = TimetableGenerationRun::query()->firstOrFail();
-        $this->assertTrue($run->canBeApplied());
+        $this->assertTrue(
+            $run->canBeApplied(),
+            json_encode($run->only(['status', 'solver_status', 'diagnostics', 'result'])) ?: 'Résultat illisible',
+        );
         $this->assertDatabaseMissing('timetables', ['school_class_id' => $schoolClass->id]);
 
         $this->actingAs($user)
@@ -342,7 +345,10 @@ class TimetablePlanningTest extends TestCase
             ->assertRedirect();
 
         $run = TimetableGenerationRun::query()->firstOrFail();
-        $this->assertTrue($run->canBeApplied());
+        $this->assertTrue(
+            $run->canBeApplied(),
+            json_encode($run->only(['status', 'solver_status', 'diagnostics', 'result'])) ?: 'Résultat illisible',
+        );
         $this->assertSame([$readyClass->id], $run->input_snapshot['target_class_ids']);
     }
 
@@ -580,6 +586,48 @@ class TimetablePlanningTest extends TestCase
         $this->assertDatabaseCount('timetables', 0);
     }
 
+    public function test_generator_rejects_hours_of_the_same_subject_when_they_are_separated(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe blocs consécutifs');
+        $subject = Subject::query()->create([
+            'name' => 'Mathématiques en bloc',
+            'code' => 'MATH-BLOC',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 4,
+            'weekly_hours' => 2,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        config()->set('services.timetable_solver.python', PHP_BINARY);
+        config()->set(
+            'services.timetable_solver.script',
+            base_path('tests/Fixtures/timetable_solver_split_subject_stub.php'),
+        );
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.generate'))
+            ->assertRedirect();
+
+        $run = TimetableGenerationRun::query()->firstOrFail();
+        $this->assertSame(TimetableGenerationRun::STATUS_FAILED, $run->status);
+        $this->assertSame('INVALID_SOLUTION', $run->solver_status);
+        $this->assertContains(
+            'Le moteur a séparé les heures d’une même matière au lieu de les regrouper.',
+            $run->diagnostics['blockers'],
+        );
+        $this->assertDatabaseCount('timetables', 0);
+    }
+
     public function test_readiness_blocks_a_shared_teacher_without_enough_unique_slots(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -751,12 +799,14 @@ class TimetablePlanningTest extends TestCase
             'validated_at' => now(),
             'updated_by' => $actor->id,
         ]);
-        foreach (TimetablePeriod::query()
+        $periods = TimetablePeriod::query()
             ->where('academic_year_id', $academicYear->id)
             ->where('is_active', true)
             ->where('is_break', false)
-            ->get() as $period) {
-            foreach (array_keys(app(TimetableTemplateService::class)->days()) as $day) {
+            ->orderBy('sort_order')
+            ->get();
+        foreach (array_keys(app(TimetableTemplateService::class)->days()) as $day) {
+            foreach ($periods as $period) {
                 $schedule->availabilities()->create([
                     'timetable_period_id' => $period->id,
                     'day_of_week' => $day,

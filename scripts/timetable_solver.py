@@ -2,6 +2,7 @@
 """Solve a weekly school timetable from a JSON payload on stdin."""
 
 import json
+import math
 import sys
 
 from ortools.sat.python import cp_model
@@ -34,13 +35,46 @@ def solve(payload: dict) -> dict:
             == assignment["required_slots"]
         )
 
+        used_days = []
+        max_slots_per_day = max(1, int(assignment.get("max_slots_per_day", 2)))
         for day in payload["days"]:
-            daily = [
-                variables[(assignment_id, slot["key"])]
-                for slot in slots
-                if slot["day"] == day
-            ]
-            model.add(sum(daily) <= assignment.get("max_slots_per_day", 2))
+            day_slots = sorted(
+                (slot for slot in slots if slot["day"] == day),
+                key=lambda slot: int(slot["period_order"]),
+            )
+            daily = [variables[(assignment_id, slot["key"])] for slot in day_slots]
+            model.add(sum(daily) <= max_slots_per_day)
+
+            day_used = model.new_bool_var(f"a{assignment_id}_{day}_used")
+            model.add(sum(daily) >= day_used)
+            model.add(sum(daily) <= max_slots_per_day * day_used)
+            used_days.append(day_used)
+
+            starts = []
+            previous_variable = None
+            previous_order = None
+            for slot in day_slots:
+                variable = variables[(assignment_id, slot["key"])]
+                order = int(slot["period_order"])
+                start = model.new_bool_var(f"a{assignment_id}_{day}_{order}_start")
+
+                if previous_variable is None or order != previous_order + 1:
+                    model.add(start == variable)
+                else:
+                    model.add(start <= variable)
+                    model.add(start + previous_variable <= 1)
+                    model.add(start >= variable - previous_variable)
+
+                starts.append(start)
+                previous_variable = variable
+                previous_order = order
+
+            model.add(sum(starts) <= 1)
+
+        minimum_teaching_days = math.ceil(
+            int(assignment["required_slots"]) / max_slots_per_day
+        )
+        model.add(sum(used_days) <= minimum_teaching_days)
 
     for slot in slots:
         key = slot["key"]

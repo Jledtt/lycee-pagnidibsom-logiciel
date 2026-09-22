@@ -557,6 +557,7 @@ class TimetableGenerationService
         $errors = [];
         $placed = [];
         $daily = [];
+        $periodOrders = [];
         $assignmentSlots = [];
         $classSlots = [];
         $teacherSlots = [];
@@ -614,6 +615,7 @@ class TimetableGenerationService
             $teacherSlots[$teacherSlotKey] = true;
             $placed[$assignmentId][] = $slotKey;
             $daily[$assignmentId][$day] = ($daily[$assignmentId][$day] ?? 0) + 1;
+            $periodOrders[$assignmentId][$day][] = (int) $slot['period_order'];
 
             $mustBeFixed = in_array($slotKey, $assignment['fixed_slot_keys'] ?? [], true);
             if ((bool) ($entry['is_fixed'] ?? false) !== $mustBeFixed) {
@@ -623,7 +625,9 @@ class TimetableGenerationService
 
         foreach ($assignments as $assignmentId => $assignment) {
             $assignmentPlaced = $placed[$assignmentId] ?? [];
-            if (count($assignmentPlaced) !== (int) ($assignment['required_slots'] ?? 0)) {
+            $requiredSlots = (int) ($assignment['required_slots'] ?? 0);
+            $maxSlotsPerDay = max(1, (int) ($assignment['max_slots_per_day'] ?? 2));
+            if (count($assignmentPlaced) !== $requiredSlots) {
                 $errors[] = 'Le moteur n’a pas respecté tous les volumes horaires demandés.';
             }
             if (array_diff($assignment['fixed_slot_keys'] ?? [], $assignmentPlaced) !== []) {
@@ -632,6 +636,19 @@ class TimetableGenerationService
             foreach ($daily[$assignmentId] ?? [] as $count) {
                 if ($count > (int) ($assignment['max_slots_per_day'] ?? 2)) {
                     $errors[] = 'Le moteur a dépassé la limite quotidienne d’une matière.';
+                }
+            }
+            if (count($periodOrders[$assignmentId] ?? []) > (int) ceil($requiredSlots / $maxSlotsPerDay)) {
+                $errors[] = 'Le moteur a dispersé les heures d’une même matière sur trop de jours.';
+            }
+            foreach ($periodOrders[$assignmentId] ?? [] as $orders) {
+                sort($orders);
+                for ($index = 1; $index < count($orders); $index++) {
+                    if ($orders[$index] !== $orders[$index - 1] + 1) {
+                        $errors[] = 'Le moteur a séparé les heures d’une même matière au lieu de les regrouper.';
+
+                        break;
+                    }
                 }
             }
         }
