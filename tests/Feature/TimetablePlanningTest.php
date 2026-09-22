@@ -634,6 +634,65 @@ class TimetablePlanningTest extends TestCase
         );
     }
 
+    public function test_readiness_accepts_a_locked_course_linked_to_an_active_assignment(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe avec cours verrouillé');
+        $subject = Subject::query()->create([
+            'name' => 'Matière verrouillée',
+            'code' => 'VER',
+            'status' => 'active',
+        ]);
+        $assignment = ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 2,
+            'weekly_hours' => 1,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $period = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->orderBy('sort_order')
+            ->firstOrFail();
+        $timetable = Timetable::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'school_class_id' => $schoolClass->id,
+            'title' => 'Grille avec cours verrouillé',
+            'status' => 'draft',
+            'created_by' => $user->id,
+        ]);
+        $timetable->entries()->create([
+            'timetable_period_id' => $period->id,
+            'sort_order' => $period->sort_order,
+            'period_label' => $period->label,
+            'starts_at' => $period->starts_at,
+            'ends_at' => $period->ends_at,
+            'day_of_week' => 'monday',
+            'class_subject_id' => $assignment->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'subject_name' => $subject->name,
+            'teacher_name' => $teacher->name,
+            'is_break' => false,
+            'is_locked' => true,
+            'source' => 'automatic',
+        ]);
+
+        $readiness = app(TimetableGenerationService::class)->readiness($academicYear);
+
+        $this->assertNotContains(
+            'Des cours verrouillés ne correspondent plus à une affectation active. Corrige-les avant la génération.',
+            $readiness['blockers'],
+        );
+    }
+
     public function test_manager_can_open_planning_blockers_page_for_a_target_class(): void
     {
         $this->seed(DatabaseSeeder::class);

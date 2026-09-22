@@ -371,6 +371,7 @@ class TimetableGenerationService
             ->get()
             ->groupBy('class_subject_id');
         $invalidLockedEntries = $lockedEntries
+            ->toBase()
             ->except($allAssignments->pluck('id')->all())
             ->flatten(1);
 
