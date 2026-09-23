@@ -84,6 +84,9 @@ class TimetableGenerationService
                     $diagnostics['blockers'][] = 'Aucune nouvelle proposition différente n’est possible avec les contraintes actuelles. Modifie une disponibilité, un cours verrouillé ou un volume horaire.';
                 }
             }
+            if ($solverStatus === 'INFEASIBLE') {
+                $diagnostics['blockers'][] = 'Aucune combinaison ne respecte à la fois les disponibilités des professeurs, les blocs de cours et la synchronisation des cours communs pour cette sélection de classes. Vérifie en priorité les professeurs qui interviennent dans plusieurs classes sélectionnées, en particulier lorsqu’un volume horaire impose un bloc unique (ex. 3 heures d’affilée) : ils ont souvent besoin de créneaux consécutifs supplémentaires.';
+            }
             $solutionErrors = in_array($solverStatus, ['OPTIMAL', 'FEASIBLE'], true)
                 ? $this->solutionErrors($input, $result)
                 : [];
@@ -345,6 +348,7 @@ class TimetableGenerationService
             ->orderBy('sort_order')
             ->get();
         $days = $this->templates->days();
+        $periodOrderById = $periods->pluck('sort_order', 'id');
         $classes = SchoolClass::query()
             ->where('academic_year_id', $academicYear->id)
             ->where('status', 'active')
@@ -424,7 +428,7 @@ class TimetableGenerationService
         foreach ($sharedCourseAssignments as $group => $groupAssignments) {
             $label = $this->sharedCourseLabel($group);
             if ($groupAssignments->count() < 2) {
-                $warnings[] = $label.' : cours commun non appliqué, car les deux classes ne sont pas planifiées ensemble.';
+                $warnings[] = $label.' : synchronisation non appliquée pour cette sélection, car l’autre classe concernée n’est pas incluse dans cet essai. Sélectionne les deux classes ensemble pour synchroniser ce cours commun.';
 
                 continue;
             }
@@ -506,13 +510,21 @@ class TimetableGenerationService
                 continue;
             }
 
+            $maxSlotsPerDay = $required <= 1 ? 1 : min($required, $required % 2 === 0 ? 2 : 3);
+            $blockIssue = $this->blockFeasibilityIssue($allowed, $fixed, $required, $maxSlotsPerDay, $days, $periodOrderById);
+            if ($blockIssue !== null) {
+                $blockers[] = $label.' : '.$blockIssue;
+
+                continue;
+            }
+
             $assignments[] = [
                 'id' => $assignment->id,
                 'class_id' => $assignment->school_class_id,
                 'teacher_id' => $assignment->teacher_id,
                 'synchronization_group' => $synchronizationGroups->get($assignment->id),
                 'required_slots' => $required,
-                'max_slots_per_day' => $required <= 1 ? 1 : min($required, $required % 2 === 0 ? 2 : 3),
+                'max_slots_per_day' => $maxSlotsPerDay,
                 'allowed_slot_keys' => $allowed->all(),
                 'preferred_slot_keys' => $preferred->all(),
                 'fixed_slot_keys' => $fixed->all(),
@@ -790,6 +802,78 @@ class TimetableGenerationService
             ->sortBy(fn (array $entry): string => str_pad((string) $entry['class_subject_id'], 20, '0', STR_PAD_LEFT).'|'.$entry['slot_key'])
             ->values()
             ->all();
+    }
+
+    /**
+     * Détermine si les créneaux disponibles permettent réellement de former les blocs requis
+     * (chaque jour utilisé doit offrir au moins `$minDaily` créneaux consécutifs, sur au plus
+     * `ceil($required / $maxSlotsPerDay)` jours), avant même d'appeler le solveur.
+     *
+     * @param  Collection<int, string>  $allowed
+     * @param  Collection<int, string>  $fixed
+     * @param  array<string, string>  $days
+     * @param  Collection<int, int>  $periodOrderById
+     */
+    private function blockFeasibilityIssue(
+        Collection $allowed,
+        Collection $fixed,
+        int $required,
+        int $maxSlotsPerDay,
+        array $days,
+        Collection $periodOrderById,
+    ): ?string {
+        $minDaily = $required <= 1 ? 1 : 2;
+        $minDays = (int) ceil($required / $maxSlotsPerDay);
+
+        $capsByDay = [];
+        foreach (array_keys($days) as $day) {
+            $orders = $allowed
+                ->filter(fn (string $key): bool => Str::startsWith($key, $day.'|'))
+                ->map(fn (string $key): int => (int) $periodOrderById->get((int) Str::afterLast($key, '|'), 0))
+                ->filter()
+                ->sort()
+                ->values();
+
+            $longestRun = 0;
+            $currentRun = 0;
+            $previousOrder = null;
+            foreach ($orders as $order) {
+                $currentRun = ($previousOrder !== null && $order === $previousOrder + 1) ? $currentRun + 1 : 1;
+                $longestRun = max($longestRun, $currentRun);
+                $previousOrder = $order;
+            }
+
+            if ($longestRun >= $minDaily) {
+                $capsByDay[$day] = min($longestRun, $maxSlotsPerDay);
+            }
+        }
+
+        foreach ($fixed as $fixedKey) {
+            if (! isset($capsByDay[Str::before($fixedKey, '|')])) {
+                return 'un cours verrouillé est isolé ce jour-là et ne peut pas former un bloc d’au moins deux heures.';
+            }
+        }
+
+        $caps = collect($capsByDay)->sortDesc()->values();
+        $usableDays = $caps->take($minDays);
+
+        if ($usableDays->count() < $minDays) {
+            return sprintf(
+                'il faut %d jour(s) avec au moins %dh consécutives disponibles pour ce professeur, mais seulement %d jour(s) le permettent. Complète ses disponibilités.',
+                $minDays,
+                $minDaily,
+                $usableDays->count(),
+            );
+        }
+
+        if ($required < $minDaily * $minDays || $required > $usableDays->sum()) {
+            return sprintf(
+                'les disponibilités du professeur ne permettent pas de former un bloc de %dh sans heure isolée. Ajoute des créneaux consécutifs (avant ou après une pause).',
+                $required,
+            );
+        }
+
+        return null;
     }
 
     private function sharedCourseGroup(ClassSubject $assignment): ?string

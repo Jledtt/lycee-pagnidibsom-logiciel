@@ -835,6 +835,68 @@ class TimetablePlanningTest extends TestCase
         );
     }
 
+    public function test_readiness_blocks_when_teacher_availability_cannot_form_the_required_block(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe bloc impossible');
+        $subject = Subject::query()->create([
+            'name' => 'Histoire-Géographie bloc impossible',
+            'code' => 'HG-BLOC',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 3,
+            'weekly_hours' => 3,
+            'is_active' => true,
+        ]);
+
+        app(TimetableTemplateService::class)->ensurePeriods($academicYear);
+        $schedule = TeacherAvailabilitySchedule::query()->create([
+            'academic_year_id' => $academicYear->id,
+            'teacher_id' => $teacher->id,
+            'status' => TeacherAvailabilitySchedule::STATUS_VALIDATED,
+            'source' => 'manual',
+            'submitted_at' => now(),
+            'validated_at' => now(),
+            'updated_by' => $user->id,
+        ]);
+        // Le professeur n'est jamais disponible sur la toute première période de la matinée :
+        // ses créneaux restent fractionnés par la récréation en blocs de 2h maximum (jamais 3
+        // heures consécutives), ce qui reproduit le cas réel de l'essai n°25 en production.
+        $periodsAfterFirst = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('is_break', false)
+            ->where('sort_order', '>', 1)
+            ->orderBy('sort_order')
+            ->get();
+        foreach (array_keys(app(TimetableTemplateService::class)->days()) as $day) {
+            foreach ($periodsAfterFirst as $period) {
+                $schedule->availabilities()->create([
+                    'timetable_period_id' => $period->id,
+                    'day_of_week' => $day,
+                    'status' => TeacherAvailability::STATUS_AVAILABLE,
+                ]);
+            }
+        }
+
+        $readiness = app(TimetableGenerationService::class)->readiness($academicYear);
+
+        $this->assertNotEmpty(
+            array_filter(
+                $readiness['blockers'],
+                fn (string $message): bool => str_contains($message, 'bloc de 3h'),
+            ),
+            json_encode($readiness['blockers']) ?: 'Blocages illisibles',
+        );
+    }
+
     public function test_readiness_accepts_a_locked_course_linked_to_an_active_assignment(): void
     {
         $this->seed(DatabaseSeeder::class);

@@ -153,6 +153,13 @@
                 </div>
             @endif
 
+            @if ($run->diagnostics['warnings'] ?? [])
+                <div class="planning-diagnostics">
+                    <strong>Informations sur cet essai</strong>
+                    <ul>@foreach ($run->diagnostics['warnings'] as $message)<li>{{ $message }}</li>@endforeach</ul>
+                </div>
+            @endif
+
             @foreach ($gridPreview as $classGrid)
                 <details class="planning-class" @if ($loop->first) open @endif>
                     <summary>
