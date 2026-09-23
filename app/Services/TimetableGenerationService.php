@@ -85,7 +85,7 @@ class TimetableGenerationService
                 }
             }
             if ($solverStatus === 'INFEASIBLE') {
-                $diagnostics['blockers'][] = 'Aucune combinaison ne respecte à la fois les disponibilités des professeurs, les blocs de cours et la synchronisation des cours communs pour cette sélection de classes. Vérifie en priorité les professeurs qui interviennent dans plusieurs classes sélectionnées, en particulier lorsqu’un volume horaire impose un bloc unique (ex. 3 heures d’affilée) : ils ont souvent besoin de créneaux consécutifs supplémentaires.';
+                $diagnostics['blockers'][] = 'Aucune combinaison ne respecte à la fois les disponibilités des professeurs, les blocs de 2h consécutives, la matinée complète et la synchronisation des cours communs pour cette sélection de classes. Vérifie en priorité les professeurs qui interviennent dans plusieurs classes sélectionnées, en particulier ceux dont le volume horaire est impair (ex. 3h ou 5h) : ils ont besoin d’au moins un jour supplémentaire pour l’heure isolée qui ne peut pas être fusionnée avec un bloc de 2h.';
             }
             $solutionErrors = in_array($solverStatus, ['OPTIMAL', 'FEASIBLE'], true)
                 ? $this->solutionErrors($input, $result)
@@ -349,6 +349,7 @@ class TimetableGenerationService
             ->get();
         $days = $this->templates->days();
         $periodOrderById = $periods->pluck('sort_order', 'id');
+        $closingMorningPeriodIds = $this->closingMorningPeriodIds($periods);
         $classes = SchoolClass::query()
             ->where('academic_year_id', $academicYear->id)
             ->where('status', 'active')
@@ -510,8 +511,8 @@ class TimetableGenerationService
                 continue;
             }
 
-            $maxSlotsPerDay = $required <= 1 ? 1 : min($required, $required % 2 === 0 ? 2 : 3);
-            $blockIssue = $this->blockFeasibilityIssue($allowed, $fixed, $required, $maxSlotsPerDay, $days, $periodOrderById);
+            $maxSlotsPerDay = $required <= 1 ? 1 : 2;
+            $blockIssue = $this->blockFeasibilityIssue($allowed, $fixed, $required, $days, $periodOrderById);
             if ($blockIssue !== null) {
                 $blockers[] = $label.' : '.$blockIssue;
 
@@ -571,6 +572,13 @@ class TimetableGenerationService
             }
         }
 
+        $closingMorningSlotPairs = $closingMorningPeriodIds === null
+            ? []
+            : collect($days)->keys()->map(fn (string $day): array => [
+                $this->slotKey($day, $closingMorningPeriodIds[0]),
+                $this->slotKey($day, $closingMorningPeriodIds[1]),
+            ])->values()->all();
+
         return [
             'input' => [
                 'academic_year_id' => $academicYear->id,
@@ -580,6 +588,7 @@ class TimetableGenerationService
                 'target_class_ids' => $targetClasses->pluck('id')->all(),
                 'teacher_ids' => collect($assignments)->pluck('teacher_id')->unique()->values()->all(),
                 'assignments' => $assignments,
+                'closing_morning_slot_pairs' => $closingMorningSlotPairs,
                 'time_limit_seconds' => (int) config('services.timetable_solver.time_limit_seconds', 12),
                 'workers' => 4,
             ],
@@ -627,6 +636,7 @@ class TimetableGenerationService
         $assignmentSlots = [];
         $classSlots = [];
         $teacherSlots = [];
+        $occupiedByClass = [];
 
         foreach ($entries as $entry) {
             if (! is_array($entry)) {
@@ -681,6 +691,7 @@ class TimetableGenerationService
             $assignmentSlots[$assignmentSlotKey] = true;
             $classSlots[$classSlotKey] = true;
             $teacherSlots[$teacherSlotKey] = $teacherOccupancy;
+            $occupiedByClass[$classId][$slotKey] = true;
             $placed[$assignmentId][] = $slotKey;
             $daily[$assignmentId][$day] = ($daily[$assignmentId][$day] ?? 0) + 1;
             $periodOrders[$assignmentId][$day][] = (int) $slot['period_order'];
@@ -701,13 +712,18 @@ class TimetableGenerationService
             if (array_diff($assignment['fixed_slot_keys'] ?? [], $assignmentPlaced) !== []) {
                 $errors[] = 'Le moteur a déplacé un cours verrouillé.';
             }
+            $singleHourDays = 0;
             foreach ($daily[$assignmentId] ?? [] as $count) {
                 if ($count > (int) ($assignment['max_slots_per_day'] ?? 2)) {
                     $errors[] = 'Le moteur a dépassé la limite quotidienne d’une matière.';
                 }
-                if ($requiredSlots > 1 && $count < 2) {
-                    $errors[] = 'Le moteur a isolé une heure de cours au lieu de former un bloc d’au moins deux heures.';
+                if ($count === 1) {
+                    $singleHourDays++;
                 }
+            }
+            $expectedSingleHourDays = $requiredSlots % 2 === 1 ? 1 : 0;
+            if ($singleHourDays > $expectedSingleHourDays) {
+                $errors[] = 'Le moteur a isolé une heure de cours au lieu de former un bloc de deux heures (une seule heure isolée est tolérée par semaine, pour un volume impair).';
             }
             if (count($periodOrders[$assignmentId] ?? []) > (int) ceil($requiredSlots / $maxSlotsPerDay)) {
                 $errors[] = 'Le moteur a dispersé les heures d’une même matière sur trop de jours.';
@@ -744,6 +760,17 @@ class TimetableGenerationService
                     }
                 }
             });
+
+        foreach ($input['closing_morning_slot_pairs'] ?? [] as $pair) {
+            [$firstKey, $secondKey] = $pair;
+            foreach ($occupiedByClass as $classOccupancy) {
+                if (isset($classOccupancy[$firstKey]) && ! isset($classOccupancy[$secondKey])) {
+                    $errors[] = 'Le moteur a arrêté une matinée avant midi au lieu de la compléter.';
+
+                    break;
+                }
+            }
+        }
 
         $currentSolution = $this->normalizedSolution($entries);
         foreach ($input['excluded_solutions'] ?? [] as $excludedSolution) {
@@ -805,9 +832,10 @@ class TimetableGenerationService
     }
 
     /**
-     * Détermine si les créneaux disponibles permettent réellement de former les blocs requis
-     * (chaque jour utilisé doit offrir au moins `$minDaily` créneaux consécutifs, sur au plus
-     * `ceil($required / $maxSlotsPerDay)` jours), avant même d'appeler le solveur.
+     * Détermine si les créneaux disponibles permettent réellement de former les heures requises
+     * sous forme de blocs de 2h consécutives (jamais 3h d'affilée), avec au plus une heure isolée
+     * pour le reliquat impair (ex. 3h = 2h + 1h, 5h = 2h + 2h + 1h), avant même d'appeler le
+     * solveur.
      *
      * @param  Collection<int, string>  $allowed
      * @param  Collection<int, string>  $fixed
@@ -818,14 +846,14 @@ class TimetableGenerationService
         Collection $allowed,
         Collection $fixed,
         int $required,
-        int $maxSlotsPerDay,
         array $days,
         Collection $periodOrderById,
     ): ?string {
-        $minDaily = $required <= 1 ? 1 : 2;
-        $minDays = (int) ceil($required / $maxSlotsPerDay);
+        if ($required <= 1) {
+            return null;
+        }
 
-        $capsByDay = [];
+        $longestRunByDay = [];
         foreach (array_keys($days) as $day) {
             $orders = $allowed
                 ->filter(fn (string $key): bool => Str::startsWith($key, $day.'|'))
@@ -843,37 +871,62 @@ class TimetableGenerationService
                 $previousOrder = $order;
             }
 
-            if ($longestRun >= $minDaily) {
-                $capsByDay[$day] = min($longestRun, $maxSlotsPerDay);
-            }
+            $longestRunByDay[$day] = $longestRun;
         }
 
         foreach ($fixed as $fixedKey) {
-            if (! isset($capsByDay[Str::before($fixedKey, '|')])) {
-                return 'un cours verrouillé est isolé ce jour-là et ne peut pas former un bloc d’au moins deux heures.';
+            $day = Str::before($fixedKey, '|');
+            $fixedCountThatDay = $fixed->filter(fn (string $key): bool => Str::startsWith($key, $day.'|'))->count();
+            if ($fixedCountThatDay > ($longestRunByDay[$day] ?? 0)) {
+                return 'des cours verrouillés le même jour ne sont pas consécutifs et ne peuvent pas former un bloc.';
             }
         }
 
-        $caps = collect($capsByDay)->sortDesc()->values();
-        $usableDays = $caps->take($minDays);
+        $twoCapableDays = collect($longestRunByDay)->filter(fn (int $run): bool => $run >= 2)->count();
+        $anyCapableDays = collect($longestRunByDay)->filter(fn (int $run): bool => $run >= 1)->count();
+        $neededTwoDays = intdiv($required, 2);
+        $neededOneDay = $required % 2;
+        $minDays = $neededTwoDays + $neededOneDay;
 
-        if ($usableDays->count() < $minDays) {
+        if ($twoCapableDays < $neededTwoDays || $anyCapableDays < $minDays) {
             return sprintf(
-                'il faut %d jour(s) avec au moins %dh consécutives disponibles pour ce professeur, mais seulement %d jour(s) le permettent. Complète ses disponibilités.',
-                $minDays,
-                $minDaily,
-                $usableDays->count(),
-            );
-        }
-
-        if ($required < $minDaily * $minDays || $required > $usableDays->sum()) {
-            return sprintf(
-                'les disponibilités du professeur ne permettent pas de former un bloc de %dh sans heure isolée. Ajoute des créneaux consécutifs (avant ou après une pause).',
-                $required,
+                'les disponibilités du professeur ne permettent pas de former %d bloc(s) de 2h consécutives%s. Ajoute des créneaux consécutifs (avant ou après une pause).',
+                $neededTwoDays,
+                $neededOneDay > 0 ? ' et une heure isolée sur un autre jour' : '',
             );
         }
 
         return null;
+    }
+
+    /**
+     * Identifie les deux dernières périodes consécutives du matin (avant midi), correspondant
+     * à la fin de la deuxième plage matinale (ex. 10h10-11h05 puis 11h05-12h00). Retourne null
+     * si la grille de créneaux ne comporte pas au moins deux périodes consécutives se terminant
+     * avant midi.
+     *
+     * @param  Collection<int, TimetablePeriod>  $periods
+     * @return array{0: int, 1: int}|null
+     */
+    private function closingMorningPeriodIds(Collection $periods): ?array
+    {
+        $morningPeriods = $periods
+            ->filter(fn (TimetablePeriod $period): bool => substr((string) $period->starts_at, 0, 5) < '12:00')
+            ->sortBy('sort_order')
+            ->values();
+
+        if ($morningPeriods->count() < 2) {
+            return null;
+        }
+
+        $last = $morningPeriods->last();
+        $beforeLast = $morningPeriods->get($morningPeriods->count() - 2);
+
+        if ((int) $beforeLast->sort_order + 1 !== (int) $last->sort_order) {
+            return null;
+        }
+
+        return [$beforeLast->id, $last->id];
     }
 
     private function sharedCourseGroup(ClassSubject $assignment): ?string

@@ -634,6 +634,71 @@ class TimetablePlanningTest extends TestCase
         $this->assertSame(TimetableGenerationRun::STATUS_DRAFT, $run->fresh()->status);
     }
 
+    public function test_generator_refuses_a_solution_that_stops_a_morning_before_noon(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe matinee incomplete');
+        $subject = Subject::query()->create([
+            'name' => 'Matiere matinee incomplete',
+            'code' => 'MAT-INC',
+            'status' => 'active',
+        ]);
+        $assignment = ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 1,
+            'weekly_hours' => 1,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+        $this->useStubSolver();
+
+        $this->actingAs($user)->post(route('timetables.planning.generate'));
+        $run = TimetableGenerationRun::query()->firstOrFail();
+
+        $fifthPeriod = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('sort_order', 5)
+            ->firstOrFail();
+        $sixthPeriod = TimetablePeriod::query()
+            ->where('academic_year_id', $academicYear->id)
+            ->where('sort_order', 6)
+            ->firstOrFail();
+        $closingPairKeys = collect(array_keys(app(TimetableTemplateService::class)->days()))
+            ->map(fn (string $day): array => [$day.'|'.$fifthPeriod->id, $day.'|'.$sixthPeriod->id])
+            ->values()
+            ->all();
+
+        $inputSnapshot = $run->input_snapshot;
+        $inputSnapshot['closing_morning_slot_pairs'] = $closingPairKeys;
+        $run->update([
+            'input_snapshot' => $inputSnapshot,
+            'result' => [
+                'status' => 'FEASIBLE',
+                'assignments' => [[
+                    'class_subject_id' => $assignment->id,
+                    'class_id' => $schoolClass->id,
+                    'teacher_id' => $teacher->id,
+                    'day' => 'monday',
+                    'period_id' => $fifthPeriod->id,
+                    'slot_key' => 'monday|'.$fifthPeriod->id,
+                    'is_fixed' => false,
+                ]],
+            ],
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('timetables.planning.apply', $run->fresh()))
+            ->assertSessionHasErrors('generation');
+
+        $this->assertDatabaseMissing('timetables', ['school_class_id' => $schoolClass->id]);
+    }
+
     public function test_generator_never_replaces_an_active_timetable(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -852,8 +917,8 @@ class TimetablePlanningTest extends TestCase
             'school_class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'teacher_id' => $teacher->id,
-            'coefficient' => 3,
-            'weekly_hours' => 3,
+            'coefficient' => 4,
+            'weekly_hours' => 4,
             'is_active' => true,
         ]);
 
@@ -867,17 +932,18 @@ class TimetablePlanningTest extends TestCase
             'validated_at' => now(),
             'updated_by' => $user->id,
         ]);
-        // Le professeur n'est jamais disponible sur la toute première période de la matinée :
-        // ses créneaux restent fractionnés par la récréation en blocs de 2h maximum (jamais 3
-        // heures consécutives), ce qui reproduit le cas réel de l'essai n°25 en production.
-        $periodsAfterFirst = TimetablePeriod::query()
+        // Le professeur n'a jamais deux périodes consécutives disponibles le même jour (une
+        // période sur deux seulement), donc aucun bloc de 2h n'est formable nulle part, alors
+        // que la matière exige 4h réparties en deux blocs de 2h.
+        $isolatedPeriods = TimetablePeriod::query()
             ->where('academic_year_id', $academicYear->id)
             ->where('is_break', false)
-            ->where('sort_order', '>', 1)
             ->orderBy('sort_order')
-            ->get();
+            ->get()
+            ->filter(fn (TimetablePeriod $period, int $index): bool => $index % 2 === 0)
+            ->values();
         foreach (array_keys(app(TimetableTemplateService::class)->days()) as $day) {
-            foreach ($periodsAfterFirst as $period) {
+            foreach ($isolatedPeriods as $period) {
                 $schedule->availabilities()->create([
                     'timetable_period_id' => $period->id,
                     'day_of_week' => $day,
@@ -891,10 +957,38 @@ class TimetablePlanningTest extends TestCase
         $this->assertNotEmpty(
             array_filter(
                 $readiness['blockers'],
-                fn (string $message): bool => str_contains($message, 'bloc de 3h'),
+                fn (string $message): bool => str_contains($message, 'bloc(s) de 2h consécutives'),
             ),
             json_encode($readiness['blockers']) ?: 'Blocages illisibles',
         );
+    }
+
+    public function test_readiness_accepts_an_odd_weekly_volume_split_into_a_block_and_an_isolated_hour(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SchoolClass::query()->update(['status' => 'archived']);
+        $user = $this->userWithRole('secretariat');
+        $teacher = $this->userWithRole('enseignant');
+        $academicYear = AcademicYear::query()->where('is_active', true)->firstOrFail();
+        $schoolClass = $this->schoolClass('Classe volume impair');
+        $subject = Subject::query()->create([
+            'name' => 'Allemand volume impair',
+            'code' => 'ALL-IMPAIR',
+            'status' => 'active',
+        ]);
+        ClassSubject::query()->create([
+            'school_class_id' => $schoolClass->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+            'coefficient' => 3,
+            'weekly_hours' => 3,
+            'is_active' => true,
+        ]);
+        $this->validatedAvailability($academicYear, $teacher, $user);
+
+        $readiness = app(TimetableGenerationService::class)->readiness($academicYear);
+
+        $this->assertSame([], $readiness['blockers'], json_encode($readiness['blockers']) ?: 'Blocages illisibles');
     }
 
     public function test_readiness_accepts_a_locked_course_linked_to_an_active_assignment(): void

@@ -37,7 +37,7 @@ def solve(payload: dict) -> dict:
         )
 
         used_days = []
-        minimum_daily_slots = 1 if int(assignment["required_slots"]) == 1 else 2
+        single_hour_days = []
         max_slots_per_day = max(1, int(assignment.get("max_slots_per_day", 2)))
         for day in payload["days"]:
             day_slots = sorted(
@@ -45,11 +45,23 @@ def solve(payload: dict) -> dict:
                 key=lambda slot: int(slot["period_order"]),
             )
             daily = [variables[(assignment_id, slot["key"])] for slot in day_slots]
-            model.add(sum(daily) <= max_slots_per_day)
+            daily_sum = sum(daily)
+            model.add(daily_sum <= max_slots_per_day)
 
-            day_used = model.new_bool_var(f"a{assignment_id}_{day}_used")
-            model.add(sum(daily) >= minimum_daily_slots * day_used)
-            model.add(sum(daily) <= max_slots_per_day * day_used)
+            if max_slots_per_day >= 2:
+                # A day is either unused, a full 2h block, or (for at most one day per
+                # week, to absorb an odd weekly volume) a single isolated hour. Never a
+                # 3h-or-more block.
+                used_two = model.new_bool_var(f"a{assignment_id}_{day}_two")
+                used_one = model.new_bool_var(f"a{assignment_id}_{day}_one")
+                model.add(used_one + used_two <= 1)
+                model.add(daily_sum == used_one + 2 * used_two)
+                day_used = model.new_bool_var(f"a{assignment_id}_{day}_used")
+                model.add(day_used == used_one + used_two)
+                single_hour_days.append(used_one)
+            else:
+                day_used = model.new_bool_var(f"a{assignment_id}_{day}_used")
+                model.add(day_used == daily_sum)
             used_days.append(day_used)
 
             starts = []
@@ -72,6 +84,9 @@ def solve(payload: dict) -> dict:
                 previous_order = order
 
             model.add(sum(starts) <= 1)
+
+        if single_hour_days:
+            model.add(sum(single_hour_days) <= 1)
 
         minimum_teaching_days = math.ceil(
             int(assignment["required_slots"]) / max_slots_per_day
@@ -136,6 +151,16 @@ def solve(payload: dict) -> dict:
                 teacher_variables.append(variables[(assignment["id"], key)])
             if teacher_variables:
                 model.add(sum(teacher_variables) <= 1)
+
+    # A class must never stop its morning right before the last pre-noon period
+    # (e.g. occupied at 10h10-11h05 but free at 11h05-12h00): if it starts that
+    # closing pair, it must complete it.
+    for first_key, second_key in payload.get("closing_morning_slot_pairs", []):
+        for class_id in payload["class_ids"]:
+            first_occupied = class_occupancies.get((class_id, first_key))
+            second_occupied = class_occupancies.get((class_id, second_key))
+            if first_occupied is not None and second_occupied is not None:
+                model.add(first_occupied <= second_occupied)
 
     objective_terms = []
     randomizer = random.Random(int(payload.get("variation_seed", 0)))

@@ -161,7 +161,21 @@ class TimetableSolverTest(unittest.TestCase):
 
         self.assertEqual("INFEASIBLE", result["status"])
 
-    def test_three_hours_form_one_continuous_block(self) -> None:
+    def test_three_hours_never_form_one_continuous_block(self) -> None:
+        result = solve(self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                3,
+                ["monday|1", "monday|2", "monday|3"],
+                max_per_day=2,
+            ),
+        ]))
+
+        self.assertEqual("INFEASIBLE", result["status"])
+
+    def test_odd_hours_split_into_a_two_hour_block_and_one_isolated_hour(self) -> None:
         result = solve(self.payload([
             assignment(
                 1,
@@ -169,13 +183,38 @@ class TimetableSolverTest(unittest.TestCase):
                 50,
                 3,
                 ["monday|1", "monday|2", "monday|3", "tuesday|1"],
-                max_per_day=3,
+                max_per_day=2,
             ),
         ]))
 
         self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
-        selected = {item["slot_key"] for item in result["assignments"]}
-        self.assertEqual({"monday|1", "monday|2", "monday|3"}, selected)
+        by_day: dict[str, list[int]] = {}
+        for item in result["assignments"]:
+            by_day.setdefault(item["day"], []).append(item["period_id"])
+        counts = sorted(len(placed) for placed in by_day.values())
+        self.assertEqual([1, 2], counts)
+
+    def test_even_required_hours_never_produce_an_isolated_hour(self) -> None:
+        payload = self.payload([
+            assignment(
+                1,
+                10,
+                50,
+                4,
+                ["monday|1", "tuesday|1", "monday|2", "tuesday|2"],
+                max_per_day=2,
+            ),
+        ])
+        payload["slots"].append(slot("tuesday|2", "tuesday", 2, 2))
+
+        result = solve(payload)
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
+        by_day: dict[str, list[int]] = {}
+        for item in result["assignments"]:
+            by_day.setdefault(item["day"], []).append(item["period_id"])
+        for placed in by_day.values():
+            self.assertEqual(2, len(placed))
 
     def test_all_subjects_use_consecutive_blocks_without_alternating(self) -> None:
         allowed = [
@@ -292,6 +331,31 @@ class TimetableSolverTest(unittest.TestCase):
 
         self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
         self.assertEqual("tuesday|1", result["assignments"][0]["slot_key"])
+
+    def test_a_class_cannot_stop_right_before_the_last_morning_period(self) -> None:
+        payload = self.payload([
+            assignment(1, 10, 50, 1, ["monday|5"]),
+        ])
+        payload["slots"].append(slot("monday|5", "monday", 5, 5))
+        payload["slots"].append(slot("monday|6", "monday", 6, 6))
+        payload["closing_morning_slot_pairs"] = [["monday|5", "monday|6"]]
+
+        result = solve(payload)
+
+        self.assertEqual("INFEASIBLE", result["status"])
+
+    def test_a_class_can_use_the_closing_morning_pair_when_both_periods_are_filled(self) -> None:
+        payload = self.payload([
+            assignment(1, 10, 50, 1, ["monday|5"]),
+            assignment(2, 10, 60, 1, ["monday|6"]),
+        ])
+        payload["slots"].append(slot("monday|5", "monday", 5, 5))
+        payload["slots"].append(slot("monday|6", "monday", 6, 6))
+        payload["closing_morning_slot_pairs"] = [["monday|5", "monday|6"]]
+
+        result = solve(payload)
+
+        self.assertIn(result["status"], ["OPTIMAL", "FEASIBLE"])
 
 
 if __name__ == "__main__":
