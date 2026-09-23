@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -81,8 +82,19 @@ return new class extends Migration
         }
 
         if (in_array($driver, ['mysql', 'mariadb'], true)) {
-            $this->createMySqlTrigger(self::INSERT_TRIGGER, 'INSERT', false);
-            $this->createMySqlTrigger(self::UPDATE_TRIGGER, 'UPDATE', true);
+            try {
+                $this->createMySqlTrigger(self::INSERT_TRIGGER, 'INSERT', false);
+                $this->createMySqlTrigger(self::UPDATE_TRIGGER, 'UPDATE', true);
+            } catch (QueryException $exception) {
+                $errorNumber = (int) ($exception->errorInfo[1] ?? 0);
+
+                if (! in_array($errorNumber, [1227, 1419], true)) {
+                    throw $exception;
+                }
+
+                // Some managed MySQL servers forbid triggers when binary logging is enabled.
+                $this->dropTeacherConflictTriggers();
+            }
 
             return;
         }
